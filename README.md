@@ -1,5 +1,7 @@
 # LUMEN — Les jardins de la lune
 
+Bienvenue.
+
 ![Les prairies d’aurore, en contre-la-montre](docs/apercu-jeu.png)
 
 Un jeu de plateforme original en dix étapes. Nilo, un petit gardien ailé,
