@@ -3,6 +3,11 @@
 (() => {
   'use strict';
   const WIDTH = 1280, HEIGHT = 720, STEP = 1 / 120;
+  /** L'apaisement d'un dormeur : huit secondes pleines, annoncées une seconde et
+   *  demie avant la fin, puis un répit d'autant avant qu'il puisse se fâcher de
+   *  nouveau. Ces trois durées sont la promesse faite au joueur quand il appelle
+   *  une créature ; elles ne dépendent d'aucun autre minuteur. */
+  const CALM_TIME = 8, CALM_WARNING = 1.5, CALM_GRACE = 1.5;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const approach = (v, target, delta) => v < target ? Math.min(target, v + delta) : Math.max(target, v - delta);
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -76,7 +81,16 @@
       // les tests et les pilotes automatiques lisent les mêmes constantes que
       // la simulation, sans en recopier aucune.
       this.resonanceRules = window.LumenResonance;
+      // Où l'on se trouve dans le JEU, et non dans le niveau : 'home',
+      // 'campaign', 'hub' ou 'expedition'. Cet état est déclaré, pas déduit.
+      // Avant lui, tout se lisait sur `this.run`, si bien qu'une nuit ouverte
+      // suivait le joueur dans la campagne et y appliquait ses règles.
+      this.session = 'home';
       this.run = null;   // l'expédition en cours, s'il y en a une
+      this.lastRun = null; // la dernière nuit terminée, pour la recommencer
+      // Les messages qui n'ont personne pour les entendre attendent ici que
+      // l'interface soit prête (cf. flushNotices).
+      this.notices = []; this.uiReady = false;
       this.progress = this.readProgress(); this.storageAvailable = true;
       this.audio.setMuted(!!this.progress.settings.muted);
       this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
@@ -112,11 +126,26 @@
       }
       return 0;
     }
+    /** Un message destiné au joueur. Émis tout de suite si l'interface écoute,
+     *  gardé sinon : un avertissement de stockage émis pendant le constructeur
+     *  n'avait, avant, aucun auditeur et se perdait en silence. */
+    notify(message) {
+      if (this.uiReady) this.emit('toast', message);
+      else this.notices.push(message);
+    }
+    /** Appelé par l'interface une fois ses écouteurs posés. */
+    flushNotices() {
+      this.uiReady = true;
+      const pending = this.notices.splice(0);
+      for (const message of pending) this.emit('toast', message);
+      return pending.length;
+    }
     readProgress() {
       const storage = (() => { try { return localStorage; } catch (_) { return null; } })();
       this.store = new window.LumenSave.SaveStore(storage);
       this.storageAvailable = this.store.available;
-      if (this.store.recovered) this.emit('toast', 'Sauvegarde principale illisible : la copie de secours a été restaurée.');
+      if (this.store.recovered) this.notify('Sauvegarde principale illisible : la copie de secours a été restaurée.');
+      if (this.store.futureSchema) this.notify('Cette sauvegarde vient d’une version plus récente de LUMEN : elle est laissée intacte, et cette partie ne sera pas enregistrée.');
       // `progress` reste exposé pour l'interface et les anciens tests ; la
       // vérité vit désormais dans le profil du magasin.
       return this.store.profile;
@@ -125,7 +154,8 @@
       if (!this.store) return;
       if (!this.store.save(this.progress)) {
         this.storageAvailable = false;
-        this.emit('toast', 'Sauvegarde indisponible : la progression reste disponible pendant cette session.');
+        if (!this.storageWarned) { this.storageWarned = true;
+          this.notify('Sauvegarde indisponible : la progression reste disponible pendant cette session.'); }
       }
     }
     isUnlocked(index) {
@@ -144,6 +174,8 @@
       return false;
     }
     showHome() {
+      this.leaveExpedition();
+      this.session = 'home';
       this.loadLevel(0, false); this.mode = 'home'; this.camera.x = 0;
       this.platforms = [
         {x:740,y:520,w:460,h:230,type:'ground',active:true},
@@ -156,7 +188,12 @@
       this.audio.setTheme('meadow'); this.emit('mode', this.mode);
     }
     start(index = 0, options = {}) {
-      if (!this.isUnlocked(index)) return;
+      if (index < 0 || !this.isUnlocked(index)) return;
+      // Entrer dans un chapitre, c'est SORTIR d'une nuit. Sans cette ligne,
+      // une expédition ouverte continuait de gouverner la mort, le réessai,
+      // la sortie de niveau et les souvenirs portés.
+      this.leaveExpedition();
+      this.session = window.LUMEN_LEVELS[index].hub ? 'hub' : 'campaign';
       if (this.lives <= 0) this.lives = 5;
       this.runMode=options.timed?'timed':'explore';
       this.loadLevel(index); this.audio.unlock(); this.audio.resume();
@@ -182,7 +219,7 @@
       // est prévisible à l'avance, donc vérifiable par le contrôle de parcours.
       const wakePlatforms = this.wakeables.flatMap(w => R.platformsFor(w));
       this.platforms = [...data.platforms, ...wakePlatforms].map((p, i) => ({ phase:0, ...p, active:p.type!=='echo'&&!p.wakeId, id:i, baseX:p.x, baseY:p.y, dx:0, dy:0, crumbleTimer:0, reformTimer:0 }));
-      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0,calmTime:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
+      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0,calmTime:0,rousing:false,rouseGrace:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
       this.collectibles = data.collectibles.map(c => ({ ...c, taken:false }));
       this.checkpoints = data.checkpoints.map(c => ({ ...c, active:false }));
       this.hazards = data.hazards || []; this.secrets = (data.secrets || []).map(s => ({ ...s, found:false }));
@@ -190,6 +227,7 @@
       // attend sa quête). Ne l'ouvrir d'office que si elle ne s'est pas prononcée.
       this.exit = { w:70, h:100, ...data.exit,
         open: data.exit && data.exit.open !== undefined ? data.exit.open : !data.boss };
+      this.restoreWorldState();
       this.projectiles = []; this.particles = []; this.floatingTexts = [];
       this.checkpoint = { x:data.spawn.x, y:data.spawn.y };
       this.player = { x:data.spawn.x, y:data.spawn.y, w:32, h:46, vx:0, vy:0, facing:1, grounded:false, anim:0,
@@ -203,8 +241,40 @@
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
       if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
     }
+    /** Ce qu'une sauvegarde a déjà acquis et qui doit se revoir DANS le monde,
+     *  et pas seulement dans un menu. Appelé à chaque chargement de niveau :
+     *  une porte qu'une quête a ouverte ne se referme pas parce qu'on est sorti.
+     *
+     *  C'est la règle qui manquait : la quête était relue (les dialogues le
+     *  prouvaient), mais son effet sur le décor ne l'était pas. */
+    restoreWorldState() {
+      const quest = this.level && this.level.quest;
+      if (!quest || !this.store) return;
+      if (this.store.questState(quest.id) !== 'done') return;
+      this.exit.open = true;
+    }
+    /** LA règle d'accès aux Rêves nomades. Une seule, consultée aussi bien par
+     *  le portail de l'observatoire que par le menu : il ne peut donc pas y
+     *  avoir de porte verrouillée d'un côté et ouverte de l'autre. */
+    canEnterDreams() {
+      const hubIndex = window.LUMEN_LEVELS.findIndex(level => level.hub);
+      const hub = window.LUMEN_LEVELS[hubIndex];
+      const quest = hub && hub.quest;
+      if (!quest) return { allowed: true };
+      if (this.store.questState(quest.id) === 'done') return { allowed: true };
+      return {
+        allowed: false, hubIndex,
+        reason: 'La porte des rêves ne s’ouvre qu’une fois la coupole rendue à son souffle.',
+        action: 'Aller à l’observatoire'
+      };
+    }
     retry() {
-      if (this.run) return this.enterRoom(this.run.roomIndex);
+      // Une salle de rêve se recommence sur place ; une nuit perdue se
+      // recommence depuis sa première salle ; un chapitre se recharge. Ce qui
+      // n'existe pas — un « chapitre −1 » — n'est jamais demandé au chargeur.
+      if (this.session === 'expedition' && this.run) return this.enterRoom(this.run.roomIndex);
+      if (this.lastRun) return this.retryExpedition();
+      if (this.levelIndex < 0) return this.showHome();
       this.lives = this.lives <= 0 ? 5 : this.lives;
       this.start(this.levelIndex,{timed:this.runMode==='timed'});
     }
@@ -230,7 +300,11 @@
         hp: options.hp ?? 3
       };
       this.replan();
-      this.progress.expeditions.runs++;
+      this.session = 'expedition';
+      this.lastRun = null;
+      // Reprendre une nuit enregistrée n'est pas une nouvelle tentative : c'est
+      // la même, poursuivie. Seul un vrai départ compte.
+      if (!options.resumed) this.progress.expeditions.runs++;
       this.saveProgress();
       this.audio.unlock(); this.audio.resume();
       this.enterRoom(this.run.roomIndex);
@@ -243,7 +317,11 @@
     }
     /** Charge une salle. L'index est toujours celui du plan courant. */
     enterRoom(index) {
-      const room = this.run.plan.rooms[index];
+      const rooms = this.run.plan.rooms;
+      // Sortir par le haut du plan est une VICTOIRE ; y entrer par un indice
+      // aberrant venu d'une sauvegarde ne l'est pas. On ne confond pas les deux.
+      if (index < 0 || index > rooms.length) { this.notify('Cette nuit n’a pas pu être reprise : elle repart du début.'); index = 0; }
+      const room = rooms[index];
       if (!room) return this.finishExpedition(true);
       this.run.roomIndex = index;
       this.lives = this.run.lives;
@@ -279,6 +357,7 @@
         return null;
       }
       return this.startExpedition(saved.seed, {
+        resumed: true,
         choices: saved.route, roomIndex: saved.roomIndex,
         upgrades: saved.upgrades, claimed: saved.claimed,
         lives: saved.lives, hp: saved.hp
@@ -333,10 +412,26 @@
       this.mode = won ? 'expedition-done' : 'gameover';
       this.emit('expedition-end', { run, won });
       this.emit('mode', this.mode);
+      // La nuit est close, mais sa graine reste : on peut la recommencer telle
+      // quelle, ou en demander une autre. C'est une décision, pas un hasard.
+      this.lastRun = { seed: run.seed, code: run.code, won };
       this.run = null;
+      this.session = 'home';
+    }
+    /** Quitte une nuit en cours sans la conclure : elle n'a pas eu lieu, et
+     *  rien de ce qu'elle portait ne doit survivre dans un chapitre. */
+    leaveExpedition() {
+      if (this.session === 'expedition' && this.run) this.emit('expedition-end', { run: this.run, won: false, left: true });
+      this.run = null;
+      if (this.session === 'expedition') this.session = 'home';
+    }
+    /** Recommence la dernière nuit, avec sa graine, depuis sa première salle. */
+    retryExpedition() {
+      if (!this.lastRun) return null;
+      return this.startExpedition(this.lastRun.seed);
     }
     /** Applique les souvenirs portés. Appelé par la simulation, jamais par l'UI. */
-    hasUpgrade(id) { return !!this.run && this.run.upgrades.includes(id); }
+    hasUpgrade(id) { return this.session === 'expedition' && !!this.run && this.run.upgrades.includes(id); }
     pause() {
       if (this.mode !== 'playing') return;
       this.mode = 'paused'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
@@ -345,7 +440,13 @@
       if (this.mode !== 'paused') return;
       this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
     }
-    showMap() { this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode); }
+    /** L'atlas est un lieu de campagne : y aller, c'est abandonner la nuit en
+     *  cours. La transition est explicite ici plutôt que devinée plus tard. */
+    showMap() {
+      this.leaveExpedition();
+      if (this.session === 'expedition') this.session = 'home';
+      this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
+    }
     beginLoop() { if (this.running) return; this.running = true; requestAnimationFrame(t => this.frame(t)); }
     frame(timestamp) {
       if (!this.running) return;
@@ -397,7 +498,7 @@
       this.updateDanger(dt);
       if (this.exit.open && overlap(this.player, this.exit)) {
         if (this.level.hub) { this.player.vx = 0; this.emit('portal', this.exit.leadsTo || 'map'); }
-        else if (this.run) this.completeRoom();
+        else if (this.session === 'expedition' && this.run) this.completeRoom();
         else this.complete();
       }
       const visibleWidth = this.renderer.worldWidth || WIDTH;
@@ -644,18 +745,37 @@
       }
       // La créature endormie a sa propre réaction : l'onde la lève en douceur
       // au lieu de la faire charger. Elle devient une marche, pas une menace.
+      // L'apaisement a UN SEUL propriétaire : cette boucle. Elle tourne à chaque
+      // image, quelle que soit la distance à Nilo, et le minuteur générique des
+      // créatures (`timer`) n'a plus rien à dire dessus — c'est exactement ce
+      // qui faisait retomber un dormeur au sommeil au bout d'une image.
       for (const enemy of this.enemies) {
         if (!enemy.alive || enemy.type !== 'sleeper') continue;
         if (enemy.calmTime > 0) {
           enemy.calmTime -= dt;
-          if (enemy.calmTime <= 0) { enemy.state = 'sleep'; enemy.chargeProgress = 0; }
+          // Le réveil s'annonce avant d'arriver : la posture change, un son
+          // discret part, et rien n'attaque tant que le répit n'est pas écoulé.
+          const warning = enemy.calmTime <= CALM_WARNING;
+          if (warning && !enemy.rousing) this.audio.sfx('powerWarning');
+          enemy.rousing = warning;
+          if (enemy.calmTime <= 0) {
+            enemy.calmTime = 0; enemy.rousing = false;
+            enemy.state = 'sleep'; enemy.chargeProgress = 0;
+            // Le répit : elle se rendort, elle ne charge pas dans la seconde.
+            enemy.rouseGrace = CALM_GRACE;
+            this.burst(enemy.x + enemy.w / 2, enemy.y + 4, 8, '#cddcc4', 70, 'dust');
+          }
         }
         for (const wave of this.waves) {
           const key = 'enemy:' + (enemy.spawnX + ':' + enemy.spawnY);
           if (wave.touched.has(key)) continue;
           if (R.distance(wave.x, wave.y, enemy.x + enemy.w / 2, enemy.y) > wave.radius) continue;
           wave.touched.add(key);
-          enemy.calmTime = 8; enemy.state = 'calm'; enemy.chargeProgress = 0; enemy.vx = 0;
+          // Prolonger, jamais raccourcir : une onde reçue à sept secondes de
+          // répit ne doit pas ramener le compte à huit en le rabaissant.
+          enemy.calmTime = Math.max(enemy.calmTime, CALM_TIME);
+          enemy.state = 'calm'; enemy.chargeProgress = 0; enemy.vx = 0;
+          enemy.rousing = false; enemy.rouseGrace = 0;
           this.audio.sfx('wakeCalm');
           this.burst(enemy.x + enemy.w / 2, enemy.y, 16, '#dbeccd', 130, 'spark');
         }
@@ -687,9 +807,16 @@
         } else if (e.type === 'sleeper') {
           // Tension by proximity: linger next to it and the mound wakes and charges.
           const near=Math.abs(distance)<180&&Math.abs((p.y+p.h)-(e.y+e.h))<140;
-          if (e.state==='sleep') {
+          if (e.state==='calm') {
+            // Apaisée : elle ne charge pas, elle ne dérive pas, et sa durée
+            // appartient à `updateResonance`. Rien ici ne doit l'abréger.
+            e.vx=approach(e.vx,0,dt*400); e.chargeProgress=0;
+          } else if (e.state==='sleep') {
             e.vx=0;
-            e.chargeProgress=clamp(e.chargeProgress+(near?dt/1.25:-dt*.9),0,1);
+            // Le répit qui suit un apaisement : elle se rendort vraiment avant
+            // de pouvoir se fâcher de nouveau.
+            if (e.rouseGrace>0) { e.rouseGrace-=dt; e.chargeProgress=0; }
+            else e.chargeProgress=clamp(e.chargeProgress+(near?dt/1.25:-dt*.9),0,1);
             if (e.chargeProgress>=1) { e.state='wake'; e.timer=.55; e.facing=distance<0?-1:1; this.audio.sfx('sleeperWake'); this.burst(e.x+e.w/2,e.y+6,10,'#ffd9a0',110,'spark'); }
           } else if (e.state==='wake') {
             e.vx=0;
@@ -979,7 +1106,7 @@
     die() {
       if (this.mode!=='playing') return;
       this.player.dead=true;this.player.vy=-390;this.player.vx=0;this.mode='dead';this.deadTimer=.85;
-      this.lives--;this.deaths++;if(this.run)this.run.lives=this.lives;this.shake(9);this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
+      this.lives--;this.deaths++;if(this.session==='expedition'&&this.run)this.run.lives=this.lives;this.shake(9);this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
       this.emit('mode',this.mode);
     }
     respawn() {
@@ -987,7 +1114,7 @@
         this.audio.pause();
         // L'échec met fin à la NUIT, pas au profil : tout ce qui a été appris
         // et débloqué reste acquis, et l'observatoire attend toujours.
-        if (this.run) return this.finishExpedition(false);
+        if (this.session === 'expedition' && this.run) return this.finishExpedition(false);
         this.mode='gameover';this.emit('mode',this.mode);return;
       }
       const p=this.player;
@@ -1000,7 +1127,7 @@
       // joueur retrouve exactement l'énigme qu'il a échouée, pas un état à moitié.
       this.waves=[];
       for (const wakeable of this.wakeables) {wakeable.state='asleep';wakeable.remaining=0;wakeable.relayed=false;}
-      for (const enemy of this.enemies) if (enemy.type==='sleeper') {enemy.calmTime=0;enemy.state='sleep';enemy.chargeProgress=0;}
+      for (const enemy of this.enemies) if (enemy.type==='sleeper') {enemy.calmTime=0;enemy.rousing=false;enemy.rouseGrace=0;enemy.state='sleep';enemy.chargeProgress=0;}
       if (this.boss&&this.boss.activated&&this.boss.hp>0) {
         const b=this.boss;Object.assign(b,{x:b.homeX,y:470,state:'wake',timer:2,vx:0,vy:0,vulnerable:false});
       }

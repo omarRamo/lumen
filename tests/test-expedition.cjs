@@ -193,12 +193,15 @@ test('Le repli existe, il est valide, et il n’est jamais choisi sans raison', 
   // On étrangle volontairement le catalogue : plus aucune capacité disponible.
   // On part d'une bande d'entrée qu'aucun module ne peut raccorder : la chute
   // depuis 200 vers 600 dépasse le décrochement autorisé, donc rien ne convient.
-  const composition = E.composeRoom(new R.Stream('etranglement', 5), 'tension', [], [], 200);
+  const composition = E.composeRoom(new R.Stream('etranglement', 5), 'tension', 'puzzle', [], [], 200);
   assert.ok(composition.fellBack, 'Sans raccord possible, la composition doit tomber sur le repli.');
   const fallbackModule = M.MODULES.find(m => m.fallback);
   assert.equal(composition.chain[0].id, fallbackModule.id);
+  // Une nature absente de l'intention demandée est refusée, pas approximée.
+  assert.ok(E.composeRoom(new R.Stream('hors-sujet', 5), 'repos', 'guardian', [], [], 600).fellBack,
+    'Une nature étrangère à l’intention doit être refusée.');
   // Et la salle de repli est réellement jouable.
-  const room = E.buildRoom(new R.RngSet(5), composition.chain,
+  const room = E.buildRoom(new R.Stream('repli', 5), composition.chain,
     { index: 0, kind: 'platform', theme: 'meadow', name: 'Repli', subtitle: '', goal: '' });
   assert.deepEqual([...E.inspect(room)], []);
   // Le nombre de tentatives est borné : la composition ne peut pas boucler.
@@ -342,10 +345,14 @@ test('Les souvenirs ont des emplacements, des plafonds et une vraie combinaison'
   assert.ok(offered.every(u => !u.needs), 'On propose un souvenir inutilisable : ' + offered.map(u => u.id).join(','));
 });
 
-test('La corolle ne peut pas se multiplier : une fleur vivante, et pas de boucle', () => {
+test('[état forcé] La corolle ne peut pas se multiplier : une fleur vivante, et pas de boucle', () => {
+  // État forcé assumé : on plante une nuit fictive portant la corolle dans un
+  // chapitre de campagne, pour éprouver le plafond de la fleur sans avoir à
+  // gagner le souvenir. C'est l'objet du test, et il est nommé comme tel.
   const { game } = environment();
   const stage = ENV.window.LUMEN_LEVELS.findIndex(l => l.key === 'verger-qui-reve');
   game.loadLevel(stage);
+  game.session = 'expedition';
   game.run = { upgrades: ['corolle'], roomIndex: 0, choices: [], claimed: new Set(), lives: 3, hp: 3 };
   const before = game.wakeables.length;
   for (let i = 0; i < 40; i++) {

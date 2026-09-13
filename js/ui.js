@@ -40,7 +40,23 @@
       $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
       $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Repartez avec cinq vies.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
-      $('pause-screen').querySelector('[data-command="retry"]').innerHTML=over?'Rallumer une lumière <span>↻</span>':'Recommencer le chapitre <span>↻</span>';
+      // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
+      // avec sa graine, ou on en demande une autre. Deux décisions, deux boutons.
+      const lostNight=over&&game.lastRun&&!game.lastRun.won;
+      const second=$('pause-screen').querySelector('[data-command="map"],[data-command="dream"]');
+      $('pause-screen').querySelector('[data-command="retry"]').innerHTML=
+        lostNight?`Refaire cette nuit <span>↻</span>`:over?'Rallumer une lumière <span>↻</span>':'Recommencer le chapitre <span>↻</span>';
+      if(lostNight) {
+        $('pause-title').textContent='La nuit s’achève ici.';
+        $('pause-screen').querySelector('.modal-card>p').textContent=
+          `Vos découvertes restent acquises. Graine ${game.lastRun.code} — refaites-la à l’identique, ou laissez-la pour une autre.`;
+        second.dataset.command='dream';second.innerHTML='Une autre nuit <span>☾</span>';
+      } else if(game.session==='expedition'&&game.run) {
+        // Pendant une nuit, ce bouton l'abandonne. Il doit le dire.
+        second.dataset.command='map';second.innerHTML='Quitter la nuit <span>✕</span>';
+        $('pause-screen').querySelector('.modal-card>p').textContent=
+          'La nuit n’est enregistrée qu’aux refuges. La quitter ici perd le chemin parcouru depuis le dernier.';
+      } else {second.dataset.command='map';second.innerHTML='L’atlas des chapitres <span>✧</span>';}
     } else if (mode==='dream') {showScreen('dream');refreshDream();}
     else if (mode==='route') showScreen('route');
     else if (mode==='help') showScreen('help');
@@ -174,13 +190,20 @@
       if(index>=0){game.audio.unlock();transition(()=>game.start(index));}
       return;
     }
-    if(action==='dream'){game.audio.unlock();game.mode='dream';game.input.reset();showMode('dream');return;}
+    if(action==='dream'){
+      // Une seule règle décide, et c'est celle du moteur. Le menu ne peut donc
+      // pas ouvrir ce que le portail de l'observatoire garde fermé.
+      const gate=game.canEnterDreams();
+      if(!gate.allowed){toast(gate.reason);transition(()=>game.start(gate.hubIndex));return;}
+      game.audio.unlock();game.mode='dream';game.input.reset();showMode('dream');return;
+    }
     if(action==='dream-start') {
       const raw=$('seed-input').value.trim();
       transition(()=>game.startExpedition(raw||undefined));
       return;
     }
     if(action==='dream-resume'){transition(()=>{if(!game.resumeExpedition()){game.mode='dream';showMode('dream');}});return;}
+    if(action==='dream-again'){transition(()=>{if(!game.retryExpedition()){game.mode='dream';showMode('dream');}});return;}
     if(action==='route-go'){const kind=routeChoice,up=routeUpgrade;transition(()=>game.chooseRoute(kind,up));return;}
     if(action==='home'){transition(()=>game.showHome());return;}
     if(action==='map'){transition(()=>game.showMap());return;}
@@ -278,7 +301,15 @@
     if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=hint.text;}
   }
   function chapterIntro(level) {
-    clearTimeout(introTimer);$('intro-number').textContent=`CHAPITRE ${String(game.levelIndex+1).padStart(2,'0')} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}`;
+    clearTimeout(introTimer);
+    // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
+    // ni une salle de rêve, qui n'ont pas de place dans la campagne.
+    const chapters=window.LUMEN_LEVELS.filter(l=>!l.hub);
+    const rank=window.LUMEN_LEVELS.slice(0,game.levelIndex+1).filter(l=>!l.hub).length;
+    $('intro-number').textContent=level.expedition
+      ? `NUIT · SALLE ${String((game.run?game.run.roomIndex:0)+1).padStart(2,'0')} / ${String(game.run?game.run.plan.rooms.length:5).padStart(2,'0')}`
+      : level.hub ? 'L’OBSERVATOIRE'
+      : `CHAPITRE ${String(rank).padStart(2,'0')} / ${String(chapters.length).padStart(2,'0')}`;
     $('intro-name').textContent=level.name;$('intro-subtitle').textContent=level.subtitle;
     $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),2400);
     lastHint='';lastHud='';
@@ -313,8 +344,17 @@
   try {
     game=new window.LumenGame($('game'));window.lumen=game;
     game.on('command',command);game.on('mode',showMode);game.on('toast',toast);game.on('frame',updateHud);game.on('level',chapterIntro);game.on('complete',completed);game.on('damage',healthImpact);game.on('dialogue',showDialogue);game.on('quest',showQuest);
-    game.on('portal',target=>{if(target==='expedition'){game.mode='dream';game.input.reset();showMode('dream');}else transition(()=>game.showMap());});
+    game.on('portal',target=>{
+      if(target!=='expedition'){transition(()=>game.showMap());return;}
+      const gate=game.canEnterDreams();
+      if(!gate.allowed){toast(gate.reason);return;}
+      game.mode='dream';game.input.reset();showMode('dream');
+    });
     game.on('route',showRoute);
+    // Les écouteurs sont posés : ce que le moteur avait à dire pendant son
+    // initialisation (sauvegarde récupérée, stockage refusé, version future)
+    // peut maintenant être entendu.
+    game.flushNotices();
     game.on('expedition',detail=>{toast(`Salle ${detail.room.index+1} / ${detail.run.plan.rooms.length} · ${detail.room.omen.label} · graine ${detail.run.code}`);});
     game.on('expedition-end',detail=>{toast(detail.won?`Nuit menée au bout · graine ${detail.run.code}`:`La nuit s’achève ici · graine ${detail.run.code}`);if(detail.won){game.mode='dream';showMode('dream');}});
     document.addEventListener('click',event=>{

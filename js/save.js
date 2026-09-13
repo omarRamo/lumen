@@ -34,6 +34,13 @@
   ];
 
   const MEDALS = ['bronze', 'silver', 'gold'];
+  /** Les bornes du monde réel, lues au moment de valider — les modules qui les
+   *  définissent sont chargés après celui-ci. Sans ces bornes, une sauvegarde
+   *  trafiquée entrait telle quelle dans le moteur. */
+  const roomCeiling = () => (global.LumenExpedition ? global.LumenExpedition.ROOMS_PER_RUN : 5) - 1;
+  const upgradeSlots = () => (global.LumenUpgrades ? global.LumenUpgrades.SLOTS : 2);
+  const knownUpgrade = id => !global.LumenUpgrades || !!global.LumenUpgrades.byId[id];
+  const knownKind = kind => !global.LumenModules || global.LumenModules.kinds().includes(kind);
   const isObject = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -77,11 +84,18 @@
     return {
       seed: Number(raw.seed) >>> 0,
       generationVersion: Math.max(1, Math.floor(finite(raw.generationVersion, 1))),
-      roomIndex: Math.max(0, Math.floor(finite(raw.roomIndex))),
-      route: Array.isArray(raw.route) ? raw.route.filter(step => typeof step === 'string') : [],
+      // Un indice de salle ne peut désigner qu'une salle qui existe.
+      roomIndex: clamp(Math.floor(finite(raw.roomIndex)), 0, roomCeiling()),
+      route: Array.isArray(raw.route)
+        ? raw.route.filter(step => typeof step === 'string' && knownKind(step)).slice(0, roomCeiling() + 1)
+        : [],
       hp: clamp(Math.floor(finite(raw.hp, 3)), 0, 9),
       lives: clamp(Math.floor(finite(raw.lives, 3)), 0, 9),
-      upgrades: Array.isArray(raw.upgrades) ? raw.upgrades.filter(id => typeof id === 'string').slice(0, 8) : [],
+      // Les emplacements sont une règle de jeu, pas une suggestion : une
+      // sauvegarde ne peut pas en accorder plus, ni nommer un souvenir inconnu.
+      upgrades: Array.isArray(raw.upgrades)
+        ? raw.upgrades.filter(id => typeof id === 'string' && knownUpgrade(id)).slice(0, upgradeSlots())
+        : [],
       // Les récompenses déjà encaissées : c'est ce qui empêche une reprise
       // de refuge de payer une deuxième fois le même coffre.
       claimed: Array.isArray(raw.claimed) ? raw.claimed.filter(id => typeof id === 'string').slice(0, 200) : [],
@@ -182,6 +196,13 @@
       this.available = true;
       this.migratedFrom = null;
       this.recovered = false;
+      /** Vrai quand le fichier lu vient d'une version PLUS RÉCENTE : on n'y
+       *  touche plus du tout, plutôt que de le rétrograder en silence. */
+      this.futureSchema = false;
+      this.readOnly = false;
+      /** Vrai quand la seule copie saine est le filet : le prochain
+       *  enregistrement ne doit pas le remplacer par la donnée corrompue. */
+      this.protectBackup = false;
       this.profile = this.load();
     }
 
@@ -200,10 +221,20 @@
       const current = this.read(KEY);
       if (current) {
         const parsed = this.parse(current);
-        if (parsed) return validate(parsed);
+        if (parsed) {
+          const schema = Number(parsed.schema);
+          if (Number.isFinite(schema) && schema > SCHEMA) {
+            // Une version future. La relire comme un schéma 3 la mutilerait ;
+            // l'enregistrer par-dessus la détruirait. On joue donc sur un
+            // profil neuf, en mémoire, et on n'écrit plus rien.
+            this.futureSchema = true; this.readOnly = true;
+            return emptyProfile();
+          }
+          return validate(parsed);
+        }
         // Fichier courant illisible : le filet de sécurité prend le relais.
         const backup = this.parse(this.read(BACKUP_KEY));
-        if (backup) { this.recovered = true; return validate(backup); }
+        if (backup) { this.recovered = true; this.protectBackup = true; return validate(backup); }
         return emptyProfile();
       }
       for (const legacyKey of LEGACY_KEYS) {
@@ -230,10 +261,16 @@
     save(profile = this.profile) {
       this.profile = profile;
       profile.schema = SCHEMA;
+      // Rien ne s'écrit par-dessus une sauvegarde qu'on n'a pas su lire.
+      if (this.readOnly) return false;
       const previous = this.read(KEY);
       const payload = JSON.stringify(profile);
-      if (previous && previous !== payload) this.writeRaw(BACKUP_KEY, previous);
-      return this.writeRaw(KEY, payload);
+      // Tant que le filet est la seule copie saine, on ne le remplace pas par
+      // la ruine qu'il a servi à réparer.
+      if (previous && previous !== payload && !this.protectBackup) this.writeRaw(BACKUP_KEY, previous);
+      const written = this.writeRaw(KEY, payload);
+      if (written) this.protectBackup = false;
+      return written;
     }
 
     /* ── Progression des chapitres ─────────────────────────────────────── */

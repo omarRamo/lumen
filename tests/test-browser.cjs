@@ -37,13 +37,19 @@ async function test(name, run) {
   catch (error) { console.error(browserTools.explain(error)); process.exitCode = 1; return; }
 
   /** Ouvre la page, en collectant toute erreur au passage. */
-  async function open(view = 'bureau') {
+  async function open(view = 'bureau', profile = null) {
     const { width, height, hasTouch, isMobile } = VIEWS[view];
     const context = await browser.newContext({ viewport: { width, height }, hasTouch, isMobile, deviceScaleFactor: 1 });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    // Un profil de joueur qui revient : écrit avant le premier script, comme
+    // s'il était là depuis hier. Ce n'est pas un état forcé dans le moteur,
+    // c'est une sauvegarde sur le disque — ce que le jeu doit savoir relire.
+    if (profile) await page.addInitScript(text => {
+      try { localStorage.setItem('lumen.gardens.v3', text); } catch (_) {}
+    }, JSON.stringify(profile));
     await page.goto(PAGE);
     await page.waitForFunction(() => window.lumen && window.lumen.mode === 'home', null, { timeout: 20000 });
     return { page, context, errors };
@@ -140,8 +146,35 @@ async function test(name, run) {
     await context.close();
   });
 
-  await test('Une nuit entière se joue par l’interface, et la graine la rejoue à l’identique', async () => {
+  await test('Le menu ne contourne pas la porte des rêves : une seule règle décide', async () => {
     const { page, context, errors } = await open();
+    // Profil neuf : la coupole se tait encore.
+    assert.notEqual(await page.evaluate(() => window.lumen.store.questState('premier-souffle')), 'done');
+    await page.click('[data-command="dream"]');
+    await page.waitForTimeout(900);
+    const after = await page.evaluate(() => ({
+      ecran: document.getElementById('dream-screen').classList.contains('active'),
+      session: window.lumen.session,
+      hub: !!(window.lumen.level && window.lumen.level.hub),
+      autorise: window.lumen.canEnterDreams().allowed
+    }));
+    assert.equal(after.autorise, false, 'La règle d’accès laisse passer un profil neuf.');
+    assert.equal(after.ecran, false, 'Le menu a ouvert les Rêves malgré la porte verrouillée.');
+    assert.equal(after.hub, true, 'Le menu n’a pas conduit le joueur là où la règle se satisfait.');
+    assert.equal(after.session, 'hub');
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  /** Le profil d'un joueur qui a déjà rendu son souffle à la coupole. */
+  const RETURNING = {
+    schema: 3, unlocked: ['prairies-aurore'], chapters: {},
+    hub: { quests: { 'premier-souffle': 'done' }, transformations: ['coupole-allumee'] },
+    expeditions: { runs: 0, completed: 0, bestRooms: 0 }
+  };
+
+  await test('Une nuit entière se joue par l’interface, et la graine la rejoue à l’identique', async () => {
+    const { page, context, errors } = await open('bureau', RETURNING);
     await page.click('[data-command="dream"]');
     await page.waitForSelector('#dream-screen.active', { timeout: 20000 });
     await page.fill('#seed-input', 'verger-lune-lune-0');
@@ -187,6 +220,62 @@ async function test(name, run) {
     const rejeu = await page.evaluate(() => JSON.stringify(
       window.LumenExpedition.plan('verger-lune-lune-0').rooms.map(r => r.level.platforms)));
     assert.equal(rejeu, premier.geometrie, 'La graine doit rejouer la même nuit.');
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  await test('Quitter une nuit pour la campagne, par les menus, ne contamine rien', async () => {
+    // Bout en bout, sans téléportation autre que celle déjà utilisée pour
+    // atteindre une sortie : aucune invulnérabilité, aucun ennemi supprimé,
+    // aucune sortie forcée, aucun appel direct à complete().
+    const profile = JSON.parse(JSON.stringify(RETURNING));
+    const { page, context, errors } = await open('bureau', profile);
+    await page.click('[data-command="dream"]');
+    await page.waitForSelector('#dream-screen.active', { timeout: 20000 });
+    await page.fill('#seed-input', 'brume-onde-verger-3');
+    await page.click('[data-command="dream-start"]');
+    await page.waitForFunction(() => window.lumen.run && window.lumen.mode === 'playing', null, { timeout: 30000 });
+    // Le joueur ramasse un souvenir en chemin, puis change d'avis et rentre.
+    await page.evaluate(() => { window.lumen.run.upgrades = ['corolle']; });
+    await page.click('#game', { position: { x: 20, y: 20 } });
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('#pause-screen.active', { timeout: 15000 });
+    await page.click('#pause-screen [data-command="map"]');
+    await page.waitForFunction(() => window.lumen.mode === 'map', null, { timeout: 20000 });
+    const quitte = await page.evaluate(() => ({ session: window.lumen.session, run: !!window.lumen.run }));
+    assert.equal(quitte.run, false, 'Une nuit reste ouverte après un retour à l’atlas.');
+    assert.notEqual(quitte.session, 'expedition');
+
+    // Puis il joue un chapitre, jusqu'à la sortie. (Le petit délai laisse se
+    // terminer le fondu : un clic pendant la transition est ignoré — c'est
+    // consigné au backlog, ce n'est pas ce que ce test mesure.)
+    await page.waitForTimeout(800);
+    await page.click('[data-level="0"]');
+    await page.waitForFunction(() => window.lumen.mode === 'playing' && window.lumen.levelIndex === 0, null, { timeout: 25000 });
+    const enCampagne = await page.evaluate(() => ({
+      session: window.lumen.session,
+      corolle: window.lumen.hasUpgrade('corolle'),
+      chapitre: document.getElementById('intro-number').textContent
+    }));
+    assert.equal(enCampagne.session, 'campaign');
+    assert.equal(enCampagne.corolle, false, 'Un souvenir de rêve agit encore dans un chapitre.');
+    assert.ok(!/00/.test(enCampagne.chapitre), 'Le bandeau annonce un « chapitre 00 » : ' + enCampagne.chapitre);
+
+    // On rejoint la sortie du chapitre, ouverte par le jeu lui-même.
+    await page.evaluate(async () => {
+      const g = window.lumen;
+      for (const star of g.collectibles.filter(c => c.type === 'star')) star.taken = true;
+      g.player.x = g.exit.x + 5; g.player.y = g.exit.y + 40;
+    });
+    await page.waitForFunction(() => ['complete', 'ending'].includes(window.lumen.mode), null, { timeout: 25000 });
+    const fin = await page.evaluate(() => ({
+      mode: window.lumen.mode,
+      route: document.getElementById('route-screen').classList.contains('active'),
+      session: window.lumen.session
+    }));
+    assert.equal(fin.route, false, 'Un chapitre a ouvert l’écran de route d’une expédition.');
+    assert.equal(fin.session, 'campaign');
     assert.deepEqual(errors, []);
     await context.close();
   });

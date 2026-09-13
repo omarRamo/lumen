@@ -59,6 +59,24 @@ nature avant d'être touché ; chaque réveil clignote avant de s'éteindre ; et
 **ré-émettre prolonge**, ce qui garantit qu'un effet expiré ne piège jamais
 personne — on peut rallumer un pont sous ses propres pieds.
 
+### La créature apaisée
+
+Trois durées, nommées dans `engine.js`, et qui sont une promesse faite au
+joueur au moment où il appelle :
+
+| | |
+| --- | --- |
+| `CALM_TIME` | **8 s** d'apaisement, quoi qu'il arrive |
+| `CALM_WARNING` | **1,5 s** avant la fin, la créature se regonfle en pulsant |
+| `CALM_GRACE` | **1,5 s** de répit après le réveil, avant qu'elle puisse charger |
+
+Apaisée, elle s'aplatit et un liseré clair souligne son dos : la marche est
+**dessinée**, pas devinée, et l'avertissement de fin est une **forme** — donc
+lisible sans son et sans distinction de couleur. Une nouvelle onde prolonge
+sans jamais raccourcir. Ces durées n'appartiennent qu'à `updateResonance` ;
+aucun autre minuteur du moteur ne peut les abréger, ce que `tests/test-p0.cjs`
+vérifie avec des minuteurs internes valant `0,9`, `0`, `−5` et `−120`.
+
 ### Les pouvoirs amplifient, ils ne remplacent pas
 
 Le bouton action reste le même, quoi que vous portiez. Les pouvoirs historiques
@@ -112,6 +130,30 @@ chaque ramassage est un choix, et deux d'entre eux forment une combinaison
 Le seul lieu où l'on ne peut pas mourir. Vesper y tient le carnet, Ombeline y
 garde la porte des rêves. Une quête courte — réveiller les trois carillons de
 la coupole — ouvre cette porte, et **allume la coupole pour de bon**.
+
+Cette quête est **la seule règle d'accès aux Rêves nomades** : le portail de
+l'observatoire et l'entrée du menu consultent tous deux `canEnterDreams()`. Le
+menu ne peut donc pas ouvrir ce que la porte garde fermé ; quand il refuse, il
+dit pourquoi et conduit le joueur à l'observatoire. Une porte franchie le reste
+: `restoreWorldState()` rouvre à chaque chargement ce qu'une quête achevée
+avait ouvert, sans qu'aucun carillon ait à être réveillé de nouveau.
+
+### Où l'on se trouve : `game.session`
+
+La session est un **état déclaré**, pas une déduction :
+
+| `session` | Ce que cela veut dire |
+| --- | --- |
+| `home` | l'accueil, ou rien en cours |
+| `campaign` | un chapitre de campagne |
+| `hub` | l'observatoire |
+| `expedition` | une nuit en cours |
+
+Les transitions sont explicites : `start()` et `showMap()` quittent une nuit,
+`leaveExpedition()` l'abandonne, `retryExpedition()` la recommence avec sa
+graine, et `startExpedition({ resumed: true })` ne compte pas une tentative de
+plus. C'est ce qui garantit qu'une nuit ne gouverne jamais un chapitre — ni sa
+mort, ni son réessai, ni sa sortie, ni les souvenirs portés.
 
 ---
 
@@ -195,9 +237,33 @@ Chaque garantie ci-dessous correspond à un contrôle nommé dans
   existe — une génération ne peut pas échouer à produire une salle jouable ;
 - **chaque branche de la carte est annoncée** avant qu'on s'y engage.
 
+### Une branche est une décision, pas une étiquette
+
+Quatre garanties supplémentaires, vérifiées par `tests/test-p0.cjs` sur un
+corpus de 120 graines (600 salles, 360 choix) :
+
+- **deux alternatives produisent deux salles réellement différentes** — pas
+  seulement deux libellés ;
+- **la nature annoncée est la nature jouée** : le module final de la chaîne
+  *définit* la salle, et c'est lui que la carte nomme ;
+- **une alternative proposée est toujours réalisable** : chaque nature possible
+  est assemblée pour de bon, dans son propre sous-flux, avant d'être offerte.
+  Ce qui ne s'assemble pas n'apparaît pas ;
+- **l'intention de rythme reste une contrainte distincte du type choisi** :
+  choisir « un chemin » dans une salle de tension n'ouvre pas le catalogue de
+  découverte.
+
+La géométrie d'une salle ne dépend que de `(graine, indice, nature)`.
+L'invariant « un choix tardif ne récrit pas une salle déjà traversée » n'est
+donc pas seulement testé : il est structurel.
+
 Le directeur de rythme suit une intention par salle — découverte, tension,
 repos, tension, final — et ne choisit, dans chaque cas, que parmi des natures
 prévalidées, en évitant ce qui vient d'être vu.
+
+Mesure sur 400 graines (2 000 salles) : **aucun repli**, et **1 200 salles
+offrant deux alternatives** — soit toutes celles qui ne sont ni un refuge ni
+l'arène du gardien.
 
 ---
 
@@ -233,6 +299,8 @@ rien ; ce qui suit ne sert qu'au développement.
 ```bash
 node tools/build.cjs          # régénère LUMEN.html (aucun paquet requis)
 
+node tests/test-p0.cjs            # 28 promesses du jalon A (branches, apaisement,
+                                  #   restauration du monde, sessions, sauvegarde)
 node tests/test-engine.cjs        # 49 contrôles de physique et de progression
 node tests/test-renderer.cjs      #  9 contrôles de dessin
 node tests/test-expedition.cjs    # 15 invariants de génération, dont 1000 graines
@@ -240,9 +308,9 @@ node tests/playthrough.cjs        #  6 parcours joués avec de vraies entrées
 
 npm install                   # uniquement pour les tests navigateur
 npx playwright install chromium
-npm run test:browser          #  8 contrôles dans un vrai navigateur, en file://
+npm run test:browser          # 10 contrôles dans un vrai navigateur, en file://
 
-npm test                      # les quatre suites Node
+npm test                      # les cinq suites Node
 npm run verify                # build + tests Node + navigateur
 ```
 
@@ -256,11 +324,12 @@ Linux :
 
 | Suite | Résultat |
 | --- | --- |
+| `test-p0.cjs` | 28 / 28 (3 / 28 avant le jalon A — voir `docs/jalon-a-reference.json`) |
 | `test-engine.cjs` | 49 / 49 |
 | `test-renderer.cjs` | 9 / 9 |
 | `test-expedition.cjs` | 15 / 15, dont 1 012 graines sans une seule salle fautive |
 | `playthrough.cjs` | 6 parcours terminés, dont « Le verger qui rêve » en 13,4 s |
-| `test-browser.cjs` | 8 / 8, zéro erreur de console |
+| `test-browser.cjs` | 10 / 10, zéro erreur de console |
 
 Quelques mesures que ces suites produisent, et qui disent quelque chose :
 
@@ -270,7 +339,10 @@ Quelques mesures que ces suites produisent, et qui disent quelque chose :
   souvenirs dans la limite des deux emplacements, refuge enregistré, gardien
   atteint ;
 - le plus grand trou franchi en courant par la vraie physique est de **250 px**,
-  et le générateur n'en produit jamais de plus larges sans pont.
+  et le générateur n'en produit jamais de plus larges sans pont ;
+- une nuit est **quittée par les menus** puis un chapitre est **joué jusqu'à sa
+  sortie**, sans qu'aucun souvenir de rêve n'agisse et sans qu'aucun écran de
+  route ne s'ouvre.
 
 ### Limites, et ce qui n'est pas testé
 
@@ -284,15 +356,21 @@ Dit sans emballage, parce que c'est ce qui compte :
   suffisant ;
 - **la cadence n'est pas mesurée sur un vrai appareil.** Le chiffre relevé par
   `npm run test:browser` vient d'un Chromium logiciel en conteneur partagé, où
-  le même code a donné 13 i/s sous charge et 39 à 60 i/s au repos. Il ne sert
-  qu'à repérer un effondrement entre deux exécutions ;
+  le même code a donné 23 i/s puis 38 i/s à quelques minutes d'intervalle. Il
+  ne sert qu'à repérer un effondrement entre deux exécutions, et ne valide
+  aucune cible de performance ;
 - **l'audio n'a aucun test.** Il est simulé partout ;
 - **le rendu est testé contre un canevas factice** : cela prouve qu'aucune
   routine ne manque et qu'aucun NaN ne passe, pas que l'image est juste ;
 - **les 1 000 graines contrôlent des invariants géométriques, pas le plaisir.**
   Une nuit peut être parfaitement valide et parfaitement ennuyeuse.
 
+- **la nouvelle posture de la créature apaisée n'a été vue par personne** : le
+  test de rendu prouve qu'elle se dessine sans erreur, pas qu'elle se lit.
+
 `BACKLOG.md` détaille ce qui reste à faire, et rien de ce qui est déjà fait.
+`docs/audit-iteration-04.md` dit, constat par constat, ce qui a été confirmé et
+ce qui a été **réfuté** — deux constats du cahier des charges l'ont été.
 
 ---
 

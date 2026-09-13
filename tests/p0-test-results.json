@@ -1,0 +1,119 @@
+{
+  "ranAt": "2026-09-13T20:54:09.256Z",
+  "total": 28,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Deux alternatives proposées produisent deux salles réellement différentes",
+      "passed": true
+    },
+    {
+      "name": "La nature annoncée sur la carte est la nature réellement jouée",
+      "passed": true
+    },
+    {
+      "name": "Une alternative proposée est toujours réalisable : la carte ne propose pas l’impossible",
+      "passed": true
+    },
+    {
+      "name": "L’intention de rythme reste une contrainte distincte du type choisi",
+      "passed": true
+    },
+    {
+      "name": "Un choix ne modifie jamais une salle déjà traversée",
+      "passed": true
+    },
+    {
+      "name": "Un dormeur apaisé le reste huit secondes, quel que soit son minuteur interne",
+      "passed": true
+    },
+    {
+      "name": "Une nouvelle onde prolonge l’apaisement au lieu de le redémarrer à zéro",
+      "passed": true
+    },
+    {
+      "name": "Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Nilo",
+      "passed": true
+    },
+    {
+      "name": "Un dormeur apaisé porte Nilo : on peut se tenir sur son dos",
+      "passed": true
+    },
+    {
+      "name": "La fin de l’apaisement est annoncée, puis rendue sans attaque instantanée",
+      "passed": true
+    },
+    {
+      "name": "Un retour au checkpoint remet le dormeur dans un état cohérent",
+      "passed": true
+    },
+    {
+      "name": "Une quête terminée rouvre la porte au simple retour dans le lieu",
+      "passed": true
+    },
+    {
+      "name": "Une quête terminée survit à un rechargement complet de la page",
+      "passed": true
+    },
+    {
+      "name": "Les dialogues suivent l’état relu de la quête, pas un compteur de session",
+      "passed": true
+    },
+    {
+      "name": "Une seule règle décide de l’accès aux Rêves : le menu ne la contourne pas",
+      "passed": true
+    },
+    {
+      "name": "La session de jeu est un état nommé, pas une déduction sur this.run",
+      "passed": true
+    },
+    {
+      "name": "Terminer un chapitre après une nuit n’appelle jamais completeRoom()",
+      "passed": true
+    },
+    {
+      "name": "Mourir dans un chapitre ne met pas fin à une nuit",
+      "passed": true
+    },
+    {
+      "name": "Un réessai après une nuit perdue ne tente pas de charger le chapitre −1",
+      "passed": true
+    },
+    {
+      "name": "Une nuit perdue se recommence avec la même graine, ou avec une autre",
+      "passed": true
+    },
+    {
+      "name": "Reprendre une nuit sauvegardée ne compte pas une nouvelle tentative",
+      "passed": true
+    },
+    {
+      "name": "Quitter une nuit pour la campagne n’y laisse aucun souvenir de rêve",
+      "passed": true
+    },
+    {
+      "name": "Une donnée corrompue n’écrase pas la copie de secours valide",
+      "passed": true
+    },
+    {
+      "name": "Un profil écrit par une version future n’est pas réinterprété ni écrasé",
+      "passed": true
+    },
+    {
+      "name": "Un indice de salle hors du plan ne conclut pas une nuit toute seule",
+      "passed": true
+    },
+    {
+      "name": "Le nombre d’emplacements de souvenirs est respecté après chargement",
+      "passed": true
+    },
+    {
+      "name": "Une récompense déjà encaissée ne l’est pas deux fois après une reprise",
+      "passed": true
+    },
+    {
+      "name": "Un stockage refusé est signalé une fois l’interface prête, pas avant",
+      "passed": true
+    }
+  ]
+}

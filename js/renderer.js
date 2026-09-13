@@ -703,9 +703,23 @@
         // this silhouette, so its posture alone tells you whether it is awake.
         const charge = Math.min(1, e.chargeProgress || 0);
         const awake = e.state === 'wake' || e.state === 'charge';
+        // Apaisée, la créature s'aplatit et s'ouvre : le dos devient une marche
+        // franche, et cette silhouette ne ressemble à aucune autre. Quand le
+        // répit touche à sa fin, elle se regonfle en pulsant — l'avertissement
+        // est une FORME, lisible sans son et sans distinction de couleur.
+        const calm = e.state === 'calm';
+        const rousing = calm && e.rousing;
+        const pulse = rousing ? (Math.sin(t * 11) * .5 + .5) : 0;
         const lean = e.state === 'charge' ? facing * .16 : 0;
-        const breath = e.state === 'sleep' ? Math.sin(phase * .5) * 1.6 : 0;
+        const breath = e.state === 'sleep' ? Math.sin(phase * .5) * 1.6
+          : calm ? -3 + pulse * 3.5 : 0;
         c.rotate(lean);
+        if (calm) {
+          // Un liseré clair sur le dos : la marche est dessinée, pas devinée.
+          c.save(); c.globalAlpha = .5 + pulse * .4;
+          line(c, [[-w * .5 + 2, -h + 2 - breath], [w * .5 - 2, -h + 2 - breath]], '#eaf6de', 3);
+          c.restore();
+        }
         if (charge > 0 && !awake) { c.save(); c.globalAlpha = .1 + charge * .3; ellipse(c, 0, -14, 30 + charge * 8, 24 + charge * 6, '#ffca88'); c.restore(); }
         // Four stubby root-legs, tucked while asleep and splayed while charging.
         for (const side of [-1, 1]) for (const offset of [7, 15]) {

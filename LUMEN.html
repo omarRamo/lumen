@@ -372,7 +372,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
   /** Incrémenter à chaque changement qui modifie les tirages de gameplay.
    *  Une graine n'est reproductible qu'à version de génération identique ;
    *  la sauvegarde conserve la version avec la graine. */
-  const GENERATION_VERSION = 1;
+  const GENERATION_VERSION = 2;
 
   /** Les seuls flux existants. Un flux inconnu est une erreur, pas un silence :
    *  un nom mal orthographié créerait un flux fantôme et casserait la
@@ -785,6 +785,13 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
   ];
 
   const MEDALS = ['bronze', 'silver', 'gold'];
+  /** Les bornes du monde réel, lues au moment de valider — les modules qui les
+   *  définissent sont chargés après celui-ci. Sans ces bornes, une sauvegarde
+   *  trafiquée entrait telle quelle dans le moteur. */
+  const roomCeiling = () => (global.LumenExpedition ? global.LumenExpedition.ROOMS_PER_RUN : 5) - 1;
+  const upgradeSlots = () => (global.LumenUpgrades ? global.LumenUpgrades.SLOTS : 2);
+  const knownUpgrade = id => !global.LumenUpgrades || !!global.LumenUpgrades.byId[id];
+  const knownKind = kind => !global.LumenModules || global.LumenModules.kinds().includes(kind);
   const isObject = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -828,11 +835,18 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
     return {
       seed: Number(raw.seed) >>> 0,
       generationVersion: Math.max(1, Math.floor(finite(raw.generationVersion, 1))),
-      roomIndex: Math.max(0, Math.floor(finite(raw.roomIndex))),
-      route: Array.isArray(raw.route) ? raw.route.filter(step => typeof step === 'string') : [],
+      // Un indice de salle ne peut désigner qu'une salle qui existe.
+      roomIndex: clamp(Math.floor(finite(raw.roomIndex)), 0, roomCeiling()),
+      route: Array.isArray(raw.route)
+        ? raw.route.filter(step => typeof step === 'string' && knownKind(step)).slice(0, roomCeiling() + 1)
+        : [],
       hp: clamp(Math.floor(finite(raw.hp, 3)), 0, 9),
       lives: clamp(Math.floor(finite(raw.lives, 3)), 0, 9),
-      upgrades: Array.isArray(raw.upgrades) ? raw.upgrades.filter(id => typeof id === 'string').slice(0, 8) : [],
+      // Les emplacements sont une règle de jeu, pas une suggestion : une
+      // sauvegarde ne peut pas en accorder plus, ni nommer un souvenir inconnu.
+      upgrades: Array.isArray(raw.upgrades)
+        ? raw.upgrades.filter(id => typeof id === 'string' && knownUpgrade(id)).slice(0, upgradeSlots())
+        : [],
       // Les récompenses déjà encaissées : c'est ce qui empêche une reprise
       // de refuge de payer une deuxième fois le même coffre.
       claimed: Array.isArray(raw.claimed) ? raw.claimed.filter(id => typeof id === 'string').slice(0, 200) : [],
@@ -933,6 +947,13 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       this.available = true;
       this.migratedFrom = null;
       this.recovered = false;
+      /** Vrai quand le fichier lu vient d'une version PLUS RÉCENTE : on n'y
+       *  touche plus du tout, plutôt que de le rétrograder en silence. */
+      this.futureSchema = false;
+      this.readOnly = false;
+      /** Vrai quand la seule copie saine est le filet : le prochain
+       *  enregistrement ne doit pas le remplacer par la donnée corrompue. */
+      this.protectBackup = false;
       this.profile = this.load();
     }
 
@@ -951,10 +972,20 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       const current = this.read(KEY);
       if (current) {
         const parsed = this.parse(current);
-        if (parsed) return validate(parsed);
+        if (parsed) {
+          const schema = Number(parsed.schema);
+          if (Number.isFinite(schema) && schema > SCHEMA) {
+            // Une version future. La relire comme un schéma 3 la mutilerait ;
+            // l'enregistrer par-dessus la détruirait. On joue donc sur un
+            // profil neuf, en mémoire, et on n'écrit plus rien.
+            this.futureSchema = true; this.readOnly = true;
+            return emptyProfile();
+          }
+          return validate(parsed);
+        }
         // Fichier courant illisible : le filet de sécurité prend le relais.
         const backup = this.parse(this.read(BACKUP_KEY));
-        if (backup) { this.recovered = true; return validate(backup); }
+        if (backup) { this.recovered = true; this.protectBackup = true; return validate(backup); }
         return emptyProfile();
       }
       for (const legacyKey of LEGACY_KEYS) {
@@ -981,10 +1012,16 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
     save(profile = this.profile) {
       this.profile = profile;
       profile.schema = SCHEMA;
+      // Rien ne s'écrit par-dessus une sauvegarde qu'on n'a pas su lire.
+      if (this.readOnly) return false;
       const previous = this.read(KEY);
       const payload = JSON.stringify(profile);
-      if (previous && previous !== payload) this.writeRaw(BACKUP_KEY, previous);
-      return this.writeRaw(KEY, payload);
+      // Tant que le filet est la seule copie saine, on ne le remplace pas par
+      // la ruine qu'il a servi à réparer.
+      if (previous && previous !== payload && !this.protectBackup) this.writeRaw(BACKUP_KEY, previous);
+      const written = this.writeRaw(KEY, payload);
+      if (written) this.protectBackup = false;
+      return written;
     }
 
     /* ── Progression des chapitres ─────────────────────────────────────── */
@@ -1394,57 +1431,77 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
 
   /* ── Assemblage d'une salle ──────────────────────────────────────────── */
 
-  /** Choisit une suite de modules formant une salle jouable, ou retourne le
-   *  repli. `capabilities` est la liste des capacités acquises à cet instant. */
-  function composeRoom(rng, intent, capabilities, recentIds, entryBand) {
+  /** Le module qui DONNE son nom à la salle est le dernier de la chaîne : c'est
+   *  lui que la carte annonce, lui que le joueur choisit, et lui qu'il joue en
+   *  dernier — l'ordre dans lequel on se souvient d'une pièce.
+   *
+   *  Deux contraintes distinctes s'appliquent, et il faut les garder séparées :
+   *
+   *   - l'INTENTION de rythme (`intent`) borne tout ce que la salle peut
+   *     contenir : une salle de tension ne peut pas se remplir de modules de
+   *     découverte, quel que soit le choix du joueur ;
+   *   - le TYPE choisi (`kind`) impose la nature du module final.
+   *
+   *  Si aucune chaîne ne satisfait les deux, la fonction le dit (`fellBack`)
+   *  au lieu de livrer autre chose sous le nom demandé. C'est ce qui permet à
+   *  `plan()` de ne proposer que des alternatives réalisables.
+   *
+   *  @param rng          un flux dédié à cette salle ; il n'est partagé avec
+   *                      aucune autre, de sorte qu'un choix fait ici ne peut
+   *                      pas déplacer la géométrie d'une salle voisine.
+   */
+  function composeRoom(rng, intent, kind, capabilities, recentIds, entryBand) {
     const M = global.LumenModules;
     const allowed = KINDS_FOR[intent] || KINDS_FOR.decouverte;
-    const pool = M.MODULES.filter(m => !m.fallback && allowed.includes(m.kind));
     const fallback = M.MODULES.find(m => m.fallback);
+    const failure = { chain: [fallback], fellBack: true };
+    if (!allowed.includes(kind)) return failure;
+
+    const usable = M.MODULES.filter(m => !m.fallback && allowed.includes(m.kind));
+    const finals = usable.filter(m => m.kind === kind);
+    if (!finals.length) return failure;
     // Une salle de gardien ou de refuge tient en un seul module : elle a sa
     // propre unité et on ne la dilue pas.
     const pieces = intent === 'final' || intent === 'repos' ? 1 : 2;
+    // On préfère ce qui n'a pas été vu récemment, sans jamais l'interdire :
+    // une préférence molle évite les répétitions sans réduire la variété.
+    const fresher = list => rng.shuffle(list).sort((a, b) =>
+      (recentIds.includes(a.id) ? 1 : 0) - (recentIds.includes(b.id) ? 1 : 0));
+    const edge = { exit: entryBand, tags: [], forbidWith: [] };
+
+    if (pieces === 1) {
+      for (const candidate of fresher(finals)) {
+        if (M.canFollow(edge, candidate, capabilities)) return { chain: [candidate], fellBack: false };
+      }
+      return failure;
+    }
 
     let attempts = 0;
-    outer:
-    for (let tryIndex = 0; tryIndex < 6; tryIndex++) {
-      const chain = [];
-      let band = entryBand;
-      for (let slot = 0; slot < pieces; slot++) {
-        // On préfère ce qui n'a pas été vu récemment, sans jamais l'interdire :
-        // une préférence molle évite les répétitions sans réduire la variété.
-        const candidates = rng.shuffle(pool).sort((a, b) => {
-          const seenA = recentIds.includes(a.id) ? 1 : 0, seenB = recentIds.includes(b.id) ? 1 : 0;
-          return seenA - seenB;
-        });
-        let chosen = null;
-        for (const candidate of candidates) {
-          attempts++;
-          if (attempts > MAX_ATTEMPTS) break outer;
-          const previous = chain.length ? chain[chain.length - 1] : { exit: band, tags: [], forbidWith: [] };
-          if (!M.canFollow(previous, candidate, capabilities)) continue;
-          if (chain.some(m => m.id === candidate.id)) continue;
-          chosen = candidate; break;
-        }
-        if (!chosen) continue outer;
-        chain.push(chosen);
-        band = chosen.exit;
+    for (const opener of fresher(usable)) {
+      if (++attempts > MAX_ATTEMPTS) break;
+      if (!M.canFollow(edge, opener, capabilities)) continue;
+      for (const closer of fresher(finals)) {
+        if (++attempts > MAX_ATTEMPTS) break;
+        if (closer.id === opener.id) continue;
+        if (!M.canFollow(opener, closer, capabilities)) continue;
+        return { chain: [opener, closer], fellBack: false };
       }
-      if (chain.length === pieces) return { chain, fellBack: false };
     }
     // Rien n'a convenu : le couloir de repli est toujours valide. La nuit
-    // sera plus sage que prévu, mais elle restera jouable.
-    return { chain: [fallback], fellBack: true };
+    // sera plus sage que prévu, mais elle restera jouable — et elle ne
+    // s'annoncera pas sous un nom qu'elle ne tient pas.
+    return failure;
   }
 
-  /** Transforme une suite de modules en une définition de niveau complète. */
+  /** Transforme une suite de modules en une définition de niveau complète.
+   *  @param rng un flux de DISPOSITION propre à cette salle. */
   function buildRoom(rng, chain, meta) {
     const geometry = { platforms: [], enemies: [], collectibles: [], wakeables: [], hazards: [] };
     let x = 200; // une marge de départ, pour voir arriver la première salle
     for (const module of chain) {
       // Chaque module reçoit son propre sous-flux : ajouter un module plus loin
       // dans la chaîne ne décale donc pas ce qui a déjà été posé avant lui.
-      const piece = module.build(x, rng.layout.fork(module.id + ':' + x));
+      const piece = module.build(x, rng.fork(module.id + ':' + x));
       for (const field of Object.keys(geometry)) geometry[field].push(...(piece[field] || []));
       x += module.width;
     }
@@ -1549,30 +1606,37 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
 
     for (let index = 0; index < ROOMS_PER_RUN; index++) {
       const intent = PACING[index];
-      // Les deux routes offertes à l'entrée de la salle. Le choix du joueur
-      // est une donnée d'entrée du plan, pas un tirage : c'est ce qui rend
-      // « même graine + mêmes choix » reproductible.
-      const branches = intent === 'final' || intent === 'repos'
-        ? [intent]
-        : rng.layout.shuffle(KINDS_FOR[intent]).slice(0, 2);
-      const picked = branches.length > 1
-        ? (branches.includes(choices[index]) ? choices[index] : branches[0])
-        : branches[0];
-      const wanted = intent === 'final' || intent === 'repos' ? intent : picked;
-
-      const composition = composeRoom(
-        rng.layout, intent === 'final' || intent === 'repos' ? intent : intentForKind(wanted),
-        capabilities, recent, band
-      );
+      // Chaque nature possible à cette étape du rythme est ESSAYÉE pour de bon,
+      // dans son propre sous-flux. Ce qui ne s'assemble pas n'est pas proposé :
+      // la carte ne montre jamais une porte qui n'existe pas derrière.
+      const options = new Map();
+      for (const candidate of KINDS_FOR[intent]) {
+        const attempt = composeRoom(rng.layout.fork('salle:' + index + ':' + candidate),
+          intent, candidate, capabilities, recent, band);
+        if (!attempt.fellBack) options.set(candidate, attempt);
+      }
+      // Deux alternatives au plus, tirées d'un sous-flux qui ne dépend d'aucun
+      // choix : la carte d'une graine est la même pour tout le monde.
+      const offered = [...options.keys()];
+      const branches = offered.length > 1
+        ? rng.layout.fork('branches:' + index).shuffle(offered).slice(0, Math.min(2, offered.length))
+        : offered;
+      const picked = branches.includes(choices[index]) ? choices[index] : branches[0];
+      const composition = picked ? options.get(picked)
+        : composeRoom(rng.layout.fork('salle:' + index + ':repli'), intent, KINDS_FOR[intent][0], capabilities, recent, band);
       if (composition.fellBack) fellBackCount++;
       const chain = composition.chain;
+      // La nature de la salle est celle de son module final — donc exactement
+      // celle qui a été choisie, tant que le repli n'a pas eu à servir.
       const kind = chain[chain.length - 1].kind;
-      // L'apparence ne vient QUE du flux cosmétique : elle ne peut donc pas
-      // décaler la disposition, ce que les tests vérifient explicitement.
-      const theme = THEMES[rng.cosmetic.int(0, THEMES.length - 1)];
-      const name = NAMES[rng.cosmetic.int(0, NAMES.length - 1)];
+      // L'apparence ne vient QUE du flux cosmétique, et d'un sous-flux propre à
+      // la salle : elle ne peut donc ni décaler la disposition, ni changer
+      // parce qu'on a choisi autrement plus tôt.
+      const look = rng.cosmetic.fork('apparence:' + index);
+      const theme = THEMES[look.int(0, THEMES.length - 1)];
+      const name = NAMES[look.int(0, NAMES.length - 1)];
 
-      const room = buildRoom(rng, chain, {
+      const room = buildRoom(rng.layout.fork('geometrie:' + index + ':' + kind), chain, {
         index, kind, theme, name,
         subtitle: OMENS[kind] ? OMENS[kind].hint : '',
         goal: kind === 'guardian' ? 'Rends sa lumière au gardien du rêve.' : 'Trouve la porte suivante.',
@@ -1585,8 +1649,9 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
         modules: chain.map(m => m.id),
         // Une branche est toujours nommée par la NATURE de la salle, jamais par
         // l'intention de rythme : c'est ce nom que la carte doit pouvoir annoncer.
-        branches: branches.length > 1 ? branches : [kind],
-        chosen: branches.length > 1 ? picked : kind,
+        // Et si le repli a servi, la carte l'annonce sous SON nom à lui.
+        branches: composition.fellBack ? [kind] : branches,
+        chosen: composition.fellBack ? kind : picked,
         fellBack: composition.fellBack,
         problems,
         level: room
@@ -3592,9 +3657,23 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
         // this silhouette, so its posture alone tells you whether it is awake.
         const charge = Math.min(1, e.chargeProgress || 0);
         const awake = e.state === 'wake' || e.state === 'charge';
+        // Apaisée, la créature s'aplatit et s'ouvre : le dos devient une marche
+        // franche, et cette silhouette ne ressemble à aucune autre. Quand le
+        // répit touche à sa fin, elle se regonfle en pulsant — l'avertissement
+        // est une FORME, lisible sans son et sans distinction de couleur.
+        const calm = e.state === 'calm';
+        const rousing = calm && e.rousing;
+        const pulse = rousing ? (Math.sin(t * 11) * .5 + .5) : 0;
         const lean = e.state === 'charge' ? facing * .16 : 0;
-        const breath = e.state === 'sleep' ? Math.sin(phase * .5) * 1.6 : 0;
+        const breath = e.state === 'sleep' ? Math.sin(phase * .5) * 1.6
+          : calm ? -3 + pulse * 3.5 : 0;
         c.rotate(lean);
+        if (calm) {
+          // Un liseré clair sur le dos : la marche est dessinée, pas devinée.
+          c.save(); c.globalAlpha = .5 + pulse * .4;
+          line(c, [[-w * .5 + 2, -h + 2 - breath], [w * .5 - 2, -h + 2 - breath]], '#eaf6de', 3);
+          c.restore();
+        }
         if (charge > 0 && !awake) { c.save(); c.globalAlpha = .1 + charge * .3; ellipse(c, 0, -14, 30 + charge * 8, 24 + charge * 6, '#ffca88'); c.restore(); }
         // Four stubby root-legs, tucked while asleep and splayed while charging.
         for (const side of [-1, 1]) for (const offset of [7, 15]) {
@@ -3771,6 +3850,11 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
 (() => {
   'use strict';
   const WIDTH = 1280, HEIGHT = 720, STEP = 1 / 120;
+  /** L'apaisement d'un dormeur : huit secondes pleines, annoncées une seconde et
+   *  demie avant la fin, puis un répit d'autant avant qu'il puisse se fâcher de
+   *  nouveau. Ces trois durées sont la promesse faite au joueur quand il appelle
+   *  une créature ; elles ne dépendent d'aucun autre minuteur. */
+  const CALM_TIME = 8, CALM_WARNING = 1.5, CALM_GRACE = 1.5;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const approach = (v, target, delta) => v < target ? Math.min(target, v + delta) : Math.max(target, v - delta);
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -3844,7 +3928,16 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       // les tests et les pilotes automatiques lisent les mêmes constantes que
       // la simulation, sans en recopier aucune.
       this.resonanceRules = window.LumenResonance;
+      // Où l'on se trouve dans le JEU, et non dans le niveau : 'home',
+      // 'campaign', 'hub' ou 'expedition'. Cet état est déclaré, pas déduit.
+      // Avant lui, tout se lisait sur `this.run`, si bien qu'une nuit ouverte
+      // suivait le joueur dans la campagne et y appliquait ses règles.
+      this.session = 'home';
       this.run = null;   // l'expédition en cours, s'il y en a une
+      this.lastRun = null; // la dernière nuit terminée, pour la recommencer
+      // Les messages qui n'ont personne pour les entendre attendent ici que
+      // l'interface soit prête (cf. flushNotices).
+      this.notices = []; this.uiReady = false;
       this.progress = this.readProgress(); this.storageAvailable = true;
       this.audio.setMuted(!!this.progress.settings.muted);
       this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
@@ -3880,11 +3973,26 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       }
       return 0;
     }
+    /** Un message destiné au joueur. Émis tout de suite si l'interface écoute,
+     *  gardé sinon : un avertissement de stockage émis pendant le constructeur
+     *  n'avait, avant, aucun auditeur et se perdait en silence. */
+    notify(message) {
+      if (this.uiReady) this.emit('toast', message);
+      else this.notices.push(message);
+    }
+    /** Appelé par l'interface une fois ses écouteurs posés. */
+    flushNotices() {
+      this.uiReady = true;
+      const pending = this.notices.splice(0);
+      for (const message of pending) this.emit('toast', message);
+      return pending.length;
+    }
     readProgress() {
       const storage = (() => { try { return localStorage; } catch (_) { return null; } })();
       this.store = new window.LumenSave.SaveStore(storage);
       this.storageAvailable = this.store.available;
-      if (this.store.recovered) this.emit('toast', 'Sauvegarde principale illisible : la copie de secours a été restaurée.');
+      if (this.store.recovered) this.notify('Sauvegarde principale illisible : la copie de secours a été restaurée.');
+      if (this.store.futureSchema) this.notify('Cette sauvegarde vient d’une version plus récente de LUMEN : elle est laissée intacte, et cette partie ne sera pas enregistrée.');
       // `progress` reste exposé pour l'interface et les anciens tests ; la
       // vérité vit désormais dans le profil du magasin.
       return this.store.profile;
@@ -3893,7 +4001,8 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       if (!this.store) return;
       if (!this.store.save(this.progress)) {
         this.storageAvailable = false;
-        this.emit('toast', 'Sauvegarde indisponible : la progression reste disponible pendant cette session.');
+        if (!this.storageWarned) { this.storageWarned = true;
+          this.notify('Sauvegarde indisponible : la progression reste disponible pendant cette session.'); }
       }
     }
     isUnlocked(index) {
@@ -3912,6 +4021,8 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       return false;
     }
     showHome() {
+      this.leaveExpedition();
+      this.session = 'home';
       this.loadLevel(0, false); this.mode = 'home'; this.camera.x = 0;
       this.platforms = [
         {x:740,y:520,w:460,h:230,type:'ground',active:true},
@@ -3924,7 +4035,12 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       this.audio.setTheme('meadow'); this.emit('mode', this.mode);
     }
     start(index = 0, options = {}) {
-      if (!this.isUnlocked(index)) return;
+      if (index < 0 || !this.isUnlocked(index)) return;
+      // Entrer dans un chapitre, c'est SORTIR d'une nuit. Sans cette ligne,
+      // une expédition ouverte continuait de gouverner la mort, le réessai,
+      // la sortie de niveau et les souvenirs portés.
+      this.leaveExpedition();
+      this.session = window.LUMEN_LEVELS[index].hub ? 'hub' : 'campaign';
       if (this.lives <= 0) this.lives = 5;
       this.runMode=options.timed?'timed':'explore';
       this.loadLevel(index); this.audio.unlock(); this.audio.resume();
@@ -3950,7 +4066,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       // est prévisible à l'avance, donc vérifiable par le contrôle de parcours.
       const wakePlatforms = this.wakeables.flatMap(w => R.platformsFor(w));
       this.platforms = [...data.platforms, ...wakePlatforms].map((p, i) => ({ phase:0, ...p, active:p.type!=='echo'&&!p.wakeId, id:i, baseX:p.x, baseY:p.y, dx:0, dy:0, crumbleTimer:0, reformTimer:0 }));
-      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0,calmTime:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
+      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0,calmTime:0,rousing:false,rouseGrace:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
       this.collectibles = data.collectibles.map(c => ({ ...c, taken:false }));
       this.checkpoints = data.checkpoints.map(c => ({ ...c, active:false }));
       this.hazards = data.hazards || []; this.secrets = (data.secrets || []).map(s => ({ ...s, found:false }));
@@ -3958,6 +4074,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       // attend sa quête). Ne l'ouvrir d'office que si elle ne s'est pas prononcée.
       this.exit = { w:70, h:100, ...data.exit,
         open: data.exit && data.exit.open !== undefined ? data.exit.open : !data.boss };
+      this.restoreWorldState();
       this.projectiles = []; this.particles = []; this.floatingTexts = [];
       this.checkpoint = { x:data.spawn.x, y:data.spawn.y };
       this.player = { x:data.spawn.x, y:data.spawn.y, w:32, h:46, vx:0, vy:0, facing:1, grounded:false, anim:0,
@@ -3971,8 +4088,40 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
       if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
     }
+    /** Ce qu'une sauvegarde a déjà acquis et qui doit se revoir DANS le monde,
+     *  et pas seulement dans un menu. Appelé à chaque chargement de niveau :
+     *  une porte qu'une quête a ouverte ne se referme pas parce qu'on est sorti.
+     *
+     *  C'est la règle qui manquait : la quête était relue (les dialogues le
+     *  prouvaient), mais son effet sur le décor ne l'était pas. */
+    restoreWorldState() {
+      const quest = this.level && this.level.quest;
+      if (!quest || !this.store) return;
+      if (this.store.questState(quest.id) !== 'done') return;
+      this.exit.open = true;
+    }
+    /** LA règle d'accès aux Rêves nomades. Une seule, consultée aussi bien par
+     *  le portail de l'observatoire que par le menu : il ne peut donc pas y
+     *  avoir de porte verrouillée d'un côté et ouverte de l'autre. */
+    canEnterDreams() {
+      const hubIndex = window.LUMEN_LEVELS.findIndex(level => level.hub);
+      const hub = window.LUMEN_LEVELS[hubIndex];
+      const quest = hub && hub.quest;
+      if (!quest) return { allowed: true };
+      if (this.store.questState(quest.id) === 'done') return { allowed: true };
+      return {
+        allowed: false, hubIndex,
+        reason: 'La porte des rêves ne s’ouvre qu’une fois la coupole rendue à son souffle.',
+        action: 'Aller à l’observatoire'
+      };
+    }
     retry() {
-      if (this.run) return this.enterRoom(this.run.roomIndex);
+      // Une salle de rêve se recommence sur place ; une nuit perdue se
+      // recommence depuis sa première salle ; un chapitre se recharge. Ce qui
+      // n'existe pas — un « chapitre −1 » — n'est jamais demandé au chargeur.
+      if (this.session === 'expedition' && this.run) return this.enterRoom(this.run.roomIndex);
+      if (this.lastRun) return this.retryExpedition();
+      if (this.levelIndex < 0) return this.showHome();
       this.lives = this.lives <= 0 ? 5 : this.lives;
       this.start(this.levelIndex,{timed:this.runMode==='timed'});
     }
@@ -3998,7 +4147,11 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
         hp: options.hp ?? 3
       };
       this.replan();
-      this.progress.expeditions.runs++;
+      this.session = 'expedition';
+      this.lastRun = null;
+      // Reprendre une nuit enregistrée n'est pas une nouvelle tentative : c'est
+      // la même, poursuivie. Seul un vrai départ compte.
+      if (!options.resumed) this.progress.expeditions.runs++;
       this.saveProgress();
       this.audio.unlock(); this.audio.resume();
       this.enterRoom(this.run.roomIndex);
@@ -4011,7 +4164,11 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
     }
     /** Charge une salle. L'index est toujours celui du plan courant. */
     enterRoom(index) {
-      const room = this.run.plan.rooms[index];
+      const rooms = this.run.plan.rooms;
+      // Sortir par le haut du plan est une VICTOIRE ; y entrer par un indice
+      // aberrant venu d'une sauvegarde ne l'est pas. On ne confond pas les deux.
+      if (index < 0 || index > rooms.length) { this.notify('Cette nuit n’a pas pu être reprise : elle repart du début.'); index = 0; }
+      const room = rooms[index];
       if (!room) return this.finishExpedition(true);
       this.run.roomIndex = index;
       this.lives = this.run.lives;
@@ -4047,6 +4204,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
         return null;
       }
       return this.startExpedition(saved.seed, {
+        resumed: true,
         choices: saved.route, roomIndex: saved.roomIndex,
         upgrades: saved.upgrades, claimed: saved.claimed,
         lives: saved.lives, hp: saved.hp
@@ -4101,10 +4259,26 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       this.mode = won ? 'expedition-done' : 'gameover';
       this.emit('expedition-end', { run, won });
       this.emit('mode', this.mode);
+      // La nuit est close, mais sa graine reste : on peut la recommencer telle
+      // quelle, ou en demander une autre. C'est une décision, pas un hasard.
+      this.lastRun = { seed: run.seed, code: run.code, won };
       this.run = null;
+      this.session = 'home';
+    }
+    /** Quitte une nuit en cours sans la conclure : elle n'a pas eu lieu, et
+     *  rien de ce qu'elle portait ne doit survivre dans un chapitre. */
+    leaveExpedition() {
+      if (this.session === 'expedition' && this.run) this.emit('expedition-end', { run: this.run, won: false, left: true });
+      this.run = null;
+      if (this.session === 'expedition') this.session = 'home';
+    }
+    /** Recommence la dernière nuit, avec sa graine, depuis sa première salle. */
+    retryExpedition() {
+      if (!this.lastRun) return null;
+      return this.startExpedition(this.lastRun.seed);
     }
     /** Applique les souvenirs portés. Appelé par la simulation, jamais par l'UI. */
-    hasUpgrade(id) { return !!this.run && this.run.upgrades.includes(id); }
+    hasUpgrade(id) { return this.session === 'expedition' && !!this.run && this.run.upgrades.includes(id); }
     pause() {
       if (this.mode !== 'playing') return;
       this.mode = 'paused'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
@@ -4113,7 +4287,13 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       if (this.mode !== 'paused') return;
       this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
     }
-    showMap() { this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode); }
+    /** L'atlas est un lieu de campagne : y aller, c'est abandonner la nuit en
+     *  cours. La transition est explicite ici plutôt que devinée plus tard. */
+    showMap() {
+      this.leaveExpedition();
+      if (this.session === 'expedition') this.session = 'home';
+      this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
+    }
     beginLoop() { if (this.running) return; this.running = true; requestAnimationFrame(t => this.frame(t)); }
     frame(timestamp) {
       if (!this.running) return;
@@ -4165,7 +4345,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       this.updateDanger(dt);
       if (this.exit.open && overlap(this.player, this.exit)) {
         if (this.level.hub) { this.player.vx = 0; this.emit('portal', this.exit.leadsTo || 'map'); }
-        else if (this.run) this.completeRoom();
+        else if (this.session === 'expedition' && this.run) this.completeRoom();
         else this.complete();
       }
       const visibleWidth = this.renderer.worldWidth || WIDTH;
@@ -4412,18 +4592,37 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       }
       // La créature endormie a sa propre réaction : l'onde la lève en douceur
       // au lieu de la faire charger. Elle devient une marche, pas une menace.
+      // L'apaisement a UN SEUL propriétaire : cette boucle. Elle tourne à chaque
+      // image, quelle que soit la distance à Nilo, et le minuteur générique des
+      // créatures (`timer`) n'a plus rien à dire dessus — c'est exactement ce
+      // qui faisait retomber un dormeur au sommeil au bout d'une image.
       for (const enemy of this.enemies) {
         if (!enemy.alive || enemy.type !== 'sleeper') continue;
         if (enemy.calmTime > 0) {
           enemy.calmTime -= dt;
-          if (enemy.calmTime <= 0) { enemy.state = 'sleep'; enemy.chargeProgress = 0; }
+          // Le réveil s'annonce avant d'arriver : la posture change, un son
+          // discret part, et rien n'attaque tant que le répit n'est pas écoulé.
+          const warning = enemy.calmTime <= CALM_WARNING;
+          if (warning && !enemy.rousing) this.audio.sfx('powerWarning');
+          enemy.rousing = warning;
+          if (enemy.calmTime <= 0) {
+            enemy.calmTime = 0; enemy.rousing = false;
+            enemy.state = 'sleep'; enemy.chargeProgress = 0;
+            // Le répit : elle se rendort, elle ne charge pas dans la seconde.
+            enemy.rouseGrace = CALM_GRACE;
+            this.burst(enemy.x + enemy.w / 2, enemy.y + 4, 8, '#cddcc4', 70, 'dust');
+          }
         }
         for (const wave of this.waves) {
           const key = 'enemy:' + (enemy.spawnX + ':' + enemy.spawnY);
           if (wave.touched.has(key)) continue;
           if (R.distance(wave.x, wave.y, enemy.x + enemy.w / 2, enemy.y) > wave.radius) continue;
           wave.touched.add(key);
-          enemy.calmTime = 8; enemy.state = 'calm'; enemy.chargeProgress = 0; enemy.vx = 0;
+          // Prolonger, jamais raccourcir : une onde reçue à sept secondes de
+          // répit ne doit pas ramener le compte à huit en le rabaissant.
+          enemy.calmTime = Math.max(enemy.calmTime, CALM_TIME);
+          enemy.state = 'calm'; enemy.chargeProgress = 0; enemy.vx = 0;
+          enemy.rousing = false; enemy.rouseGrace = 0;
           this.audio.sfx('wakeCalm');
           this.burst(enemy.x + enemy.w / 2, enemy.y, 16, '#dbeccd', 130, 'spark');
         }
@@ -4455,9 +4654,16 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
         } else if (e.type === 'sleeper') {
           // Tension by proximity: linger next to it and the mound wakes and charges.
           const near=Math.abs(distance)<180&&Math.abs((p.y+p.h)-(e.y+e.h))<140;
-          if (e.state==='sleep') {
+          if (e.state==='calm') {
+            // Apaisée : elle ne charge pas, elle ne dérive pas, et sa durée
+            // appartient à `updateResonance`. Rien ici ne doit l'abréger.
+            e.vx=approach(e.vx,0,dt*400); e.chargeProgress=0;
+          } else if (e.state==='sleep') {
             e.vx=0;
-            e.chargeProgress=clamp(e.chargeProgress+(near?dt/1.25:-dt*.9),0,1);
+            // Le répit qui suit un apaisement : elle se rendort vraiment avant
+            // de pouvoir se fâcher de nouveau.
+            if (e.rouseGrace>0) { e.rouseGrace-=dt; e.chargeProgress=0; }
+            else e.chargeProgress=clamp(e.chargeProgress+(near?dt/1.25:-dt*.9),0,1);
             if (e.chargeProgress>=1) { e.state='wake'; e.timer=.55; e.facing=distance<0?-1:1; this.audio.sfx('sleeperWake'); this.burst(e.x+e.w/2,e.y+6,10,'#ffd9a0',110,'spark'); }
           } else if (e.state==='wake') {
             e.vx=0;
@@ -4747,7 +4953,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
     die() {
       if (this.mode!=='playing') return;
       this.player.dead=true;this.player.vy=-390;this.player.vx=0;this.mode='dead';this.deadTimer=.85;
-      this.lives--;this.deaths++;if(this.run)this.run.lives=this.lives;this.shake(9);this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
+      this.lives--;this.deaths++;if(this.session==='expedition'&&this.run)this.run.lives=this.lives;this.shake(9);this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
       this.emit('mode',this.mode);
     }
     respawn() {
@@ -4755,7 +4961,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
         this.audio.pause();
         // L'échec met fin à la NUIT, pas au profil : tout ce qui a été appris
         // et débloqué reste acquis, et l'observatoire attend toujours.
-        if (this.run) return this.finishExpedition(false);
+        if (this.session === 'expedition' && this.run) return this.finishExpedition(false);
         this.mode='gameover';this.emit('mode',this.mode);return;
       }
       const p=this.player;
@@ -4768,7 +4974,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       // joueur retrouve exactement l'énigme qu'il a échouée, pas un état à moitié.
       this.waves=[];
       for (const wakeable of this.wakeables) {wakeable.state='asleep';wakeable.remaining=0;wakeable.relayed=false;}
-      for (const enemy of this.enemies) if (enemy.type==='sleeper') {enemy.calmTime=0;enemy.state='sleep';enemy.chargeProgress=0;}
+      for (const enemy of this.enemies) if (enemy.type==='sleeper') {enemy.calmTime=0;enemy.rousing=false;enemy.rouseGrace=0;enemy.state='sleep';enemy.chargeProgress=0;}
       if (this.boss&&this.boss.activated&&this.boss.hp>0) {
         const b=this.boss;Object.assign(b,{x:b.homeX,y:470,state:'wake',timer:2,vx:0,vy:0,vulnerable:false});
       }
@@ -4921,7 +5127,23 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
       $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Repartez avec cinq vies.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
-      $('pause-screen').querySelector('[data-command="retry"]').innerHTML=over?'Rallumer une lumière <span>↻</span>':'Recommencer le chapitre <span>↻</span>';
+      // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
+      // avec sa graine, ou on en demande une autre. Deux décisions, deux boutons.
+      const lostNight=over&&game.lastRun&&!game.lastRun.won;
+      const second=$('pause-screen').querySelector('[data-command="map"],[data-command="dream"]');
+      $('pause-screen').querySelector('[data-command="retry"]').innerHTML=
+        lostNight?`Refaire cette nuit <span>↻</span>`:over?'Rallumer une lumière <span>↻</span>':'Recommencer le chapitre <span>↻</span>';
+      if(lostNight) {
+        $('pause-title').textContent='La nuit s’achève ici.';
+        $('pause-screen').querySelector('.modal-card>p').textContent=
+          `Vos découvertes restent acquises. Graine ${game.lastRun.code} — refaites-la à l’identique, ou laissez-la pour une autre.`;
+        second.dataset.command='dream';second.innerHTML='Une autre nuit <span>☾</span>';
+      } else if(game.session==='expedition'&&game.run) {
+        // Pendant une nuit, ce bouton l'abandonne. Il doit le dire.
+        second.dataset.command='map';second.innerHTML='Quitter la nuit <span>✕</span>';
+        $('pause-screen').querySelector('.modal-card>p').textContent=
+          'La nuit n’est enregistrée qu’aux refuges. La quitter ici perd le chemin parcouru depuis le dernier.';
+      } else {second.dataset.command='map';second.innerHTML='L’atlas des chapitres <span>✧</span>';}
     } else if (mode==='dream') {showScreen('dream');refreshDream();}
     else if (mode==='route') showScreen('route');
     else if (mode==='help') showScreen('help');
@@ -5055,13 +5277,20 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
       if(index>=0){game.audio.unlock();transition(()=>game.start(index));}
       return;
     }
-    if(action==='dream'){game.audio.unlock();game.mode='dream';game.input.reset();showMode('dream');return;}
+    if(action==='dream'){
+      // Une seule règle décide, et c'est celle du moteur. Le menu ne peut donc
+      // pas ouvrir ce que le portail de l'observatoire garde fermé.
+      const gate=game.canEnterDreams();
+      if(!gate.allowed){toast(gate.reason);transition(()=>game.start(gate.hubIndex));return;}
+      game.audio.unlock();game.mode='dream';game.input.reset();showMode('dream');return;
+    }
     if(action==='dream-start') {
       const raw=$('seed-input').value.trim();
       transition(()=>game.startExpedition(raw||undefined));
       return;
     }
     if(action==='dream-resume'){transition(()=>{if(!game.resumeExpedition()){game.mode='dream';showMode('dream');}});return;}
+    if(action==='dream-again'){transition(()=>{if(!game.retryExpedition()){game.mode='dream';showMode('dream');}});return;}
     if(action==='route-go'){const kind=routeChoice,up=routeUpgrade;transition(()=>game.chooseRoute(kind,up));return;}
     if(action==='home'){transition(()=>game.showHome());return;}
     if(action==='map'){transition(()=>game.showMap());return;}
@@ -5159,7 +5388,15 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
     if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=hint.text;}
   }
   function chapterIntro(level) {
-    clearTimeout(introTimer);$('intro-number').textContent=`CHAPITRE ${String(game.levelIndex+1).padStart(2,'0')} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}`;
+    clearTimeout(introTimer);
+    // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
+    // ni une salle de rêve, qui n'ont pas de place dans la campagne.
+    const chapters=window.LUMEN_LEVELS.filter(l=>!l.hub);
+    const rank=window.LUMEN_LEVELS.slice(0,game.levelIndex+1).filter(l=>!l.hub).length;
+    $('intro-number').textContent=level.expedition
+      ? `NUIT · SALLE ${String((game.run?game.run.roomIndex:0)+1).padStart(2,'0')} / ${String(game.run?game.run.plan.rooms.length:5).padStart(2,'0')}`
+      : level.hub ? 'L’OBSERVATOIRE'
+      : `CHAPITRE ${String(rank).padStart(2,'0')} / ${String(chapters.length).padStart(2,'0')}`;
     $('intro-name').textContent=level.name;$('intro-subtitle').textContent=level.subtitle;
     $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),2400);
     lastHint='';lastHud='';
@@ -5194,8 +5431,17 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
   try {
     game=new window.LumenGame($('game'));window.lumen=game;
     game.on('command',command);game.on('mode',showMode);game.on('toast',toast);game.on('frame',updateHud);game.on('level',chapterIntro);game.on('complete',completed);game.on('damage',healthImpact);game.on('dialogue',showDialogue);game.on('quest',showQuest);
-    game.on('portal',target=>{if(target==='expedition'){game.mode='dream';game.input.reset();showMode('dream');}else transition(()=>game.showMap());});
+    game.on('portal',target=>{
+      if(target!=='expedition'){transition(()=>game.showMap());return;}
+      const gate=game.canEnterDreams();
+      if(!gate.allowed){toast(gate.reason);return;}
+      game.mode='dream';game.input.reset();showMode('dream');
+    });
     game.on('route',showRoute);
+    // Les écouteurs sont posés : ce que le moteur avait à dire pendant son
+    // initialisation (sauvegarde récupérée, stockage refusé, version future)
+    // peut maintenant être entendu.
+    game.flushNotices();
     game.on('expedition',detail=>{toast(`Salle ${detail.room.index+1} / ${detail.run.plan.rooms.length} · ${detail.room.omen.label} · graine ${detail.run.code}`);});
     game.on('expedition-end',detail=>{toast(detail.won?`Nuit menée au bout · graine ${detail.run.code}`:`La nuit s’achève ici · graine ${detail.run.code}`);if(detail.won){game.mode='dream';showMode('dream');}});
     document.addEventListener('click',event=>{

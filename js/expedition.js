@@ -50,57 +50,77 @@
 
   /* ── Assemblage d'une salle ──────────────────────────────────────────── */
 
-  /** Choisit une suite de modules formant une salle jouable, ou retourne le
-   *  repli. `capabilities` est la liste des capacités acquises à cet instant. */
-  function composeRoom(rng, intent, capabilities, recentIds, entryBand) {
+  /** Le module qui DONNE son nom à la salle est le dernier de la chaîne : c'est
+   *  lui que la carte annonce, lui que le joueur choisit, et lui qu'il joue en
+   *  dernier — l'ordre dans lequel on se souvient d'une pièce.
+   *
+   *  Deux contraintes distinctes s'appliquent, et il faut les garder séparées :
+   *
+   *   - l'INTENTION de rythme (`intent`) borne tout ce que la salle peut
+   *     contenir : une salle de tension ne peut pas se remplir de modules de
+   *     découverte, quel que soit le choix du joueur ;
+   *   - le TYPE choisi (`kind`) impose la nature du module final.
+   *
+   *  Si aucune chaîne ne satisfait les deux, la fonction le dit (`fellBack`)
+   *  au lieu de livrer autre chose sous le nom demandé. C'est ce qui permet à
+   *  `plan()` de ne proposer que des alternatives réalisables.
+   *
+   *  @param rng          un flux dédié à cette salle ; il n'est partagé avec
+   *                      aucune autre, de sorte qu'un choix fait ici ne peut
+   *                      pas déplacer la géométrie d'une salle voisine.
+   */
+  function composeRoom(rng, intent, kind, capabilities, recentIds, entryBand) {
     const M = global.LumenModules;
     const allowed = KINDS_FOR[intent] || KINDS_FOR.decouverte;
-    const pool = M.MODULES.filter(m => !m.fallback && allowed.includes(m.kind));
     const fallback = M.MODULES.find(m => m.fallback);
+    const failure = { chain: [fallback], fellBack: true };
+    if (!allowed.includes(kind)) return failure;
+
+    const usable = M.MODULES.filter(m => !m.fallback && allowed.includes(m.kind));
+    const finals = usable.filter(m => m.kind === kind);
+    if (!finals.length) return failure;
     // Une salle de gardien ou de refuge tient en un seul module : elle a sa
     // propre unité et on ne la dilue pas.
     const pieces = intent === 'final' || intent === 'repos' ? 1 : 2;
+    // On préfère ce qui n'a pas été vu récemment, sans jamais l'interdire :
+    // une préférence molle évite les répétitions sans réduire la variété.
+    const fresher = list => rng.shuffle(list).sort((a, b) =>
+      (recentIds.includes(a.id) ? 1 : 0) - (recentIds.includes(b.id) ? 1 : 0));
+    const edge = { exit: entryBand, tags: [], forbidWith: [] };
+
+    if (pieces === 1) {
+      for (const candidate of fresher(finals)) {
+        if (M.canFollow(edge, candidate, capabilities)) return { chain: [candidate], fellBack: false };
+      }
+      return failure;
+    }
 
     let attempts = 0;
-    outer:
-    for (let tryIndex = 0; tryIndex < 6; tryIndex++) {
-      const chain = [];
-      let band = entryBand;
-      for (let slot = 0; slot < pieces; slot++) {
-        // On préfère ce qui n'a pas été vu récemment, sans jamais l'interdire :
-        // une préférence molle évite les répétitions sans réduire la variété.
-        const candidates = rng.shuffle(pool).sort((a, b) => {
-          const seenA = recentIds.includes(a.id) ? 1 : 0, seenB = recentIds.includes(b.id) ? 1 : 0;
-          return seenA - seenB;
-        });
-        let chosen = null;
-        for (const candidate of candidates) {
-          attempts++;
-          if (attempts > MAX_ATTEMPTS) break outer;
-          const previous = chain.length ? chain[chain.length - 1] : { exit: band, tags: [], forbidWith: [] };
-          if (!M.canFollow(previous, candidate, capabilities)) continue;
-          if (chain.some(m => m.id === candidate.id)) continue;
-          chosen = candidate; break;
-        }
-        if (!chosen) continue outer;
-        chain.push(chosen);
-        band = chosen.exit;
+    for (const opener of fresher(usable)) {
+      if (++attempts > MAX_ATTEMPTS) break;
+      if (!M.canFollow(edge, opener, capabilities)) continue;
+      for (const closer of fresher(finals)) {
+        if (++attempts > MAX_ATTEMPTS) break;
+        if (closer.id === opener.id) continue;
+        if (!M.canFollow(opener, closer, capabilities)) continue;
+        return { chain: [opener, closer], fellBack: false };
       }
-      if (chain.length === pieces) return { chain, fellBack: false };
     }
     // Rien n'a convenu : le couloir de repli est toujours valide. La nuit
-    // sera plus sage que prévu, mais elle restera jouable.
-    return { chain: [fallback], fellBack: true };
+    // sera plus sage que prévu, mais elle restera jouable — et elle ne
+    // s'annoncera pas sous un nom qu'elle ne tient pas.
+    return failure;
   }
 
-  /** Transforme une suite de modules en une définition de niveau complète. */
+  /** Transforme une suite de modules en une définition de niveau complète.
+   *  @param rng un flux de DISPOSITION propre à cette salle. */
   function buildRoom(rng, chain, meta) {
     const geometry = { platforms: [], enemies: [], collectibles: [], wakeables: [], hazards: [] };
     let x = 200; // une marge de départ, pour voir arriver la première salle
     for (const module of chain) {
       // Chaque module reçoit son propre sous-flux : ajouter un module plus loin
       // dans la chaîne ne décale donc pas ce qui a déjà été posé avant lui.
-      const piece = module.build(x, rng.layout.fork(module.id + ':' + x));
+      const piece = module.build(x, rng.fork(module.id + ':' + x));
       for (const field of Object.keys(geometry)) geometry[field].push(...(piece[field] || []));
       x += module.width;
     }
@@ -205,30 +225,37 @@
 
     for (let index = 0; index < ROOMS_PER_RUN; index++) {
       const intent = PACING[index];
-      // Les deux routes offertes à l'entrée de la salle. Le choix du joueur
-      // est une donnée d'entrée du plan, pas un tirage : c'est ce qui rend
-      // « même graine + mêmes choix » reproductible.
-      const branches = intent === 'final' || intent === 'repos'
-        ? [intent]
-        : rng.layout.shuffle(KINDS_FOR[intent]).slice(0, 2);
-      const picked = branches.length > 1
-        ? (branches.includes(choices[index]) ? choices[index] : branches[0])
-        : branches[0];
-      const wanted = intent === 'final' || intent === 'repos' ? intent : picked;
-
-      const composition = composeRoom(
-        rng.layout, intent === 'final' || intent === 'repos' ? intent : intentForKind(wanted),
-        capabilities, recent, band
-      );
+      // Chaque nature possible à cette étape du rythme est ESSAYÉE pour de bon,
+      // dans son propre sous-flux. Ce qui ne s'assemble pas n'est pas proposé :
+      // la carte ne montre jamais une porte qui n'existe pas derrière.
+      const options = new Map();
+      for (const candidate of KINDS_FOR[intent]) {
+        const attempt = composeRoom(rng.layout.fork('salle:' + index + ':' + candidate),
+          intent, candidate, capabilities, recent, band);
+        if (!attempt.fellBack) options.set(candidate, attempt);
+      }
+      // Deux alternatives au plus, tirées d'un sous-flux qui ne dépend d'aucun
+      // choix : la carte d'une graine est la même pour tout le monde.
+      const offered = [...options.keys()];
+      const branches = offered.length > 1
+        ? rng.layout.fork('branches:' + index).shuffle(offered).slice(0, Math.min(2, offered.length))
+        : offered;
+      const picked = branches.includes(choices[index]) ? choices[index] : branches[0];
+      const composition = picked ? options.get(picked)
+        : composeRoom(rng.layout.fork('salle:' + index + ':repli'), intent, KINDS_FOR[intent][0], capabilities, recent, band);
       if (composition.fellBack) fellBackCount++;
       const chain = composition.chain;
+      // La nature de la salle est celle de son module final — donc exactement
+      // celle qui a été choisie, tant que le repli n'a pas eu à servir.
       const kind = chain[chain.length - 1].kind;
-      // L'apparence ne vient QUE du flux cosmétique : elle ne peut donc pas
-      // décaler la disposition, ce que les tests vérifient explicitement.
-      const theme = THEMES[rng.cosmetic.int(0, THEMES.length - 1)];
-      const name = NAMES[rng.cosmetic.int(0, NAMES.length - 1)];
+      // L'apparence ne vient QUE du flux cosmétique, et d'un sous-flux propre à
+      // la salle : elle ne peut donc ni décaler la disposition, ni changer
+      // parce qu'on a choisi autrement plus tôt.
+      const look = rng.cosmetic.fork('apparence:' + index);
+      const theme = THEMES[look.int(0, THEMES.length - 1)];
+      const name = NAMES[look.int(0, NAMES.length - 1)];
 
-      const room = buildRoom(rng, chain, {
+      const room = buildRoom(rng.layout.fork('geometrie:' + index + ':' + kind), chain, {
         index, kind, theme, name,
         subtitle: OMENS[kind] ? OMENS[kind].hint : '',
         goal: kind === 'guardian' ? 'Rends sa lumière au gardien du rêve.' : 'Trouve la porte suivante.',
@@ -241,8 +268,9 @@
         modules: chain.map(m => m.id),
         // Une branche est toujours nommée par la NATURE de la salle, jamais par
         // l'intention de rythme : c'est ce nom que la carte doit pouvoir annoncer.
-        branches: branches.length > 1 ? branches : [kind],
-        chosen: branches.length > 1 ? picked : kind,
+        // Et si le repli a servi, la carte l'annonce sous SON nom à lui.
+        branches: composition.fellBack ? [kind] : branches,
+        chosen: composition.fellBack ? kind : picked,
         fellBack: composition.fellBack,
         problems,
         level: room

@@ -14,7 +14,7 @@
   /** Incrémenter à chaque changement qui modifie les tirages de gameplay.
    *  Une graine n'est reproductible qu'à version de génération identique ;
    *  la sauvegarde conserve la version avec la graine. */
-  const GENERATION_VERSION = 1;
+  const GENERATION_VERSION = 2;
 
   /** Les seuls flux existants. Un flux inconnu est une erreur, pas un silence :
    *  un nom mal orthographié créerait un flux fantôme et casserait la

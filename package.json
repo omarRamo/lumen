@@ -1,12 +1,13 @@
 {
   "name": "lumen-les-jardins-de-la-lune",
-  "version": "3.0.0",
-  "description": "LUMEN — Les jardins de la lune. Jeu de plateforme-aventure 2D original, sans dépendance à l'exécution, jouable hors ligne en file://.",
+  "version": "4.0.0",
+  "description": "LUMEN — Les jardins qui rêvent. Jeu de plateforme-aventure 2D original, sans dépendance à l'exécution, jouable hors ligne en file://.",
   "private": true,
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs > /dev/null",
+    "test": "node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs > /dev/null",
+    "test:p0": "node tests/test-p0.cjs",
     "test:engine": "node tests/test-engine.cjs",
     "test:renderer": "node tests/test-renderer.cjs",
     "test:expedition": "node tests/test-expedition.cjs",
@@ -17,5 +18,7 @@
   "devDependencies": {
     "playwright": "^1.47.0"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
