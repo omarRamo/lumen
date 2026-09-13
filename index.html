@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#eff0da">
+  <meta name="description" content="LUMEN — Les jardins de la lune. Dix chapitres, quatre pouvoirs et une aventure lumineuse à explorer ou à parcourir contre la montre. Jouable hors ligne.">
+  <title>LUMEN · Les jardins de la lune</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app" aria-label="LUMEN, jeu de plateforme">
+    <canvas id="game" aria-label="Monde de Lumen. Les commandes sont disponibles avec le bouton Comment jouer."></canvas>
+    <div id="vignette" aria-hidden="true"></div>
+    <header class="masthead" id="masthead">
+      <a href="#" class="brand" id="brand-home" aria-label="Accueil Lumen"><span class="brand-mark">✦</span> LUMEN<span class="brand-divider"></span><span class="brand-edition">LES JARDINS DE LA LUNE</span></a>
+      <nav aria-label="Navigation"><button class="text-button" data-command="help">Comment jouer <span>↗</span></button><button class="sound-button" data-command="sound" aria-label="Activer ou couper le son"><span class="sound-icon">♪</span><span class="sound-label">SON ACTIVÉ</span></button></nav>
+    </header>
+
+    <section id="home-screen" class="screen home-screen active" aria-label="Accueil">
+      <div class="home-copy">
+        <div class="eyebrow"><span class="tiny-star">✦</span> UNE PETITE LUMIÈRE. UNE GRANDE AVENTURE.</div>
+        <h1>Lumen<span class="title-spark" aria-hidden="true">✧</span><small>Les jardins de la lune</small></h1>
+        <p>La lune s’est éteinte.<br>Et si la plus petite des lumières<br>pouvait réveiller tout un monde ?</p>
+        <div class="home-actions"><button id="start-button" class="button primary" data-command="start"><span>Commencer l’aventure</span><span class="button-arrow">↗</span></button><button class="button secondary" data-command="map"><span>Explorer les chapitres</span><span>→</span></button></div>
+        <div class="home-meta"><span><i class="meta-dot"></i> 10 CHAPITRES À EXPLORER</span><span>EXPLORATION & CHRONO · HORS LIGNE</span></div>
+      </div>
+      <div class="scene-label"><span class="scene-label-line"></span><div><span class="eyebrow">01 / LES PRAIRIES D’AURORE</span><p>Chaque voyage commence par un saut.</p></div></div>
+      <footer class="home-footer"><span>PRENEZ LE TEMPS DE VOUS ÉMERVEILLER.</span><div class="keyboard-teaser"><kbd>←</kbd><kbd>→</kbd><span>se déplacer</span><kbd class="wide">ESPACE</kbd><span>sauter</span></div><span class="version">ÉDITION 02 <span>✦</span></span></footer>
+    </section>
+
+    <section id="hud" class="hud hidden" aria-label="Informations de jeu">
+      <div class="hud-left"><div class="portrait" aria-hidden="true">✦</div><div><div id="hearts" class="hearts" aria-label="Santé"></div><div class="lives-line"><span>NILO</span><span id="lives">5 VIES</span></div></div><span class="hud-divider"></span><div class="score-wrap"><span class="hud-caption">SCORE</span><strong id="score">000000</strong></div></div>
+      <div class="chapter-pill"><span id="chapter-number">01</span><div><small id="chapter-caption">LES JARDINS DE LA LUNE</small><strong id="chapter-name">L’éveil des jardins</strong></div></div>
+      <div class="hud-right"><div class="collect-counter"><span class="coin-icon">✧</span><strong id="coin-count">00</strong></div><div id="star-count" class="star-count">✧ ✧ ✧</div><button class="icon-button" data-command="pause" aria-label="Mettre en pause">Ⅱ</button></div>
+    </section>
+    <div id="run-clock" class="run-clock hidden" aria-label="Chronomètre de la course"><span>CONTRE-LA-MONTRE</span><strong id="clock-time">0:00.0</strong><small id="clock-best">PREMIÈRE COURSE</small></div>
+    <div id="power-indicator" class="power-indicator hidden"><span id="power-icon">✦</span><div><div class="power-heading"><strong id="power-name"></strong><span id="power-time"></span></div><span id="power-description"></span><div class="power-track"><i id="power-fill"></i></div></div></div>
+    <div id="level-hint" class="level-hint hidden"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="boss-hud" class="boss-hud hidden"><div><span>LE VEILLEUR DE L’ÉCLIPSE</span><span id="boss-phase">PHASE I</span></div><div class="boss-track"><i id="boss-fill"></i></div><small id="boss-tip">Évitez ses attaques. Sa couronne s’ouvre après son bond.</small></div>
+    <div id="chapter-intro" class="chapter-intro"><span id="intro-number"></span><h2 id="intro-name"></h2><p id="intro-subtitle"></p></div>
+
+    <section id="map-screen" class="screen map-screen" aria-labelledby="map-title">
+      <div class="map-heading"><div><div class="eyebrow">L’ATLAS DES LUMIÈRES</div><h2 id="map-title">Un monde à réveiller.</h2><p>Suivez les étoiles. Chaque jardin a son secret.</p></div><div class="map-total"><span>✦</span><strong id="total-stars">0 / 30</strong><small>FRAGMENTS RETROUVÉS</small></div></div>
+      <div class="atlas-toolbar"><div class="run-mode-switch" role="group" aria-label="Mode des prochains chapitres"><button data-run-mode="explore" aria-pressed="true"><span aria-hidden="true">☾</span> Exploration</button><button data-run-mode="timed" aria-pressed="false"><span aria-hidden="true">◷</span> Contre-la-montre</button></div><p id="run-mode-hint">Le temps vous appartient. Explorez à votre rythme.</p><button class="medal-help-button" data-command="medal-help" aria-expanded="false" aria-controls="medal-help">Les médailles <span aria-hidden="true">ⓘ</span></button></div>
+      <div id="medal-help" class="medal-help hidden"><strong>Une médaille pour chaque lumière.</strong><p><span class="medal-dot gold">✦</span><b>Or</b> · 3 fragments, au plus 1 dégât et le temps d’or. <span class="medal-dot silver">✦</span><b>Argent</b> · 2 fragments, au plus 3 dégâts et le temps d’argent. <span class="medal-dot bronze">✦</span><b>Bronze</b> · Terminer le chapitre.</p><p>Les objectifs de temps figurent sur chaque carte. Les médailles sont disponibles dans les deux modes ; seuls les records du contre-la-montre sont enregistrés au classement personnel. Aucun compte à rebours, aucune pénalité à prendre votre temps.</p></div>
+      <div id="level-grid" class="level-grid"></div>
+      <div class="map-bottom"><button class="button secondary" data-command="home">← Retour à l’accueil</button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
+    </section>
+
+    <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="text-button" data-command="help">Voir les commandes</button></div></div></section>
+
+    <section id="help-screen" class="screen modal-screen" aria-labelledby="help-title"><div class="modal-card help-card"><button class="close-button" data-command="close-help" aria-label="Fermer les commandes">×</button><div class="eyebrow">LE PETIT GUIDE DU GARDIEN</div><h2 id="help-title">Suivez votre élan.</h2><div class="controls-grid"><div><span>Se déplacer</span><span><kbd>←</kbd><kbd>→</kbd> ou <kbd>Q</kbd><kbd>D</kbd></span></div><div><span>Sauter / nager</span><span><kbd>ESPACE</kbd> ou <kbd>Z</kbd><kbd>↑</kbd></span></div><div><span>Courir</span><kbd>MAJ</kbd></div><div><span>Glisser</span><span><kbd>↓</kbd> en courant</span></div><div><span>Utiliser un pouvoir</span><span><kbd>X</kbd> ou <kbd>J</kbd></span></div><div><span>Pause / reprendre</span><span><kbd>ÉCHAP</kbd> ou <kbd>P</kbd></span></div><div><span>Recommencer / son</span><span><kbd>R</kbd> / <kbd>M</kbd></span></div><div><span>Autres claviers</span><span><kbd>A</kbd><kbd>D</kbd> · <kbd>W</kbd> saut</span></div></div><p class="help-tip">Un appui bref fait un petit saut. Maintenez la touche pour sauter plus haut. Sautez sur les créatures pour les étourdir. Les lanternes mémorisent votre passage.</p><p class="gamepad-guide"><span aria-hidden="true">⊕</span><span><strong>À la manette</strong> · Stick ou croix pour avancer · A / B pour sauter · X pour le pouvoir · Gâchette / épaule droite pour courir · Bas pour glisser · Start pour la pause.</span></p><div class="power-guide"><div><span class="power-badge bloom">✺</span><strong>Fleur solaire</strong><p>Tirez des graines de lumière avec X.</p></div><div><span class="power-badge breeze">≋</span><strong>Plume d’azur</strong><p>Sautez une seconde fois dans les airs.</p></div><div><span class="power-badge comet">✦</span><strong>Cœur comète</strong><p>X déclenche une ruée protectrice.</p></div><div><span class="power-badge echo">♧</span><strong>Grelot d’écho</strong><p>X révèle les plateformes cachées pendant 4 secondes.</p></div></div><p class="power-guide-note">Chaque pouvoir est temporaire : sa jauge clignote durant les 5 dernières secondes. Un grelot se relance avec X tant que vous le portez.</p><button class="button primary" data-command="close-help">C’est parti <span>→</span></button></div></section>
+
+    <section id="complete-screen" class="screen modal-screen" aria-labelledby="complete-title"><div class="modal-card complete-card"><div class="eyebrow" id="complete-eyebrow">UNE LUMIÈRE DE PLUS</div><h2 id="complete-title">Le jardin s’éveille.</h2><p id="complete-subtitle"></p><div class="achievement-row"><div id="result-medal" class="result-medal bronze"><span class="medal-emblem" aria-hidden="true">✦</span><span><small>MÉDAILLE OBTENUE</small><strong id="result-medal-name">Bronze</strong></span></div><div class="result-fragments"><div id="result-stars" class="result-stars">✧ ✧ ✧</div><small id="result-star-label">FRAGMENTS DE LUNE</small></div></div><div class="results"><div class="result-time-cell"><span id="result-mode-label">TEMPS DU VOYAGE</span><strong id="result-time">0:00.0</strong></div><div><span>ÉCLATS</span><strong id="result-coins">0</strong></div><div><span>ENNEMIS VAINCUS</span><strong id="result-enemies">0</strong></div><div><span>DÉGÂTS REÇUS</span><strong id="result-damage">0</strong></div><div><span>SCORE</span><strong id="result-score">0</strong></div><div><span id="result-best-label">OBJECTIF OR</span><strong id="result-best">—</strong></div></div><p id="result-record" class="result-record hidden" role="status">✦ Nouveau record personnel</p><p id="complete-note" class="complete-note"></p><p id="result-medal-hint" class="result-medal-hint"></p><div class="modal-actions"><button class="button primary" id="next-button" data-command="next">Le prochain jardin <span>→</span></button><div class="result-secondary-actions"><button class="button secondary" data-command="replay">Rejouer <span>↻</span></button><button class="button secondary" data-command="map">L’atlas <span>✧</span></button></div></div></div></section>
+    <div id="touch-controls" class="touch-controls hidden" aria-label="Commandes tactiles"><div class="touch-move"><button data-touch="left" aria-label="Aller à gauche">←</button><button data-touch="right" aria-label="Aller à droite">→</button><button data-touch="down" class="small-touch" aria-label="Glisser">↓</button></div><div class="touch-actions"><button data-touch="run" class="small-touch" aria-label="Courir">MAJ</button><button data-touch="action" class="small-touch" aria-label="Pouvoir">✦</button><button data-touch="jump" aria-label="Sauter">↑</button></div></div>
+    <div id="transition" class="transition" aria-hidden="true"><div class="lunar-sigil"><span>☾</span><i></i><b>UN AUTRE JARDIN S’ÉVEILLE</b></div></div>
+    <div id="error-notice" role="alert" hidden></div>
+    <noscript><div class="noscript">Activez JavaScript pour entrer dans les jardins de Lumen.</div></noscript>
+  </main>
+  <script src="js/levels.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

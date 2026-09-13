@@ -1,0 +1,421 @@
+/* Deterministic, dependency-free integration checks for the real game engine.
+ * Run from the LUMEN directory: node work/test-engine.cjs
+ * Browser drawing/audio are mocked; level data and simulation are not.
+ */
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const root = path.resolve(__dirname, '..');
+const scripts = ['levels.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
+const DT = 1 / 120;
+const checks = [];
+let failed = 0;
+
+function environment(storage = new Map(), rejectStorage = false) {
+  let seed = 0x12ab34cd;
+  const seededMath = Object.create(Math);
+  seededMath.random = () => ((seed = (Math.imul(1664525, seed) + 1013904223) >>> 0) / 4294967296);
+  const events = new Map();
+  const window = {
+    innerWidth: 1280, innerHeight: 720,
+    addEventListener(name, handler) { if (!events.has(name)) events.set(name, []); events.get(name).push(handler); },
+    LumenRenderer: class { resize() {} draw() {} },
+    LumenAudio: class {
+      constructor() { this.sounds = []; }
+      setMuted(value) { this.muted = value; }
+      setTheme(value) { this.theme = value; }
+      unlock() {} resume() {} pause() {}
+      sfx(name) { this.sounds.push(name); }
+    }
+  };
+  const document = { hidden: false, addEventListener() {}, body: { classList: { contains: () => true } } };
+  const localStorage = {
+    getItem(key) { if (rejectStorage) throw new Error('Storage denied'); return storage.get(key) ?? null; },
+    setItem(key, value) { if (rejectStorage) throw new Error('Storage denied'); storage.set(key, value); }
+  };
+  const context = vm.createContext({ window, document, localStorage, Math: seededMath, requestAnimationFrame() {}, console });
+  for (const source of scripts) vm.runInContext(source, context);
+  const game = new window.LumenGame({});
+  return { game, window, storage, events };
+}
+
+function fresh(index = 0) {
+  const result = environment();
+  result.game.loadLevel(index);
+  return result.game;
+}
+function tick(game, seconds, isolated = false) {
+  for (let i = 0; i < Math.ceil(seconds / DT); i++) {
+    if (isolated) { game.time += DT; game.updatePlatforms(DT); game.updatePlayer(DT); }
+    else game.update(DT);
+    game.input.clearFrame();
+  }
+}
+function hold(game, action, down = true) { game.input.virtual(action, down, 'test'); }
+function place(game, x, surface = 600) {
+  game.input.reset();
+  Object.assign(game.player, { x, y: surface - 46, w: 32, h: 46, vx: 0, vy: 0, grounded: true,
+    coyote: .12, jumpBuffer: 0, airJumps: 0, dead: false, invuln: 0, standingPlatform: null,
+    slide: false, dashTime: 0, power: null, powerTime: 0, actionCooldown: 0 });
+  game.mode = 'playing';
+}
+function safeWorld(game) {
+  game.enemies = []; game.hazards = []; game.collectibles = []; game.checkpoints = []; game.secrets = [];
+  game.boss = null; game.exit.open = false; delete game.level.water;
+  game.platforms = [{ x: 0, y: 600, w: game.level.width, h: 300, type: 'ground', active: true,
+    baseX: 0, baseY: 600, phase: 0, dx: 0, dy: 0 }];
+}
+function collect(game, type) {
+  game.collectibles = [{ type, x: game.player.x + 16, y: game.player.y + 20, taken: false }];
+  game.updateCollectibles();
+}
+function test(name, run) {
+  try { run(); checks.push({ name, passed: true }); console.log('PASS  ' + name); }
+  catch (error) { failed++; checks.push({ name, passed: false, error: error.message }); console.error('FAIL  ' + name + '\n      ' + error.message); }
+}
+
+test('All eight authored stages load with independent objects and stable spawns', () => {
+  const { game, window } = environment();
+  assert.equal(window.LUMEN_LEVELS.length, 8);
+  for (let index = 0; index < 8; index++) {
+    game.loadLevel(index);
+    assert.equal(game.levelIndex, index);
+    assert.equal(game.collectibles.filter(c => c.type === 'star').length, 3);
+    assert.ok(game.checkpoints.length >= 2);
+    assert.ok(game.secrets.length >= 1);
+    for (const type of ['breeze', 'bloom', 'comet']) assert.ok(game.collectibles.some(c => c.type === type));
+    tick(game, .15);
+    assert.equal(game.mode, 'playing');
+    assert.ok(game.player.grounded);
+    assert.equal(game.player.hp, 3);
+    game.collectibles[0].taken = true;
+    game.loadLevel(index);
+    assert.equal(game.collectibles[0].taken, false);
+  }
+  assert.equal(window.LUMEN_LEVELS[0].collectibles[0].taken, undefined);
+});
+
+test('Jump height varies with release and lands without sinking', () => {
+  const heights = [];
+  for (const short of [false, true]) {
+    const game = fresh(); safeWorld(game); place(game, 100);
+    let highest = game.player.y;
+    hold(game, 'jump');
+    for (let frame = 0; frame < 150; frame++) {
+      if (short && frame === 5) hold(game, 'jump', false);
+      tick(game, DT);
+      highest = Math.min(highest, game.player.y);
+    }
+    heights.push(554 - highest);
+    assert.ok(game.player.grounded);
+    assert.equal(game.player.y, 554);
+  }
+  assert.ok(heights[0] > 115 && heights[0] < 130, JSON.stringify(heights));
+  assert.ok(heights[1] < heights[0] * .6, JSON.stringify(heights));
+});
+
+test('Coyote jump succeeds after walking off a real ledge, then expires', () => {
+  const game = fresh(); safeWorld(game);
+  game.platforms[0].w = 220;
+  place(game, 185); game.player.vx = 320; hold(game, 'right');
+  while (game.player.grounded) tick(game, DT);
+  tick(game, .05); hold(game, 'jump'); tick(game, DT);
+  assert.ok(game.player.vy < -600);
+  assert.equal(game.player.coyote, 0);
+  place(game, 230, 550); game.player.grounded = false; game.player.coyote = .01;
+  tick(game, .03); hold(game, 'jump'); tick(game, DT);
+  assert.ok(game.player.vy > 0, 'A normal jump must not be available after coyote time expires.');
+});
+
+test('Buffered jump fires on landing, including a jump pressed in the air', () => {
+  const game = fresh(); safeWorld(game); place(game, 100, 565);
+  game.player.grounded = false; game.player.coyote = 0; game.player.vy = 320;
+  hold(game, 'jump');
+  let bounced = false;
+  for (let i = 0; i < 25; i++) { tick(game, DT); if (game.player.vy < -600) bounced = true; }
+  assert.ok(bounced, 'The buffered input was lost before landing.');
+});
+
+test('A buffered tap released before landing produces a short jump', () => {
+  const game = fresh(); safeWorld(game); place(game, 100, 565);
+  game.player.grounded = false; game.player.coyote = 0; game.player.vy = 320;
+  hold(game, 'jump'); tick(game, DT); hold(game, 'jump', false);
+  let bounced = false, highest = 554;
+  for (let i = 0; i < 90; i++) {
+    tick(game, DT);
+    if (game.player.vy < 0) bounced = true;
+    if (bounced) highest = Math.min(highest, game.player.y);
+  }
+  assert.ok(bounced, 'The released buffered tap must still trigger a jump.');
+  assert.ok(554 - highest > 20 && 554 - highest < 45, 'A released tap must not become a full-height jump.');
+  assert.ok(game.player.grounded);
+});
+
+test('Horizontal and vertical moving platforms carry a standing player', () => {
+  for (const axis of ['x', 'y']) {
+    const game = fresh(); safeWorld(game);
+    const moving = { x: 400, y: 470, baseX: 400, baseY: 470, w: 190, h: 22,
+      type: 'moving', axis, speed: .75, range: 55, phase: 0, active: true, dx: 0, dy: 0 };
+    game.platforms.push(moving); place(game, 440, 470); game.player.standingPlatform = moving;
+    const offset = axis === 'x' ? game.player.x - moving.x : game.player.y + 46 - moving.y;
+    tick(game, 1, true);
+    assert.ok(game.player.grounded, axis + ' carry lost grounding');
+    const after = axis === 'x' ? game.player.x - moving.x : game.player.y + 46 - moving.y;
+    assert.ok(Math.abs(after - offset) < .01, axis + ' platform slipped under the player');
+  }
+});
+
+test('Crumble/reform, vanish cycle, spring boost and conveyor transport work', () => {
+  const game = fresh(); safeWorld(game);
+  const base = { x: 100, y: 500, baseX: 100, baseY: 500, w: 180, h: 22, active: true, phase: 0,
+    dx: 0, dy: 0, crumbleTimer: 0, reformTimer: 0 };
+  const crumble = { ...base, type: 'crumble' }; game.platforms.push(crumble); place(game, 150, 500);
+  tick(game, .1, true); assert.ok(crumble.crumbleTimer > 0);
+  tick(game, .65, true); assert.equal(crumble.active, false);
+  tick(game, 3.7, true); assert.equal(crumble.active, true);
+  const vanish = { ...base, type: 'vanish' }; game.platforms = [vanish];
+  game.time = 3.8; game.updatePlatforms(DT); assert.equal(vanish.active, false);
+  game.time = 5; game.updatePlatforms(DT); assert.equal(vanish.active, true);
+  game.platforms = [{ ...base, type: 'spring' }]; place(game, 150, 500); tick(game, DT, true);
+  assert.ok(game.player.vy < -900);
+  const conveyor = { ...base, type: 'conveyor', direction: -1, speed: 100 };
+  game.platforms = [conveyor]; place(game, 180, 500); game.player.standingPlatform = conveyor;
+  tick(game, .3, true); assert.ok(game.player.x < 150);
+});
+
+test('Checkpoint heals, death costs exactly one life, respawn restores a safe state', () => {
+  const game = fresh();
+  game.enemies = []; game.hazards = []; game.collectibles = [];
+  const checkpoint = game.checkpoints[0]; place(game, checkpoint.x - 16, checkpoint.y);
+  game.player.hp = 1; tick(game, DT);
+  assert.equal(checkpoint.active, true); assert.equal(game.player.hp, 3);
+  const saved = { ...game.checkpoint }, lives = game.lives;
+  game.player.power = 'comet'; game.player.powerTime = 30;
+  game.die(); game.die(); assert.equal(game.lives, lives - 1);
+  tick(game, .9);
+  assert.equal(game.mode, 'playing'); assert.equal(game.player.dead, false);
+  assert.ok(Math.abs(game.player.x - saved.x) < 1);
+  assert.ok(Math.abs(game.player.y - saved.y) < 4);
+  assert.equal(game.player.hp, 3); assert.equal(game.player.power, null); assert.ok(game.player.invuln > 1.8);
+  game.lives = 1; game.die(); tick(game, 1); assert.equal(game.mode, 'gameover');
+  game.retry(); assert.equal(game.mode, 'playing'); assert.equal(game.lives, 5);
+});
+
+test('Damage grace period prevents repeated hits; falling and lava are lethal', () => {
+  const game = fresh(); safeWorld(game); place(game, 100);
+  game.hurt(1, 200); game.hurt(1, 200); assert.equal(game.player.hp, 2);
+  tick(game, 1.6); game.hurt(1, 200); assert.equal(game.player.hp, 1);
+  place(game, 100, 900); tick(game, DT); assert.equal(game.mode, 'dead');
+  game.loadLevel(4); game.enemies = []; place(game, 850, 690);
+  tick(game, DT); assert.equal(game.mode, 'dead');
+});
+
+test('A lethal enemy contact stops the frame before the corpse can collect items', () => {
+  const game = fresh(); safeWorld(game); place(game, 100);
+  game.player.hp = 1;
+  game.enemies = [{ x: 100, y: 566, w: 36, h: 34, alive: true, type: 'patrol', minX: 70, maxX: 180,
+    vx: 0, vy: 0, facing: -1, phase: 0, timer: 1, spawnX: 100, spawnY: 566 }];
+  game.collectibles = [{ type: 'coin', x: 116, y: 574, taken: false },
+    { type: 'heart', x: 116, y: 574, taken: false }];
+  tick(game, DT);
+  assert.equal(game.mode, 'dead'); assert.equal(game.player.hp, 0);
+  assert.equal(game.levelCoins, 0); assert.ok(game.collectibles.every(item => !item.taken));
+});
+
+test('Coins/stars/heart collect once; forty coins award exactly one extra life', () => {
+  const game = fresh(); safeWorld(game); place(game, 100);
+  const lives = game.lives;
+  for (let i = 0; i < 40; i++) collect(game, 'coin');
+  assert.equal(game.levelCoins, 40); assert.equal(game.lives, lives + 1); assert.equal(game.levelScore, 1000);
+  game.updateCollectibles(); assert.equal(game.levelCoins, 40);
+  collect(game, 'star'); assert.equal(game.levelStars, 1); assert.equal(game.levelScore, 1500);
+  game.player.hp = 1; collect(game, 'heart'); assert.equal(game.player.hp, 2);
+});
+
+test('Breeze allows exactly one double jump and replenishes after landing', () => {
+  const game = fresh(); safeWorld(game); place(game, 100); collect(game, 'breeze');
+  hold(game, 'jump'); tick(game, .18); hold(game, 'jump', false); tick(game, .03);
+  hold(game, 'jump'); tick(game, DT); assert.equal(game.player.airJumps, 1); assert.ok(game.player.vy < -600);
+  hold(game, 'jump', false); tick(game, .08); const before = game.player.vy;
+  hold(game, 'jump'); tick(game, DT); assert.equal(game.player.airJumps, 1); assert.ok(game.player.vy > before);
+  hold(game, 'jump', false); tick(game, 1.2); assert.ok(game.player.grounded); assert.equal(game.player.airJumps, 0);
+});
+
+test('Bloom projectile kills a patrol and action respects its cooldown', () => {
+  const game = fresh(); safeWorld(game); place(game, 100); collect(game, 'bloom');
+  game.enemies = [{ x: 320, y: 566, w: 36, h: 34, alive: true, type: 'patrol', minX: 300, maxX: 440,
+    vx: 0, vy: 0, facing: -1, phase: 0, timer: 1, spawnX: 320, spawnY: 566 }];
+  hold(game, 'action'); tick(game, DT); assert.equal(game.projectiles.length, 1);
+  game.usePower(); assert.equal(game.projectiles.length, 1);
+  tick(game, .4); assert.equal(game.enemies[0].alive, false); assert.equal(game.levelScore, 150);
+});
+
+test('Comet produces a brief dash and invulnerability; powers expire cleanly', () => {
+  const game = fresh(); safeWorld(game); place(game, 100); collect(game, 'comet');
+  hold(game, 'action'); tick(game, .1);
+  assert.ok(game.player.x > 180); assert.equal(game.player.vx, 910); assert.ok(game.player.invuln > 0);
+  tick(game, .3); assert.ok(game.player.dashTime <= 0); assert.ok(game.player.vx < 910);
+  game.player.powerTime = .01; tick(game, .03); assert.equal(game.player.power, null);
+});
+
+test('All four enemy behaviours run: patrol turn, hopper leap, turret shot, pursuing wisp', () => {
+  const game = fresh(); safeWorld(game); place(game, 700);
+  const make = (type, x) => ({ type, x, y: 566, w: 36, h: 34, alive: true, grounded: true,
+    minX: x - 50, maxX: x + 100, vx: 0, vy: 0, facing: 1, phase: 0, timer: 0, spawnX: x, spawnY: 566 });
+  const patrol = make('patrol', 200); patrol.x = patrol.maxX - 35;
+  const hopper = make('hopper', 350), turret = make('turret', 450), chaser = make('chaser', 550);
+  game.enemies = [patrol, hopper, turret, chaser];
+  tick(game, .1);
+  assert.ok(patrol.vx < 0); assert.ok(hopper.vy < 0); assert.ok(game.projectiles.some(s => !s.friendly));
+  assert.ok(chaser.x > 550);
+});
+
+test('Completion persists records, opens the next stage and restores from localStorage', () => {
+  const { game, storage } = environment(); game.loadLevel(0);
+  game.levelStars = 2; game.levelCoins = 17; game.elapsed = 55; game.levelScore = 900;
+  game.complete(); assert.equal(game.mode, 'complete'); assert.equal(game.progress.unlocked, 1);
+  assert.equal(game.progress.records[0].stars, 2); assert.equal(game.progress.records[0].time, 55);
+  const restored = environment(storage).game;
+  assert.equal(restored.progress.records[0].coins, 17); assert.ok(restored.isUnlocked(1)); assert.ok(!restored.isUnlocked(2));
+  restored.start(2); assert.equal(restored.levelIndex, 0);
+  restored.start(1); assert.equal(restored.levelIndex, 1);
+});
+
+test('A secret opens the bonus early without unlocking late story levels', () => {
+  const { game, storage } = environment(); game.loadLevel(0);
+  const area = game.secrets[0]; place(game, area.x + 10, area.y + 80);
+  game.updateSecrets(); game.updateSecrets();
+  assert.equal(game.secretCount, 1); assert.equal(game.levelScore, 750);
+  assert.equal(game.progress.bonusUnlocked, true); assert.ok(game.isUnlocked(6)); assert.ok(!game.isUnlocked(7));
+  game.start(6); game.complete(); assert.equal(game.progress.unlocked, 0);
+  assert.equal(environment(storage).game.progress.bonusUnlocked, true);
+});
+
+test('Inserting a chapter before the finale preserves dynamic progression flags', () => {
+  const { game, window } = environment();
+  const extra = window.LumenLevels.create(0);
+  extra.name = 'Integration test garden'; extra.id = 7;
+  window.LUMEN_LEVELS.splice(7, 0, extra);
+  window.LUMEN_LEVELS.forEach((level, index) => { level.id = index; });
+  game.loadLevel(7); game.complete();
+  assert.equal(game.mode, 'complete'); assert.equal(game.progress.unlocked, 8);
+  game.start(8); assert.equal(game.level.final, true); game.complete();
+  assert.equal(game.mode, 'ending'); assert.equal(game.progress.finished, true);
+});
+
+test('Denied storage and malformed save data do not prevent play', () => {
+  const denied = environment(new Map(), true).game; denied.start(0); denied.complete();
+  assert.equal(denied.mode, 'complete'); assert.equal(denied.storageAvailable, false);
+  const malformed = environment(new Map([['lumen.gardens.v1', '{broken json']])).game;
+  malformed.start(0); tick(malformed, .2); assert.equal(malformed.mode, 'playing');
+});
+
+test('Boss wakes, alternates telegraph/leap/volley/recovery, and enters phase two', () => {
+  const game = fresh(7); game.enemies = []; game.hazards = []; game.collectibles = []; game.checkpoints = [];
+  place(game, 3500); game.player.invuln = 100;
+  const seen = new Set();
+  for (let i = 0; i < 1600; i++) { tick(game, DT); seen.add(game.boss.state); }
+  for (const state of ['wake', 'telegraph', 'leap', 'recover', 'volley']) assert.ok(seen.has(state), 'Missing ' + state);
+  assert.equal(game.boss.activated, true); assert.equal(game.exit.open, false);
+  game.boss.hp = 6; game.updateBoss(DT); assert.equal(game.boss.phase, 2);
+});
+
+test('Boss armour rejects damage; a real falling stomp damages its lowered crown', () => {
+  const game = fresh(7); game.enemies = []; game.hazards = []; game.collectibles = [];
+  const boss = game.boss;
+  assert.equal(game.hitBoss(2), false); assert.equal(boss.hp, 12);
+  Object.assign(boss, { activated: true, state: 'recover', timer: 3, vulnerable: true, y: 530, hitFlash: 0 });
+  place(game, boss.x + 45, boss.y + 15); game.player.grounded = false;
+  game.player.vy = 240; game.player.previousBottom = boss.y + 9;
+  game.updateBoss(DT);
+  assert.equal(boss.hp, 10); assert.equal(game.player.vy, -650);
+  assert.equal(game.hitBoss(2), false, 'The same impact must not repeatedly damage the boss.');
+  for (let i = 0; i < 5; i++) { boss.hitFlash = 0; boss.vulnerable = true; assert.equal(game.hitBoss(2), true); }
+  assert.equal(boss.hp, 0); assert.equal(boss.state, 'defeated'); assert.equal(game.exit.open, true);
+  place(game, game.exit.x + 5); tick(game, DT); assert.equal(game.mode, 'ending'); assert.equal(game.progress.finished, true);
+});
+
+test('Boss death/respawn retains earned damage and reopens with a clear warning', () => {
+  const game = fresh(7); place(game, 3500); game.boss.activated = true; game.boss.hp = 5;
+  game.checkpoint = { x: 3404, y: 552 }; game.die(); tick(game, .9);
+  assert.equal(game.mode, 'playing'); assert.equal(game.boss.hp, 5);
+  assert.equal(game.boss.state, 'wake'); assert.equal(game.boss.vulnerable, false); assert.ok(game.boss.timer > 1.8);
+});
+
+test('Lagoon allows sustained swimming and a physical exit onto its higher shore', () => {
+  const game = fresh(2); game.enemies = []; game.hazards = []; game.collectibles = [];
+  place(game, 3760, 740); hold(game, 'jump'); hold(game, 'right');
+  let landed = false;
+  for (let i = 0; i < 600; i++) {
+    tick(game, DT);
+    if (game.player.x > 3930) { hold(game, 'right', false); hold(game, 'jump', false); }
+    if (game.player.x >= 3890 && game.player.grounded && game.player.y <= 554) { landed = true; break; }
+  }
+  assert.ok(landed, 'The shore cannot be reached with the actual swimming controls.');
+  assert.equal(game.mode, 'playing'); assert.equal(game.player.hp, 3);
+});
+
+test('All mandatory dry gaps have physical walking-jump solutions without powers', () => {
+  // A segment rig uses the authored geometry and real updatePlayer/updatePlatforms.
+  // Enemies are excluded here to isolate reachability from combat randomness.
+  const paths = {
+    0: [0, 1, 2, 3], 1: [0, 7, 1, 11, 12, 2, 16, 3],
+    3: [0, 5, 6, 1, 7, 8, 2, 9, 10, 3, 11, 12, 4],
+    4: [0, 1, 2, 3, 4], 5: [0, 1, 2, 3], 6: [0, 1, 2, 3, 4], 7: [0, 1, 2, 3]
+  };
+  const failures = [];
+  for (const [stage, route] of Object.entries(paths)) {
+    for (let n = 0; n < route.length - 1; n++) {
+      let success = false;
+      for (const launchMargin of [70, 45, 90, 110, 25]) {
+        const game = fresh(Number(stage)); game.enemies = []; game.collectibles = []; game.checkpoints = []; game.secrets = []; game.boss = null; game.exit.open = false;
+        game.time = 0; game.updatePlatforms(0);
+        const source = game.platforms[route[n]], target = game.platforms[route[n + 1]];
+        place(game, source.x + source.w - launchMargin, source.y);
+        game.player.standingPlatform = source; game.player.vx = 320;
+        hold(game, 'right'); hold(game, 'jump');
+        for (let i = 0; i < 190; i++) {
+          // Release horizontal movement over a narrow target; air inertia remains real.
+          if (game.player.x + 16 > target.x + target.w * .5 && target.w < 220) hold(game, 'right', false);
+          tick(game, DT, true);
+          const support = game.player.standingPlatform;
+          if (i > 10 && game.player.grounded && support && game.player.x + 30 > target.x + 5 &&
+              game.player.x < target.x + target.w - 5 && game.player.y + game.player.h <= target.y + 8) {
+            success = true; break;
+          }
+          if (game.mode === 'dead' || game.player.y > 830) break;
+        }
+        if (success) break;
+      }
+      if (!success) failures.push('stage ' + stage + ': platform ' + route[n] + ' -> ' + route[n + 1]);
+    }
+  }
+  assert.deepEqual(failures, []);
+});
+
+test('Every authored checkpoint respawns above stable ground without immediate damage', () => {
+  for (let stage = 0; stage < 8; stage++) {
+    const game = fresh(stage);
+    for (const checkpoint of game.checkpoints) {
+      place(game, checkpoint.x - 16, checkpoint.y); game.updateCheckpoints();
+      assert.equal(checkpoint.active, true, 'Checkpoint activation: ' + stage + '/' + checkpoint.x);
+      game.lives = 5; game.die(); tick(game, 1.1);
+      assert.equal(game.mode, 'playing', 'Checkpoint respawn: ' + stage + '/' + checkpoint.x);
+      assert.ok(game.player.grounded, 'Checkpoint support: ' + stage + '/' + checkpoint.x);
+      assert.equal(game.player.hp, 3, 'Checkpoint hazard: ' + stage + '/' + checkpoint.x);
+    }
+  }
+});
+
+test('Pause freezes simulation and resume clears held input', () => {
+  const game = fresh(); hold(game, 'right'); tick(game, .2);
+  game.pause(); const elapsed = game.elapsed, x = game.player.x;
+  tick(game, 2); assert.equal(game.elapsed, elapsed); assert.equal(game.player.x, x);
+  game.resume(); assert.equal(game.input.down('right'), false); tick(game, .1); assert.ok(game.elapsed > elapsed);
+});
+
+console.log('\n' + (checks.length - failed) + '/' + checks.length + ' integration checks passed.');
+fs.writeFileSync(path.join(__dirname, 'engine-test-results.json'), JSON.stringify({ passed: checks.length - failed, failed, checks }, null, 2));
+process.exitCode = failed ? 1 : 0;

@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const {chromium}=require('C:/Users/omart/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async()=>{
+ const browser=await chromium.launch({headless:true,channel:'msedge'});
+ const page=await browser.newPage({viewport:{width:1440,height:900}});const requests=[],errors=[];
+ page.on('request',r=>requests.push(r.url()));page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL(path.resolve(__dirname,'../LUMEN.html')).href);await page.waitForFunction(()=>window.lumen?.frames>10);
+ await page.getByRole('button',{name:'Commencer l’aventure'}).click();await page.waitForFunction(()=>lumen.mode==='playing');
+ await page.keyboard.down('ArrowRight');await page.waitForTimeout(350);await page.keyboard.up('ArrowRight');
+ assert(await page.evaluate(()=>lumen.player.x>140));assert.equal(requests.length,1);
+ const html=fs.readFileSync(path.resolve(__dirname,'../LUMEN.html'),'utf8');assert(!/<script src=|<link rel="stylesheet"/.test(html));
+ await page.evaluate(()=>{lumen.progress.unlocked=7;lumen.start(7);lumen.boss.hp=0;lumen.exit.open=true;lumen.player.x=lumen.exit.x;lumen.player.y=554;});
+ await page.waitForFunction(()=>lumen.mode==='ending');
+ assert(await page.locator('#complete-title').innerText()==='Même la lune avait besoin de vous.');assert(await page.evaluate(()=>lumen.progress.finished));
+ await page.screenshot({path:path.resolve(__dirname,'ending-desktop.png')});
+ await page.getByRole('button',{name:'Revoir les jardins'}).click();await page.waitForFunction(()=>lumen.mode==='map');assert.equal(await page.locator('.level-card:disabled').count(),0);
+ assert.deepEqual(errors,[]);
+ console.log(JSON.stringify({singleFile:true,requests:requests.length,externalRequests:0,ending:true,errors}));await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

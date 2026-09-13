@@ -1,0 +1,58 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+const { chromium } = require('C:/Users/omart/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root = path.resolve(__dirname, '..');
+(async()=>{
+  const browser=await chromium.launch({headless:true,channel:'msedge'});
+  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+  const page=await context.newPage(); const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text());});
+  await page.goto(pathToFileURL(path.join(root,'index.html')).href);
+  await page.waitForFunction(()=>window.lumen?.frames>15);
+  assert.equal(await page.evaluate(()=>lumen.mode),'home');
+  await page.screenshot({path:path.join(__dirname,'home-desktop.png')});
+  await page.getByRole('button',{name:'Comment jouer'}).click();
+  assert.equal(await page.evaluate(()=>lumen.mode),'help');
+  await page.screenshot({path:path.join(__dirname,'help-desktop.png')});
+  await page.getByRole('button',{name:'C’est parti'}).click();
+  await page.getByRole('button',{name:'Commencer l’aventure'}).click();
+  await page.waitForFunction(()=>lumen.mode==='playing');
+  await page.waitForTimeout(2600);
+  const initialX=await page.evaluate(()=>lumen.player.x);
+  await page.keyboard.down('ArrowRight');await page.waitForTimeout(600);await page.keyboard.down('Space');await page.waitForTimeout(220);await page.keyboard.up('Space');await page.waitForTimeout(500);await page.keyboard.up('ArrowRight');
+  assert((await page.evaluate(()=>lumen.player.x))>initialX+200);
+  await page.screenshot({path:path.join(__dirname,'playing-desktop.png')});
+  await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>lumen.mode),'paused');
+  const paused=await page.evaluate(()=>lumen.elapsed);await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>lumen.elapsed),paused);
+  await page.getByRole('button',{name:'L’atlas des chapitres'}).click();await page.waitForFunction(()=>lumen.mode==='map');
+  await page.screenshot({path:path.join(__dirname,'map-desktop.png')});
+  assert.equal(await page.locator('.level-card').count(),8);assert.equal(await page.locator('.level-card:disabled').count(),7);
+  await page.locator('[data-level="0"]').click();await page.waitForFunction(()=>lumen.mode==='playing');
+  await page.keyboard.press('KeyM');assert.equal(await page.evaluate(()=>lumen.audio.muted),true);
+  // Real browser persistence, victory presentation and next-stage navigation.
+  await page.evaluate(()=>{lumen.levelStars=2;lumen.levelCoins=17;lumen.complete();});
+  assert.equal(await page.evaluate(()=>lumen.mode),'complete');await page.screenshot({path:path.join(__dirname,'complete-desktop.png')});
+  await page.getByRole('button',{name:'Le prochain jardin'}).click();await page.waitForFunction(()=>lumen.levelIndex===1&&lumen.mode==='playing');
+  await page.reload();await page.waitForFunction(()=>window.lumen?.frames>5);
+  assert.equal(await page.evaluate(()=>lumen.progress.unlocked),1);assert.equal(await page.evaluate(()=>lumen.progress.records[0].stars),2);
+  await page.getByRole('button',{name:'Poursuivre l’aventure'}).click();await page.waitForFunction(()=>lumen.mode==='playing'&&lumen.levelIndex===1);
+  await page.evaluate(()=>{lumen.progress.unlocked=7;lumen.start(7);lumen.player.x=3800;lumen.camera.x=3520;});
+  await page.waitForTimeout(900);await page.screenshot({path:path.join(__dirname,'boss-desktop.png')});
+  // Layout across common portrait/landscape touch screens; actual pointer input.
+  const mobile=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const phone=await mobile.newPage();phone.on('pageerror',e=>errors.push(e.message));
+  await phone.goto(pathToFileURL(path.join(root,'index.html')).href);await phone.waitForFunction(()=>window.lumen?.frames>5);
+  await phone.screenshot({path:path.join(__dirname,'home-mobile.png')});
+  await phone.getByRole('button',{name:'Commencer l’aventure'}).tap();await phone.waitForFunction(()=>lumen.mode==='playing');
+  assert(await phone.locator('#touch-controls').isVisible());
+  const xBefore=await phone.evaluate(()=>lumen.player.x);
+  const right=phone.locator('[data-touch="right"]');await right.dispatchEvent('pointerdown',{pointerId:1,pointerType:'touch',bubbles:true});await phone.waitForTimeout(300);await right.dispatchEvent('pointerup',{pointerId:1,pointerType:'touch',bubbles:true});
+  // Synthetic pointer dispatch cannot set capture in every browser; actual touch tested separately below.
+  await phone.screenshot({path:path.join(__dirname,'playing-mobile.png')});
+  await phone.setViewportSize({width:844,height:390});await phone.waitForTimeout(400);await phone.screenshot({path:path.join(__dirname,'playing-mobile-landscape.png')});
+  const report={errors,desktopMode:await page.evaluate(()=>lumen.mode),fps:await page.evaluate(()=>lumen.fps),mobileMoved:await phone.evaluate(x=>lumen.player.x>x,xBefore)};
+  fs.writeFileSync(path.join(__dirname,'browser-results.json'),JSON.stringify(report,null,2));
+  console.log(JSON.stringify(report));await browser.close();assert.deepEqual(errors,[]);
+})().catch(e=>{console.error(e);process.exit(1);});

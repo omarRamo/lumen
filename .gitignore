@@ -1,0 +1,9 @@
+# Captures de vérification régénérées par work/verify-browser.cjs
+work/shots/
+work/*.png
+work/*.log
+
+# Dépendances de développement (le jeu lui-même n'en a aucune)
+node_modules/
+package-lock.json
+.git-commit-msg.txt

@@ -1,0 +1,202 @@
+[
+  {
+    "test": "stage 0 spawn to exit, actual enemies and pickups",
+    "mode": "complete",
+    "seconds": 17.15,
+    "deaths": 2,
+    "lives": 4,
+    "hp": 3,
+    "coins": 45,
+    "maxX": 3718.1,
+    "trace": [
+      {
+        "event": "jump",
+        "x": 513.3,
+        "y": 554,
+        "edge": 950,
+        "time": 1.36
+      },
+      {
+        "event": "jump",
+        "x": 870.6,
+        "y": 554,
+        "edge": 950,
+        "time": 2.47
+      },
+      {
+        "event": "jump",
+        "x": 1508,
+        "y": 554,
+        "edge": 1840,
+        "time": 4.47
+      },
+      {
+        "event": "death",
+        "x": 1928,
+        "y": 830.2,
+        "time": 5.86
+      },
+      {
+        "event": "jump",
+        "x": 1568.8,
+        "y": 554,
+        "edge": 1840,
+        "time": 7.56
+      },
+      {
+        "event": "death",
+        "x": 1928,
+        "y": 832.4,
+        "time": 8.73
+      },
+      {
+        "event": "jump",
+        "x": 1462.1,
+        "y": 554,
+        "edge": 1840,
+        "time": 10.1
+      },
+      {
+        "event": "jump",
+        "x": 1803.5,
+        "y": 554,
+        "edge": 1840,
+        "time": 11.17
+      },
+      {
+        "event": "jump",
+        "x": 2331.5,
+        "y": 554,
+        "edge": 2820,
+        "time": 12.82
+      },
+      {
+        "event": "jump",
+        "x": 2742.1,
+        "y": 554,
+        "edge": 2820,
+        "time": 14.1
+      },
+      {
+        "event": "jump",
+        "x": 3206.1,
+        "y": 554,
+        "edge": 3900,
+        "time": 15.55
+      }
+    ]
+  },
+  {
+    "test": "chapter 8 (Les vergers du vent) exercised by a naive bot",
+    "mode": "complete",
+    "seconds": 17.88,
+    "deaths": 0,
+    "lives": 6,
+    "maxX": 5579.9,
+    "width": 5760,
+    "lanternsLit": 1,
+    "coins": 50,
+    "enemiesDefeated": 0,
+    "damageTaken": 2,
+    "sleepersWoken": 0,
+    "swarmsHunting": 2,
+    "swarmsScattered": 0,
+    "ok": true
+  },
+  {
+    "test": "chapter 9 (La galerie des échos) exercised by a naive bot",
+    "mode": "complete",
+    "seconds": 19,
+    "deaths": 0,
+    "lives": 6,
+    "maxX": 5819.7,
+    "width": 6000,
+    "lanternsLit": 1,
+    "coins": 50,
+    "enemiesDefeated": 2,
+    "damageTaken": 3,
+    "sleepersWoken": 1,
+    "swarmsHunting": 2,
+    "swarmsScattered": 2,
+    "ok": true
+  },
+  {
+    "test": "arena checkpoint to boss victory and final exit, unpowered inputs only",
+    "mode": "ending",
+    "seconds": 14.24,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 2,
+    "bossHp": 0,
+    "playerX": 4619.8,
+    "changes": [
+      {
+        "time": 0,
+        "state": "sleep",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 0.01,
+        "state": "wake",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 1.71,
+        "state": "telegraph",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 2.87,
+        "state": "leap",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 3.89,
+        "state": "recover",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 7.3,
+        "state": "telegraph",
+        "bossHp": 4,
+        "playerHp": 3
+      },
+      {
+        "time": 8.11,
+        "state": "rain",
+        "bossHp": 4,
+        "playerHp": 2
+      },
+      {
+        "time": 10.62,
+        "state": "recover",
+        "bossHp": 4,
+        "playerHp": 2
+      },
+      {
+        "time": 12.14,
+        "state": "defeated",
+        "bossHp": 0,
+        "playerHp": 2
+      }
+    ]
+  },
+  {
+    "test": "timed race of chapter 1 records a medal and a personal best",
+    "mode": "complete",
+    "runMode": "timed",
+    "seconds": 7.49,
+    "deaths": 0,
+    "medal": "bronze",
+    "timed": true,
+    "newRecord": true,
+    "bestTimedTime": 7.49,
+    "goldTarget": 70,
+    "ok": true
+  }
+]

@@ -1,0 +1,110 @@
+{
+  "passed": 26,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "All eight authored stages load with independent objects and stable spawns",
+      "passed": true
+    },
+    {
+      "name": "Jump height varies with release and lands without sinking",
+      "passed": true
+    },
+    {
+      "name": "Coyote jump succeeds after walking off a real ledge, then expires",
+      "passed": true
+    },
+    {
+      "name": "Buffered jump fires on landing, including a jump pressed in the air",
+      "passed": true
+    },
+    {
+      "name": "A buffered tap released before landing produces a short jump",
+      "passed": true
+    },
+    {
+      "name": "Horizontal and vertical moving platforms carry a standing player",
+      "passed": true
+    },
+    {
+      "name": "Crumble/reform, vanish cycle, spring boost and conveyor transport work",
+      "passed": true
+    },
+    {
+      "name": "Checkpoint heals, death costs exactly one life, respawn restores a safe state",
+      "passed": true
+    },
+    {
+      "name": "Damage grace period prevents repeated hits; falling and lava are lethal",
+      "passed": true
+    },
+    {
+      "name": "A lethal enemy contact stops the frame before the corpse can collect items",
+      "passed": true
+    },
+    {
+      "name": "Coins/stars/heart collect once; forty coins award exactly one extra life",
+      "passed": true
+    },
+    {
+      "name": "Breeze allows exactly one double jump and replenishes after landing",
+      "passed": true
+    },
+    {
+      "name": "Bloom projectile kills a patrol and action respects its cooldown",
+      "passed": true
+    },
+    {
+      "name": "Comet produces a brief dash and invulnerability; powers expire cleanly",
+      "passed": true
+    },
+    {
+      "name": "All four enemy behaviours run: patrol turn, hopper leap, turret shot, pursuing wisp",
+      "passed": true
+    },
+    {
+      "name": "Completion persists records, opens the next stage and restores from localStorage",
+      "passed": true
+    },
+    {
+      "name": "A secret opens the bonus early without unlocking late story levels",
+      "passed": true
+    },
+    {
+      "name": "Inserting a chapter before the finale preserves dynamic progression flags",
+      "passed": true
+    },
+    {
+      "name": "Denied storage and malformed save data do not prevent play",
+      "passed": true
+    },
+    {
+      "name": "Boss wakes, alternates telegraph/leap/volley/recovery, and enters phase two",
+      "passed": true
+    },
+    {
+      "name": "Boss armour rejects damage; a real falling stomp damages its lowered crown",
+      "passed": true
+    },
+    {
+      "name": "Boss death/respawn retains earned damage and reopens with a clear warning",
+      "passed": true
+    },
+    {
+      "name": "Lagoon allows sustained swimming and a physical exit onto its higher shore",
+      "passed": true
+    },
+    {
+      "name": "All mandatory dry gaps have physical walking-jump solutions without powers",
+      "passed": true
+    },
+    {
+      "name": "Every authored checkpoint respawns above stable ground without immediate damage",
+      "passed": true
+    },
+    {
+      "name": "Pause freezes simulation and resume clears held input",
+      "passed": true
+    }
+  ]
+}

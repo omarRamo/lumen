@@ -1,0 +1,38 @@
+{
+  "passed": 8,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Every chapter draws from spawn without a missing routine",
+      "passed": true
+    },
+    {
+      "name": "The title garden, the atlas pose and the portrait viewport all draw",
+      "passed": true
+    },
+    {
+      "name": "All six creatures draw in every state they can reach",
+      "passed": true
+    },
+    {
+      "name": "Every platform type, hazard and collectible has artwork",
+      "passed": true
+    },
+    {
+      "name": "Every particle shape and both projectile kinds draw",
+      "passed": true
+    },
+    {
+      "name": "The Veilleur draws through every stage, pattern and the closing arena",
+      "passed": true
+    },
+    {
+      "name": "The echo bell ring and the revealed ledges draw over their whole lifetime",
+      "passed": true
+    },
+    {
+      "name": "Nilo draws in every posture: running, airborne, sliding, hurt and defeated",
+      "passed": true
+    }
+  ]
+}

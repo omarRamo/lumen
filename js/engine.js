@@ -1,0 +1,739 @@
+/* LUMEN — deterministic 120 Hz simulation, independent from the drawing rate.
+ * Classic scripts deliberately support file://: no server, build or import required. */
+(() => {
+  'use strict';
+  const WIDTH = 1280, HEIGHT = 720, STEP = 1 / 120;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const approach = (v, target, delta) => v < target ? Math.min(target, v + delta) : Math.max(target, v - delta);
+  const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  // Each garden throws its own debris when Nilo lands, starts running or bounces.
+  // The type drives the renderer's particle shape, the colour its palette.
+  const GROUND_DUST = {
+    meadow: { type:'leaf', colors:['#c8e88a','#9ed08a','#f3d9a0'] },
+    cavern: { type:'dust', colors:['#9db9cf','#7d9ab5','#bdacf5'] },
+    tide:   { type:'bubble', colors:['#bdeee2','#8fd6cf','#e9f7d8'] },
+    sky:    { type:'leaf', colors:['#e4f2c7','#fff0cd','#b4dcc4'] },
+    forge:  { type:'ember', colors:['#ffc07a','#f79066','#ffe3ad'] },
+    frost:  { type:'flake', colors:['#e6f7f1','#b6dbe6','#f6fbff'] },
+    secret: { type:'petal', colors:['#f0c2d4','#e2b6e0','#ffe2ae'] },
+    eclipse:{ type:'dust', colors:['#b6cfc4','#88a8a8','#f0cf96'] }
+  };
+  const MEDAL_RANK = { bronze:1, silver:2, gold:3 };
+  const KEY_ACTIONS = { ArrowLeft:'left', KeyQ:'left', KeyA:'left', ArrowRight:'right', KeyD:'right',
+    ArrowUp:'jump', KeyZ:'jump', KeyW:'jump', Space:'jump', ArrowDown:'down', KeyS:'down',
+    ShiftLeft:'run', ShiftRight:'run', KeyX:'action', KeyJ:'action', Escape:'pause', KeyP:'pause', KeyR:'retry', KeyM:'sound', Enter:'confirm' };
+
+  class Input {
+    constructor(onCommand) {
+      this.keys = new Map(); this.pressed = new Set(); this.released = new Set(); this.onCommand = onCommand;
+      window.addEventListener('keydown', e => {
+        const action = KEY_ACTIONS[e.code];
+        if (!action || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        // Let keyboard users activate focused interface controls normally.
+        if ((e.code === 'Enter' || e.code === 'Space') && e.target.closest('button,a') && document.body.classList.contains('in-game') === false) return;
+        e.preventDefault();
+        if (!e.repeat && !this.keys.has(e.code)) {
+          this.keys.set(e.code, action); this.pressed.add(action);
+          if (['pause','retry','sound','confirm'].includes(action)) this.onCommand(action);
+        }
+      });
+      window.addEventListener('keyup', e => {
+        const action = this.keys.get(e.code); this.keys.delete(e.code);
+        if (action && !this.down(action)) this.released.add(action);
+      });
+      window.addEventListener('blur', () => this.reset());
+    }
+    down(action) { for (const value of this.keys.values()) if (value === action) return true; return false; }
+    just(action) { return this.pressed.has(action); }
+    virtual(action, down, pointer = '') {
+      const key = 'touch:' + action + pointer;
+      if (down && !this.keys.has(key)) { this.keys.set(key, action); this.pressed.add(action); }
+      else if (!down) { this.keys.delete(key); if (!this.down(action)) this.released.add(action); }
+    }
+    clearFrame() { this.pressed.clear(); this.released.clear(); }
+    reset() { this.keys.clear(); this.clearFrame(); }
+    pollGamepad(mode) {
+      if (typeof navigator === 'undefined' || !navigator.getGamepads) return;
+      const pad = [...navigator.getGamepads()].find(p => p && p.connected);
+      const button = i => !!pad?.buttons[i]?.pressed;
+      const horizontal = pad?.axes[0] || 0;
+      const actions = {left:horizontal < -.25 || button(14),right:horizontal > .25 || button(15),
+        down:(pad?.axes[1] || 0) > .5 || button(13),jump:button(0) || button(1),
+        action:button(2),run:button(4)||button(5)||button(6)||button(7)};
+      for (const [action, held] of Object.entries(actions)) this.virtual(action, held, 'gamepad');
+      if (button(9) && !this.padPause) this.onCommand('pause');
+      if (button(0) && !this.padConfirm && ['home','paused','complete','ending','gameover'].includes(mode)) this.onCommand('confirm');
+      this.padPause=button(9);this.padConfirm=button(0);
+    }
+  }
+
+  class Game {
+    constructor(canvas) {
+      this.canvas = canvas; this.renderer = new window.LumenRenderer(canvas); this.audio = new window.LumenAudio();
+      this.listeners = {}; this.input = new Input(action => this.emit('command', action));
+      this.mode = 'home'; this.time = 0; this.runMode='explore'; this.camera = { x:0, y:0, shake:0 };
+      this.progress = this.readProgress(); this.storageAvailable = true;
+      this.audio.setMuted(!!this.progress.muted);
+      this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
+      this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
+      this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
+      this.resize = () => this.renderer.resize(window.innerWidth, window.innerHeight);
+      window.addEventListener('resize', this.resize); this.resize();
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { if (this.mode === 'playing') this.pause(); this.audio.pause(); this.input.reset(); }
+        else if (this.mode === 'home') this.audio.resume();
+        this.lastFrame = 0; this.accumulator = 0;
+      });
+      window.addEventListener('blur', () => { if (this.mode === 'playing') this.pause(); });
+    }
+    on(name, fn) { (this.listeners[name] ||= []).push(fn); }
+    emit(name, detail) { (this.listeners[name] || []).forEach(fn => fn(detail)); }
+    readProgress() {
+      const fallback = { version:2, unlocked:0, records:{}, bonusUnlocked:false, muted:false };
+      try {
+        const raw = JSON.parse(localStorage.getItem('lumen.gardens.v2') || localStorage.getItem('lumen.gardens.v1'));
+        if (!raw || ![1,2].includes(raw.version)) return fallback;
+        const records=raw.records && typeof raw.records==='object' ? {...raw.records} : {};
+        // The original finale moved after two new chapters; never assign its old
+        // completion record to a garden the player has not yet visited.
+        if(raw.version===1 && window.LUMEN_LEVELS.length>8 && records[7]) {
+          records[window.LUMEN_LEVELS.findIndex(l=>l.final)] = records[7]; delete records[7];
+        }
+        return { ...fallback, ...raw, version:2, unlocked:clamp(raw.version===1&&raw.finished?window.LUMEN_LEVELS.length-1:Number(raw.unlocked)||0,0,window.LUMEN_LEVELS.length-1), records };
+      } catch (_) { return fallback; }
+    }
+    saveProgress() {
+      try { localStorage.setItem('lumen.gardens.v2', JSON.stringify(this.progress)); }
+      catch (_) { this.storageAvailable = false; this.emit('toast', 'Sauvegarde indisponible : la progression reste disponible pendant cette session.'); }
+    }
+    isUnlocked(index) { return index >= 0 && index < window.LUMEN_LEVELS.length && (index <= this.progress.unlocked || (window.LUMEN_LEVELS[index].bonus && this.progress.bonusUnlocked)); }
+    showHome() {
+      this.loadLevel(0, false); this.mode = 'home'; this.camera.x = 0;
+      this.platforms = [
+        {x:740,y:520,w:460,h:230,type:'ground',active:true},
+        {x:585,y:605,w:125,h:150,type:'ground',active:true},
+        {x:1175,y:440,w:170,h:190,type:'ground',active:true}
+      ];
+      this.enemies=[];this.collectibles=[{x:1080,y:413,type:'star',taken:false}];this.checkpoints=[];this.hazards=[];this.secrets=[];
+      this.exit={x:2100,y:500,w:70,h:100,open:true};
+      this.player.x = 890; this.player.y = 474; this.player.grounded = true; this.player.facing = -1;
+      this.audio.setTheme('meadow'); this.emit('mode', this.mode);
+    }
+    start(index = 0, options = {}) {
+      if (!this.isUnlocked(index)) return;
+      if (this.lives <= 0) this.lives = 5;
+      this.runMode=options.timed?'timed':'explore';
+      this.loadLevel(index); this.audio.unlock(); this.audio.resume();
+    }
+    loadLevel(index, active = true) {
+      const data = window.LumenLevels.create(index);
+      this.levelIndex = index; this.level = data; this.elapsed = 0; this.levelCoins = 0; this.levelStars = 0;
+      this.levelScore = 0; this.deaths = 0; this.secretCount = 0; this.deadTimer = 0;
+      this.damageTaken=0;this.enemiesDefeated=0;this.echoTime=0;this.flash=null;this.danger=0;this.dangerTimer=0;
+      this.platforms = data.platforms.map((p, i) => ({ phase:0, ...p, active:p.type!=='echo', id:i, baseX:p.x, baseY:p.y, dx:0, dy:0, crumbleTimer:0, reformTimer:0 }));
+      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
+      this.collectibles = data.collectibles.map(c => ({ ...c, taken:false }));
+      this.checkpoints = data.checkpoints.map(c => ({ ...c, active:false }));
+      this.hazards = data.hazards || []; this.secrets = (data.secrets || []).map(s => ({ ...s, found:false }));
+      this.exit = { w:70, h:100, ...data.exit, open:!data.boss };
+      this.projectiles = []; this.particles = []; this.floatingTexts = [];
+      this.checkpoint = { x:data.spawn.x, y:data.spawn.y };
+      this.player = { x:data.spawn.x, y:data.spawn.y, w:32, h:46, vx:0, vy:0, facing:1, grounded:false, anim:0,
+        landTimer:0, dead:false, invuln:0, hp:3, power:null, powerTime:0, slide:false, coyote:0, jumpBuffer:0,
+        airJumps:0, dashTime:0, actionCooldown:0, standingPlatform:null, wet:false, trailTimer:0,
+        jumpTimer:0,runStartTimer:0,lastAxis:0,powerDuration:35,powerWarning:false,stepSoundTimer:0 };
+      this.boss = data.boss ? { x:data.width - 650, y:460, w:130, h:130, hp:12, maxHp:12, phase:1, timer:0,
+        vulnerable:false, hitFlash:0, facing:-1, state:'sleep', vx:0, vy:0, attack:0, activated:false, homeX:data.width - 650,
+        stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
+      this.camera = { x:clamp(data.spawn.x - 300, 0, Math.max(0, data.width - WIDTH)), y:0, shake:0 };
+      this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
+      if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
+    }
+    retry() { this.lives = this.lives <= 0 ? 5 : this.lives; this.start(this.levelIndex,{timed:this.runMode==='timed'}); }
+    pause() {
+      if (this.mode !== 'playing') return;
+      this.mode = 'paused'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
+    }
+    resume() {
+      if (this.mode !== 'paused') return;
+      this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
+    }
+    showMap() { this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode); }
+    beginLoop() { if (this.running) return; this.running = true; requestAnimationFrame(t => this.frame(t)); }
+    frame(timestamp) {
+      if (!this.running) return;
+      const realDt = this.lastFrame ? (timestamp - this.lastFrame) / 1000 : STEP;
+      const dt = Math.min(.08, Math.max(0, realDt)); this.lastFrame = timestamp;
+      this.input.pollGamepad(this.mode);
+      this.accumulator += dt;
+      while (this.accumulator >= STEP) { this.update(STEP); this.input.clearFrame(); this.accumulator -= STEP; }
+      this.renderer.draw(this, dt); this.emit('frame', dt);
+      this.frames++; this.frameWindow.push(realDt);
+      if (this.frameWindow.length > 120) this.frameWindow.shift();
+      if (this.frames % 30 === 0) this.fps = Math.round(this.frameWindow.length / this.frameWindow.reduce((a,b) => a+b, 0));
+      requestAnimationFrame(t => this.frame(t));
+    }
+    update(dt) {
+      if (this.mode === 'paused' || this.mode === 'map' || this.mode === 'help' || this.mode === 'gameover') return;
+      this.time += dt;
+      this.camera.shake = Math.max(0, this.camera.shake - dt * 20);
+      if(this.flash){this.flash.life=Math.max(0,this.flash.life-dt);if(!this.flash.life)this.flash=null;}
+      this.updateEffects(dt);
+      if (this.mode === 'home') { this.player.anim += dt; return; }
+      if (this.mode === 'dead') {
+        this.elapsed+=dt;
+        this.deadTimer -= dt; this.player.vy += 1200 * dt; this.player.y += this.player.vy * dt;
+        if (this.deadTimer <= 0) this.respawn();
+        return;
+      }
+      if (this.mode === 'complete' || this.mode === 'ending') {
+        this.player.anim += dt;
+        if (Math.random() < dt * 12) this.burst(this.player.x + 16, this.player.y - 25, 2, '#f5d279', 70, 'spark');
+        return;
+      }
+      if (this.mode !== 'playing') return;
+      this.elapsed += dt;
+      this.echoTime=Math.max(0,this.echoTime-dt);
+      this.updatePlatforms(dt); this.updatePlayer(dt);
+      if (this.mode !== 'playing') return;
+      this.updateEnemies(dt);
+      if (this.mode !== 'playing') return;
+      this.updateBoss(dt);
+      if (this.mode !== 'playing') return;
+      this.updateProjectiles(dt);
+      if (this.mode !== 'playing') return;
+      this.updateCollectibles(dt);
+      if (this.mode !== 'playing') return;
+      this.updateCheckpoints(); this.updateSecrets();
+      this.updateDanger(dt);
+      if (this.exit.open && overlap(this.player, this.exit)) this.complete();
+      const visibleWidth = this.renderer.worldWidth || WIDTH;
+      const target = clamp(this.player.x - visibleWidth * .36 + this.player.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
+      this.camera.x += (target - this.camera.x) * (1 - Math.exp(-5 * dt));
+      this.camera.y = 0;
+    }
+    updatePlatforms(dt) {
+      for (const p of this.platforms) {
+        const oldX = p.x, oldY = p.y;
+        if (p.type === 'moving') {
+          const offset = Math.sin(this.time * (p.speed || 1) + p.phase) * (p.range || 80);
+          if (p.axis === 'y') p.y = p.baseY + offset; else p.x = p.baseX + offset;
+        }
+        if (p.type === 'vanish') {
+          p.cycle = (this.time + p.phase) % 4.8;
+          p.active = p.cycle < 3.6; p.warning = p.cycle > 2.8 && p.active;
+        }
+        if(p.type==='echo'){p.active=this.echoTime>0;p.warning=this.echoTime>0&&this.echoTime<1;}
+        if (p.type === 'crumble') {
+          if (p.crumbleTimer > 0) {
+            p.crumbleTimer -= dt;
+            if (p.crumbleTimer <= 0) { p.active = false; p.reformTimer = 3.5; this.burst(p.x+p.w/2,p.y,12,'#a6b79c',130,'stone'); this.audio.sfx('break'); }
+          }
+          if (p.reformTimer > 0) { p.reformTimer -= dt; if (p.reformTimer <= 0) p.active = true; }
+        }
+        p.dx = p.x - oldX; p.dy = p.y - oldY;
+      }
+    }
+    updatePlayer(dt) {
+      const p = this.player, input = this.input;
+      p.anim += dt * (Math.abs(p.vx) > 20 ? Math.abs(p.vx) / 90 : 1);
+      p.invuln = Math.max(0, p.invuln - dt); p.landTimer = Math.max(0, p.landTimer - dt);
+      p.jumpTimer=Math.max(0,p.jumpTimer-dt);p.runStartTimer=Math.max(0,p.runStartTimer-dt);p.stepSoundTimer=Math.max(0,p.stepSoundTimer-dt);
+      p.actionCooldown = Math.max(0, p.actionCooldown - dt); p.jumpBuffer = Math.max(0, p.jumpBuffer - dt);
+      if (p.grounded) { p.coyote = .12; p.airJumps = 0; } else p.coyote = Math.max(0, p.coyote - dt);
+      if (p.power) {
+        p.powerTime -= dt;
+        if(p.powerTime<5&&!p.powerWarning){p.powerWarning=true;this.audio.sfx('powerWarning');}
+        if(p.powerTime<=0){const oldPower=p.power;p.power=null;this.audio.sfx('expire_'+oldPower);this.burst(p.x+16,p.y+22,12,'#d2dcbb',90,'spark');this.emit('toast','Le pouvoir s’est dissipé. Continuez votre voyage !');}
+      }
+      if (input.just('jump')) p.jumpBuffer = .15;
+      const water = this.level.water;
+      p.wet = !!water && p.x + p.w > (water.start || 0) && p.x < (water.end || this.level.width) && p.y + p.h * .6 > water.y;
+      const axis = (input.down('right') ? 1 : 0) - (input.down('left') ? 1 : 0);
+      if(axis&&p.grounded&&(!p.lastAxis||Math.sign(p.vx)!==axis)){p.runStartTimer=.15;this.groundBurst(p.x+16,p.y+p.h,4,60);}
+      p.lastAxis=axis;
+      if (axis) p.facing = axis;
+      const sliding = input.down('down') && p.grounded && Math.abs(p.vx) > 160 && !p.wet;
+      if (sliding !== p.slide) { const height = sliding ? 29 : 46; p.y += p.h - height; p.h = height; p.slide = sliding; }
+      const maxSpeed = p.wet ? 235 : input.down('run') ? 490 : 320;
+      const friction = this.level.theme === 'frost' && p.grounded ? 520 : 2300;
+      if (p.dashTime <= 0) {
+        if (axis) p.vx = approach(p.vx, axis * maxSpeed, dt * (p.grounded ? (sliding ? 450 : 2350) : 1550));
+        else p.vx = approach(p.vx, 0, dt * (p.grounded ? (sliding ? 400 : friction) : 720));
+      }
+      if (input.just('action')) this.usePower();
+      if (p.jumpBuffer > 0 && !p.wet) {
+        if (p.coyote > 0) this.jump(false);
+        else if (p.power === 'breeze' && p.airJumps < 1) this.jump(true);
+      }
+      if (p.wet) {
+        p.vy += 500 * dt;
+        if (input.down('jump')) { p.vy -= 1120 * dt; p.vy = Math.max(p.vy, -310); p.grounded = false; }
+        p.vy = Math.min(p.vy, 190);
+        if (input.just('jump')) { p.vy = -310; this.audio.sfx('jump'); this.burst(p.x+16,p.y+p.h,8,'#b8e6de',60,'bubble'); }
+        if (Math.random() < dt * 7) this.burst(p.x+16,p.y+p.h/2,1,'#c5f2e9',22,'bubble');
+      } else {
+        p.vy += (p.vy > 0 ? 2100 : 1900) * dt;
+        if (input.released.has('jump') && p.vy < -235) p.vy *= .48;
+        p.vy = Math.min(1000, p.vy);
+      }
+      if (p.dashTime > 0) {
+        p.dashTime -= dt; p.vx = p.facing * 910; p.vy = 0;
+        p.trailTimer -= dt;
+        if (p.trailTimer <= 0) { this.burst(p.x+16-p.facing*12,p.y+24,4,'#dbc9ed',60,'trail'); p.trailTimer=.025; }
+      } else if(Math.abs(p.vx)>365) {
+        p.trailTimer-=dt;
+        if(p.trailTimer<=0){this.burst(p.x+16-p.facing*14,p.y+28,2,'#d4efd2',40,'trail');p.trailTimer=.045;}
+      }
+      if (p.standingPlatform && p.standingPlatform.active) {
+        p.x += p.standingPlatform.dx; p.y += p.standingPlatform.dy;
+        if (p.standingPlatform.type === 'conveyor') {
+          p.x += (p.standingPlatform.direction || 1) * 125 * dt;
+          if(p.stepSoundTimer<=0){this.audio.sfx('conveyor');p.stepSoundTimer=.42;}
+        }
+      }
+      const oldY = p.y, oldBottom = p.y + p.h, wasGrounded = p.grounded;
+      p.x += p.vx * dt;
+      for (const ground of this.platforms) {
+        if (!ground.active || ground.type !== 'ground' || !overlap(p,ground)) continue;
+        if (oldBottom <= ground.y + 5 || p.y >= ground.y + ground.h - 3) continue;
+        if (p.vx > 0) p.x = ground.x - p.w; else if (p.vx < 0) p.x = ground.x + ground.w;
+        p.vx = 0;
+      }
+      p.x = clamp(p.x, 0, this.level.width - p.w); p.y += p.vy * dt;
+      p.grounded = false; p.standingPlatform = null;
+      if (p.vy >= 0) {
+        // Crossed top surfaces only: decorative undersides never trap the player.
+        let landing = null;
+        for (const platform of this.platforms) {
+          if (!platform.active || p.x + p.w <= platform.x + 2 || p.x >= platform.x + platform.w - 2) continue;
+          if (oldBottom <= platform.y - platform.dy + 7 && p.y + p.h >= platform.y && (!landing || platform.y < landing.y)) landing = platform;
+        }
+        if (landing) {
+          const fallSpeed = p.vy;
+          p.y = landing.y - p.h; p.vy = 0; p.grounded = true; p.standingPlatform = landing;
+          if (!wasGrounded && fallSpeed > 50) { p.landTimer = .18;p.landStrength=clamp(fallSpeed/600,.35,1); this.groundBurst(p.x+16,p.y+p.h,Math.max(5,Math.min(13,Math.floor(fallSpeed/65))),90); this.audio.sfx('land'); }
+          if (landing.type === 'crumble' && landing.crumbleTimer <= 0) {landing.crumbleTimer = .62;this.audio.sfx('crumble');}
+          if (landing.type === 'spring') {
+            p.vy = -985; p.grounded = false; p.coyote = 0; p.standingPlatform = null;
+            p.jumpTimer=.2;this.audio.sfx('spring'); this.groundBurst(p.x+16,p.y+p.h,14,140);
+          }
+          else if(p.jumpBuffer>0&&!p.wet){p.coyote=.12;this.jump(false);}
+        }
+      }
+      if (p.grounded && Math.abs(p.vx) > 130 && Math.random() < dt*14) this.groundBurst(p.x+16,p.y+p.h,1,35);
+      p.previousY = oldY; p.previousBottom = oldBottom;
+      for (const h of this.hazards) {
+        if (overlap(p,{x:h.x+4,y:h.y+8,w:Math.max(1,h.w-8),h:Math.max(1,h.h-8)})) {
+          if (h.type === 'lava') { this.die(); return; }
+          this.hurt(1, h.x + h.w/2); p.vy = Math.min(p.vy,-410);
+        }
+      }
+      if (p.y > 830) this.die();
+    }
+    jump(double) {
+      const p = this.player;
+      p.vy = this.input.down('jump') ? (double ? -630 : -690) : -330;
+      p.grounded = false; p.coyote = 0; p.jumpBuffer = 0; p.standingPlatform = null;
+      p.jumpTimer=.18;
+      if (double) p.airJumps++;
+      this.audio.sfx(double ? 'doubleJump' : 'jump');
+      if(double)this.burst(p.x+16,p.y+p.h,16,'#b7e8db',150,'spark');else this.groundBurst(p.x+16,p.y+p.h,10,110);
+    }
+    usePower() {
+      const p = this.player;
+      if (p.actionCooldown > 0) return;
+      if (p.power === 'bloom') {
+        this.projectiles.push({ x:p.x+16+p.facing*23, y:p.y+19, vx:p.facing*680, vy:-35, r:8, friendly:true, life:1.6 });
+        p.actionCooldown = .26; this.audio.sfx('shoot'); this.burst(p.x+16+p.facing*26,p.y+19,4,'#f6cf7c',75,'spark');
+      } else if (p.power === 'comet') {
+        p.dashTime = .21; p.actionCooldown = .85; p.invuln = Math.max(p.invuln,.4); p.trailTimer=0;
+        this.audio.sfx('dash'); this.camera.shake = 3;
+      } else if(p.power==='echo') {
+        this.echoTime=4;p.actionCooldown=3.5;this.echoOrigin={x:p.x+16,y:p.y+22};
+        this.audio.sfx('echo');this.burst(p.x+16,p.y+22,22,'#d9c0ef',155,'spark');
+        this.updatePlatforms(0);this.emit('toast','Les chemins de l’écho se révèlent pendant 4 secondes.');
+      } else if (!p.power) {
+        this.emit('toast','Fleurs, plumes, comètes et grelots vous prêtent leurs pouvoirs.'); p.actionCooldown = 3;
+      } else { this.emit('toast','Plume d’azur : appuyez une seconde fois sur saut dans les airs.'); p.actionCooldown=3; }
+    }
+    updateEnemies(dt) {
+      const p = this.player;
+      for (const e of this.enemies) {
+        if (!e.alive || Math.abs(e.x - p.x) > 1250) continue;
+        e.phase += dt; e.timer -= dt; e.hitFlash = Math.max(0,(e.hitFlash || 0)-dt);
+        const distance = p.x-e.x;
+        // A scattered swarm is already beaten: it drifts apart and harms nobody.
+        if (e.scatterTime>0) {
+          e.scatterTime-=dt; e.x+=e.vx*dt; e.y+=e.vy*dt; e.vy-=40*dt;
+          if (e.scatterTime<=0) e.alive=false;
+          continue;
+        }
+        if (e.type === 'swarm') {
+          // Fireflies keep a loose ring around their thicket until Nilo comes close,
+          // then the whole cloud leans towards him without ever matching his speed.
+          const dy=(p.y+20)-(e.y+e.h/2), reach=Math.hypot(distance,dy);
+          e.state=reach<330?'hunt':'orbit';
+          const min=e.minX ?? e.spawnX-120, max=e.maxX ?? e.spawnX+120;
+          const driftX=e.state==='hunt'?clamp(distance,-1,1)*72:Math.sin(e.phase*.85)*46;
+          const driftY=e.state==='hunt'?clamp(dy*.9,-58,58):Math.sin(e.phase*1.5+1.2)*30;
+          e.vx=approach(e.vx,driftX,dt*150); e.vy=approach(e.vy,driftY,dt*130);
+          e.x=clamp(e.x+e.vx*dt,min,max-e.w); e.y=clamp(e.y+e.vy*dt,e.spawnY-120,e.spawnY+90);
+          e.facing=e.vx<0?-1:1;
+        } else if (e.type === 'sleeper') {
+          // Tension by proximity: linger next to it and the mound wakes and charges.
+          const near=Math.abs(distance)<180&&Math.abs((p.y+p.h)-(e.y+e.h))<140;
+          if (e.state==='sleep') {
+            e.vx=0;
+            e.chargeProgress=clamp(e.chargeProgress+(near?dt/1.25:-dt*.9),0,1);
+            if (e.chargeProgress>=1) { e.state='wake'; e.timer=.55; e.facing=distance<0?-1:1; this.audio.sfx('sleeperWake'); this.burst(e.x+e.w/2,e.y+6,10,'#ffd9a0',110,'spark'); }
+          } else if (e.state==='wake') {
+            e.vx=0;
+            if (e.timer<=0) { e.state='charge'; e.timer=2.4; e.facing=distance<0?-1:1; }
+          } else if (e.state==='charge') {
+            e.vx=e.facing*245;
+            const min=e.minX ?? e.spawnX-80, max=e.maxX ?? e.spawnX+100;
+            if (e.x<=min&&e.facing<0) e.facing=1; if (e.x+e.w>=max&&e.facing>0) e.facing=-1;
+            if (Math.random()<dt*22) this.burst(e.x+e.w/2,e.y+e.h,1,'#e8cfa4',55,'dust');
+            if (e.timer<=0) { e.state='settle'; e.timer=1; }
+          } else { e.vx=approach(e.vx,0,dt*320); if (e.timer<=0) { e.state='sleep'; e.chargeProgress=0; } }
+          const oldBottom=e.y+e.h; e.x+=e.vx*dt; e.vy=Math.min(e.vy+1800*dt,900); e.y+=e.vy*dt; e.grounded=false;
+          for (const ground of this.platforms) {
+            if (!ground.active || e.x+e.w<=ground.x || e.x>=ground.x+ground.w) continue;
+            if (e.vy>=0 && oldBottom<=ground.y+7 && e.y+e.h>=ground.y) { e.y=ground.y-e.h; e.vy=0; e.grounded=true; }
+          }
+          if (e.y>830) { e.alive=false; continue; }
+        } else if (e.type === 'chaser') {
+          e.vx = approach(e.vx, Math.abs(distance)<570 ? Math.sign(distance)*125 : Math.sign(e.spawnX-e.x)*60,dt*140);
+          e.vy = approach(e.vy, Math.abs(distance)<570 ? clamp((p.y-35-e.y)*1.5,-110,110) : Math.sin(e.phase*2)*25,dt*120);
+          e.x += e.vx*dt; e.y += e.vy*dt; e.facing=e.vx<0?-1:1;
+        } else {
+          const min = e.minX ?? e.spawnX-80, max = e.maxX ?? e.spawnX+100;
+          if (e.x <= min) e.facing=1; if (e.x+e.w >= max) e.facing=-1;
+          if (e.type === 'turret') {
+            e.facing=distance<0?-1:1; e.vx=0;
+            if (e.timer <= 0 && Math.abs(distance) < 780) {
+              const dx=p.x+16-e.x-e.w/2, dy=p.y+20-e.y-10, len=Math.hypot(dx,dy)||1;
+              this.projectiles.push({x:e.x+e.w/2,y:e.y+10,vx:dx/len*225,vy:dy/len*225,r:8,friendly:false,life:4});
+              e.timer=2.4; this.burst(e.x+e.w/2,e.y+10,4,'#d58d74',60,'spark');
+            }
+          } else {
+            e.vx=e.facing*(e.type==='hopper'?85:65);
+            if (e.type === 'hopper' && e.timer <= 0 && e.grounded) { e.vy=-465; e.timer=1.6; }
+          }
+          const oldBottom=e.y+e.h; e.x+=e.vx*dt; e.vy=Math.min(e.vy+1800*dt,900); e.y+=e.vy*dt; e.grounded=false;
+          for (const ground of this.platforms) {
+            if (!ground.active || e.x+e.w<=ground.x || e.x>=ground.x+ground.w) continue;
+            if (e.vy>=0 && oldBottom<=ground.y+7 && e.y+e.h>=ground.y) { e.y=ground.y-e.h; e.vy=0; e.grounded=true; }
+          }
+          if (e.y>830) {e.alive=false; continue;}
+        }
+        if (overlap(p,{x:e.x+3,y:e.y+3,w:e.w-6,h:e.h-3})) {
+          if (p.dashTime>0) this.killEnemy(e);
+          else if (p.vy>70 && p.previousBottom<=e.y+17) {
+            this.killEnemy(e); p.vy=this.input.down('jump')?-560:-430; p.grounded=false; p.airJumps=0;
+          }
+          // A sleeping mound is only scenery: brushing past it costs nothing, and
+          // that is precisely what makes lingering beside it a real decision.
+          else if (!(e.type==='sleeper'&&e.state==='sleep')) this.hurt(1,e.x+e.w/2);
+        }
+      }
+    }
+    killEnemy(e) {
+      if (!e.alive || e.scatterTime>0) return;
+      this.enemiesDefeated++; this.camera.shake=Math.max(this.camera.shake,3.2);
+      if (e.type==='swarm') {
+        // The cloud does not pop: it bursts apart and the motes drift out of sight.
+        e.scatterTime=1.2; e.vx=(Math.random()*2-1)*120; e.vy=-160;
+        this.addScore(220); this.audio.sfx('swarm'); this.burst(e.x+e.w/2,e.y+e.h/2,26,'#fff0b0',210,'spark');
+        this.float(e.x,e.y,'+220','#ffeaa8'); return;
+      }
+      e.alive=false; this.addScore(150); this.audio.sfx('stomp'); this.burst(e.x+e.w/2,e.y+e.h/2,20,'#e2c280',180,'spark');
+      this.float(e.x,e.y,'+150','#e8c775');
+    }
+    updateBoss(dt) {
+      const b=this.boss, p=this.player;
+      if (!b || b.hp<=0) return;
+      b.hitFlash=Math.max(0,b.hitFlash-dt); b.facing=p.x<b.x?-1:1;
+      if (!b.activated) {
+        if (p.x > this.level.width - 1420) {
+          b.activated=true; b.state='wake'; b.timer=1.7; this.emit('toast','Le Veilleur s’éveille. Visez sa couronne lorsqu’elle brille !');
+          this.audio.sfx('bossAttack');
+        } else return;
+      }
+      b.timer-=dt; b.phase=b.hp<=6?2:1;
+      b.flashTimer=Math.max(0,b.flashTimer-dt);
+      this.updateBossStage(b);
+      this.updateArena(b,dt);
+      if (b.state === 'wake' && b.timer<=0) { b.state='telegraph'; b.timer=1.15; b.attack++; }
+      if (b.state === 'telegraph') {
+        b.vulnerable=false;
+        if (b.timer<=0) {
+          // Phase one alternates leap and volley; phase two folds in a third pattern.
+          const pattern=b.phase===2?['leap','volley','rain'][b.attack%3]:(b.attack%2===1?'leap':'volley');
+          if (pattern==='leap') {
+            b.state='leap'; b.vy=b.phase===2?-880:-800; b.vx=clamp((p.x-b.x)*(b.phase===2?1.35:1.15),-470,470); this.audio.sfx('bossAttack');
+          } else if (pattern==='volley') {
+            b.state='volley'; b.timer=b.phase===2?1.6:2.0; b.shotTimer=0;
+          } else {
+            // Falling light: the ground is marked well before anything comes down.
+            b.state='rain'; b.timer=2.5; b.rainDropped=false;
+            const left=b.arenaActive?b.arenaLeft:this.level.width-1330;
+            const span=(b.arenaActive?b.arenaRight:this.level.width-200)-left;
+            b.rainMarkers=Array.from({length:5},(_,i)=>({x:left+span*(i+.5)/5+(Math.random()*2-1)*40,life:1.1}));
+            this.audio.sfx('bossAttack');
+          }
+        }
+      } else if (b.state === 'rain') {
+        for (const marker of b.rainMarkers) marker.life=Math.max(0,marker.life-dt);
+        if (!b.rainDropped && b.timer<=1.4) {
+          b.rainDropped=true; this.camera.shake=Math.max(this.camera.shake,5);
+          for (const marker of b.rainMarkers) this.projectiles.push({x:marker.x,y:b.y-140,vx:0,vy:330,r:11,friendly:false,life:4,kind:'rain'});
+        }
+        if (b.timer<=0) { b.state='recover'; b.timer=2.4; b.vulnerable=true; b.rainMarkers=[]; }
+      } else if (b.state === 'leap') {
+        b.vy+=1550*dt; b.x=clamp(b.x+b.vx*dt,this.level.width-1330,this.level.width-260); b.y+=b.vy*dt;
+        if (b.y+b.h>=600 && b.vy>0) {
+          b.y=600-b.h; b.vy=0; b.vx=0; b.state='recover'; b.timer=b.phase===2?2.6:3.4; b.vulnerable=true;
+          this.camera.shake=11; this.burst(b.x+b.w/2,596,30,'#d3ad82',240,'stone'); this.audio.sfx('bossAttack');
+          // The impact rings are low, slow and jumpable, with a clear landing tell.
+          for (const direction of [-1,1]) this.projectiles.push({x:b.x+b.w/2+direction*60,y:582,vx:direction*(b.phase===2?290:230),vy:0,r:14,friendly:false,life:4,kind:'wave'});
+        }
+      } else if (b.state === 'volley') {
+        b.shotTimer-=dt;
+        if (b.shotTimer<=0) {
+          const dx=p.x+16-b.x-b.w/2,dy=p.y+15-b.y-25,len=Math.hypot(dx,dy)||1;
+          this.projectiles.push({x:b.x+b.w/2,y:b.y+25,vx:dx/len*245,vy:dy/len*245,r:10,friendly:false,life:5});
+          b.shotTimer=b.phase===2?.4:.65; this.audio.sfx('shoot');
+        }
+        if (b.timer<=0) {b.state='recover'; b.timer=3.2; b.vulnerable=true;}
+      } else if (b.state === 'recover' && b.timer<=0) {
+        b.state='telegraph'; b.timer=b.phase===2?.8:1.2; b.vulnerable=false; b.attack++;
+      }
+      // During recovery the crown lowers to a reachable height, even without a power.
+      if (b.state !== 'leap') { const targetY=b.vulnerable?530:470; b.y=approach(b.y,targetY,240*dt); }
+      if (b.state !== 'leap' && b.arenaActive) b.x=clamp(b.x,b.arenaLeft+30,b.arenaRight-b.w-30);
+      const body={x:b.x+15,y:b.y+12,w:b.w-30,h:Math.min(b.h,600-b.y)-12};
+      if (overlap(p,body)) {
+        if (b.vulnerable && p.vy>60 && p.previousBottom<=b.y+37) {this.hitBoss(2);p.vy=-650;p.airJumps=0;p.invuln=Math.max(p.invuln,.3);}
+        else if (b.vulnerable && p.dashTime>0) this.hitBoss(2);
+        else if (b.hitFlash<=0) this.hurt(1,b.x+b.w/2);
+      }
+    }
+    /** Every third of its life removed is announced loudly: flash, shake, new tempo. */
+    updateBossStage(b) {
+      const stage=b.hp>b.maxHp*2/3?1:b.hp>b.maxHp/3?2:3;
+      if (stage===b.stage) return;
+      b.stage=stage; b.flashTimer=.5; this.camera.shake=Math.max(this.camera.shake,13);
+      this.screenFlash(stage===3?'#ffd2a4':'#fff0c2',.55);
+      this.audio.setBossPhase?.(stage); this.audio.sfx('bossStage');
+      this.burst(b.x+b.w/2,b.y+b.h/2,46,'#ffe0a4',290,'spark');
+      if (stage===2) this.emit('toast','Le Veilleur se referme. L’arène se resserre et ses attaques s’enchaînent.');
+      if (stage===3) this.emit('toast','Dernier tiers ! Sa lumière vacille — tenez bon.');
+    }
+    /** Phase two literally narrows the ground the fight is played on. */
+    updateArena(b,dt) {
+      if (b.phase===2 && !b.arenaActive && b.activated) { b.arenaActive=true; b.arenaWarn=1.2; this.audio.sfx('arena'); }
+      if (!b.arenaActive) return;
+      b.arenaWarn=Math.max(0,b.arenaWarn-dt);
+      const full=this.level.width-1400, open=this.level.width-180;
+      b.arenaLeft=approach(b.arenaLeft,full+150,55*dt);
+      b.arenaRight=approach(b.arenaRight,open-110,45*dt);
+      // The walls push rather than crush: Nilo is nudged back inside, never trapped.
+      const p=this.player;
+      if (p.x<b.arenaLeft) { p.x=b.arenaLeft; if (p.vx<0) p.vx=0; }
+      if (p.x+p.w>b.arenaRight) { p.x=b.arenaRight-p.w; if (p.vx>0) p.vx=0; }
+    }
+    hitBoss(damage) {
+      const b=this.boss;
+      if (!b || !b.vulnerable || b.hitFlash>0 || b.hp<=0) return false;
+      b.hp=Math.max(0,b.hp-damage); b.hitFlash=.65;
+      this.audio.sfx('bossHit');this.burst(b.x+b.w/2,b.y+25,22,'#f9d585',220,'spark');this.camera.shake=7;
+      if (b.hp<=0) {
+        b.state='defeated';b.vulnerable=false;this.exit.open=true;this.projectiles=this.projectiles.filter(x=>x.friendly);
+        this.addScore(3000);this.audio.sfx('victory');this.burst(b.x+b.w/2,b.y+40,80,'#ffe6a3',330,'spark');
+        this.emit('toast','Le Veilleur retrouve sa lumière. Rejoignez la porte lunaire !');
+      }
+      return true;
+    }
+    updateProjectiles(dt) {
+      for (const shot of this.projectiles) {
+        shot.x+=shot.vx*dt;shot.y+=shot.vy*dt;shot.life-=dt;
+        const rect={x:shot.x-shot.r,y:shot.y-shot.r,w:shot.r*2,h:shot.r*2};
+        if (shot.friendly) {
+          for (const e of this.enemies) if (e.alive&&overlap(rect,e)) {this.killEnemy(e);shot.life=0;break;}
+          if (this.boss&&this.boss.hp>0&&overlap(rect,{x:this.boss.x,y:this.boss.y,w:this.boss.w,h:this.boss.h})) {
+            if (!this.hitBoss(1)) this.burst(shot.x,shot.y,5,'#93afa7',60,'spark');shot.life=0;
+          }
+        } else if (overlap(rect,this.player)) {this.hurt(1,shot.x);shot.life=0;}
+        for (const p of this.platforms) if (p.type==='ground'&&p.active&&shot.y>p.y+3&&overlap(rect,p)) {shot.life=0;break;}
+      }
+      this.projectiles=this.projectiles.filter(s=>s.life>0&&s.y>-200&&s.y<850&&Math.abs(s.x-this.player.x)<1600);
+    }
+    updateCollectibles() {
+      const p=this.player;
+      for (const c of this.collectibles) {
+        if (c.taken) continue;
+        const radius=c.type==='star'?21:17;
+        if (!overlap(p,{x:c.x-radius,y:c.y-radius,w:radius*2,h:radius*2})) continue;
+        c.taken=true;
+        if (c.type==='coin') {
+          this.levelCoins++;this.addScore(25);this.audio.sfx('coin');this.burst(c.x,c.y,9,'#f2d17a',110,'spark');
+          if (this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
+        } else if (c.type==='star') {
+          this.levelStars++;this.addScore(500);this.audio.sfx('star');this.burst(c.x,c.y,28,'#ffe4a1',210,'spark');this.float(c.x,c.y,'Fragment lunaire +500','#f9daa2');
+        } else if (c.type==='heart') {
+          p.hp=Math.min(3,p.hp+1);this.audio.sfx('power');this.burst(c.x,c.y,15,'#e7a994',130,'spark');this.float(c.x,c.y,'Une nouvelle énergie','#e6ac98');
+        } else {
+          const durations={echo:40},colors={breeze:'#bcebdc',comet:'#d8c7ed',echo:'#c4f1da'};
+          p.power=c.type;p.powerDuration=durations[c.type]||35;p.powerTime=p.powerDuration;
+          p.airJumps=0;p.actionCooldown=0;p.powerWarning=false;
+          this.audio.sfx('power');this.burst(c.x,c.y,25,colors[c.type]||'#f2cd78',180,'spark');
+          const names={bloom:'Fleur solaire · X pour lancer des graines de lumière',
+            breeze:'Plume d’azur · Un second saut dans les airs',
+            comet:'Cœur comète · X pour une ruée protectrice',
+            echo:'Grelot d’écho · X pour révéler les chemins cachés pendant 4 s'};
+          this.emit('toast',names[c.type]||'Un nouveau pouvoir !');
+        }
+      }
+    }
+    updateCheckpoints() {
+      for (const c of this.checkpoints) {
+        if (!c.active&&Math.abs(this.player.x+16-c.x)<42&&Math.abs(this.player.y+this.player.h-c.y)<85) {
+          for (const other of this.checkpoints) other.active=false;
+          c.active=true;this.checkpoint={x:c.x-16,y:c.y-48};this.player.hp=3;
+          this.audio.sfx('checkpoint');this.burst(c.x,c.y-65,25,'#d5e4ab',175,'spark');this.emit('toast','Lanterne allumée · Énergie restaurée, passage mémorisé');
+        }
+      }
+    }
+    updateSecrets() {
+      for (const s of this.secrets) if (!s.found&&overlap(this.player,s)) {
+        s.found=true;this.secretCount++;this.addScore(750);this.audio.sfx('secret');this.burst(this.player.x+16,this.player.y,35,'#cfe7b8',210,'spark');
+        this.progress.bonusUnlocked=true;this.saveProgress();this.float(this.player.x,this.player.y,'Passage secret +750','#daf0c4');
+        this.emit('toast','Passage secret découvert ! Le Jardin oublié vous attend dans l’atlas.');
+      }
+    }
+    hurt(amount, sourceX) {
+      const p=this.player;
+      if (p.invuln>0||p.dead||this.mode!=='playing') return;
+      p.hp-=amount;p.invuln=1.5;p.vx=(p.x+16<sourceX?-1:1)*290;p.vy=-330;p.grounded=false;p.standingPlatform=null;
+      this.damageTaken+=amount;
+      this.camera.shake=7;this.audio.sfx('hit');this.burst(p.x+16,p.y+20,18,'#e8ab95',185,'spark');
+      this.screenFlash('#ff9d8c',.32);this.emit('damage',{hp:p.hp});
+      if (p.hp<=0) this.die();
+    }
+    die() {
+      if (this.mode!=='playing') return;
+      this.player.dead=true;this.player.vy=-390;this.player.vx=0;this.mode='dead';this.deadTimer=.85;
+      this.lives--;this.deaths++;this.camera.shake=9;this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
+      this.emit('mode',this.mode);
+    }
+    respawn() {
+      if (this.lives<=0) {this.mode='gameover';this.audio.pause();this.emit('mode',this.mode);return;}
+      const p=this.player;
+      Object.assign(p,{x:this.checkpoint.x,y:this.checkpoint.y,vx:0,vy:0,w:32,h:46,hp:3,dead:false,invuln:2,
+        grounded:false,coyote:0,jumpBuffer:0,airJumps:0,dashTime:0,standingPlatform:null,slide:false,power:null,powerTime:0});
+      this.projectiles=[];
+      // Safe landing after a fall: disappearing platforms return during respawn.
+      for (const platform of this.platforms) if (platform.type==='crumble') {platform.active=true;platform.crumbleTimer=0;platform.reformTimer=0;}
+      if (this.boss&&this.boss.activated&&this.boss.hp>0) {
+        const b=this.boss;Object.assign(b,{x:b.homeX,y:470,state:'wake',timer:2,vx:0,vy:0,vulnerable:false});
+      }
+      const visibleWidth=this.renderer.worldWidth||WIDTH;
+      this.camera.x=clamp(p.x-visibleWidth*.36,0,Math.max(0,this.level.width-visibleWidth));
+      this.mode='playing';this.input.reset();this.burst(p.x+16,p.y+23,26,'#d7e8b9',150,'spark');this.emit('mode',this.mode);
+    }
+    complete() {
+      if (this.mode!=='playing') return;
+      const final=!!this.level.final;this.mode=final?'ending':'complete';this.player.vx=0;this.player.vy=0;this.player.grounded=true;
+      const bonus=1000+Math.max(0,1200-Math.floor(this.elapsed*5))+this.player.hp*100;
+      this.addScore(bonus);
+      const medal=this.medalFor(this.levelStars,this.damageTaken,this.elapsed);
+      const timed=this.runMode==='timed';
+      const previous=this.progress.records[this.levelIndex]||{};
+      const record=timed&&this.elapsed<(Number.isFinite(previous.bestTimedTime)?previous.bestTimedTime:Infinity);
+      this.progress.records[this.levelIndex]={...previous,
+        stars:Math.max(previous.stars||0,this.levelStars),coins:Math.max(previous.coins||0,this.levelCoins),
+        score:Math.max(previous.score||0,this.levelScore),time:Math.min(previous.time??Infinity,this.elapsed),
+        medal:MEDAL_RANK[medal]>=(MEDAL_RANK[previous.medal]||0)?medal:previous.medal,
+        bestTimedTime:record?this.elapsed:previous.bestTimedTime,completed:true};
+      if (!this.level.bonus||this.progress.unlocked>=this.levelIndex) this.progress.unlocked=Math.max(this.progress.unlocked,Math.min(window.LUMEN_LEVELS.length-1,this.levelIndex+1));
+      if (final) this.progress.finished=true;
+      this.saveProgress();this.audio.sfx('victory');this.burst(this.player.x+16,this.player.y,70,'#ffe1a0',300,'spark');
+      if (medal==='gold') { this.audio.sfx('medal'); this.screenFlash('#fff0be',.6); }
+      this.audio.setDanger?.(0);
+      this.emit('complete',{index:this.levelIndex,final,coins:this.levelCoins,stars:this.levelStars,time:this.elapsed,
+        score:this.levelScore,bonus,secrets:this.secretCount,medal,timed,record,
+        enemiesDefeated:this.enemiesDefeated,damageTaken:this.damageTaken});
+      this.emit('mode',this.mode);
+    }
+    /** Gold asks for everything at once; silver for a clean run; bronze for arriving.
+     *  Both run modes award medals — the timer only records a personal best. */
+    medalFor(stars,damage,seconds) {
+      const total=this.level.collectibles.filter(c=>c.type==='star').length||3;
+      const targets=this.level.medalTargets||{};
+      if (stars>=total&&damage<=1&&seconds<=(targets.gold??Infinity)) return 'gold';
+      if (stars>=Math.max(1,total-1)&&damage<=3&&seconds<=(targets.silver??Infinity)) return 'silver';
+      return 'bronze';
+    }
+    addScore(amount) { this.score+=amount;this.levelScore+=amount; }
+    /** Footfall debris drawn from the current garden: leaves, bubbles, embers, flakes. */
+    groundBurst(x,y,count,speed=90) {
+      const dust=GROUND_DUST[this.level?.theme]||GROUND_DUST.meadow;
+      const room=Math.max(0,500-this.particles.length);
+      for (let i=0;i<Math.min(count,room);i++) {
+        // Debris sprays sideways along the floor rather than exploding upwards.
+        const spread=(Math.random()*2-1)*Math.PI*.42, velocity=speed*(.35+Math.random()*.8);
+        const life=.32+Math.random()*.5;
+        this.particles.push({x:x+(Math.random()*2-1)*11,y,
+          vx:Math.sin(spread)*velocity*1.35,vy:-Math.abs(Math.cos(spread))*velocity*.55-14,
+          life,maxLife:life,size:2+Math.random()*3.4,
+          color:dust.colors[Math.floor(Math.random()*dust.colors.length)],type:dust.type});
+      }
+    }
+    /** A brief, low-opacity wash over the scene. The renderer caps it at 24 %. */
+    screenFlash(color,life=.3) { this.flash={color,life,maxLife:life}; }
+    /** Keeps the score's extra tension layer in step with what is actually hunting Nilo. */
+    updateDanger(dt) {
+      const p=this.player;
+      let target=0;
+      for (const e of this.enemies) {
+        if (!e.alive) continue;
+        const distance=Math.abs(e.x-p.x);
+        if (distance>620) continue;
+        const closeness=1-distance/620;
+        if (e.type==='chaser') target=Math.max(target,closeness);
+        else if (e.type==='sleeper'&&(e.state==='wake'||e.state==='charge')) target=Math.max(target,closeness*1.1);
+        else if (e.type==='swarm'&&e.state==='hunt') target=Math.max(target,closeness*.8);
+      }
+      if (this.boss&&this.boss.activated&&this.boss.hp>0) target=Math.max(target,this.boss.phase===2?1:.55);
+      // Tension rises quickly and falls back slowly, so the layer never flickers.
+      this.danger=approach(this.danger,clamp(target,0,1),dt*(target>this.danger?2.2:.85));
+      this.dangerTimer-=dt;
+      if (this.dangerTimer<=0) { this.dangerTimer=.25; this.audio.setDanger?.(this.danger); }
+    }
+    burst(x,y,count,color,speed=100,type='spark') {
+      const room=Math.max(0,500-this.particles.length);
+      for (let i=0;i<Math.min(count,room);i++) {
+        const angle=Math.random()*Math.PI*2,velocity=speed*(.25+Math.random()*.75),life=.3+Math.random()*.55;
+        this.particles.push({x,y,vx:Math.cos(angle)*velocity,vy:Math.sin(angle)*velocity-30,life,maxLife:life,size:2+Math.random()*4,color,type});
+      }
+    }
+    float(x,y,text,color) {this.floatingTexts.push({x,y,text,life:1.5,color});}
+    updateEffects(dt) {
+      // Each debris shape falls with its own weight: embers rise, flakes drift, stones drop.
+      const GRAVITY={bubble:-90,ember:-60,dust:30,flake:42,petal:58,leaf:66,trail:12,stone:260};
+      for (const p of this.particles) {
+        p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
+        p.vy+=(GRAVITY[p.type]??220)*dt;
+        if (p.type==='leaf'||p.type==='petal'||p.type==='flake') p.x+=Math.sin(p.life*7+p.size)*22*dt;
+        p.vx*=1-dt*(p.type==='flake'||p.type==='petal'?2.6:1.5);
+      }
+      this.particles=this.particles.filter(p=>p.life>0);
+      for (const t of this.floatingTexts) {t.y-=30*dt;t.life-=dt;}
+      this.floatingTexts=this.floatingTexts.filter(t=>t.life>0);
+    }
+  }
+  window.LumenGame=Game;
+  window.LumenPhysics={WIDTH,HEIGHT,STEP,clamp,overlap};
+})();
