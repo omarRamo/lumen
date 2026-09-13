@@ -1,0 +1,38 @@
+{
+  "passed": 8,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "L’édition portable démarre seule en file://, sans aucune requête externe",
+      "passed": true
+    },
+    {
+      "name": "La Résonance se joue au clavier : appeler ouvre un chemin qui n’existait pas",
+      "passed": true
+    },
+    {
+      "name": "L’observatoire : la porte reste fermée tant que la coupole se tait",
+      "passed": true
+    },
+    {
+      "name": "Une nuit entière se joue par l’interface, et la graine la rejoue à l’identique",
+      "passed": true
+    },
+    {
+      "name": "Le tactile tient plusieurs doigts, ne colle jamais, et respecte 48 px",
+      "passed": true
+    },
+    {
+      "name": "Les réglages de confort changent réellement le jeu, et survivent au rechargement",
+      "passed": true
+    },
+    {
+      "name": "Une sauvegarde ancienne est migrée sans être écrasée, et la progression suit",
+      "passed": true
+    },
+    {
+      "name": "Aucun défilement horizontal, et une cadence stable, aux trois formats",
+      "passed": true
+    }
+  ]
+}

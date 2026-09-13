@@ -365,6 +365,19 @@
         case 'sleeperWake': tone(64, 0, .55, .22, 'bass', 120); this._hush(at, .5, .2, 460, false, true); tone(190, .12, .3, .1, 'pluck', 330); break;
         // The swarm bursts apart: a flutter, then motes scattering upwards.
         case 'swarm': this._hush(at, .26, .16, 3100); notes([81, 88, 93, 97], .038, .3, .11); break;
+        // La voix de Nilo : une note ronde qui s'ouvre, suivie de son souffle.
+        // Elle doit rester douce — on l'entendra des milliers de fois.
+        case 'resonance': tone(196, 0, .5, .13, 'water', 340); tone(midi(74), .03, .55, .07, 'glass'); this._hush(at, .32, .045, 1700, false, true); break;
+        // Le relais d'un carillon : la même idée, plus haute et plus courte, pour
+        // qu'on entende que l'onde est repartie d'ailleurs.
+        case 'resonanceRelay': notes([81, 88], .05, .5, .09); this._hush(at, .2, .03, 2600, false, true); break;
+        case 'wakeBloom': notes([69, 76, 81], .05, .42, .13, 'wood'); this._hush(at, .25, .05, 1200, false, true); break;
+        case 'wakeBridge': notes([62, 69, 73], .06, .8, .12); tone(midi(50), .04, .9, .07, 'pad'); break;
+        case 'wakeChime': notes([86, 90, 93, 97], .045, .65, .11); break;
+        case 'wakeCalm': tone(110, 0, .6, .14, 'bass', 165); notes([64, 71], .1, .5, .08, 'wood'); break;
+        // L'extinction : une note qui retombe, assez nette pour qu'on la remarque
+        // sans qu'elle ressemble à une punition.
+        case 'wakeEnd': notes([74, 67], .09, .3, .075, 'water'); break;
         // A gold medal deserves more than the usual chapter fanfare.
         case 'medal': notes([74, 78, 81, 86, 90, 93], .085, .75, .19); [62, 69, 74].forEach((p, i) => tone(midi(p), .5 + i * .02, 1.6, .1, 'pad')); break;
         default:

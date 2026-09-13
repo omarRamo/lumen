@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const scripts = ['levels.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
+const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
 const DT = 1 / 120;
 const checks = [];
 let failed = 0;
@@ -82,12 +82,20 @@ function test(name, run) {
   catch (error) { failed++; checks.push({ name, passed: false, error: error.message }); console.error('FAIL  ' + name + '\n      ' + error.message); }
 }
 
-test('All ten authored stages load with independent objects and stable spawns', () => {
+test('Every authored stage loads with independent objects, a stable key and a stable spawn', () => {
   const { game, window } = environment();
-  assert.equal(window.LUMEN_LEVELS.length, 10);
+  assert.equal(window.LUMEN_LEVELS.length, 12);
+  // Les clés sont le contrat des sauvegardes : uniques, et jamais recyclées.
+  const keys = window.LUMEN_LEVELS.map(level => level.key);
+  assert.equal(new Set(keys).size, keys.length, 'Deux chapitres partagent une clé : ' + keys.join(', '));
+  assert.ok(keys.every(key => typeof key === 'string' && key.length > 2));
   for (let index = 0; index < STAGE_COUNT; index++) {
     game.loadLevel(index);
     assert.equal(game.levelIndex, index);
+    assert.equal(game.level.key, keys[index]);
+    // L'observatoire n'est pas un chapitre : ni fragments, ni lanternes, ni
+    // médailles. Il est vérifié séparément.
+    if (game.level.hub) { assert.ok(game.level.characters.length >= 2); continue; }
     assert.equal(game.collectibles.filter(c => c.type === 'star').length, 3);
     assert.ok(game.checkpoints.length >= 2);
     assert.ok(game.secrets.length >= 1);
@@ -306,10 +314,12 @@ test('All four enemy behaviours run: patrol turn, hopper leap, turret shot, purs
 test('Completion persists records, opens the next stage and restores from localStorage', () => {
   const { game, storage } = environment(); game.loadLevel(0);
   game.levelStars = 2; game.levelCoins = 17; game.elapsed = 55; game.levelScore = 900;
-  game.complete(); assert.equal(game.mode, 'complete'); assert.equal(game.progress.unlocked, 1);
-  assert.equal(game.progress.records[0].stars, 2); assert.equal(game.progress.records[0].time, 55);
+  game.complete(); assert.equal(game.mode, 'complete'); assert.ok(game.isUnlocked(1));
+  assert.equal(game.recordFor(0).stars, 2); assert.equal(game.recordFor(0).time, 55);
+  // La progression est désormais nommée : elle survit à un chapitre inséré ailleurs.
+  assert.ok(Object.prototype.hasOwnProperty.call(game.progress.chapters, 'prairies-aurore'));
   const restored = environment(storage).game;
-  assert.equal(restored.progress.records[0].coins, 17); assert.ok(restored.isUnlocked(1)); assert.ok(!restored.isUnlocked(2));
+  assert.equal(restored.recordFor(0).coins, 17); assert.ok(restored.isUnlocked(1)); assert.ok(!restored.isUnlocked(2));
   restored.start(2); assert.equal(restored.levelIndex, 0);
   restored.start(1); assert.equal(restored.levelIndex, 1);
 });
@@ -320,18 +330,21 @@ test('A secret opens the bonus early without unlocking late story levels', () =>
   game.updateSecrets(); game.updateSecrets();
   assert.equal(game.secretCount, 1); assert.equal(game.levelScore, 750);
   assert.equal(game.progress.bonusUnlocked, true); assert.ok(game.isUnlocked(6)); assert.ok(!game.isUnlocked(7));
-  game.start(6); game.complete(); assert.equal(game.progress.unlocked, 0);
+  game.start(6); game.complete(); assert.ok(!game.isUnlocked(7), 'Le bonus ne doit pas ouvrir la suite de la campagne.');
   assert.equal(environment(storage).game.progress.bonusUnlocked, true);
 });
 
 test('Inserting a chapter before the finale preserves dynamic progression flags', () => {
   const { game, window } = environment();
   const extra = window.LumenLevels.create(0);
-  extra.name = 'Integration test garden'; extra.id = FINAL_INDEX;
+  extra.name = 'Integration test garden'; extra.id = FINAL_INDEX; extra.key = 'jardin-de-test';
   window.LUMEN_LEVELS.splice(FINAL_INDEX, 0, extra);
   window.LUMEN_LEVELS.forEach((level, index) => { level.id = index; });
   game.loadLevel(FINAL_INDEX); game.complete();
-  assert.equal(game.mode, 'complete'); assert.equal(game.progress.unlocked, FINAL_INDEX + 1);
+  assert.equal(game.mode, 'complete'); assert.ok(game.isUnlocked(FINAL_INDEX + 1));
+  // Le chapitre inséré a sa propre entrée ; il n'a volé le record de personne.
+  assert.ok(game.progress.chapters['jardin-de-test']);
+  assert.ok(!game.progress.chapters['coeur-eclipse']);
   game.start(FINAL_INDEX + 1); assert.equal(game.level.final, true); game.complete();
   assert.equal(game.mode, 'ending'); assert.equal(game.progress.finished, true);
 });
@@ -395,7 +408,12 @@ test('All mandatory dry gaps have physical walking-jump solutions without powers
     0: [0, 1, 2, 3], 1: [0, 7, 1, 11, 12, 2, 16, 3],
     3: [0, 5, 6, 1, 7, 8, 2, 9, 10, 3, 11, 12, 4],
     4: [0, 1, 2, 3, 4], 5: [0, 1, 2, 3], 6: [0, 1, 2, 3, 4],
-    7: [0, 1, 2, 3, 4, 5], 8: [0, 1, 2, 3, 4, 5], [FINAL_INDEX]: [0, 1, 2, 3]
+    7: [0, 1, 2, 3, 4, 5], 8: [0, 1, 2, 3, 4, 5],
+    // Le verger de la Résonance : seuls les tronçons qui doivent rester
+    // franchissables à pied figurent ici. Le gouffre et le passage du dormeur
+    // sont commandés par la Résonance — un verbe permanent, jamais expirable —
+    // et ont leurs propres contrôles de franchissabilité plus haut.
+    9: [0, 2], [FINAL_INDEX]: [0, 1, 2, 3]
   };
   const failures = [];
   for (const [stage, route] of Object.entries(paths)) {
@@ -524,7 +542,12 @@ test('The echo bell reveals hidden ledges for four seconds, then hides them agai
   game.usePower();
   assert.ok(game.echoTime > 3.9);
   assert.ok(echoes.every(p => p.active), 'Using the bell must make the ledges solid.');
-  assert.ok(game.player.actionCooldown > 3, 'The bell needs a real cooldown between rings.');
+  // Changement délibéré : le grelot n'a plus sa recharge propre de 3,5 s, il
+  // hérite de celle de la Résonance. Le révélé dure toujours 4 s — la seule
+  // différence est qu'on peut le rallumer sous ses pieds, ce que le cahier des
+  // charges exige explicitement (« ne jamais bloquer le joueur »).
+  assert.ok(game.player.actionCooldown > .7 && game.player.actionCooldown <= .9,
+    'Le grelot suit désormais la recharge de la Résonance.');
   tick(game, 3.2);
   assert.ok(echoes.every(p => p.active && p.warning), 'The last second must warn before the ledges fade.');
   tick(game, 1.1);
@@ -565,11 +588,11 @@ test('Medals weigh fragments, damage and time, and a weaker run never demotes on
   assert.equal(game.medalFor(3, 0, targets.silver + 5), 'bronze');
   game.levelStars = 3; game.damageTaken = 0; game.elapsed = targets.gold - 10;
   game.complete();
-  assert.equal(game.progress.records[0].medal, 'gold');
+  assert.equal(game.recordFor(0).medal, 'gold');
   const again = fresh(0); again.progress = game.progress;
   again.levelStars = 0; again.damageTaken = 5; again.elapsed = targets.silver + 60;
-  again.complete();
-  assert.equal(again.progress.records[0].medal, 'gold', 'A later, weaker run must not remove a medal.');
+  again.store.profile = game.progress; again.complete();
+  assert.equal(again.recordFor(0).medal, 'gold', 'A later, weaker run must not remove a medal.');
 });
 
 test('Timed runs record a personal best; exploration never overwrites the clock', () => {
@@ -578,16 +601,16 @@ test('Timed runs record a personal best; exploration never overwrites the clock'
   assert.equal(game.runMode, 'timed');
   game.elapsed = 64; game.complete();
   assert.equal(result.timed, true); assert.equal(result.record, true);
-  assert.equal(game.progress.records[0].bestTimedTime, 64);
+  assert.equal(game.recordFor(0).bestTimedTime, 64);
   game.start(0, { timed: true }); game.elapsed = 81; game.complete();
   assert.equal(result.record, false, 'A slower race must not claim a record.');
-  assert.equal(game.progress.records[0].bestTimedTime, 64);
+  assert.equal(game.recordFor(0).bestTimedTime, 64);
   game.start(0, { timed: true }); game.elapsed = 40; game.complete();
-  assert.equal(game.progress.records[0].bestTimedTime, 40);
+  assert.equal(game.recordFor(0).bestTimedTime, 40);
   game.start(0); assert.equal(game.runMode, 'explore');
   game.elapsed = 9; game.complete();
   assert.equal(result.timed, false);
-  assert.equal(game.progress.records[0].bestTimedTime, 40, 'Exploration must leave the record alone.');
+  assert.equal(game.recordFor(0).bestTimedTime, 40, 'Exploration must leave the record alone.');
   game.retry(); assert.equal(game.runMode, 'explore', 'Retry must keep the run mode it was started with.');
 });
 
@@ -643,6 +666,211 @@ test('Losing a heart reports the damage for the interface and counts towards the
   assert.ok(game.camera.shake > 0);
   game.player.invuln = 0; game.hurt(1, 400);
   assert.equal(hits, 2); assert.equal(game.damageTaken, 2);
+});
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * LA RÉSONANCE
+ * Le verbe central du jeu. Ces contrôles portent sur ses règles, sur son
+ * articulation avec les anciens pouvoirs, et sur la franchissabilité réelle
+ * des passages qu'elle commande dans le chapitre qui l'enseigne.
+ * ───────────────────────────────────────────────────────────────────────────*/
+
+const RESONANCE_STAGE = DEFINITIONS.findIndex(level => level.key === 'verger-qui-reve');
+const wakeableIn = (game, id) => game.wakeables.find(w => w.id === id);
+/** Le sol d'un réveillable : la ou les plateformes qu'il fait apparaître. */
+const wakePlatforms = (game, id) => game.platforms.filter(p => p.wakeId === id);
+
+test('La Résonance est toujours disponible, sans dépendre d’aucun pouvoir', () => {
+  const game = fresh(RESONANCE_STAGE); place(game, 300);
+  assert.equal(game.player.power, null);
+  game.audio.sounds.length = 0;
+  hold(game, 'action'); tick(game, DT);
+  assert.equal(game.waves.length, 1, 'Le bouton action doit émettre une onde même sans pouvoir.');
+  assert.ok(game.audio.sounds.includes('resonance'));
+  // La recharge est courte et ne dépend pas non plus d'un pouvoir.
+  assert.ok(game.player.actionCooldown > .7 && game.player.actionCooldown <= .8);
+  hold(game, 'action', false); tick(game, .2); hold(game, 'action'); tick(game, DT);
+  assert.equal(game.waves.length, 1, 'La recharge doit empêcher le martèlement.');
+  tick(game, .7); hold(game, 'action', false); tick(game, DT);
+  hold(game, 'action'); tick(game, DT);
+  assert.ok(game.waves.length >= 1, 'Après la recharge, l’onde repart.');
+});
+
+test('Chaque pouvoir amplifie la Résonance sans jamais la remplacer', () => {
+  const R = environment().window.LumenResonance;
+  // La portée suit le pouvoir, mais l'onde part toujours.
+  for (const [power, expected] of [[null, 1], ['echo', 1.8], ['comet', 1.15], ['bloom', 1], ['breeze', 1]]) {
+    assert.equal(R.reachFor(power), R.BASE_REACH * expected, 'Portée de ' + power);
+  }
+  // La fleur solaire garde sa graine, la comète sa ruée, le grelot son révélé.
+  const seeds = fresh(RESONANCE_STAGE); safeWorld(seeds); place(seeds, 300);
+  collect(seeds, 'bloom'); seeds.player.actionCooldown = 0; seeds.usePower();
+  assert.equal(seeds.projectiles.length, 1, 'La fleur solaire doit toujours tirer.');
+  assert.equal(seeds.waves.length, 1, '…et émettre l’onde en même temps.');
+
+  const dash = fresh(RESONANCE_STAGE); safeWorld(dash); place(dash, 300);
+  collect(dash, 'comet'); dash.player.actionCooldown = 0; dash.usePower();
+  assert.ok(dash.player.dashTime > 0, 'Le cœur comète doit toujours propulser.');
+  assert.equal(dash.waves.length, 1);
+
+  const bell = fresh(RESONANCE_STAGE); safeWorld(bell); place(bell, 300);
+  collect(bell, 'echo'); bell.player.actionCooldown = 0; bell.usePower();
+  assert.ok(bell.echoTime > 3.9, 'Le grelot doit toujours révéler les chemins.');
+  assert.equal(bell.waves.length, 1);
+  assert.equal(bell.waves[0].reach, R.BASE_REACH * 1.8, '…avec sa portée amplifiée.');
+});
+
+test('Un élément se réveille, dure, prévient, puis se rendort', () => {
+  const game = fresh(RESONANCE_STAGE); game.enemies = [];
+  const R = environment().window.LumenResonance;
+  const bud = wakeableIn(game, 'verger-bouton-1');
+  assert.ok(bud, 'Le chapitre doit contenir le bouton d’apprentissage.');
+  assert.equal(bud.state, 'asleep');
+  assert.equal(wakePlatforms(game, bud.id).every(p => !p.active), true, 'Sa surface n’existe pas avant le réveil.');
+
+  place(game, bud.x - 30); game.player.actionCooldown = 0; game.usePower();
+  tick(game, .35);
+  assert.equal(bud.state, 'awake');
+  assert.ok(wakePlatforms(game, bud.id).every(p => p.active), 'Le tremplin doit devenir solide.');
+  assert.ok(!R.isFading(bud), 'Il ne clignote pas dès le premier instant.');
+
+  // Le clignotement prévient avant la fin, et la surface le signale.
+  tick(game, R.WAKE_TYPES.bloom.duration - R.WARNING + .1);
+  assert.ok(R.isFading(bud), 'Il doit prévenir avant de s’éteindre.');
+  assert.ok(wakePlatforms(game, bud.id).every(p => p.warning));
+  tick(game, R.WARNING + .1);
+  assert.equal(bud.state, 'asleep');
+  assert.ok(wakePlatforms(game, bud.id).every(p => !p.active));
+});
+
+test('Ré-émettre prolonge au lieu de ne rien faire : le joueur ne peut pas être piégé', () => {
+  const game = fresh(RESONANCE_STAGE); game.enemies = [];
+  const bridge = wakeableIn(game, 'verger-pont-1');
+  // Au bord de la prairie, sur le sol : c'est là que le joueur se tiendra.
+  place(game, 1985);
+  assert.ok(game.player.grounded, 'Le rig doit poser Nilo sur un sol réel.');
+  game.player.actionCooldown = 0; game.usePower();
+  tick(game, .35);
+  assert.equal(bridge.state, 'awake');
+  // On attend presque l'extinction, puis on rappelle le pont sous ses pieds.
+  tick(game, 5.2);
+  const before = bridge.remaining;
+  assert.ok(before < 1, 'Le pont doit être sur le point de s’éteindre.');
+  game.player.actionCooldown = 0; game.usePower(); tick(game, .35);
+  assert.ok(bridge.remaining > before + 4, 'Le rappel doit rendre toute sa durée au pont.');
+  assert.equal(bridge.state, 'awake');
+});
+
+test('Le carillon relaie l’onde une seule fois et la chaîne reste finie', () => {
+  const game = fresh(RESONANCE_STAGE); game.enemies = [];
+  const chime = wakeableIn(game, 'verger-carillon');
+  const far = wakeableIn(game, 'verger-pont-gouffre');
+  const R = environment().window.LumenResonance;
+
+  // Depuis la rive, le cœur du grand pont est HORS de portée directe :
+  // sans cette vérité, le carillon ne servirait à rien et l'énigme n'existerait pas.
+  const shore = { x: 2510 + 16, y: 554 + 22 };
+  assert.ok(R.distance(shore.x, shore.y, far.x, far.y) > R.BASE_REACH,
+    'Le grand pont doit être hors de portée directe depuis la rive.');
+  assert.ok(R.distance(shore.x, shore.y, chime.x, chime.y) <= R.BASE_REACH,
+    'Le carillon, lui, doit être à portée depuis la rive.');
+
+  place(game, 2510); game.player.actionCooldown = 0; game.usePower();
+  tick(game, .6);
+  assert.equal(chime.state, 'awake', 'Le carillon doit s’être réveillé.');
+  assert.equal(far.state, 'awake', 'Le relais doit avoir réveillé le grand pont.');
+  const waveCount = game.waves.length;
+  assert.ok(waveCount <= 3, 'La chaîne doit rester courte : ' + waveCount);
+  // Pas d'emballement : on laisse tourner et le nombre d'ondes retombe à zéro.
+  tick(game, 3);
+  assert.equal(game.waves.length, 0, 'Aucune onde ne doit survivre indéfiniment.');
+});
+
+test('Le grand pont porte réellement Nilo au-dessus du gouffre, avec la vraie physique', () => {
+  const game = fresh(RESONANCE_STAGE);
+  game.enemies = []; game.collectibles = []; game.checkpoints = []; game.secrets = [];
+  place(game, 2500); game.player.actionCooldown = 0;
+  game.usePower();
+  tick(game, .6);
+  hold(game, 'right'); hold(game, 'run');
+  let crossed = false;
+  for (let i = 0; i < 120 * 5; i++) {
+    tick(game, DT);
+    if (game.player.x > 2990 && game.player.grounded) { crossed = true; break; }
+    if (game.mode !== 'playing') break;
+  }
+  assert.ok(crossed, 'Le pont réveillé doit permettre de franchir le gouffre en marchant.');
+  assert.equal(game.mode, 'playing');
+  assert.equal(game.player.hp, 3, 'La traversée ne doit rien coûter.');
+});
+
+test('Sans le carillon, le gouffre reste infranchissable — l’énigme existe vraiment', () => {
+  const game = fresh(RESONANCE_STAGE);
+  game.enemies = []; game.collectibles = []; game.checkpoints = []; game.secrets = [];
+  // On retire le carillon : plus aucun relais, donc plus aucun pont.
+  game.wakeables = game.wakeables.filter(w => w.id !== 'verger-carillon');
+  place(game, 2500); game.player.actionCooldown = 0; game.usePower(); tick(game, .6);
+  assert.equal(wakeableIn(game, 'verger-pont-gouffre').state, 'asleep');
+  hold(game, 'right'); hold(game, 'run');
+  let reached = false;
+  for (let i = 0; i < 120 * 4; i++) { tick(game, DT); if (game.player.x > 2960) reached = true; if (game.mode !== 'playing') break; }
+  assert.equal(reached, false, 'Sans relais, la rive opposée doit rester hors d’atteinte.');
+});
+
+test('La créature réveillée en douceur devient une marche, et cesse d’être une menace', () => {
+  const game = fresh(RESONANCE_STAGE); game.collectibles = []; game.checkpoints = [];
+  const sleeper = game.enemies.find(e => e.type === 'sleeper');
+  assert.ok(sleeper, 'Le chapitre doit contenir le dormeur du temps 5.');
+  place(game, 3540); game.player.actionCooldown = 0; game.player.invuln = 0;
+  game.usePower(); tick(game, .5);
+  assert.equal(sleeper.state, 'calm', 'L’onde doit lever le dormeur en douceur.');
+
+  // Elle ne charge plus, et le contact ne coûte rien.
+  const hp = game.player.hp;
+  place(game, sleeper.x + 4); game.player.y = sleeper.y - 20; game.player.invuln = 0;
+  tick(game, .4);
+  assert.equal(game.player.hp, hp, 'Une créature apaisée ne doit pas blesser.');
+  assert.notEqual(sleeper.state, 'charge');
+
+  // Et son dos porte : on se pose dessus avec la vraie physique.
+  place(game, sleeper.x + 6, sleeper.y - 40);
+  game.player.grounded = false; game.player.vy = 120;
+  let landed = false;
+  for (let i = 0; i < 90; i++) { tick(game, DT); if (game.player.grounded && game.player.y + game.player.h <= sleeper.y + 2) { landed = true; break; } }
+  assert.ok(landed, 'Le dos de la créature apaisée doit porter Nilo.');
+});
+
+test('Le retour à la lanterne rendort tout le jardin, sans état à moitié', () => {
+  const game = fresh(RESONANCE_STAGE);
+  place(game, 2500); game.player.actionCooldown = 0; game.usePower(); tick(game, .6);
+  const sleeper = game.enemies.find(e => e.type === 'sleeper');
+  sleeper.state = 'calm'; sleeper.calmTime = 5;
+  assert.ok(game.wakeables.some(w => w.state === 'awake'));
+  game.lives = 5; game.die(); tick(game, 1.1);
+  assert.equal(game.mode, 'playing');
+  assert.ok(game.wakeables.every(w => w.state === 'asleep'), 'Tout doit être rendormi au respawn.');
+  assert.equal(game.waves.length, 0);
+  assert.equal(sleeper.state, 'sleep');
+  assert.ok(game.platforms.filter(p => p.wakeId).every(p => !p.active));
+});
+
+test('Les six temps du chapitre de la Résonance sont réellement présents', () => {
+  const level = DEFINITIONS[RESONANCE_STAGE];
+  const kinds = new Set(level.wakeables.map(w => w.type));
+  // Trois interactions environnementales distinctes, pas trois portes identiques.
+  assert.ok(kinds.has('bloom') && kinds.has('bridge') && kinds.has('chime'),
+    'Les trois natures d’interaction doivent exister : ' + [...kinds].join(', '));
+  assert.ok(level.enemies.some(e => e.type === 'sleeper'), 'La réaction d’une créature aussi.');
+  // Un apprentissage sans danger : aucun piège, et un sol continu sous les
+  // premiers boutons.
+  assert.equal(level.hazards.length, 0);
+  const ground = level.platforms.filter(p => p.type === 'ground');
+  const learning = level.wakeables.filter(w => w.type === 'bloom' && w.x > 1100 && w.x < 2000);
+  assert.ok(learning.length >= 3, 'Le temps d’apprentissage doit répéter l’idée.');
+  for (const bud of learning) {
+    assert.ok(ground.some(g => g.x <= bud.x && g.x + g.w >= bud.x), 'Un sol sûr sous chaque bouton d’apprentissage.');
+  }
+  assert.ok(level.hints.length >= 6, 'Chaque temps doit être annoncé.');
 });
 
 console.log('\n' + (checks.length - failed) + '/' + checks.length + ' integration checks passed.');

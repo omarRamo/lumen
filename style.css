@@ -144,3 +144,135 @@
   .run-clock strong{font-size:16px}
   .achievement-row{margin:12px 0}
 }
+
+/* ── L'observatoire : dialogues courts et suivi de quête ───────────────────── */
+.dialogue{position:absolute;z-index:12;left:50%;bottom:34px;transform:translateX(-50%);
+  display:flex;align-items:flex-start;gap:14px;width:min(560px,86vw);padding:14px 20px 13px;
+  border-radius:15px;background:#f8f6e7f2;border:1px solid #ffffff88;backdrop-filter:blur(14px);
+  box-shadow:0 6px 30px #163c4226;cursor:pointer}
+.dialogue-portrait{flex:0 0 auto;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  font-size:23px;background:#c9dcd0;color:#4a6f63}
+.dialogue[data-who=ombeline] .dialogue-portrait{background:#e7cfdd;color:#8a5f80}
+.dialogue-body{flex:1;min-width:0}
+.dialogue-who{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.dialogue-who strong{font:400 17px var(--serif);letter-spacing:-.2px}
+.dialogue-who span{font-size:7px;letter-spacing:1.4px;color:var(--ink-light);text-transform:uppercase}
+.dialogue-body p{margin:5px 0 0;font-size:12.5px;line-height:1.6}
+.dialogue-dots{display:flex;gap:5px;margin-top:8px}
+.dialogue-dots i{width:5px;height:5px;border-radius:50%;background:#c6cfbe;transition:background .25s,transform .25s}
+.dialogue-dots i.on{background:#7fa48d;transform:scale(1.25)}
+
+.quest-banner{position:absolute;z-index:11;left:28px;top:max(112px,calc(env(safe-area-inset-top) + 92px));
+  display:flex;align-items:center;gap:11px;padding:10px 16px;border-radius:13px;
+  background:#f8f6e7e8;border:1px solid #ffffff80;backdrop-filter:blur(12px);
+  box-shadow:0 4px 22px #163c421f;max-width:min(320px,70vw);pointer-events:none}
+.quest-mark{font-size:20px;color:#b59959;line-height:1}
+.quest-banner strong{display:block;font:400 14px var(--serif)}
+.quest-banner span{display:block;font-size:9px;color:var(--ink-light);line-height:1.5;margin-top:2px}
+.quest-banner.done{background:#f4f0d8ee;border-color:#dcc38a}
+.quest-banner.done .quest-mark{color:#c19a43}
+.quest-banner.done strong{color:#7e5f1f}
+
+@media(max-width:1000px){
+  .quest-banner{left:15px;top:max(96px,calc(env(safe-area-inset-top) + 78px))}
+  .dialogue{bottom:104px}
+}
+@media(max-width:680px){
+  .quest-banner{left:12px;max-width:62vw;padding:8px 12px}
+  .quest-banner strong{font-size:12px}
+  .quest-banner span{font-size:8px}
+  .dialogue{bottom:112px;width:92vw;padding:11px 15px 10px;gap:10px}
+  .dialogue-portrait{width:34px;height:34px;font-size:19px;border-radius:10px}
+  .dialogue-who strong{font-size:15px}
+  .dialogue-body p{font-size:11.5px}
+}
+@media(max-height:530px) and (min-width:681px){
+  .quest-banner{top:66px;padding:7px 12px}
+  .dialogue{bottom:20px;padding:9px 14px}
+}
+
+/* ── Les Rêves nomades : graine, routes annoncées, souvenirs ───────────────── */
+.dream-card{width:520px}
+.seed-row{text-align:left;margin:22px 0 4px;border-block:1px solid var(--line);padding:18px 0}
+.seed-row>label{display:block;font-size:7px;letter-spacing:1.8px;font-weight:700;color:var(--ink-light);margin-bottom:9px}
+.seed-field{display:flex;gap:8px}
+.seed-field input{flex:1;min-width:0;font:400 17px var(--serif);letter-spacing:.4px;color:var(--ink);
+  background:#fffdf0;border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+.seed-field input::placeholder{color:#a8b2a4}
+.seed-field input:focus-visible{outline:3px solid #bc6b37;outline-offset:2px}
+.seed-dice{flex:0 0 auto;width:48px;border:1px solid var(--line);border-radius:10px;background:#f6f4e3;font-size:21px;line-height:1}
+.seed-row>small{display:block;margin-top:9px;font-size:9px;color:var(--ink-light);line-height:1.6}
+
+.route-card{width:560px}
+.route-branches{display:flex;gap:12px;margin:20px 0 4px;flex-wrap:wrap}
+.route-branch{flex:1 1 200px;min-width:0;text-align:left;border:1px solid var(--line);border-radius:13px;
+  background:#f8f7ee;padding:15px 17px;display:flex;flex-direction:column;gap:5px;transition:border-color .2s,background .2s,transform .2s}
+.route-branch:hover{transform:translateY(-2px)}
+.route-branch.picked{border-color:#8aa88f;background:#eef3e3;box-shadow:0 0 0 1px #8aa88f55}
+.branch-icon{font-size:24px;color:#8a9d84;line-height:1}
+.route-branch strong{font:400 18px var(--serif)}
+.route-branch span:last-child{font-size:9.5px;color:var(--ink-light);line-height:1.6}
+
+.route-offer{border-top:1px solid var(--line);margin-top:18px;padding-top:15px;text-align:left}
+.route-offer .eyebrow{margin-bottom:10px}
+.offer-list{display:flex;flex-direction:column;gap:7px}
+.offer-item{display:flex;align-items:center;gap:11px;text-align:left;width:100%;
+  border:1px solid var(--line);border-radius:11px;background:#f8f7ee;padding:10px 13px;transition:border-color .2s,background .2s}
+.offer-item.picked{border-color:#c9a55f;background:#f6efdb}
+.offer-icon{font-size:20px;color:#b59959;line-height:1;flex:0 0 auto}
+.offer-item strong{display:block;font-size:12px}
+.offer-item span{display:block;font-size:9px;color:var(--ink-light);line-height:1.5;margin-top:2px}
+#offer-note{display:block;margin-top:10px;font-size:9px;font-style:italic;color:var(--ink-light);line-height:1.6}
+
+@media(max-width:680px){
+  .dream-card,.route-card{width:min(520px,100%)}
+  .seed-field input{font-size:15px;padding:10px 12px}
+  .route-branches{flex-direction:column;gap:9px}
+  .route-branch{flex:1 1 auto;padding:12px 14px}
+  .route-branch strong{font-size:16px}
+}
+
+/* ── Tactile : direction + deux boutons, 48 px au minimum ─────────────────── */
+:root{--touch-scale:1}
+.touch-controls{gap:16px;align-items:flex-end;
+  padding-inline:max(0px,env(safe-area-inset-left)) max(0px,env(safe-area-inset-right))}
+body.left-handed .touch-controls{flex-direction:row-reverse}
+.touch-controls button{
+  /* Aucun bouton ne descend sous 48 px CSS, même à l'échelle la plus petite. */
+  width:max(48px,calc(62px * var(--touch-scale)));
+  height:max(48px,calc(62px * var(--touch-scale)));
+  font-size:calc(24px * var(--touch-scale))}
+.touch-controls .touch-minor{
+  width:max(48px,calc(50px * var(--touch-scale)));
+  height:max(48px,calc(50px * var(--touch-scale)));
+  font-size:calc(17px * var(--touch-scale));opacity:.85}
+.touch-controls .touch-action{
+  width:max(48px,calc(66px * var(--touch-scale)));
+  height:max(48px,calc(66px * var(--touch-scale)));
+  font-size:calc(26px * var(--touch-scale));background:#f2f7e0b0;border-color:#ffffffaa}
+.touch-controls .touch-jump{
+  width:max(48px,calc(74px * var(--touch-scale)));
+  height:max(48px,calc(74px * var(--touch-scale)));
+  font-size:calc(30px * var(--touch-scale))}
+.touch-move,.touch-actions{gap:calc(11px * var(--touch-scale))}
+
+/* Effets atténués : plus aucun voile, et les animations d'interface se taisent. */
+body.reduced-effects .result-stars .earned,
+body.reduced-effects .result-record,
+body.reduced-effects .title-spark,
+body.reduced-effects .lunar-sigil>span,
+body.reduced-effects .power-indicator.expiring{animation:none!important}
+body.reduced-effects .hud.heart-hit .hud-left{animation:heart-hit-soft .5s ease-out}
+body.reduced-effects .hud.heart-hit .hearts{animation:none}
+@keyframes heart-hit-soft{0%{background:#fbeae4f2}100%{background:#f8f6e7ec}}
+
+/* ── Réglages de confort, dans le guide ───────────────────────────────────── */
+.settings-block{border-top:1px solid var(--line);margin-top:18px;padding-top:16px;text-align:left}
+.settings-grid{display:flex;flex-direction:column;gap:11px;margin-top:11px}
+.setting{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.setting>span{font-size:10px}
+.seg{display:flex;gap:3px;background:#e6e8d8;border:1px solid var(--line);border-radius:22px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:20px;padding:7px 13px;
+  font-size:9px;font-weight:700;letter-spacing:.6px;color:#6c8175;min-height:34px}
+.seg button[aria-pressed=true]{background:var(--ink);color:#faf7df}
+.settings-note{font-size:9px!important;font-style:italic;color:var(--ink-light);margin:13px 0 0;line-height:1.6}

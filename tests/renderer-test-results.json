@@ -1,5 +1,5 @@
 {
-  "passed": 8,
+  "passed": 9,
   "failed": 0,
   "checks": [
     {
@@ -28,6 +28,10 @@
     },
     {
       "name": "The echo bell ring and the revealed ledges draw over their whole lifetime",
+      "passed": true
+    },
+    {
+      "name": "Tout ce qui dort se dessine endormi, réveillé et clignotant",
       "passed": true
     },
     {

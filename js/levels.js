@@ -22,6 +22,10 @@
     Array.from({ length: count }, (_, i) =>
       item('coin', x + i * step, y - Math.sin(i / (count - 1) * Math.PI) * 52));
   const checkpoint = (x, y = 600) => ({ x, y });
+  /** Un élément que la Résonance réveille. `x`/`y` désignent son cœur — c'est
+   *  de là que part la distance à l'onde — et non son coin supérieur gauche.
+   *  Un pont précise `span` : la longueur exacte qui apparaîtra. */
+  const wake = (type, x, y, extra = {}) => ({ type, x, y, ...extra });
   const secret = (x, y, w, h) => ({ x, y, w, h, found: false });
   const exit = (width, y = 500) => ({ x: width - 150, y, w: 70, h: 100, open: true });
   const spikes = (x, y, w = 70) => ({ x, y: y - 22, w, h: 22, type: 'spikes' });
@@ -29,7 +33,7 @@
 
   const levels = [
     {
-      id: 0, name: 'Les prairies d’aurore', subtitle: 'Un battement d’ailes suffit.',
+      id: 0, key: 'prairies-aurore', name: 'Les prairies d’aurore', subtitle: 'Un battement d’ailes suffit.',
       medalTargets: { gold: 70, silver: 115 },
       theme: 'meadow', width: 3900, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(3900),
@@ -73,7 +77,7 @@
       ]
     },
     {
-      id: 1, name: 'La cathédrale des racines', subtitle: 'Sous la terre, les étoiles poussent.',
+      id: 1, key: 'cathedrale-racines', name: 'La cathédrale des racines', subtitle: 'Sous la terre, les étoiles poussent.',
       medalTargets: { gold: 90, silver: 145 },
       theme: 'cavern', width: 4320, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(4320),
@@ -125,7 +129,7 @@
       ]
     },
     {
-      id: 2, name: 'Le lagon des lucioles', subtitle: 'Respire. La lumière sait nager.',
+      id: 2, key: 'lagon-lucioles', name: 'Le lagon des lucioles', subtitle: 'Respire. La lumière sait nager.',
       medalTargets: { gold: 100, silver: 160 },
       theme: 'tide', width: 4400, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(4400),
@@ -172,7 +176,7 @@
       ]
     },
     {
-      id: 3, name: 'Les archipels du zéphyr', subtitle: 'Le ciel aussi a ses sentiers.',
+      id: 3, key: 'archipels-zephyr', name: 'Les archipels du zéphyr', subtitle: 'Le ciel aussi a ses sentiers.',
       medalTargets: { gold: 105, silver: 170 },
       theme: 'sky', width: 4700, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(4700),
@@ -225,7 +229,7 @@
       ]
     },
     {
-      id: 4, name: 'La forge des pétales', subtitle: 'Même le feu peut fleurir.',
+      id: 4, key: 'forge-petales', name: 'La forge des pétales', subtitle: 'Même le feu peut fleurir.',
       medalTargets: { gold: 95, silver: 155 },
       theme: 'forge', width: 4600, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(4600),
@@ -275,7 +279,7 @@
       ]
     },
     {
-      id: 5, name: 'Le palais du givre', subtitle: 'Le silence a mille reflets.',
+      id: 5, key: 'palais-givre', name: 'Le palais du givre', subtitle: 'Le silence a mille reflets.',
       medalTargets: { gold: 110, silver: 175 },
       theme: 'frost', width: 4580, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(4580),
@@ -326,7 +330,7 @@
       ]
     },
     {
-      id: 6, name: 'Le jardin des heures bleues', subtitle: 'Un détour que la lune avait oublié.',
+      id: 6, key: 'jardin-heures-bleues', name: 'Le jardin des heures bleues', subtitle: 'Un détour que la lune avait oublié.',
       medalTargets: { gold: 85, silver: 140 },
       theme: 'secret', width: 4200, height: 900, bonus: true,
       spawn: { x: 100, y: 554 }, exit: exit(4200),
@@ -372,7 +376,7 @@
       ]
     },
     {
-      id: 7, name: 'Les vergers du vent', subtitle: 'Chaque branche dessine un nouveau ciel.',
+      id: 7, key: 'vergers-vent', name: 'Les vergers du vent', subtitle: 'Chaque branche dessine un nouveau ciel.',
       medalTargets: { gold: 120, silver: 190 },
       theme: 'sky', width: 5760, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(5760),
@@ -438,7 +442,7 @@
       ]
     },
     {
-      id: 8, name: 'La galerie des échos', subtitle: 'Les murs se souviennent de la lumière.',
+      id: 8, key: 'galerie-echos', name: 'La galerie des échos', subtitle: 'Les murs se souviennent de la lumière.',
       medalTargets: { gold: 130, silver: 205 },
       theme: 'cavern', width: 6000, height: 900,
       spawn: { x: 100, y: 554 }, exit: exit(6000),
@@ -509,7 +513,86 @@
       ]
     },
     {
-      id: 9, name: 'Le cœur de l’éclipse', subtitle: 'Une petite lumière. Une immense nuit.',
+      // Ce chapitre n'enseigne qu'une chose, en six temps : ta voix réveille le
+      // monde. Chaque temps introduit un usage, et aucun ne punit l'erreur.
+      id: 9, key: 'verger-qui-reve', name: 'Le verger qui rêve', subtitle: 'Ce qui dort attend seulement qu’on l’appelle.',
+      medalTargets: { gold: 95, silver: 150 },
+      theme: 'meadow', width: 4500, height: 900,
+      spawn: { x: 100, y: 554 }, exit: exit(4500),
+      goal: 'Réveille le verger et rends sa voix au jardin.',
+      platforms: [
+        // TEMPS 1 — l'idée. Un sol continu : rien ne peut mal tourner ici.
+        ground(0, 980),
+        ledge(470, 430, 170),
+        // TEMPS 2 — l'apprentissage. Trois boutons, un escalier, aucun danger.
+        ground(1120, 900),
+        ledge(1200, 440, 150), ledge(1440, 368, 150), ledge(1690, 296, 170),
+        // TEMPS 3 — la variation. Un trou franchi par un pont qui ne dure pas,
+        // et juste dessous une corniche de rattrapage avec de quoi remonter.
+        ledge(2060, 700, 170),
+        // TEMPS 4 — la combinaison. Un gouffre trop large, un carillon comme
+        // seul relais, et une corniche de secours au fond.
+        ground(2260, 300),
+        ledge(2700, 690, 190),
+        ground(2960, 620),
+        ledge(3080, 420, 160), ledge(3300, 336, 170),
+        // TEMPS 5 — le moment. La créature qui barrait le passage le devient.
+        ledge(3600, 660, 130),
+        // TEMPS 6 — la respiration. Un plateau large, une lanterne, la porte.
+        ground(3800, 700),
+        ledge(4020, 430, 160), ledge(4230, 350, 150)
+      ],
+      // Les réveillables : leur `x`/`y` est leur cœur, d'où part la distance.
+      wakeables: [
+        // Un bouton posé au sol ouvre son tremplin 60 px plus haut : on saute
+        // dessus, on ne le traverse pas.
+        wake('bloom', 560, 550, { id: 'verger-bouton-1' }),
+        wake('bloom', 1270, 550), wake('bloom', 1510, 550), wake('bloom', 1760, 550),
+        // Le pont d'apprentissage est à hauteur de sol : il prolonge la prairie.
+        wake('bridge', 2140, 600, { span: 240, id: 'verger-pont-1' }),
+        wake('bloom', 2140, 650),
+        // Le carillon est à portée depuis la rive ; le cœur du grand pont, non.
+        wake('chime', 2640, 520, { id: 'verger-carillon' }),
+        wake('bridge', 2760, 600, { span: 400, id: 'verger-pont-gouffre' }),
+        wake('bloom', 2790, 640),
+        wake('bloom', 3010, 550),
+        wake('bloom', 3880, 550)
+      ],
+      enemies: [
+        enemy('patrol', 1380, 600, 1180, 1620),
+        // Ce dormeur-ci n'est pas un obstacle : c'est la marche du temps 5.
+        enemy('sleeper', 3640, 660, 3600, 3720),
+        enemy('swarm', 3300, 250, 3150, 3450),
+        enemy('patrol', 4020, 600, 3860, 4180)
+      ],
+      collectibles: [
+        ...coins(200, 550, 5), ...arc(520, 520, 5), ...coins(500, 386, 4),
+        ...coins(1180, 550, 4), ...coins(1230, 396, 3), ...coins(1470, 324, 3),
+        ...coins(1720, 252, 4), ...arc(1900, 515, 6),
+        ...coins(2290, 550, 3), ...coins(2740, 646, 4),
+        ...coins(3000, 550, 4), ...coins(3110, 376, 3), ...coins(3330, 292, 3),
+        ...arc(3840, 515, 6), ...coins(4050, 386, 3), ...coins(4250, 306, 3),
+        item('star', 1775, 250), item('star', 3385, 290), item('star', 4305, 304),
+        item('breeze', 1160, 550), item('comet', 2300, 550),
+        item('bloom', 3000, 550), item('echo', 3860, 550),
+        item('heart', 2480, 550), item('heart', 3900, 550)
+      ],
+      checkpoints: [checkpoint(1150), checkpoint(2480), checkpoint(3860)],
+      hazards: [],
+      secrets: [secret(4160, 190, 210, 140)],
+      hints: [
+        { x: 100, text: 'Appuie sur X : ta voix réveille ce qui dort autour de toi.' },
+        { x: 540, text: 'Ce bouton attend d’être appelé. Réveille-le, puis saute dessus.' },
+        { x: 1180, text: 'Trois boutons, un escalier. Prends ton temps : rien ne peut te blesser ici.' },
+        { x: 2020, text: 'Le pont ne dure que six secondes. Rappelle-le sous tes pieds si besoin.' },
+        { x: 2420, text: 'Le gouffre est hors de portée de ta voix. Mais le carillon, lui, est à portée.' },
+        { x: 2760, text: 'Un carillon réveillé renvoie l’onde plus loin que toi.' },
+        { x: 3560, text: 'Celui-ci dort en travers du chemin. Appelle-le doucement plutôt que de l’attendre.' },
+        { x: 3860, text: 'Le verger respire. La porte est au bout, et une lumière se cache tout en haut.' }
+      ]
+    },
+    {
+      id: 10, key: 'coeur-eclipse', name: 'Le cœur de l’éclipse', subtitle: 'Une petite lumière. Une immense nuit.',
       medalTargets: { gold: 130, silver: 210 },
       theme: 'eclipse', width: 4800, height: 900, final: true,
       spawn: { x: 100, y: 554 }, exit: { ...exit(4800), open: false }, boss: true,
@@ -550,6 +633,79 @@
         { x: 2100, text: 'Un dernier passage, puis le Gardien. La prochaine lanterne est tout près.' },
         { x: 3080, text: 'Gardien : esquive ses attaques. Frappe sa tête lorsqu’il se repose.' },
         { x: 3420, text: 'Sa lumière change avant chaque attaque. Observe, saute, puis riposte.' }
+      ]
+    },
+    {
+      /* L'OBSERVATOIRE — le seul lieu du jeu où l'on ne peut pas mourir.
+       *
+       * Il n'a ni sortie à atteindre, ni chronomètre, ni médaille : c'est
+       * volontaire. On y vient pour parler à deux personnes, réveiller trois
+       * carillons, et voir la coupole changer. Le drapeau `hub` le tient donc
+       * hors de la campagne, de l'atlas et du décompte des chapitres. */
+      id: 11, key: 'observatoire', hub: true,
+      name: 'L’observatoire', subtitle: 'Le premier souffle.',
+      theme: 'secret', width: 1900, height: 900,
+      spawn: { x: 180, y: 554 },
+      // La porte des rêves ne s'ouvre qu'après la quête : elle est le signe
+      // visible que quelque chose a changé ici.
+      exit: { x: 1660, y: 500, w: 70, h: 100, open: false, leadsTo: 'expedition' },
+      goal: 'Rends son souffle à la coupole.',
+      platforms: [
+        ground(0, 1900),
+        // Chaque corniche est à 110 px au plus de la précédente : un saut
+        // ordinaire suffit, sans course ni pouvoir.
+        ledge(430, 490, 150), ledge(700, 420, 170), ledge(1010, 490, 150),
+        ledge(1240, 380, 180)
+      ],
+      // Les trois carillons de la coupole : la quête entière tient là.
+      wakeables: [
+        // Chaque carillon pend 40 px au-dessus de sa corniche : hors de portée
+        // depuis le sol, à portée dès qu'on est monté. Il faut grimper.
+        wake('chime', 505, 450, { id: 'coupole-carillon-1' }),
+        wake('chime', 785, 380, { id: 'coupole-carillon-2' }),
+        wake('chime', 1085, 450, { id: 'coupole-carillon-3' })
+      ],
+      characters: [
+        {
+          id: 'vesper', name: 'Vesper', x: 330, y: 600, facing: 1,
+          role: 'L’archiviste de la coupole',
+          lines: {
+            unknown: ['Ah, une petite lumière. Bienvenue.',
+                      'La coupole a perdu son souffle : ses trois carillons se sont tus.',
+                      'Approche-toi d’eux et appelle. Ta voix suffira.'],
+            active: ['Continue. Un carillon réveillé en appelle un autre.',
+                     'Je note tout, tu sais. C’est mon seul talent.'],
+            done: ['Écoute-la respirer. Je n’avais pas entendu ça depuis longtemps.',
+                   'Va voir Ombeline. Elle t’attendait, elle, bien avant moi.']
+          }
+        },
+        {
+          id: 'ombeline', name: 'Ombeline', x: 1500, y: 600, facing: -1,
+          role: 'La veilleuse de la porte',
+          lines: {
+            unknown: ['Cette porte ? Elle ne mène nulle part tant que la coupole se tait.',
+                      'Réveille les carillons. Ensuite on parlera.'],
+            active: ['Pas encore. J’entends qu’il en manque.'],
+            done: ['Voilà. Derrière cette porte, les jardins rêvent.',
+                   'Chaque nuit ils inventent un chemin différent. Tu veux voir ?']
+          }
+        }
+      ],
+      quest: {
+        id: 'premier-souffle',
+        title: 'Le premier souffle',
+        summary: 'Réveille les trois carillons de la coupole.',
+        needs: ['coupole-carillon-1', 'coupole-carillon-2', 'coupole-carillon-3'],
+        transformation: 'coupole-allumee',
+        reward: 'La porte des rêves s’ouvre.'
+      },
+      enemies: [], hazards: [], secrets: [],
+      collectibles: [...coins(560, 550, 4), ...coins(900, 550, 4), ...arc(1180, 520, 5)],
+      checkpoints: [],
+      hints: [
+        { x: 180, text: 'Ici, rien ne peut vous blesser. Parlez à Vesper, puis regardez en haut.' },
+        { x: 700, text: 'Les carillons sont posés sur les corniches. Approchez-vous et appelez avec X.' },
+        { x: 1480, text: 'Ombeline garde la porte des rêves.' }
       ]
     }
   ];

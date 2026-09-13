@@ -49,7 +49,7 @@ function environment() {
   };
   const sandbox = { window, document, localStorage: { getItem: () => null, setItem() {} }, requestAnimationFrame() {}, console };
   const ctx = vm.createContext(sandbox);
-  for (const file of ['renderer.js', 'levels.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
+  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'renderer.js', 'levels.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
   window.canvas = canvas;
   const game = new window.LumenGame(canvas);
   return { game, window, calls };
@@ -162,6 +162,30 @@ test('The echo bell ring and the revealed ledges draw over their whole lifetime'
   }
   // An expiring power also draws its countdown ring around Nilo.
   game.player.powerTime = 3; game.echoTime = 0; game.renderer.draw(game, 1 / 60);
+});
+
+test('Tout ce qui dort se dessine endormi, réveillé et clignotant', () => {
+  const { game, window } = environment();
+  const stage = window.LUMEN_LEVELS.findIndex(level => level.key === 'verger-qui-reve');
+  assert.ok(stage >= 0, 'Le chapitre de la Résonance doit exister.');
+  game.loadLevel(stage);
+  const R = window.LumenResonance;
+  // Chaque nature d'élément, dans chacun de ses états, avec sa géométrie.
+  for (const state of ['asleep', 'awake', 'fading']) {
+    for (const w of game.wakeables) {
+      w.state = state === 'asleep' ? 'asleep' : 'awake';
+      w.remaining = state === 'fading' ? .4 : R.WAKE_TYPES[w.type].duration;
+    }
+    game.updatePlatforms(1 / 120);
+    for (const w of game.wakeables) { game.camera.x = Math.max(0, w.x - 400); game.renderer.draw(game, 1 / 60); }
+  }
+  // Et les ondes elles-mêmes, du premier instant à leur extinction.
+  game.waves = [
+    { x: 600, y: 560, radius: 20, reach: 180, life: .5, maxLife: .55, source: 'player', touched: new Set() },
+    { x: 900, y: 500, radius: 170, reach: 180, life: .05, maxLife: .55, source: 'chime', touched: new Set() }
+  ];
+  game.camera.x = 400;
+  game.renderer.draw(game, 1 / 60);
 });
 
 test('Nilo draws in every posture: running, airborne, sliding, hurt and defeated', () => {

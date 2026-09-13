@@ -1,9 +1,9 @@
 {
-  "passed": 39,
+  "passed": 49,
   "failed": 0,
   "checks": [
     {
-      "name": "All ten authored stages load with independent objects and stable spawns",
+      "name": "Every authored stage loads with independent objects, a stable key and a stable spawn",
       "passed": true
     },
     {
@@ -156,6 +156,46 @@
     },
     {
       "name": "Losing a heart reports the damage for the interface and counts towards the medal",
+      "passed": true
+    },
+    {
+      "name": "La Résonance est toujours disponible, sans dépendre d’aucun pouvoir",
+      "passed": true
+    },
+    {
+      "name": "Chaque pouvoir amplifie la Résonance sans jamais la remplacer",
+      "passed": true
+    },
+    {
+      "name": "Un élément se réveille, dure, prévient, puis se rendort",
+      "passed": true
+    },
+    {
+      "name": "Ré-émettre prolonge au lieu de ne rien faire : le joueur ne peut pas être piégé",
+      "passed": true
+    },
+    {
+      "name": "Le carillon relaie l’onde une seule fois et la chaîne reste finie",
+      "passed": true
+    },
+    {
+      "name": "Le grand pont porte réellement Nilo au-dessus du gouffre, avec la vraie physique",
+      "passed": true
+    },
+    {
+      "name": "Sans le carillon, le gouffre reste infranchissable — l’énigme existe vraiment",
+      "passed": true
+    },
+    {
+      "name": "La créature réveillée en douceur devient une marche, et cesse d’être une menace",
+      "passed": true
+    },
+    {
+      "name": "Le retour à la lanterne rendort tout le jardin, sans état à moitié",
+      "passed": true
+    },
+    {
+      "name": "Les six temps du chapitre de la Résonance sont réellement présents",
       "passed": true
     }
   ]

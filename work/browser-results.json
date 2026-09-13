@@ -1,163 +1,17 @@
 {
-  "errors": [],
-  "steps": [
-    {
-      "view": "desktop",
-      "atlasCards": 10,
-      "medalLegendVisible": true
+  "mesures": {
+    "bureau": {
+      "fps": 25,
+      "particules": 0
     },
-    {
-      "view": "desktop",
-      "play": {
-        "mode": "playing",
-        "x": 1093,
-        "runMode": "timed",
-        "clockVisible": true,
-        "clock": "0:03.9",
-        "fps": 38,
-        "particles": 23
-      }
+    "portrait": {
+      "fps": 60,
+      "particules": 0
     },
-    {
-      "view": "desktop",
-      "heartPulse": true,
-      "heartLost": true,
-      "sceneFlash": true,
-      "shake": true,
-      "powerVisible": true,
-      "powerExpiring": true
-    },
-    {
-      "view": "desktop",
-      "fight": {
-        "phase": 2,
-        "stage": 2,
-        "arenaActive": true,
-        "bossHudVisible": true,
-        "phaseLabel": "PHASE II",
-        "mode": "playing"
-      }
-    },
-    {
-      "view": "desktop",
-      "summary": {
-        "medal": "Or",
-        "medalClass": "result-medal gold",
-        "time": "0:48.6",
-        "enemies": "7",
-        "damage": "1",
-        "recordShown": false
-      }
-    },
-    {
-      "view": "desktop",
-      "horizontalOverflow": false
-    },
-    {
-      "view": "portrait",
-      "atlasCards": 10,
-      "medalLegendVisible": true
-    },
-    {
-      "view": "portrait",
-      "play": {
-        "mode": "dead",
-        "x": 1028,
-        "runMode": "timed",
-        "clockVisible": true,
-        "clock": "0:03.5",
-        "fps": 60,
-        "particles": 34
-      }
-    },
-    {
-      "view": "portrait",
-      "heartPulse": true,
-      "heartLost": true,
-      "sceneFlash": true,
-      "shake": true,
-      "powerVisible": true,
-      "powerExpiring": true
-    },
-    {
-      "view": "portrait",
-      "fight": {
-        "phase": 2,
-        "stage": 2,
-        "arenaActive": true,
-        "bossHudVisible": true,
-        "phaseLabel": "PHASE II",
-        "mode": "playing"
-      }
-    },
-    {
-      "view": "portrait",
-      "summary": {
-        "medal": "Or",
-        "medalClass": "result-medal gold",
-        "time": "0:48.6",
-        "enemies": "7",
-        "damage": "1",
-        "recordShown": false
-      }
-    },
-    {
-      "view": "portrait",
-      "horizontalOverflow": false
-    },
-    {
-      "view": "landscape",
-      "atlasCards": 10,
-      "medalLegendVisible": true
-    },
-    {
-      "view": "landscape",
-      "play": {
-        "mode": "dead",
-        "x": 1028,
-        "runMode": "timed",
-        "clockVisible": true,
-        "clock": "0:03.6",
-        "fps": 60,
-        "particles": 33
-      }
-    },
-    {
-      "view": "landscape",
-      "heartPulse": true,
-      "heartLost": true,
-      "sceneFlash": true,
-      "shake": true,
-      "powerVisible": true,
-      "powerExpiring": true
-    },
-    {
-      "view": "landscape",
-      "fight": {
-        "phase": 2,
-        "stage": 2,
-        "arenaActive": true,
-        "bossHudVisible": true,
-        "phaseLabel": "PHASE II",
-        "mode": "playing"
-      }
-    },
-    {
-      "view": "landscape",
-      "summary": {
-        "medal": "Or",
-        "medalClass": "result-medal gold",
-        "time": "0:48.6",
-        "enemies": "7",
-        "damage": "1",
-        "recordShown": false
-      }
-    },
-    {
-      "view": "landscape",
-      "horizontalOverflow": false
+    "paysage": {
+      "fps": 60,
+      "particules": 0
     }
-  ],
-  "fps": 40,
-  "ok": true
+  },
+  "note": "Cadence relevée dans un Chromium sans accélération matérielle, en conteneur : indicative seulement."
 }

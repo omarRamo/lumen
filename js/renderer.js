@@ -72,13 +72,21 @@
       const shake = cam.shake || 0;
       c.save(); c.translate(-cameraX + Math.sin(t * 129) * shake, -cameraY + Math.cos(t * 113) * shake * .6);
       if (game.mode === 'home') this.homeGarden(c, t, p);
+      if (game.level && game.level.hub) {
+        const lit = !!(game.progress && game.progress.hub && game.progress.hub.transformations.includes('coupole-allumee'));
+        this.observatory(c, t, p, lit);
+      }
       if (game.boss) this.arena(c, game.boss, t, p);
       for (const s of game.secrets || []) if (!s.found && this.visible(s)) this.secret(c, s, t, p);
+      // Ce qui dort est dessiné SOUS les plateformes : sa silhouette reste
+      // visible en permanence, sans jamais masquer une surface jouable.
+      for (const w of game.wakeables || []) if (this.visible({ x: w.x - (w.span || 0) / 2 - 40, y: w.y - 40, w: (w.span || 0) + 80, h: 80 }, 60)) this.wakeable(c, w, t, p);
       for (const platform of game.platforms || []) if (this.visible(platform, 100)) this.platform(c, platform, t, p);
       for (const h of game.hazards || []) if (this.visible(h)) this.hazard(c, h, t, p);
       for (const cp of game.checkpoints || []) if (this.visible(cp, 120)) this.checkpoint(c, cp, t, p);
       if (game.exit && this.visible(game.exit, 200)) this.portal(c, game.exit, t, p);
       for (const item of game.collectibles || []) if (!item.taken && this.visible(item, 60)) this.collectible(c, item, t, p);
+      for (const character of game.characters || []) if (this.visible({ x: character.x - 40, y: character.y - 100, w: 80, h: 100 }, 60)) this.character(c, character, t, p);
       for (const enemy of game.enemies || []) if (enemy.alive !== false && this.visible(enemy, 70)) this.enemy(c, enemy, t, p);
       if (game.boss && this.visible(game.boss, 180)) this.boss(c, game.boss, t, p);
       for (const shot of game.projectiles || []) if (this.visible(shot, 60)) this.projectile(c, shot, t);
@@ -89,6 +97,7 @@
         } else this.player(c, game.player, t, p);
         if (game.echoTime > 0) this.echoWave(c, game.player, game.echoTime, t);
       }
+      for (const w of game.waves || []) this.wave(c, w, t);
       for (const part of game.particles || []) if (this.visible(part, 25)) this.particle(c, part);
       for (const ft of game.floatingTexts || []) { c.save(); c.globalAlpha = Math.min(1, Math.max(0, ft.life || 0)); c.textAlign = 'center'; c.font = '700 17px "Trebuchet MS", sans-serif'; c.shadowColor = '#12343b'; c.shadowBlur = 3; c.fillStyle = ft.color || '#fff0b7'; c.fillText(ft.text || '', ft.x, ft.y); c.restore(); }
       if (level.water) this.water(c, level.water, cameraX, t, p);
@@ -239,6 +248,9 @@
       }
     }
     platform(c, o, t, p) {
+      // La géométrie d'un élément réveillé a son propre langage : elle est faite
+      // de lumière et de pétales, jamais de la pierre des plateformes ordinaires.
+      if (o.wakeId) { if (o.active) this.wakePlatform(c, o, t, p); return; }
       if (o.type === 'echo') {
         this.echoPlatform(c, o, t); return;
       }
@@ -335,6 +347,196 @@
       c.globalAlpha = remaining < 1 ? .35 + Math.abs(Math.sin(t * 13)) * .45 : .5;
       c.strokeStyle = '#c9f2d8'; c.lineWidth = 2;
       c.beginPath(); c.arc(cx, cy - 4, 26, -Math.PI / 2, -Math.PI / 2 + TAU * (remaining / 4)); c.stroke();
+      c.restore();
+    }
+    /** L'observatoire : une coupole, une arche, et le changement qu'on y gagne.
+     *  `lit` est vrai une fois la quête du premier souffle accomplie — c'est la
+     *  seule chose qui distingue les deux états, et elle doit sauter aux yeux. */
+    observatory(c, t, p, lit) {
+      c.save();
+      // La coupole, posée derrière le décor jouable.
+      const cx = 790, base = 600;
+      c.save(); c.globalAlpha = lit ? .3 : .1;
+      const halo = c.createRadialGradient(cx, 330, 20, cx, 330, 330);
+      halo.addColorStop(0, lit ? '#fff2c6' : '#cfd8e0'); halo.addColorStop(1, '#fff2c600');
+      c.fillStyle = halo; c.fillRect(cx - 330, 0, 660, 660); c.restore();
+
+      c.strokeStyle = lit ? '#b9a274' : '#7c7184'; c.lineWidth = 13; c.lineCap = 'butt';
+      c.beginPath(); c.moveTo(cx - 250, base); c.lineTo(cx - 250, 400);
+      c.arc(cx, 400, 250, Math.PI, TAU); c.lineTo(cx + 250, base); c.stroke();
+      c.strokeStyle = lit ? '#e6cf95' : '#93899d'; c.lineWidth = 4;
+      c.beginPath(); c.moveTo(cx - 242, base); c.lineTo(cx - 242, 400);
+      c.arc(cx, 400, 242, Math.PI, TAU); c.lineTo(cx + 242, base); c.stroke();
+      // Les nervures de la coupole. Allumées, elles portent chacune une lumière.
+      for (let i = 0; i <= 8; i++) {
+        const angle = Math.PI + i * Math.PI / 8;
+        const x1 = cx + Math.cos(angle) * 242, y1 = 400 + Math.sin(angle) * 242;
+        line(c, [[cx, 400], [x1, y1]], (lit ? '#d8c08c' : '#8a8194') + '77', 2);
+        if (lit) { c.shadowColor = '#ffe9ae'; c.shadowBlur = 14; ellipse(c, x1, y1, 4.5, 4.5, '#fff3cd'); c.shadowBlur = 0; }
+        else ellipse(c, x1, y1, 3, 3, '#7f7789');
+      }
+      star(c, cx, 400 - (lit ? 300 : 286) + Math.sin(t * 1.4) * (lit ? 5 : 1), lit ? 17 : 9, lit ? '#ffeeb0' : '#867d95', t * .12);
+      // Les lierres de l'arche fleurissent seulement une fois la coupole vive.
+      for (const side of [-1, 1]) {
+        const vx = cx + side * 246;
+        c.strokeStyle = lit ? '#93b881' : '#6f7f79'; c.lineWidth = 3;
+        c.beginPath(); c.moveTo(vx, 420);
+        c.bezierCurveTo(vx + side * 16, 480, vx - side * 12, 530, vx + side * 6 + Math.sin(t + side) * 3, base - 8); c.stroke();
+        for (let k = 0; k < 7; k++) {
+          const ly = 436 + k * 22;
+          leaf(c, vx + Math.sin(k + side) * 6, ly, lit ? 13 : 9, k % 2 ? .9 * side : -.9 * side, lit ? (k % 2 ? '#cbe3a4' : '#a9cb96') : '#6d7d78');
+          if (lit && k % 3 === 1) { for (let j = 0; j < 5; j++) ellipse(c, vx + Math.sin(k) * 6 + Math.sin(j * TAU / 5) * 4, ly - 10 + Math.cos(j * TAU / 5) * 4, 3, 4, '#ffd9df', -j * TAU / 5); }
+        }
+      }
+      c.restore();
+    }
+    /** Un habitant de l'observatoire. Deux silhouettes, deux façons de se tenir :
+     *  Vesper est voûté sur son carnet, Ombeline est prête à partir. */
+    character(c, ch, t, p) {
+      const sway = Math.sin((ch.bob || 0) * 1.6) * 1.5, face = ch.facing || 1;
+      c.save(); c.translate(ch.x, ch.y);
+      ellipse(c, 0, 2, 19, 5, '#12343b33');
+      // Une petite marque au sol dit qu'on peut s'approcher, sans aucun texte.
+      c.save(); c.globalAlpha = ch.near ? .5 : .22 + Math.abs(Math.sin(t * 1.8)) * .12;
+      c.strokeStyle = '#ffe6ad'; c.lineWidth = 1.5;
+      c.beginPath(); c.ellipse(0, 3, 34, 9, 0, 0, TAU); c.stroke();
+      for (let i = 0; i < 3; i++) star(c, Math.sin(t * 1.1 + i * 2.1) * 28, 3 + Math.cos(t * 1.1 + i * 2.1) * 7, 2.2, '#ffeec2', t);
+      c.restore();
+      c.scale(face, 1);
+      if (ch.id === 'vesper') {
+        // Long, voûté, une robe qui traîne : quelqu'un qui n'est pas pressé.
+        const robe = c.createLinearGradient(0, -74, 0, 0);
+        robe.addColorStop(0, '#6f7fa0'); robe.addColorStop(1, '#3e4a66');
+        c.fillStyle = robe; c.beginPath(); c.moveTo(-15, 0); c.quadraticCurveTo(-20, -44, -10, -62);
+        c.lineTo(11, -62); c.quadraticCurveTo(21, -44, 17, 0); c.closePath(); c.fill();
+        for (let i = 0; i < 3; i++) line(c, [[-9 + i * 9, -54], [-11 + i * 9, -4]], '#8e9cba55', 2);
+        ellipse(c, 2 + sway * .3, -72, 13, 12, '#f0e3cb');
+        // Lunettes rondes : l'archiviste voit de près.
+        c.strokeStyle = '#57607a'; c.lineWidth = 1.8;
+        for (const eye of [-4, 6]) { c.beginPath(); c.arc(eye + sway * .3, -73, 4.6, 0, TAU); c.stroke(); ellipse(c, eye + sway * .3, -73, 1.7, 2.1, '#40506a'); }
+        line(c, [[1.5 + sway * .3, -73], [1.5 + sway * .3, -73]], '#57607a', 2);
+        ellipse(c, 2 + sway * .3, -83, 14, 7, '#8fa0c0');
+        line(c, [[-6, -88], [10, -89]], '#b6c3dc', 3);
+        // Le carnet, toujours ouvert.
+        c.save(); c.translate(14, -40); c.rotate(-.25);
+        rounded(c, -10, -8, 21, 16, 2, '#f6f0dc'); line(c, [[0, -8], [0, 8]], '#ccc2a6', 1.5);
+        for (let i = 0; i < 3; i++) line(c, [[-7, -4 + i * 4], [-2, -4 + i * 4]], '#a9a288', 1);
+        c.restore();
+        line(c, [[11, -52], [15, -44]], '#5d6a88', 5);
+      } else {
+        // Petite, vive, une cape courte et une clé d'étoile à la ceinture.
+        c.fillStyle = '#9a6f96'; c.beginPath(); c.moveTo(-13, -2); c.quadraticCurveTo(-17, -30, -8, -46);
+        c.lineTo(9, -46); c.quadraticCurveTo(17, -28, 13, -2); c.closePath(); c.fill();
+        rounded(c, -9, -46, 18, 24, 6, '#e6a98f');
+        line(c, [[-6, -46], [-5, -26]], '#cf9078', 3); line(c, [[6, -46], [5, -26]], '#f2bb9d', 3);
+        line(c, [[-8, -24], [-6, -4]], '#5f7fa8', 6); line(c, [[7, -24], [9, -4]], '#5f7fa8', 6);
+        ellipse(c, -6, -2, 6.5, 4, '#6a5a5e'); ellipse(c, 9, -2, 6.5, 4, '#6a5a5e');
+        ellipse(c, 1 + sway * .4, -56, 11.5, 10.5, '#f7e0c4');
+        ellipse(c, -2 + sway * .4, -57, 2.6, 3.4, '#3f4f57'); ellipse(c, 5 + sway * .4, -57, 2.6, 3.4, '#3f4f57');
+        ellipse(c, -1.4 + sway * .4, -58.4, .9, 1.2, '#fffdf0'); ellipse(c, 5.6 + sway * .4, -58.4, .9, 1.2, '#fffdf0');
+        c.strokeStyle = '#c98a74'; c.lineWidth = 1.2; c.beginPath(); c.arc(2 + sway * .4, -52, 3.2, .25, Math.PI - .25); c.stroke();
+        // Chignon haut et mèche au vent.
+        ellipse(c, 1 + sway * .4, -65, 12, 7, '#7a5468');
+        ellipse(c, 3 + sway * .4, -73, 6.5, 6, '#7a5468');
+        line(c, [[-9, -63], [-16 + Math.sin(t * 2) * 2, -68]], '#7a5468', 3);
+        // La clé d'étoile : ce qu'elle garde.
+        line(c, [[11, -22], [15, -14]], '#caa96e', 2); star(c, 16, -11, 5.5, '#ffdf9e', t * .6);
+      }
+      c.restore();
+    }
+    /** La surface d'un élément réveillé : corolle pour une fleur, clair de lune
+     *  pour un pont. Elle clignote pendant sa dernière seconde et demie. */
+    wakePlatform(c, o, t, p) {
+      const fading = !!o.warning;
+      c.save();
+      c.globalAlpha = fading ? .45 + Math.abs(Math.sin(t * 11)) * .55 : 1;
+      if (o.type === 'spring') {
+        const cx = o.x + o.w / 2, cy = o.y + o.h / 2;
+        c.save(); c.globalAlpha *= .2; ellipse(c, cx, cy, o.w * .72, 24, '#ffd9a6'); c.restore();
+        for (let i = 0; i < 7; i++) {
+          const angle = -Math.PI + i * Math.PI / 6 + Math.sin(t * 2 + i) * .03;
+          leaf(c, cx + Math.cos(angle) * 30, cy + 6, 27, angle + Math.PI / 2, i % 2 ? '#ffc4b0' : '#f8a898');
+        }
+        rounded(c, o.x + 4, o.y, o.w - 8, o.h, 10, '#ffe6b4');
+        rounded(c, o.x + 10, o.y + 2, o.w - 20, 5, 3, '#fff7dd');
+        for (let i = 0; i < 4; i++) star(c, o.x + 18 + i * (o.w - 36) / 3, o.y + 11, 3.4, '#e79a86', t + i);
+        ellipse(c, cx, cy + 3, 9, 7, '#f6c98c');
+      } else {
+        const glow = c.createLinearGradient(0, o.y - 4, 0, o.y + o.h + 14);
+        glow.addColorStop(0, '#f4fbe4'); glow.addColorStop(.35, '#bfe7dd'); glow.addColorStop(1, '#8fb9cc55');
+        rounded(c, o.x, o.y, o.w, o.h, 8, glow);
+        line(c, [[o.x + 6, o.y + 2], [o.x + o.w - 6, o.y + 2]], '#ffffffc0', 2.5);
+        for (let i = 0; i < o.w / 34; i++) {
+          const xx = o.x + 17 + i * 34;
+          star(c, xx, o.y + 10, 3, '#f7ffe8', t * .5 + i);
+          c.strokeStyle = '#e6f7e055'; c.lineWidth = 1;
+          c.beginPath(); c.arc(xx, o.y + 11, 9 + Math.sin(t * 3 + i) * 2, Math.PI, TAU); c.stroke();
+        }
+        // Deux ancrages de pierre rappellent que le pont a toujours été là, endormi.
+        for (const side of [o.x, o.x + o.w]) { rounded(c, side - 7, o.y - 6, 14, o.h + 12, 5, p.stone); ellipse(c, side, o.y - 4, 5, 4, p.accent); }
+      }
+      c.restore();
+    }
+    /** Ce qui dort. Un élément assoupi doit être lisible AVANT d'être réveillé :
+     *  sa silhouette annonce ce qu'il deviendra, et une pulsation dit qu'il vit. */
+    wakeable(c, w, t, p) {
+      if (w.state === 'awake') return;
+      const breath = .55 + Math.abs(Math.sin(t * 1.5 + w.pulse)) * .45;
+      c.save(); c.translate(w.x, w.y);
+      c.save(); c.globalAlpha = .1 + breath * .12; ellipse(c, 0, 0, 30, 26, '#e9f8d8'); c.restore();
+      if (w.type === 'bloom') {
+        // Un bouton fermé, penché, sur sa tige : la promesse d'un tremplin.
+        line(c, [[0, 26], [-2, 10], [1, 0]], '#7fa47f', 4);
+        leaf(c, -3, 18, 13, -1, '#8fb383'); leaf(c, 3, 21, 11, 1.1, '#a6c393');
+        for (let i = 0; i < 4; i++) {
+          const lean = -.5 + i * .33;
+          ellipse(c, Math.sin(lean) * 5, -4 + Math.cos(lean) * 2, 6.5, 13 * breath + 4, '#e8a898', lean * .55);
+        }
+        ellipse(c, 0, -8, 5, 6, '#ffd9a8');
+        c.save(); c.globalAlpha = breath; star(c, 0, -14, 3.6, '#fff3cd', t); c.restore();
+      } else if (w.type === 'bridge') {
+        // Le tracé fantôme du pont : on voit exactement où il apparaîtra.
+        const span = w.span || 190, half = span / 2;
+        c.save(); c.globalAlpha = .22 + breath * .2;
+        c.strokeStyle = '#dff2e4'; c.lineWidth = 2; c.setLineDash([3, 10]);
+        c.beginPath(); c.moveTo(-half, 6); c.lineTo(half, 6); c.stroke(); c.setLineDash([]);
+        c.restore();
+        for (const side of [-half, half]) { rounded(c, side - 7, 0, 14, 26, 5, p.stone); ellipse(c, side, 2, 5, 4, p.accent + 'aa'); }
+        c.save(); c.globalAlpha = .35 + breath * .3; star(c, 0, 6, 4, '#eafbe2', t * .4); c.restore();
+      } else {
+        // Un carillon : une cloche suspendue, immobile, qui attend une voix.
+        line(c, [[0, -26], [0, -12]], '#9fb79c', 2);
+        c.strokeStyle = '#b9cfae'; c.lineWidth = 2; c.beginPath(); c.arc(0, -27, 11, Math.PI, TAU); c.stroke();
+        const bell = c.createLinearGradient(-10, -12, 10, 12);
+        bell.addColorStop(0, '#f1f7d8'); bell.addColorStop(.5, '#bfd9c2'); bell.addColorStop(1, '#7f9fa8');
+        c.fillStyle = bell; c.beginPath(); c.moveTo(-5, -12); c.quadraticCurveTo(-12, -6, -11, 6);
+        c.lineTo(-15, 10); c.quadraticCurveTo(0, 16, 15, 10); c.lineTo(11, 6);
+        c.quadraticCurveTo(12, -6, 5, -12); c.closePath(); c.fill();
+        ellipse(c, 0, 12, 4, 4, '#ffe4a1');
+        c.save(); c.globalAlpha = .3 + breath * .4;
+        for (const side of [-1, 1]) {
+          c.strokeStyle = '#dff5e2'; c.lineWidth = 1.4;
+          c.beginPath(); c.arc(0, 0, 21 + breath * 4, side < 0 ? 2.5 : -.6, side < 0 ? 3.8 : .7); c.stroke();
+        }
+        c.restore();
+      }
+      c.restore();
+    }
+    /** L'onde elle-même : un anneau qui s'ouvre et s'efface. */
+    wave(c, w, t) {
+      const strength = Math.max(0, w.life / w.maxLife);
+      c.save();
+      c.globalAlpha = strength * (w.source === 'player' ? .5 : .38);
+      c.strokeStyle = w.source === 'player' ? '#dff7e6' : '#e8f0c8';
+      c.lineWidth = 1 + strength * 3;
+      c.beginPath(); c.ellipse(w.x, w.y, w.radius, w.radius * .86, 0, 0, TAU); c.stroke();
+      c.globalAlpha = strength * .22; c.lineWidth = 1;
+      c.beginPath(); c.ellipse(w.x, w.y, w.radius * .66, w.radius * .57, 0, 0, TAU); c.stroke();
+      for (let i = 0; i < 6; i++) {
+        const angle = i * TAU / 6 + t * .5;
+        c.globalAlpha = strength * .4;
+        star(c, w.x + Math.cos(angle) * w.radius, w.y + Math.sin(angle) * w.radius * .86, 2.6, '#f2ffe4', t * 2);
+      }
       c.restore();
     }
     echoPlatform(c, o, t) {

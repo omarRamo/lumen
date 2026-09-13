@@ -121,6 +121,22 @@
     "ok": true
   },
   {
+    "test": "chapitre « Le verger qui rêve » terminé au clavier, Résonance comprise",
+    "mode": "complete",
+    "seconds": 13.42,
+    "deaths": 1,
+    "lives": 4,
+    "maxX": 4319,
+    "width": 4500,
+    "coins": 15,
+    "stars": 0,
+    "wakeablesUsed": 11,
+    "wakeablesTotal": 11,
+    "chimeRelays": 1,
+    "creaturesCalmed": 0,
+    "ok": true
+  },
+  {
     "test": "arena checkpoint to boss victory and final exit, unpowered inputs only",
     "mode": "ending",
     "seconds": 14.24,

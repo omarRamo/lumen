@@ -1,0 +1,81 @@
+{
+  "corpus": 1000,
+  "regressionSeeds": [
+    16,
+    30,
+    32,
+    39,
+    45,
+    77,
+    85,
+    90,
+    3735928559,
+    1,
+    2,
+    3
+  ],
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Les modules sont annotés complètement : rien n’est laissé au hasard",
+      "passed": true
+    },
+    {
+      "name": "Chaque module pose une surface sur ses deux bords, quelle que soit sa variante",
+      "passed": true
+    },
+    {
+      "name": "Corpus de 1000 graines : aucune salle infranchissable, aucun raccord rompu",
+      "passed": true
+    },
+    {
+      "name": "Aucun module n’exige jamais une capacité que le joueur n’a pas encore",
+      "passed": true
+    },
+    {
+      "name": "Même graine, même version, mêmes choix : exactement le même gameplay",
+      "passed": true
+    },
+    {
+      "name": "L’aléatoire cosmétique ne peut pas déplacer une plateforme",
+      "passed": true
+    },
+    {
+      "name": "Une graine se dit, se retape, et retombe sur la même nuit",
+      "passed": true
+    },
+    {
+      "name": "Le repli existe, il est valide, et il n’est jamais choisi sans raison",
+      "passed": true
+    },
+    {
+      "name": "Le directeur de rythme alterne réellement, il ne tire pas au hasard",
+      "passed": true
+    },
+    {
+      "name": "Le plafond du plus grand trou correspond à la physique réelle du moteur",
+      "passed": true
+    },
+    {
+      "name": "Des salles représentatives se traversent avec la vraie physique et de vraies entrées",
+      "passed": true
+    },
+    {
+      "name": "Les souvenirs ont des emplacements, des plafonds et une vraie combinaison",
+      "passed": true
+    },
+    {
+      "name": "La corolle ne peut pas se multiplier : une fleur vivante, et pas de boucle",
+      "passed": true
+    },
+    {
+      "name": "Une nuit sauvegardée au refuge se reprend à l’identique, sans payer deux fois",
+      "passed": true
+    },
+    {
+      "name": "L’échec met fin à la nuit, jamais aux découvertes déjà acquises",
+      "passed": true
+    }
+  ]
+}

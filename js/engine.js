@@ -72,8 +72,13 @@
       this.canvas = canvas; this.renderer = new window.LumenRenderer(canvas); this.audio = new window.LumenAudio();
       this.listeners = {}; this.input = new Input(action => this.emit('command', action));
       this.mode = 'home'; this.time = 0; this.runMode='explore'; this.camera = { x:0, y:0, shake:0 };
+      // Les règles de la Résonance sont exposées telles quelles : l'interface,
+      // les tests et les pilotes automatiques lisent les mêmes constantes que
+      // la simulation, sans en recopier aucune.
+      this.resonanceRules = window.LumenResonance;
+      this.run = null;   // l'expédition en cours, s'il y en a une
       this.progress = this.readProgress(); this.storageAvailable = true;
-      this.audio.setMuted(!!this.progress.muted);
+      this.audio.setMuted(!!this.progress.settings.muted);
       this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
       this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
       this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
@@ -88,25 +93,56 @@
     }
     on(name, fn) { (this.listeners[name] ||= []).push(fn); }
     emit(name, detail) { (this.listeners[name] || []).forEach(fn => fn(detail)); }
+    /** La clé stable d'un chapitre. Les définitions en portent une ; le repli
+     *  couvre un chapitre ajouté à la volée par un test ou un outil. */
+    keyOf(index) {
+      const level = window.LUMEN_LEVELS[index];
+      return level && level.key ? level.key : 'chapitre-' + index;
+    }
+    indexOfKey(key) { return window.LUMEN_LEVELS.findIndex(level => level.key === key); }
+    /** L'enregistrement d'un chapitre, par position — l'interface parcourt la liste. */
+    recordFor(index) { return this.store.chapter(this.keyOf(index)); }
+    /** Le prochain chapitre de campagne à reprendre : le premier encore fermé,
+     *  ou le dernier ouvert si la campagne est terminée. */
+    nextChapterIndex() {
+      for (let i = 0; i < window.LUMEN_LEVELS.length; i++) {
+        if (window.LUMEN_LEVELS[i].bonus || window.LUMEN_LEVELS[i].hub) continue;
+        if (!this.isUnlocked(i)) return Math.max(0, i - 1);
+        if (!this.recordFor(i)) return i;
+      }
+      return 0;
+    }
     readProgress() {
-      const fallback = { version:2, unlocked:0, records:{}, bonusUnlocked:false, muted:false };
-      try {
-        const raw = JSON.parse(localStorage.getItem('lumen.gardens.v2') || localStorage.getItem('lumen.gardens.v1'));
-        if (!raw || ![1,2].includes(raw.version)) return fallback;
-        const records=raw.records && typeof raw.records==='object' ? {...raw.records} : {};
-        // The original finale moved after two new chapters; never assign its old
-        // completion record to a garden the player has not yet visited.
-        if(raw.version===1 && window.LUMEN_LEVELS.length>8 && records[7]) {
-          records[window.LUMEN_LEVELS.findIndex(l=>l.final)] = records[7]; delete records[7];
-        }
-        return { ...fallback, ...raw, version:2, unlocked:clamp(raw.version===1&&raw.finished?window.LUMEN_LEVELS.length-1:Number(raw.unlocked)||0,0,window.LUMEN_LEVELS.length-1), records };
-      } catch (_) { return fallback; }
+      const storage = (() => { try { return localStorage; } catch (_) { return null; } })();
+      this.store = new window.LumenSave.SaveStore(storage);
+      this.storageAvailable = this.store.available;
+      if (this.store.recovered) this.emit('toast', 'Sauvegarde principale illisible : la copie de secours a été restaurée.');
+      // `progress` reste exposé pour l'interface et les anciens tests ; la
+      // vérité vit désormais dans le profil du magasin.
+      return this.store.profile;
     }
     saveProgress() {
-      try { localStorage.setItem('lumen.gardens.v2', JSON.stringify(this.progress)); }
-      catch (_) { this.storageAvailable = false; this.emit('toast', 'Sauvegarde indisponible : la progression reste disponible pendant cette session.'); }
+      if (!this.store) return;
+      if (!this.store.save(this.progress)) {
+        this.storageAvailable = false;
+        this.emit('toast', 'Sauvegarde indisponible : la progression reste disponible pendant cette session.');
+      }
     }
-    isUnlocked(index) { return index >= 0 && index < window.LUMEN_LEVELS.length && (index <= this.progress.unlocked || (window.LUMEN_LEVELS[index].bonus && this.progress.bonusUnlocked)); }
+    isUnlocked(index) {
+      if (index < 0 || index >= window.LUMEN_LEVELS.length) return false;
+      const level = window.LUMEN_LEVELS[index];
+      if (level.hub) return true;
+      if (this.store.isUnlocked(this.keyOf(index))) return true;
+      if (level.bonus) return !!this.progress.bonusUnlocked;
+      // Un chapitre inséré dans une campagne déjà parcourue ne doit pas
+      // apparaître verrouillé au milieu de chapitres ouverts : si un chapitre
+      // ultérieur l'est, celui-ci l'est aussi.
+      for (let later = index + 1; later < window.LUMEN_LEVELS.length; later++) {
+        if (window.LUMEN_LEVELS[later].bonus || window.LUMEN_LEVELS[later].hub) continue;
+        if (this.store.isUnlocked(this.keyOf(later))) return true;
+      }
+      return false;
+    }
     showHome() {
       this.loadLevel(0, false); this.mode = 'home'; this.camera.x = 0;
       this.platforms = [
@@ -126,16 +162,34 @@
       this.loadLevel(index); this.audio.unlock(); this.audio.resume();
     }
     loadLevel(index, active = true) {
-      const data = window.LumenLevels.create(index);
+      return this.applyLevel(window.LumenLevels.create(index), index, active);
+    }
+    /** Charge une définition de niveau quelconque — une salle d'expédition n'est
+     *  pas dans la liste des chapitres, mais respecte exactement le même
+     *  contrat de données. C'est ce qui permet de la jouer sans moteur parallèle. */
+    applyLevel(data, index, active = true) {
       this.levelIndex = index; this.level = data; this.elapsed = 0; this.levelCoins = 0; this.levelStars = 0;
       this.levelScore = 0; this.deaths = 0; this.secretCount = 0; this.deadTimer = 0;
       this.damageTaken=0;this.enemiesDefeated=0;this.echoTime=0;this.flash=null;this.danger=0;this.dangerTimer=0;
-      this.platforms = data.platforms.map((p, i) => ({ phase:0, ...p, active:p.type!=='echo', id:i, baseX:p.x, baseY:p.y, dx:0, dy:0, crumbleTimer:0, reformTimer:0 }));
-      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
+      const R = window.LumenResonance;
+      this.wakeables = (data.wakeables || []).map((w, i) => R.createWakeable(w, i));
+      this.waves = [];
+      this.characters = (data.characters || []).map(c => ({ ...c, near: false, bob: 0 }));
+      // Ce qui a déjà été réveillé au moins une fois dans ce chapitre : une
+      // quête doit pouvoir être remplie sans exiger trois réveils simultanés.
+      this.wokenOnce = new Set();
+      // La géométrie des réveillables rejoint les plateformes ordinaires : elle
+      // est prévisible à l'avance, donc vérifiable par le contrôle de parcours.
+      const wakePlatforms = this.wakeables.flatMap(w => R.platformsFor(w));
+      this.platforms = [...data.platforms, ...wakePlatforms].map((p, i) => ({ phase:0, ...p, active:p.type!=='echo'&&!p.wakeId, id:i, baseX:p.x, baseY:p.y, dx:0, dy:0, crumbleTimer:0, reformTimer:0 }));
+      this.enemies = data.enemies.map((e, i) => ({ w:36, h:34, vx:0, vy:0, hp:1, alive:true, state:e.type==='sleeper'?'sleep':'orbit',chargeProgress:0,scatterTime:0,calmTime:0, phase:i * 1.17, timer:.9 + i * .19, facing:-1, ...e, spawnX:e.x, spawnY:e.y }));
       this.collectibles = data.collectibles.map(c => ({ ...c, taken:false }));
       this.checkpoints = data.checkpoints.map(c => ({ ...c, active:false }));
       this.hazards = data.hazards || []; this.secrets = (data.secrets || []).map(s => ({ ...s, found:false }));
-      this.exit = { w:70, h:100, ...data.exit, open:!data.boss };
+      // Une sortie peut être fermée par la définition du niveau (l'observatoire
+      // attend sa quête). Ne l'ouvrir d'office que si elle ne s'est pas prononcée.
+      this.exit = { w:70, h:100, ...data.exit,
+        open: data.exit && data.exit.open !== undefined ? data.exit.open : !data.boss };
       this.projectiles = []; this.particles = []; this.floatingTexts = [];
       this.checkpoint = { x:data.spawn.x, y:data.spawn.y };
       this.player = { x:data.spawn.x, y:data.spawn.y, w:32, h:46, vx:0, vy:0, facing:1, grounded:false, anim:0,
@@ -149,7 +203,140 @@
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
       if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
     }
-    retry() { this.lives = this.lives <= 0 ? 5 : this.lives; this.start(this.levelIndex,{timed:this.runMode==='timed'}); }
+    retry() {
+      if (this.run) return this.enterRoom(this.run.roomIndex);
+      this.lives = this.lives <= 0 ? 5 : this.lives;
+      this.start(this.levelIndex,{timed:this.runMode==='timed'});
+    }
+
+    /* ── Les Rêves nomades ─────────────────────────────────────────────────
+     * Une expédition n'est pas un second moteur : c'est une suite de salles
+     * qui respectent le même contrat de données qu'un chapitre. Tout ce que le
+     * joueur a appris dans la campagne y fonctionne à l'identique. */
+
+    /** Démarre une nuit. `seed` peut être un nombre, un code-mot ou un texte. */
+    startExpedition(seed, options = {}) {
+      const Rng = window.LumenRng;
+      const resolved = seed === undefined || seed === null || seed === ''
+        ? Rng.randomSeed() : Rng.toSeed(seed);
+      this.run = {
+        seed: resolved,
+        choices: Array.isArray(options.choices) ? options.choices.slice() : [],
+        roomIndex: options.roomIndex || 0,
+        upgrades: Array.isArray(options.upgrades) ? options.upgrades.slice() : [],
+        claimed: new Set(options.claimed || []),
+        powersSeen: [],
+        lives: options.lives ?? 3,
+        hp: options.hp ?? 3
+      };
+      this.replan();
+      this.progress.expeditions.runs++;
+      this.saveProgress();
+      this.audio.unlock(); this.audio.resume();
+      this.enterRoom(this.run.roomIndex);
+      return this.run;
+    }
+    replan() {
+      this.run.plan = window.LumenExpedition.plan(this.run.seed, { choices: this.run.choices });
+      this.run.code = this.run.plan.code;
+      return this.run.plan;
+    }
+    /** Charge une salle. L'index est toujours celui du plan courant. */
+    enterRoom(index) {
+      const room = this.run.plan.rooms[index];
+      if (!room) return this.finishExpedition(true);
+      this.run.roomIndex = index;
+      this.lives = this.run.lives;
+      // La salle est un niveau ordinaire : même chargement, même simulation.
+      this.applyLevel(JSON.parse(JSON.stringify(room.level)), -1, true);
+      this.player.hp = this.run.hp;
+      this.runMode = 'explore';
+      this.emit('expedition', { run: this.run, room });
+      if (room.kind === 'refuge') this.restAtRefuge(room);
+      return room;
+    }
+    /** Un refuge : on y souffle, et la nuit s'enregistre telle quelle. */
+    restAtRefuge(room) {
+      this.run.hp = 3; this.player.hp = 3;
+      this.progress.expeditions.bestRooms = Math.max(this.progress.expeditions.bestRooms, this.run.roomIndex + 1);
+      this.store.saveExpedition({
+        seed: this.run.seed, generationVersion: this.run.plan.version,
+        roomIndex: this.run.roomIndex, route: this.run.choices,
+        hp: this.run.hp, lives: this.run.lives,
+        upgrades: this.run.upgrades, claimed: [...this.run.claimed],
+        rng: this.run.plan.rng, savedAt: Date.now()
+      });
+      this.emit('toast', 'Refuge · la nuit est enregistrée. Vous pourrez repartir d’ici.');
+      this.audio.sfx('checkpoint');
+    }
+    /** Reprend une expédition sauvegardée, à l'identique. */
+    resumeExpedition() {
+      const saved = this.progress.expedition;
+      if (!saved) return null;
+      if (saved.generationVersion !== window.LumenRng.GENERATION_VERSION) {
+        this.emit('toast', 'Cette nuit a été rêvée dans une version antérieure : elle ne peut pas être reprise.');
+        this.store.clearExpedition();
+        return null;
+      }
+      return this.startExpedition(saved.seed, {
+        choices: saved.route, roomIndex: saved.roomIndex,
+        upgrades: saved.upgrades, claimed: saved.claimed,
+        lives: saved.lives, hp: saved.hp
+      });
+    }
+    /** Une salle est franchie : on propose la suite, ou on conclut. */
+    completeRoom() {
+      const run = this.run, plan = run.plan;
+      const room = plan.rooms[run.roomIndex];
+      run.hp = this.player.hp; run.lives = this.lives;
+      this.addScore(250);
+      if (run.roomIndex >= plan.rooms.length - 1) return this.finishExpedition(true);
+      const next = plan.rooms[run.roomIndex + 1];
+      const rewardRng = new window.LumenRng.RngSet(run.seed).rewards;
+      for (let i = 0; i <= run.roomIndex; i++) rewardRng.next();
+      const offer = window.LumenUpgrades.offer(rewardRng, run.upgrades, run.powersSeen);
+      this.mode = 'route';
+      this.emit('route', {
+        run, from: room, next,
+        branches: next.branches.map(kind => ({ kind, omen: window.LumenExpedition.OMENS[kind] })),
+        offer
+      });
+      this.emit('mode', this.mode);
+    }
+    /** Le joueur a choisi sa route — et, éventuellement, un souvenir. */
+    chooseRoute(kind, upgradeId) {
+      const run = this.run;
+      if (upgradeId && window.LumenUpgrades.byId[upgradeId]) {
+        // Une récompense n'est encaissée qu'une fois, même après une reprise.
+        const token = 'upgrade:' + run.roomIndex + ':' + upgradeId;
+        if (!run.claimed.has(token)) {
+          run.claimed.add(token);
+          run.upgrades = window.LumenUpgrades.equip(run.upgrades, upgradeId);
+          const combo = window.LumenUpgrades.comboFor(run.upgrades);
+          if (combo) this.emit('toast', combo.name + ' · ' + combo.effect);
+        }
+      }
+      run.choices[run.roomIndex + 1] = kind;
+      this.replan();
+      this.enterRoom(run.roomIndex + 1);
+    }
+    finishExpedition(won) {
+      const run = this.run;
+      if (won) {
+        this.progress.expeditions.completed++;
+        this.progress.expeditions.bestRooms = Math.max(this.progress.expeditions.bestRooms, run.plan.rooms.length);
+        this.addScore(2000);
+      }
+      // Une nuit terminée ou perdue ne se reprend plus : c'était la tentative.
+      this.store.clearExpedition();
+      this.saveProgress();
+      this.mode = won ? 'expedition-done' : 'gameover';
+      this.emit('expedition-end', { run, won });
+      this.emit('mode', this.mode);
+      this.run = null;
+    }
+    /** Applique les souvenirs portés. Appelé par la simulation, jamais par l'UI. */
+    hasUpgrade(id) { return !!this.run && this.run.upgrades.includes(id); }
     pause() {
       if (this.mode !== 'playing') return;
       this.mode = 'paused'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
@@ -194,6 +381,8 @@
       if (this.mode !== 'playing') return;
       this.elapsed += dt;
       this.echoTime=Math.max(0,this.echoTime-dt);
+      this.updateResonance(dt);
+      if (this.mode !== 'playing') return;
       this.updatePlatforms(dt); this.updatePlayer(dt);
       if (this.mode !== 'playing') return;
       this.updateEnemies(dt);
@@ -204,9 +393,13 @@
       if (this.mode !== 'playing') return;
       this.updateCollectibles(dt);
       if (this.mode !== 'playing') return;
-      this.updateCheckpoints(); this.updateSecrets();
+      this.updateCheckpoints(); this.updateSecrets(); this.updateCharacters(dt);
       this.updateDanger(dt);
-      if (this.exit.open && overlap(this.player, this.exit)) this.complete();
+      if (this.exit.open && overlap(this.player, this.exit)) {
+        if (this.level.hub) { this.player.vx = 0; this.emit('portal', this.exit.leadsTo || 'map'); }
+        else if (this.run) this.completeRoom();
+        else this.complete();
+      }
       const visibleWidth = this.renderer.worldWidth || WIDTH;
       const target = clamp(this.player.x - visibleWidth * .36 + this.player.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
       this.camera.x += (target - this.camera.x) * (1 - Math.exp(-5 * dt));
@@ -224,6 +417,11 @@
           p.active = p.cycle < 3.6; p.warning = p.cycle > 2.8 && p.active;
         }
         if(p.type==='echo'){p.active=this.echoTime>0;p.warning=this.echoTime>0&&this.echoTime<1;}
+        if(p.wakeId){
+          const source=this.wakeables.find(w=>w.id===p.wakeId);
+          p.active=!!source&&source.state==='awake';
+          p.warning=!!source&&window.LumenResonance.isFading(source);
+        }
         if (p.type === 'crumble') {
           if (p.crumbleTimer > 0) {
             p.crumbleTimer -= dt;
@@ -280,13 +478,23 @@
       if (p.dashTime > 0) {
         p.dashTime -= dt; p.vx = p.facing * 910; p.vy = 0;
         p.trailTimer -= dt;
-        if (p.trailTimer <= 0) { this.burst(p.x+16-p.facing*12,p.y+24,4,'#dbc9ed',60,'trail'); p.trailTimer=.025; }
+        if (p.trailTimer <= 0) {
+          this.burst(p.x+16-p.facing*12,p.y+24,4,'#dbc9ed',60,'trail'); p.trailTimer=.025;
+          if (this.hasUpgrade('sillage')) {
+            const caps = window.LumenUpgrades.byId.sillage.caps;
+            this.emitResonance(p.x+16, p.y+22, window.LumenResonance.BASE_REACH * caps.reach, 'sillage');
+          }
+        }
       } else if(Math.abs(p.vx)>365) {
         p.trailTimer-=dt;
         if(p.trailTimer<=0){this.burst(p.x+16-p.facing*14,p.y+28,2,'#d4efd2',40,'trail');p.trailTimer=.045;}
       }
       if (p.standingPlatform && p.standingPlatform.active) {
         p.x += p.standingPlatform.dx; p.y += p.standingPlatform.dy;
+        // Alizé du pont : le vent d'un pont réveillé accompagne la traversée.
+        if (this.hasUpgrade('alize') && p.standingPlatform.wakeId && p.standingPlatform.type === 'solid') {
+          p.x += Math.sign(p.vx || p.facing) * window.LumenUpgrades.byId.alize.caps.push * dt;
+        }
         if (p.standingPlatform.type === 'conveyor') {
           p.x += (p.standingPlatform.direction || 1) * 125 * dt;
           if(p.stepSoundTimer<=0){this.audio.sfx('conveyor');p.stepSoundTimer=.42;}
@@ -321,6 +529,15 @@
           else if(p.jumpBuffer>0&&!p.wet){p.coyote=.12;this.jump(false);}
         }
       }
+      // Un dormeur calmé devient une surface : on peut se poser sur son dos.
+      if (p.vy >= 0) for (const e of this.enemies) {
+        if (!e.alive || e.type !== 'sleeper' || e.state !== 'calm') continue;
+        if (p.x + p.w <= e.x + 4 || p.x >= e.x + e.w - 4) continue;
+        if (oldBottom <= e.y + 8 && p.y + p.h >= e.y && (!p.standingPlatform || e.y < p.standingPlatform.y)) {
+          p.y = e.y - p.h; p.vy = 0; p.grounded = true; p.standingPlatform = null;
+          if (!wasGrounded) { p.landTimer = .18; p.landStrength = .5; this.audio.sfx('land'); }
+        }
+      }
       if (p.grounded && Math.abs(p.vx) > 130 && Math.random() < dt*14) this.groundBurst(p.x+16,p.y+p.h,1,35);
       p.previousY = oldY; p.previousBottom = oldBottom;
       for (const h of this.hazards) {
@@ -336,26 +553,113 @@
       p.vy = this.input.down('jump') ? (double ? -630 : -690) : -330;
       p.grounded = false; p.coyote = 0; p.jumpBuffer = 0; p.standingPlatform = null;
       p.jumpTimer=.18;
-      if (double) p.airJumps++;
+      if (double) {
+        p.airJumps++;
+        // Souffle d'azur : le second saut appelle, faiblement, sous les pieds.
+        if (this.hasUpgrade('souffle')) {
+          const caps = window.LumenUpgrades.byId.souffle.caps;
+          this.emitResonance(p.x + p.w / 2, p.y + p.h, window.LumenResonance.BASE_REACH * caps.reach, 'souffle');
+        }
+      }
       this.audio.sfx(double ? 'doubleJump' : 'jump');
       if(double)this.burst(p.x+16,p.y+p.h,16,'#b7e8db',150,'spark');else this.groundBurst(p.x+16,p.y+p.h,10,110);
     }
+    /** Le bouton action. Il émet TOUJOURS une Résonance ; les pouvoirs portés
+     *  n'en prennent jamais la place, ils lui ajoutent leur effet historique.
+     *  Un pouvoir qui expire ne retire donc jamais le verbe au joueur. */
     usePower() {
-      const p = this.player;
+      const p = this.player, R = window.LumenResonance;
       if (p.actionCooldown > 0) return;
-      if (p.power === 'bloom') {
+      const amplifier = R.AMPLIFIERS[p.power];
+      this.emitResonance(p.x + p.w / 2, p.y + 22, R.reachFor(p.power));
+      p.actionCooldown = R.COOLDOWN;
+
+      // Les effets historiques des pouvoirs, inchangés, désormais portés par l'onde.
+      if (amplifier && amplifier.seed) {
         this.projectiles.push({ x:p.x+16+p.facing*23, y:p.y+19, vx:p.facing*680, vy:-35, r:8, friendly:true, life:1.6 });
-        p.actionCooldown = .26; this.audio.sfx('shoot'); this.burst(p.x+16+p.facing*26,p.y+19,4,'#f6cf7c',75,'spark');
-      } else if (p.power === 'comet') {
-        p.dashTime = .21; p.actionCooldown = .85; p.invuln = Math.max(p.invuln,.4); p.trailTimer=0;
-        this.audio.sfx('dash'); this.camera.shake = 3;
-      } else if(p.power==='echo') {
-        this.echoTime=4;p.actionCooldown=3.5;this.echoOrigin={x:p.x+16,y:p.y+22};
-        this.audio.sfx('echo');this.burst(p.x+16,p.y+22,22,'#d9c0ef',155,'spark');
-        this.updatePlatforms(0);this.emit('toast','Les chemins de l’écho se révèlent pendant 4 secondes.');
-      } else if (!p.power) {
-        this.emit('toast','Fleurs, plumes, comètes et grelots vous prêtent leurs pouvoirs.'); p.actionCooldown = 3;
-      } else { this.emit('toast','Plume d’azur : appuyez une seconde fois sur saut dans les airs.'); p.actionCooldown=3; }
+        this.audio.sfx('shoot'); this.burst(p.x+16+p.facing*26,p.y+19,4,'#f6cf7c',75,'spark');
+      }
+      if (amplifier && amplifier.dash) {
+        p.dashTime = .21; p.invuln = Math.max(p.invuln,.4); p.trailTimer=0;
+        p.actionCooldown = Math.max(p.actionCooldown, .85);
+        this.audio.sfx('dash'); this.shake(3);
+      }
+      if (amplifier && amplifier.reveal) {
+        this.echoTime = amplifier.reveal; this.echoOrigin = { x:p.x+16, y:p.y+22 };
+        this.audio.sfx('echo'); this.updatePlatforms(0);
+      }
+    }
+    /** Corolle persistante : l'onde laisse une fleur là où elle est née.
+     *  Plafonnée à une seule fleur vivante, et elle ne peut pas se réveiller
+     *  elle-même — sans quoi une onde en produirait une boucle infinie. */
+    dropCorolle(x, y) {
+      if (!this.hasUpgrade('corolle')) return;
+      const caps = window.LumenUpgrades.byId.corolle.caps;
+      const R = window.LumenResonance;
+      this.wakeables = this.wakeables.filter(w => w.id !== 'corolle-vivante');
+      this.platforms = this.platforms.filter(p => p.wakeId !== 'corolle-vivante');
+      const flower = R.createWakeable({ type:'bloom', x, y: Math.min(y + 30, 690), id:'corolle-vivante', temporary:true }, 0);
+      R.wake(flower); flower.remaining = caps.life;
+      this.wakeables.push(flower);
+      for (const platform of R.platformsFor(flower)) {
+        this.platforms.push({ phase:0, ...platform, active:true, id:this.platforms.length,
+          baseX:platform.x, baseY:platform.y, dx:0, dy:0, crumbleTimer:0, reformTimer:0 });
+      }
+      this.burst(x, y + 20, 10, '#ffd0bb', 110, 'petal');
+    }
+    /** Émet une onde. Les carillons en émettent aussi : c'est le même chemin. */
+    emitResonance(x, y, reach, source = 'player') {
+      const R = window.LumenResonance;
+      if (this.waves.length >= 12) return null;
+      const wave = R.createWave(x, y, reach, source);
+      this.waves.push(wave);
+      this.audio.sfx(source === 'player' ? 'resonance' : 'resonanceRelay');
+      this.burst(x, y, source === 'player' ? 14 : 8, '#cfeee0', 120, 'spark');
+      if (source === 'player') { this.shake(1.6); this.dropCorolle(x, y); }
+      return wave;
+    }
+    updateResonance(dt) {
+      const R = window.LumenResonance;
+      for (const wakeable of this.wakeables) {
+        if (R.advance(wakeable, dt) === 'slept' && R.WAKE_TYPES[wakeable.type].platforms(wakeable).length) {
+          this.audio.sfx('wakeEnd');
+        }
+      }
+      for (let i = this.waves.length - 1; i >= 0; i--) {
+        const wave = this.waves[i];
+        if (!R.advanceWave(wave, dt)) { this.waves.splice(i, 1); continue; }
+        for (const wakeable of R.newlyReached(wave, this.wakeables)) {
+          const outcome = R.wake(wakeable);
+          const config = R.WAKE_TYPES[wakeable.type];
+          this.audio.sfx(config.sound);
+          this.burst(wakeable.x, wakeable.y, outcome === 'extended' ? 8 : 18, '#e8f6cf', 140, 'spark');
+          if (outcome === 'woken') { this.addScore(15); this.wokenOnce.add(wakeable.id); }
+          // Un carillon ne porte rien : il relance l'onde depuis sa place, une
+          // seule fois par réveil, ce qui rend les chaînes finies et prévisibles.
+          if (config.relay && !wakeable.relayed) {
+            wakeable.relayed = true;
+            this.emitResonance(wakeable.x, wakeable.y, wave.reach * .95, 'chime');
+          }
+        }
+      }
+      // La créature endormie a sa propre réaction : l'onde la lève en douceur
+      // au lieu de la faire charger. Elle devient une marche, pas une menace.
+      for (const enemy of this.enemies) {
+        if (!enemy.alive || enemy.type !== 'sleeper') continue;
+        if (enemy.calmTime > 0) {
+          enemy.calmTime -= dt;
+          if (enemy.calmTime <= 0) { enemy.state = 'sleep'; enemy.chargeProgress = 0; }
+        }
+        for (const wave of this.waves) {
+          const key = 'enemy:' + (enemy.spawnX + ':' + enemy.spawnY);
+          if (wave.touched.has(key)) continue;
+          if (R.distance(wave.x, wave.y, enemy.x + enemy.w / 2, enemy.y) > wave.radius) continue;
+          wave.touched.add(key);
+          enemy.calmTime = 8; enemy.state = 'calm'; enemy.chargeProgress = 0; enemy.vx = 0;
+          this.audio.sfx('wakeCalm');
+          this.burst(enemy.x + enemy.w / 2, enemy.y, 16, '#dbeccd', 130, 'spark');
+        }
+      }
     }
     updateEnemies(dt) {
       const p = this.player;
@@ -435,13 +739,13 @@
           }
           // A sleeping mound is only scenery: brushing past it costs nothing, and
           // that is precisely what makes lingering beside it a real decision.
-          else if (!(e.type==='sleeper'&&e.state==='sleep')) this.hurt(1,e.x+e.w/2);
+          else if (!(e.type==='sleeper'&&(e.state==='sleep'||e.state==='calm'))) this.hurt(1,e.x+e.w/2);
         }
       }
     }
     killEnemy(e) {
       if (!e.alive || e.scatterTime>0) return;
-      this.enemiesDefeated++; this.camera.shake=Math.max(this.camera.shake,3.2);
+      this.enemiesDefeated++; this.shake(3.2);
       if (e.type==='swarm') {
         // The cloud does not pop: it bursts apart and the motes drift out of sight.
         e.scatterTime=1.2; e.vx=(Math.random()*2-1)*120; e.vy=-160;
@@ -487,7 +791,7 @@
       } else if (b.state === 'rain') {
         for (const marker of b.rainMarkers) marker.life=Math.max(0,marker.life-dt);
         if (!b.rainDropped && b.timer<=1.4) {
-          b.rainDropped=true; this.camera.shake=Math.max(this.camera.shake,5);
+          b.rainDropped=true; this.shake(5);
           for (const marker of b.rainMarkers) this.projectiles.push({x:marker.x,y:b.y-140,vx:0,vy:330,r:11,friendly:false,life:4,kind:'rain'});
         }
         if (b.timer<=0) { b.state='recover'; b.timer=2.4; b.vulnerable=true; b.rainMarkers=[]; }
@@ -495,7 +799,7 @@
         b.vy+=1550*dt; b.x=clamp(b.x+b.vx*dt,this.level.width-1330,this.level.width-260); b.y+=b.vy*dt;
         if (b.y+b.h>=600 && b.vy>0) {
           b.y=600-b.h; b.vy=0; b.vx=0; b.state='recover'; b.timer=b.phase===2?2.6:3.4; b.vulnerable=true;
-          this.camera.shake=11; this.burst(b.x+b.w/2,596,30,'#d3ad82',240,'stone'); this.audio.sfx('bossAttack');
+          this.shake(11); this.burst(b.x+b.w/2,596,30,'#d3ad82',240,'stone'); this.audio.sfx('bossAttack');
           // The impact rings are low, slow and jumpable, with a clear landing tell.
           for (const direction of [-1,1]) this.projectiles.push({x:b.x+b.w/2+direction*60,y:582,vx:direction*(b.phase===2?290:230),vy:0,r:14,friendly:false,life:4,kind:'wave'});
         }
@@ -524,7 +828,7 @@
     updateBossStage(b) {
       const stage=b.hp>b.maxHp*2/3?1:b.hp>b.maxHp/3?2:3;
       if (stage===b.stage) return;
-      b.stage=stage; b.flashTimer=.5; this.camera.shake=Math.max(this.camera.shake,13);
+      b.stage=stage; b.flashTimer=.5; this.shake(13);
       this.screenFlash(stage===3?'#ffd2a4':'#fff0c2',.55);
       this.audio.setBossPhase?.(stage); this.audio.sfx('bossStage');
       this.burst(b.x+b.w/2,b.y+b.h/2,46,'#ffe0a4',290,'spark');
@@ -548,7 +852,7 @@
       const b=this.boss;
       if (!b || !b.vulnerable || b.hitFlash>0 || b.hp<=0) return false;
       b.hp=Math.max(0,b.hp-damage); b.hitFlash=.65;
-      this.audio.sfx('bossHit');this.burst(b.x+b.w/2,b.y+25,22,'#f9d585',220,'spark');this.camera.shake=7;
+      this.audio.sfx('bossHit');this.burst(b.x+b.w/2,b.y+25,22,'#f9d585',220,'spark');this.shake(7);
       if (b.hp<=0) {
         b.state='defeated';b.vulnerable=false;this.exit.open=true;this.projectiles=this.projectiles.filter(x=>x.friendly);
         this.addScore(3000);this.audio.sfx('victory');this.burst(b.x+b.w/2,b.y+40,80,'#ffe6a3',330,'spark');
@@ -606,6 +910,56 @@
         }
       }
     }
+    /* ── L'observatoire : personnages, quête, transformation ──────────────
+     * Le lieu ne raconte rien par un long texte : il raconte par deux voix
+     * courtes, par ce que le joueur fait de ses mains, et par un décor qui
+     * change une fois pour toutes. */
+
+    /** L'état de la quête du chapitre courant, s'il en a une. */
+    questState() {
+      const quest = this.level.quest;
+      if (!quest) return null;
+      return this.store.questState(quest.id);
+    }
+    /** Les répliques à afficher pour un personnage, selon l'avancement. */
+    linesFor(character) {
+      const state = this.questState() || 'unknown';
+      const lines = character.lines || {};
+      return lines[state] || lines.unknown || [];
+    }
+    updateCharacters(dt) {
+      const p = this.player, quest = this.level.quest;
+      for (const character of this.characters) {
+        const near = Math.abs((p.x + p.w / 2) - character.x) < 76 && Math.abs((p.y + p.h) - character.y) < 90;
+        character.bob = (character.bob || 0) + dt;
+        if (near === character.near) continue;
+        character.near = near;
+        // Approcher suffit : aucune touche à découvrir, aucun appui à rater.
+        if (near) {
+          character.facing = p.x + p.w / 2 < character.x ? -1 : 1;
+          this.emit('dialogue', { character, lines: this.linesFor(character) });
+          if (quest && this.store.questState(quest.id) === 'unknown' && character.id === 'vesper') {
+            this.store.setQuestState(quest.id, 'active');
+            this.saveProgress();
+            this.emit('quest', { quest, state: 'active' });
+          }
+        } else this.emit('dialogue', null);
+      }
+      if (!quest || this.store.questState(quest.id) === 'done') return;
+      // La quête se lit dans le monde, pas dans un compteur caché : elle est
+      // remplie quand les trois carillons ont effectivement été réveillés.
+      const woken = quest.needs.filter(id => this.wokenOnce.has(id));
+      if (woken.length < quest.needs.length) return;
+      this.store.setQuestState(quest.id, 'done');
+      if (quest.transformation) this.store.addTransformation(quest.transformation);
+      this.saveProgress();
+      this.exit.open = true;
+      this.addScore(500);
+      this.audio.sfx('victory'); this.screenFlash('#fff0c8', .7);
+      this.burst(this.player.x + 16, this.player.y, 60, '#ffe9b4', 260, 'spark');
+      this.emit('quest', { quest, state: 'done' });
+      this.emit('toast', quest.reward);
+    }
     updateSecrets() {
       for (const s of this.secrets) if (!s.found&&overlap(this.player,s)) {
         s.found=true;this.secretCount++;this.addScore(750);this.audio.sfx('secret');this.burst(this.player.x+16,this.player.y,35,'#cfe7b8',210,'spark');
@@ -618,24 +972,35 @@
       if (p.invuln>0||p.dead||this.mode!=='playing') return;
       p.hp-=amount;p.invuln=1.5;p.vx=(p.x+16<sourceX?-1:1)*290;p.vy=-330;p.grounded=false;p.standingPlatform=null;
       this.damageTaken+=amount;
-      this.camera.shake=7;this.audio.sfx('hit');this.burst(p.x+16,p.y+20,18,'#e8ab95',185,'spark');
+      this.shake(7);this.audio.sfx('hit');this.burst(p.x+16,p.y+20,18,'#e8ab95',185,'spark');
       this.screenFlash('#ff9d8c',.32);this.emit('damage',{hp:p.hp});
       if (p.hp<=0) this.die();
     }
     die() {
       if (this.mode!=='playing') return;
       this.player.dead=true;this.player.vy=-390;this.player.vx=0;this.mode='dead';this.deadTimer=.85;
-      this.lives--;this.deaths++;this.camera.shake=9;this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
+      this.lives--;this.deaths++;if(this.run)this.run.lives=this.lives;this.shake(9);this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
       this.emit('mode',this.mode);
     }
     respawn() {
-      if (this.lives<=0) {this.mode='gameover';this.audio.pause();this.emit('mode',this.mode);return;}
+      if (this.lives<=0) {
+        this.audio.pause();
+        // L'échec met fin à la NUIT, pas au profil : tout ce qui a été appris
+        // et débloqué reste acquis, et l'observatoire attend toujours.
+        if (this.run) return this.finishExpedition(false);
+        this.mode='gameover';this.emit('mode',this.mode);return;
+      }
       const p=this.player;
       Object.assign(p,{x:this.checkpoint.x,y:this.checkpoint.y,vx:0,vy:0,w:32,h:46,hp:3,dead:false,invuln:2,
         grounded:false,coyote:0,jumpBuffer:0,airJumps:0,dashTime:0,standingPlatform:null,slide:false,power:null,powerTime:0});
       this.projectiles=[];
       // Safe landing after a fall: disappearing platforms return during respawn.
       for (const platform of this.platforms) if (platform.type==='crumble') {platform.active=true;platform.crumbleTimer=0;platform.reformTimer=0;}
+      // Un retour au checkpoint remet le jardin dans son état de repos : le
+      // joueur retrouve exactement l'énigme qu'il a échouée, pas un état à moitié.
+      this.waves=[];
+      for (const wakeable of this.wakeables) {wakeable.state='asleep';wakeable.remaining=0;wakeable.relayed=false;}
+      for (const enemy of this.enemies) if (enemy.type==='sleeper') {enemy.calmTime=0;enemy.state='sleep';enemy.chargeProgress=0;}
       if (this.boss&&this.boss.activated&&this.boss.hp>0) {
         const b=this.boss;Object.assign(b,{x:b.homeX,y:470,state:'wake',timer:2,vx:0,vy:0,vulnerable:false});
       }
@@ -650,14 +1015,12 @@
       this.addScore(bonus);
       const medal=this.medalFor(this.levelStars,this.damageTaken,this.elapsed);
       const timed=this.runMode==='timed';
-      const previous=this.progress.records[this.levelIndex]||{};
-      const record=timed&&this.elapsed<(Number.isFinite(previous.bestTimedTime)?previous.bestTimedTime:Infinity);
-      this.progress.records[this.levelIndex]={...previous,
-        stars:Math.max(previous.stars||0,this.levelStars),coins:Math.max(previous.coins||0,this.levelCoins),
-        score:Math.max(previous.score||0,this.levelScore),time:Math.min(previous.time??Infinity,this.elapsed),
-        medal:MEDAL_RANK[medal]>=(MEDAL_RANK[previous.medal]||0)?medal:previous.medal,
-        bestTimedTime:record?this.elapsed:previous.bestTimedTime,completed:true};
-      if (!this.level.bonus||this.progress.unlocked>=this.levelIndex) this.progress.unlocked=Math.max(this.progress.unlocked,Math.min(window.LUMEN_LEVELS.length-1,this.levelIndex+1));
+      const record=this.store.recordChapter(this.keyOf(this.levelIndex),{
+        stars:this.levelStars,coins:this.levelCoins,score:this.levelScore,
+        time:this.elapsed,medal,timed});
+      // Un chapitre bonus atteint en avance n'ouvre pas la suite de la campagne.
+      const openNext=!this.level.bonus||this.store.isUnlocked(this.keyOf(this.levelIndex));
+      if (openNext&&this.levelIndex+1<window.LUMEN_LEVELS.length) this.store.unlock(this.keyOf(this.levelIndex+1));
       if (final) this.progress.finished=true;
       this.saveProgress();this.audio.sfx('victory');this.burst(this.player.x+16,this.player.y,70,'#ffe1a0',300,'spark');
       if (medal==='gold') { this.audio.sfx('medal'); this.screenFlash('#fff0be',.6); }
@@ -691,8 +1054,16 @@
           color:dust.colors[Math.floor(Math.random()*dust.colors.length)],type:dust.type});
       }
     }
+    /** L'échelle des effets d'écran. À 0,2, les secousses restent perceptibles
+     *  sans jamais fatiguer ; les voiles lumineux disparaissent tout à fait. */
+    get effectScale() { return this.progress.settings.reducedEffects ? .2 : 1; }
     /** A brief, low-opacity wash over the scene. The renderer caps it at 24 %. */
-    screenFlash(color,life=.3) { this.flash={color,life,maxLife:life}; }
+    screenFlash(color,life=.3) {
+      if (this.progress.settings.reducedEffects) return;
+      this.flash={color,life,maxLife:life};
+    }
+    /** Une secousse, mise à l'échelle du réglage de confort. */
+    shake(amount) { this.camera.shake = Math.max(this.camera.shake, amount * this.effectScale); }
     /** Keeps the score's extra tension layer in step with what is actually hunting Nilo. */
     updateDanger(dt) {
       const p=this.player;

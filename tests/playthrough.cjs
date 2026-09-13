@@ -7,12 +7,13 @@ function create(stage,options){
     LumenAudio:class{setMuted(){}setTheme(){}setDanger(v){this.danger=v}setBossPhase(v){this.bossPhase=v}unlock(){}resume(){}pause(){}sfx(){}}};
   const document={addEventListener(){},body:{classList:{contains:()=>true}}};
   const context=vm.createContext({window,document,localStorage:{getItem(){return null},setItem(){}},requestAnimationFrame(){},console,Math});
-  for(const file of ['levels.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
+  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','levels.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
   const game=new window.LumenGame({});
   if(options)game.start(stage,options);else game.loadLevel(stage);
   game.levels=window.LUMEN_LEVELS;return game;
 }
 const FINAL=create(0).levels.findIndex(l=>l.final);
+const RESONANCE=create(0).levels.findIndex(l=>l.key==='verger-qui-reve');
 function key(g,action,down){g.input.virtual(action,down,'bot');}
 function tick(g){g.update(DT);g.input.clearFrame();}
 function movement(g,target){
@@ -72,6 +73,44 @@ for(const stage of [7,8]){
     ok:g.lives>0&&lanterns>=1&&maxX>level.width*.3});
 }
 {
+  // Le chapitre de la Résonance, joué de bout en bout par un pilote qui ne sait
+  // que trois choses : avancer, sauter au bon moment, et appeler. C'est la
+  // preuve que le chapitre se termine avec de vraies entrées, sans état forcé.
+  const g=create(RESONANCE);const level=g.levels[RESONANCE];
+  let jumpUntil=0,lastJump=-10,lastCall=-10,maxX=g.player.x;
+  const woken=new Set();let relays=0,calmed=0;
+  for(let frame=0;frame<120*180&&g.mode!=='complete'&&g.mode!=='gameover';frame++){
+    if(g.mode==='playing'){
+      const p=g.player;
+      key(g,'right',true);
+      // Appeler dès qu'un élément endormi est à portée, ou qu'un pont réveillé
+      // s'apprête à s'éteindre sous les pieds.
+      const R=g.resonanceRules;
+      const near=g.wakeables.some(w=>R.distance(p.x+16,p.y+22,w.x,w.y)<=R.BASE_REACH*.92&&w.state!=='awake');
+      const fading=g.wakeables.some(w=>w.state==='awake'&&w.remaining<1.8&&R.distance(p.x+16,p.y+22,w.x,w.y)<=R.BASE_REACH*.92);
+      const sleeperNear=g.enemies.some(e=>e.alive&&e.type==='sleeper'&&e.state==='sleep'&&R.distance(p.x+16,p.y+22,e.x+e.w/2,e.y)<=R.BASE_REACH*.92);
+      if(p.actionCooldown<=0&&g.elapsed-lastCall>.2&&(near||fading||sleeperNear)){
+        key(g,'action',true);lastCall=g.elapsed;
+      }else key(g,'action',false);
+      const source=g.platforms.filter(s=>s.active&&s.x<=p.x+16&&s.x+s.w>=p.x+16&&s.y>=p.y).sort((a,b)=>a.y-b.y)[0];
+      const edge=source?source.x+source.w:Infinity;
+      if(p.grounded&&g.elapsed-lastJump>.14&&edge-p.x<90){
+        key(g,'jump',true);key(g,'run',true);jumpUntil=g.elapsed+.46;lastJump=g.elapsed;
+      }else if(g.elapsed>jumpUntil){key(g,'jump',false);key(g,'run',false);}
+      g.wakeables.forEach(w=>{if(w.state==='awake')woken.add(w.id);});
+      relays=Math.max(relays,g.waves.filter(w=>w.source==='chime').length);
+      calmed=Math.max(calmed,g.enemies.filter(e=>e.state==='calm').length);
+    }
+    tick(g);maxX=Math.max(maxX,g.player.x);
+  }
+  results.push({test:'chapitre « '+level.name+' » terminé au clavier, Résonance comprise',
+    mode:g.mode,seconds:+g.elapsed.toFixed(2),deaths:g.deaths,lives:g.lives,
+    maxX:+maxX.toFixed(1),width:level.width,coins:g.levelCoins,stars:g.levelStars,
+    wakeablesUsed:woken.size,wakeablesTotal:level.wakeables.length,
+    chimeRelays:relays,creaturesCalmed:calmed,
+    ok:g.mode==='complete'&&woken.size>=4});
+}
+{
   const g=create(FINAL);
   // The only placement is the permitted arena checkpoint initialization.
   Object.assign(g.player,{x:3404,y:552});g.checkpoint={x:3404,y:552};
@@ -122,7 +161,7 @@ for(const stage of [7,8]){
     }
     tick(g);
   }
-  const record=g.progress.records[0]||{};
+  const record=g.recordFor(0)||{};
   results.push({test:'timed race of chapter 1 records a medal and a personal best',
     mode:g.mode,runMode:g.runMode,seconds:+g.elapsed.toFixed(2),deaths:g.deaths,
     medal:finish&&finish.medal,timed:finish&&finish.timed,newRecord:finish&&finish.record,
