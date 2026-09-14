@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
+const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
 const DT = 1 / 120;
 const checks = [];
 let failed = 0;
@@ -153,6 +153,140 @@ test('Jump height varies with release and lands without sinking', () => {
   }
   assert.ok(heights[0] > 115 && heights[0] < 130, JSON.stringify(heights));
   assert.ok(heights[1] < heights[0] * .6, JSON.stringify(heights));
+});
+
+test('Song flight is permanent, limited to one air jump and isolated from classic chapters', () => {
+  for (const song of [false, true]) {
+    const game = fresh(); safeWorld(game); place(game, 100);
+    game.level.song = song;
+    hold(game, 'jump'); tick(game, .15);
+    hold(game, 'jump', false); tick(game, .03);
+    hold(game, 'jump'); tick(game, DT);
+    assert.equal(game.player.airJumps, song ? 1 : 0);
+    if (song) assert.ok(game.player.vy < -600);
+    hold(game, 'jump', false); tick(game, .03);
+    hold(game, 'jump'); tick(game, DT);
+    assert.equal(game.player.airJumps, song ? 1 : 0);
+    assert.equal(game.player.power, null);
+  }
+});
+
+test('Song glide slows descent only while jump is held and never changes classic gravity', () => {
+  for (const song of [false, true]) {
+    const game = fresh(); safeWorld(game); place(game, 100);
+    game.level.song = song;
+    Object.assign(game.player, { y: 220, grounded: false, coyote: 0, airJumps: 1, vy: 300 });
+    hold(game, 'jump'); tick(game, .1);
+    assert.equal(game.player.gliding, song);
+    assert.ok(song ? game.player.vy <= 140 : game.player.vy > 400);
+    hold(game, 'jump', false); tick(game, .1);
+    assert.equal(game.player.gliding, false);
+    assert.ok(game.player.vy > 300);
+  }
+});
+
+test('The three song islands are independent and progression cannot skip an island', () => {
+  const { game, window } = environment();
+  assert.equal(window.LumenSong.ISLANDS.length, 3);
+  assert.equal(game.startSong(1), false);
+  assert.equal(game.startSong(-1), false);
+  assert.equal(game.startSong(0), true);
+  assert.equal(game.session, 'song');
+  assert.equal(game.exit.open, false);
+  assert.equal(game.complete(), false);
+  assert.equal(game.song.lights.length, 3);
+  game.song.lights[0].found = true;
+  game.retry();
+  assert.equal(game.song.lights[0].found, false);
+  assert.equal(game.levelIndex, -1);
+  for (let index = 0; index < 3; index++) {
+    const level = window.LumenSong.create(index);
+    assert.equal(level.collectibles.filter(entry => entry.type === 'star').length, 3);
+    assert.ok(level.platforms.length >= 12);
+    assert.ok(level.checkpoints.length >= 3);
+    assert.ok(level.song.wind.length > 0);
+  }
+});
+
+test('Only actual resonance rescues echoes, opens the portal and survives a fall', () => {
+  const { game } = environment(); game.startSong(0);
+  const echo = game.song.lights[0];
+  place(game, echo.x - 16); tick(game, .1);
+  assert.equal(echo.found, false);
+  hold(game, 'action'); tick(game, .4);
+  assert.equal(echo.found, true);
+  assert.equal(game.song.count, 1);
+  assert.equal(game.exit.open, false);
+  const score = game.levelScore;
+  tick(game, .4);
+  assert.equal(game.levelScore, score);
+  game.die(); tick(game, .7);
+  assert.equal(game.mode, 'playing');
+  assert.equal(game.song.count, 1);
+  assert.equal(game.lives, 5);
+  for (const remaining of game.song.lights.filter(entry => !entry.found)) {
+    game.emitResonance(remaining.x, remaining.y, 180);
+    tick(game, .3);
+  }
+  assert.equal(game.song.count, 3);
+  assert.equal(game.exit.open, true);
+});
+
+test('Airborne notes recharge flight once, form a bounded combo and expire on pause-safe simulation time', () => {
+  const { game } = environment(); game.startSong(0); safeWorld(game);
+  Object.assign(game.player, { x: 200, y: 220, grounded: false, coyote: 0, airJumps: 1 });
+  game.collectibles = [{ type: 'coin', x: 216, y: 240 }];
+  game.updateCollectibles(); game.updateCollectibles();
+  assert.equal(game.player.airJumps, 0);
+  assert.equal(game.song.combo, 1);
+  assert.equal(game.song.airNotes, 1);
+  const time = game.song.comboTime;
+  game.pause(); tick(game, 8);
+  assert.equal(game.song.comboTime, time);
+  game.resume(); tick(game, 4.2);
+  assert.equal(game.song.combo, 0);
+  assert.equal(game.song.bestCombo, 1);
+});
+
+test('Wind lifts a held glide, while release restores gravity', () => {
+  const { game } = environment(); game.startSong(0); safeWorld(game);
+  Object.assign(game.player, { x: 2120, y: 360, vy: 100, grounded: false, coyote: 0, airJumps: 1 });
+  hold(game, 'jump'); tick(game, .4);
+  assert.equal(game.player.gliding, true);
+  assert.ok(game.player.vy < 0);
+  hold(game, 'jump', false); tick(game, .4);
+  assert.ok(game.player.vy > 0);
+});
+
+test('Balade returns near the fall, Elan returns to a lantern, and neither loses rescued echoes', () => {
+  for (const style of ['gentle', 'flow']) {
+    const { game } = environment(); game.startSong(0, { style });
+    place(game, 700); tick(game, .1);
+    assert.ok(game.song.safe.x > 650);
+    const expected = style === 'gentle' ? game.song.safe.x : game.checkpoint.x;
+    game.die(); tick(game, .6);
+    assert.equal(game.mode, 'playing');
+    assert.equal(game.player.x, expected);
+    assert.equal(game.lives, 5);
+  }
+});
+
+test('Song records persist separately, open the next island and never unlock classic chapters', () => {
+  const { game, storage } = environment(); game.startSong(0, { style: 'flow' });
+  for (const echo of game.song.lights) { game.emitResonance(echo.x, echo.y, 180); tick(game, .3); }
+  game.elapsed = 80; game.levelStars = 3;
+  const unlocked = [...game.progress.unlocked];
+  game.complete();
+  assert.equal(game.mode, 'complete');
+  assert.equal(game.store.chapter(game.level.key + ':flow').bestTimedTime, 80);
+  assert.deepEqual([...game.progress.unlocked], unlocked);
+  assert.equal(game.store.chapter('prairies-aurore'), null);
+  const restored = environment(storage).game;
+  assert.equal(restored.nextSongIndex(), 1);
+  assert.equal(restored.startSong(1), true);
+  restored.start(0);
+  assert.equal(restored.song, null);
+  assert.equal(restored.session, 'campaign');
 });
 
 test('Coyote jump succeeds after walking off a real ledge, then expires', () => {

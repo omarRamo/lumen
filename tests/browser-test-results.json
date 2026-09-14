@@ -1,7 +1,31 @@
 {
-  "passed": 10,
+  "passed": 16,
   "failed": 0,
   "checks": [
+    {
+      "name": "Le Chant démarre directement, avec ses ressources locales et un canvas animé",
+      "passed": true
+    },
+    {
+      "name": "Le clavier déplace Nilo, relance son saut, chante et fige la simulation en pause",
+      "passed": true
+    },
+    {
+      "name": "L’atlas, les réglages persistants, le rythme et le retour au classique fonctionnent",
+      "passed": true
+    },
+    {
+      "name": "Les trois îles se terminent via le vrai moteur, puis l’interface ouvre la suite",
+      "passed": true
+    },
+    {
+      "name": "Le Chant reste cadré et ses commandes ne se chevauchent pas sur cinq formats",
+      "passed": true
+    },
+    {
+      "name": "Le Chant répond à deux pointeurs et annule les entrées lors d’une interruption",
+      "passed": true
+    },
     {
       "name": "L’édition portable démarre seule en file://, sans aucune requête externe",
       "passed": true

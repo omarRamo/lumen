@@ -32,7 +32,14 @@ function candidates() {
  *  utilisera alors son propre navigateur, ce qui est le cas normal après
  *  `npx playwright install chromium`. */
 function launchOptions(extra = {}) {
-  const executablePath = candidates()[0];
+  let executablePath = candidates()[0];
+  if (!executablePath && !fs.existsSync(require('playwright').chromium.executablePath()) && process.platform === 'win32') {
+    const roots = [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.LOCALAPPDATA].filter(Boolean);
+    executablePath = roots.flatMap(directory => [
+      path.join(directory, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(directory, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+    ]).find(candidate => fs.existsSync(candidate));
+  }
   const options = { args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required'], ...extra };
   if (executablePath) options.executablePath = executablePath;
   return options;

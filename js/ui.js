@@ -26,6 +26,14 @@
     if (focused instanceof HTMLElement && focused.closest('.screen') && !focused.closest('.screen.active')) focused.blur();
   }
   function showMode(mode) {
+    window.LumenSongUI?.sync();
+    if (game.song) {
+      document.body.classList.add('in-game'); showScreen(null);
+      if (mode !== 'playing') { clearTimeout(toastTimer); $('toast').classList.remove('show'); }
+      for (const id of ['hud', 'run-clock', 'level-hint', 'power-indicator', 'boss-hud', 'dialogue', 'quest-banner']) $(id).classList.add('hidden');
+      $('chapter-intro').classList.remove('show');
+      return;
+    }
     const playing=['playing','dead','paused','gameover','complete','ending','route'].includes(mode) || (mode==='help'&&helpPrevious!=='home'&&helpPrevious!=='map');
     document.body.classList.toggle('in-game',playing);
     $('hud').classList.toggle('hidden',!playing);
@@ -140,7 +148,7 @@
   function transition(fn) {
     if (transitioning) return;
     transitioning=true;$('transition').classList.add('show');game.input.reset();
-    setTimeout(()=>{fn();$('transition').classList.remove('show');setTimeout(()=>{transitioning=false;},300);},320);
+    setTimeout(()=>{fn();$('transition').classList.remove('show');transitioning=false;},320);
   }
   // The atlas choice is deliberately separate from the current run: retry and next
   // always retain the run's mode, while a fresh adventure starts in exploration.
@@ -154,6 +162,7 @@
   }
   function command(action) {
     if (transitioning) return;
+    if (window.LumenSongUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
     }
@@ -240,7 +249,7 @@
     return `<svg viewBox="0 0 260 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="260" height="110" fill="${sky}"/><circle cx="191" cy="31" r="${theme==='eclipse'?0:19}" fill="${moon}" opacity=".8"/><path d="M-20 83Q30 26 74 71T151 50T285 74v50H-20" fill="${far}"/>${clouds}<path d="M-15 98Q37 54 95 88T187 78T280 79v50H-15" fill="${land}" opacity=".6"/><path d="M68 73h101l-12 17-30 12-45-13Z" fill="${land}"/><path d="M67 71q50-9 103 0v5H67" fill="${moon}" opacity=".75"/><path d="M111 72V56a12 12 0 0 1 24 0v16" fill="none" stroke="${moon}" stroke-width="5"/><path d="m32 36 2-6 2 6 6 2-6 2-2 6-2-6-6-2Z" fill="${moon}" opacity=".7"/>${special}</svg>`;
   }
   function renderMap() {
-    $('total-stars').textContent=Object.values(game.progress.chapters).reduce((sum,r)=>sum+(r.stars||0),0)+' / '+window.LUMEN_LEVELS.reduce((n,l)=>n+l.collectibles.filter(c=>c.type==='star').length,0);
+    $('total-stars').textContent=window.LUMEN_LEVELS.reduce((sum,level)=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+window.LUMEN_LEVELS.reduce((n,l)=>n+l.collectibles.filter(c=>c.type==='star').length,0);
     $('level-grid').innerHTML=window.LUMEN_LEVELS.map((level,i)=>{
       const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(i+1).padStart(2,'0');
       const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
@@ -253,6 +262,7 @@
     }).join('');
   }
   function updateHud(dt) {
+    if (game.song) { window.LumenSongUI?.update(dt); return; }
     uiTime+=dt;if(uiTime<.07)return;uiTime=0;
     const p=game.player;
     const totalFragments=game.level.collectibles.filter(c=>c.type==='star').length;
@@ -302,6 +312,7 @@
   }
   function chapterIntro(level) {
     clearTimeout(introTimer);
+    if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
     // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
     // ni une salle de rêve, qui n'ont pas de place dans la campagne.
     const chapters=window.LUMEN_LEVELS.filter(l=>!l.hub);
@@ -438,8 +449,11 @@
       game.store.setSetting('reducedEffects',true);
     }
     applySettings();
-    document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+window.LUMEN_LEVELS.length+' CHAPITRES À EXPLORER';
-    showMode('home');updateSound();game.beginLoop();
+    document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+window.LUMEN_LEVELS.filter(level=>!level.hub).length+' CHAPITRES À EXPLORER';
+    window.LumenSongUI?.attach(game, { transition, toast });
+    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
+    else showMode('home');
+    updateSound();game.beginLoop();
   } catch(error) {
     console.error(error);$('error-notice').hidden=false;$('error-notice').textContent='Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : '+error.message;
   }

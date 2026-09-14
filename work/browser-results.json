@@ -1,7 +1,7 @@
 {
   "mesures": {
     "bureau": {
-      "fps": 25,
+      "fps": 59,
       "particules": 0
     },
     "portrait": {
@@ -9,6 +9,14 @@
       "particules": 0
     },
     "paysage": {
+      "fps": 60,
+      "particules": 0
+    },
+    "compact": {
+      "fps": 60,
+      "particules": 0
+    },
+    "large": {
       "fps": 60,
       "particules": 0
     }

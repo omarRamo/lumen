@@ -1,5 +1,5 @@
 {
-  "passed": 9,
+  "passed": 10,
   "failed": 0,
   "checks": [
     {
@@ -36,6 +36,10 @@
     },
     {
       "name": "Nilo draws in every posture: running, airborne, sliding, hurt and defeated",
+      "passed": true
+    },
+    {
+      "name": "Every song island draws all routes, flight and awakened states without mutating the simulation",
       "passed": true
     }
   ]

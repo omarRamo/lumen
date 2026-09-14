@@ -10,6 +10,30 @@ reconnaîtra que c'est fini.
 **État des jalons de l'itération 04.** Jalon A (défauts P0) : **fait**, 28
 promesses tenues par `tests/test-p0.cjs`. Jalons B, C et D : **non entamés**.
 
+## Priorité Actuelle : Le Chant Des Îles
+
+La nouvelle entrée du jeu est documentée dans [README.md](README.md) et
+[docs/chant-design.md](docs/chant-design.md). Les hypothèses historiques
+ci-dessous concernent l’édition classique, qui reste accessible dans l’atlas.
+
+1. **Observer des enfants et des adultes.** Vérifier sans explication préalable
+  le premier chant, le second saut, le vol plané et l’intérêt de reprendre une
+  note en l’air. Le test est concluant lorsque ces gestes sont découverts et
+  expliqués par les joueurs, pas simplement exécutés par le pilote.
+2. **Éprouver les deux rythmes.** Mesurer les retours après chute, la frustration
+  et les tentatives volontaires d’améliorer un enchaînement. Ajuster Balade et
+  Élan sur cette observation, sans rallonger artificiellement les niveaux.
+3. **Passer sur matériel réel.** Safari iOS, Chrome Android, petits et grands
+  téléphones, encoche, audio interrompu, chauffe et manette physique. Les
+  captures tactiles simulées ne valident pas ces usages.
+4. **Décider la suite du contenu après ces retours.** Une nouvelle île doit
+  apporter une décision ou une interaction différente, pas seulement une
+  palette. La coopération locale, un atelier de chemins et des défis quotidiens
+  restent des pistes, pas des fonctionnalités annoncées comme présentes.
+5. **Choisir un mode de distribution.** Le jeu web statique et le fichier
+  autonome existent ; PWA installable, paquets Android/iOS et distribution PC
+  native restent à décider puis à produire.
+
 ---
 
 ## Les trois prochaines hypothèses, classées par impact
@@ -81,17 +105,9 @@ Personne n'a comparé ce comportement à une alternative plus prévisible (un
 bouton de course, ou un seuil de vitesse). **Ne pas le changer sans test
 utilisateur** — mais le tester fait partie du rang 1.
 
-### 1.4 Le clic avalé pendant le fondu
+### 1.4 Le portrait letterboxé de l’édition classique
 
-Chaque changement d'écran pose un fondu de 620 ms pendant lequel `transition()`
-**ignore silencieusement** toute commande. Un joueur qui enchaîne deux clics
-perd le second sans aucun retour. C'est un défaut de « commandes fiables »,
-trouvé par le test de bout en bout du jalon A. À trancher : file d'attente
-d'une commande, fondu plus court, ou retour visuel pendant le fondu.
-
-### 1.5 Le portrait letterboxé
-
-En portrait, le canevas se réduit à une bande centrale entourée de deux zones
+En portrait dans l’édition classique, le canevas se réduit à une bande centrale entourée de deux zones
 vides. C'est jouable mais laid. À trancher : étirer la scène (sans étirer
 Nilo), remonter le HUD dans la bande haute, ou assumer le paysage comme format
 recommandé avec une invitation claire à tourner l'appareil.

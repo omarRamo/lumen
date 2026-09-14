@@ -35,7 +35,7 @@
         const action = KEY_ACTIONS[e.code];
         if (!action || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
         // Let keyboard users activate focused interface controls normally.
-        if ((e.code === 'Enter' || e.code === 'Space') && e.target.closest('button,a') && document.body.classList.contains('in-game') === false) return;
+        if ((e.code === 'Enter' || e.code === 'Space') && e.target.closest('button,a')) return;
         e.preventDefault();
         if (!e.repeat && !this.keys.has(e.code)) {
           this.keys.set(e.code, action); this.pressed.add(action);
@@ -93,6 +93,7 @@
       this.notices = []; this.uiReady = false;
       this.progress = this.readProgress(); this.storageAvailable = true;
       this.audio.setMuted(!!this.progress.settings.muted);
+      this.audio.volume = this.progress.settings.volume ?? .35;
       this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
       this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
       this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
@@ -201,11 +202,29 @@
     loadLevel(index, active = true) {
       return this.applyLevel(window.LumenLevels.create(index), index, active);
     }
+    nextSongIndex() {
+      const index = window.LumenSong.ISLANDS.findIndex(island => !this.store.chapter(island.key)?.completed);
+      return index < 0 ? 0 : index;
+    }
+    startSong(index = 0, options = {}) {
+      const Song = window.LumenSong;
+      if (!Song || !Number.isInteger(index) || !Song.ISLANDS[index]) return false;
+      if (index > 0 && !this.store.chapter(Song.ISLANDS[index - 1].key)?.completed) return false;
+      this.leaveExpedition(); this.lastRun = null; this.session = 'song';
+      const style = options.style || this.progress.settings.songStyle || 'gentle';
+      this.runMode = style === 'flow' ? 'timed' : 'explore';
+      this.lives = 5;
+      this.applyLevel(Song.create(index, style), -1);
+      this.audio.resume();
+      return true;
+    }
     /** Charge une définition de niveau quelconque — une salle d'expédition n'est
      *  pas dans la liste des chapitres, mais respecte exactement le même
      *  contrat de données. C'est ce qui permet de la jouer sans moteur parallèle. */
     applyLevel(data, index, active = true) {
       this.levelIndex = index; this.level = data; this.elapsed = 0; this.levelCoins = 0; this.levelStars = 0;
+      this.song = data.song && window.LumenSong ? new window.LumenSong.Journey(data.song) : null;
+      this.audio.setSongLayer?.(0);
       this.levelScore = 0; this.deaths = 0; this.secretCount = 0; this.deadTimer = 0;
       this.damageTaken=0;this.enemiesDefeated=0;this.echoTime=0;this.flash=null;this.danger=0;this.dangerTimer=0;
       const R = window.LumenResonance;
@@ -233,7 +252,7 @@
       this.player = { x:data.spawn.x, y:data.spawn.y, w:32, h:46, vx:0, vy:0, facing:1, grounded:false, anim:0,
         landTimer:0, dead:false, invuln:0, hp:3, power:null, powerTime:0, slide:false, coyote:0, jumpBuffer:0,
         airJumps:0, dashTime:0, actionCooldown:0, standingPlatform:null, wet:false, trailTimer:0,
-        jumpTimer:0,runStartTimer:0,lastAxis:0,powerDuration:35,powerWarning:false,stepSoundTimer:0 };
+        jumpTimer:0,runStartTimer:0,lastAxis:0,powerDuration:35,powerWarning:false,stepSoundTimer:0,gliding:false };
       this.boss = data.boss ? { x:data.width - 650, y:460, w:130, h:130, hp:12, maxHp:12, phase:1, timer:0,
         vulnerable:false, hitFlash:0, facing:-1, state:'sleep', vx:0, vy:0, attack:0, activated:false, homeX:data.width - 650,
         stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
@@ -269,6 +288,7 @@
       };
     }
     retry() {
+      if (this.session === 'song' && this.song) return this.startSong(this.song.index, { style: this.song.style });
       // Une salle de rêve se recommence sur place ; une nuit perdue se
       // recommence depuis sa première salle ; un chapitre se recharge. Ce qui
       // n'existe pas — un « chapitre −1 » — n'est jamais demandé au chargeur.
@@ -444,6 +464,7 @@
      *  cours. La transition est explicite ici plutôt que devinée plus tard. */
     showMap() {
       this.leaveExpedition();
+      if (this.session === 'song') { this.session = 'home'; this.song = null; this.audio.setSongLayer?.(0); }
       if (this.session === 'expedition') this.session = 'home';
       this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
     }
@@ -486,6 +507,7 @@
       if (this.mode !== 'playing') return;
       this.updatePlatforms(dt); this.updatePlayer(dt);
       if (this.mode !== 'playing') return;
+      if (this.song) this.song.update(this, dt);
       this.updateEnemies(dt);
       if (this.mode !== 'playing') return;
       this.updateBoss(dt);
@@ -535,6 +557,7 @@
     }
     updatePlayer(dt) {
       const p = this.player, input = this.input;
+      p.gliding = false;
       p.anim += dt * (Math.abs(p.vx) > 20 ? Math.abs(p.vx) / 90 : 1);
       p.invuln = Math.max(0, p.invuln - dt); p.landTimer = Math.max(0, p.landTimer - dt);
       p.jumpTimer=Math.max(0,p.jumpTimer-dt);p.runStartTimer=Math.max(0,p.runStartTimer-dt);p.stepSoundTimer=Math.max(0,p.stepSoundTimer-dt);
@@ -554,7 +577,7 @@
       if (axis) p.facing = axis;
       const sliding = input.down('down') && p.grounded && Math.abs(p.vx) > 160 && !p.wet;
       if (sliding !== p.slide) { const height = sliding ? 29 : 46; p.y += p.h - height; p.h = height; p.slide = sliding; }
-      const maxSpeed = p.wet ? 235 : input.down('run') ? 490 : 320;
+      const maxSpeed = p.wet ? 235 : (input.down('run') ? 490 : 320) * (this.song && this.song.combo >= 10 ? 1.12 : 1);
       const friction = this.level.theme === 'frost' && p.grounded ? 520 : 2300;
       if (p.dashTime <= 0) {
         if (axis) p.vx = approach(p.vx, axis * maxSpeed, dt * (p.grounded ? (sliding ? 450 : 2350) : 1550));
@@ -563,7 +586,7 @@
       if (input.just('action')) this.usePower();
       if (p.jumpBuffer > 0 && !p.wet) {
         if (p.coyote > 0) this.jump(false);
-        else if (p.power === 'breeze' && p.airJumps < 1) this.jump(true);
+        else if ((p.power === 'breeze' || this.level.song) && p.airJumps < 1) this.jump(true);
       }
       if (p.wet) {
         p.vy += 500 * dt;
@@ -575,6 +598,14 @@
         p.vy += (p.vy > 0 ? 2100 : 1900) * dt;
         if (input.released.has('jump') && p.vy < -235) p.vy *= .48;
         p.vy = Math.min(1000, p.vy);
+        if (this.level.song && input.down('jump') && p.vy > 0 && !input.down('down')) {
+          p.gliding = true;
+          p.vy = Math.min(140, p.vy);
+        }
+        if (this.level.song && input.down('jump') && !input.down('down')) {
+          const wind = (this.level.song.wind || []).find(current => overlap(p, current));
+          if (wind) { p.vy = approach(p.vy, -310, 4000 * dt); p.gliding = true; }
+        }
       }
       if (p.dashTime > 0) {
         p.dashTime -= dt; p.vx = p.facing * 910; p.vy = 0;
@@ -672,7 +703,7 @@
       const p = this.player, R = window.LumenResonance;
       if (p.actionCooldown > 0) return;
       const amplifier = R.AMPLIFIERS[p.power];
-      this.emitResonance(p.x + p.w / 2, p.y + 22, R.reachFor(p.power));
+      this.emitResonance(p.x + p.w / 2, p.y + 22, R.reachFor(p.power) + (this.song ? this.song.count * 28 : 0));
       p.actionCooldown = R.COOLDOWN;
 
       // Les effets historiques des pouvoirs, inchangés, désormais portés par l'onde.
@@ -1009,8 +1040,12 @@
         if (!overlap(p,{x:c.x-radius,y:c.y-radius,w:radius*2,h:radius*2})) continue;
         c.taken=true;
         if (c.type==='coin') {
-          this.levelCoins++;this.addScore(25);this.audio.sfx('coin');this.burst(c.x,c.y,9,'#f2d17a',110,'spark');
-          if (this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
+          this.levelCoins++;this.addScore(25);this.burst(c.x,c.y,9,'#f2d17a',110,'spark');
+          if (this.song) this.song.note(this, c);
+          else {
+            this.audio.sfx('coin');
+            if (this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
+          }
         } else if (c.type==='star') {
           this.levelStars++;this.addScore(500);this.audio.sfx('star');this.burst(c.x,c.y,28,'#ffe4a1',210,'spark');this.float(c.x,c.y,'Fragment lunaire +500','#f9daa2');
         } else if (c.type==='heart') {
@@ -1105,6 +1140,14 @@
     }
     die() {
       if (this.mode!=='playing') return;
+      if (this.song) {
+        this.song.returnPoint = this.song.style === 'gentle' ? this.song.safe || this.checkpoint : this.checkpoint;
+        this.song.combo = 0; this.song.comboTime = 0; this.song.trail = [];
+        this.player.dead = true; this.player.vx = 0; this.player.vy = -160;
+        this.mode = 'dead'; this.deadTimer = .5; this.deaths++;
+        this.audio.sfx('wakeEnd'); this.emit('mode', this.mode);
+        return;
+      }
       this.player.dead=true;this.player.vy=-390;this.player.vx=0;this.mode='dead';this.deadTimer=.85;
       this.lives--;this.deaths++;if(this.session==='expedition'&&this.run)this.run.lives=this.lives;this.shake(9);this.audio.sfx('death');this.burst(this.player.x+16,this.player.y+24,30,'#e9c795',230,'spark');
       this.emit('mode',this.mode);
@@ -1117,8 +1160,8 @@
         if (this.session === 'expedition' && this.run) return this.finishExpedition(false);
         this.mode='gameover';this.emit('mode',this.mode);return;
       }
-      const p=this.player;
-      Object.assign(p,{x:this.checkpoint.x,y:this.checkpoint.y,vx:0,vy:0,w:32,h:46,hp:3,dead:false,invuln:2,
+      const p=this.player, returnPoint=this.song?.returnPoint || this.checkpoint;
+      Object.assign(p,{x:returnPoint.x,y:returnPoint.y,vx:0,vy:0,w:32,h:46,hp:3,dead:false,invuln:2,
         grounded:false,coyote:0,jumpBuffer:0,airJumps:0,dashTime:0,standingPlatform:null,slide:false,power:null,powerTime:0});
       this.projectiles=[];
       // Safe landing after a fall: disappearing platforms return during respawn.
@@ -1137,6 +1180,7 @@
     }
     complete() {
       if (this.mode!=='playing') return;
+      if (this.song) return this.completeSong();
       const final=!!this.level.final;this.mode=final?'ending':'complete';this.player.vx=0;this.player.vy=0;this.player.grounded=true;
       const bonus=1000+Math.max(0,1200-Math.floor(this.elapsed*5))+this.player.hp*100;
       this.addScore(bonus);
@@ -1156,6 +1200,24 @@
         score:this.levelScore,bonus,secrets:this.secretCount,medal,timed,record,
         enemiesDefeated:this.enemiesDefeated,damageTaken:this.damageTaken});
       this.emit('mode',this.mode);
+    }
+    completeSong() {
+      if (this.mode !== 'playing' || !this.song || this.song.count !== this.song.lights.length) return false;
+      const song = this.song, final = song.index === window.LumenSong.ISLANDS.length - 1;
+      const timed = song.style === 'flow';
+      const medal = this.medalFor(this.levelStars, this.deaths, this.elapsed);
+      this.addScore(1000 + song.bestCombo * 25);
+      const result = { stars: this.levelStars, coins: this.levelCoins, score: this.levelScore,
+        time: this.elapsed, medal, timed };
+      this.store.recordChapter(this.level.key, result);
+      const record = this.store.recordChapter(this.level.key + ':' + song.style, result);
+      this.saveProgress(); this.mode = final ? 'ending' : 'complete'; this.input.reset();
+      this.player.vx = 0; this.player.vy = 0;
+      this.audio.sfx('victory'); this.burst(this.player.x + 16, this.player.y, 70, '#fff0b4', 230, 'petal');
+      this.emit('song-complete', { ...result, index: song.index, final, record,
+        combo: song.bestCombo, airNotes: song.airNotes, falls: this.deaths });
+      this.emit('mode', this.mode);
+      return true;
     }
     /** Gold asks for everything at once; silver for a clean run; bronze for arriving.
      *  Both run modes award medals — the timer only records a personal best. */

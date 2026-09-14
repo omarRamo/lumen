@@ -52,7 +52,7 @@
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false },
+      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35 },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -127,6 +127,8 @@
       profile.settings.touchScale = clamp(finite(raw.settings.touchScale, 1), .8, 1.6);
       profile.settings.leftHanded = !!raw.settings.leftHanded;
       profile.settings.reducedEffects = !!raw.settings.reducedEffects;
+      profile.settings.songStyle = raw.settings.songStyle === 'flow' ? 'flow' : 'gentle';
+      profile.settings.volume = clamp(finite(raw.settings.volume, .35), 0, 1);
     }
     if (isObject(raw.hub)) {
       if (isObject(raw.hub.quests)) {

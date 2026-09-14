@@ -1,4 +1,109 @@
-# LUMEN — Les jardins qui rêvent
+# LUMEN — Le Chant des îles
+
+![L’île des petits matins, dans le jeu](docs/chant-bureau.png)
+
+**Une petite voix peut réveiller tout un ciel.**
+
+Nilo retrouve les neuf voix perdues d’Auralis, un grand voyageur céleste.
+Trois îles suspendues, des notes à attraper en plein vol, des compagnons qui
+vous suivent et des jardins qui refleurissent. On entre directement dans le
+jeu, sans écran publicitaire ni compte à créer.
+
+**Ouvrir [index.html](index.html)** dans un navigateur récent, ou
+[LUMEN.html](LUMEN.html) pour l’édition autonome. Aucun serveur n’est nécessaire.
+Le jeu fonctionne hors ligne sur ordinateur. Sur téléphone, les mêmes fichiers
+peuvent être servis par un hébergement web statique ; le tactile s’adapte au
+portrait et au paysage. Il ne s’agit pas d’une application native publiée sur
+les boutiques mobiles.
+
+## Le Nouveau Voyage
+
+| Île | Intention |
+| --- | --- |
+| L’île des petits matins | Rencontrer Pip, apprendre à voler et réveiller la première île. |
+| Les récifs du ciel | Relier des îlots plus espacés et jouer avec les courants ascendants. |
+| Le grand chœur | Réunir les dernières voix, traverser les relais de carillons et rendre son chant à Auralis. |
+
+**Voler, chanter, recommencer :**
+
+- Le second saut est permanent dans le Chant, et maintenir le saut pendant
+  la descente déploie les ailes. Relâcher les ailes permet de quitter un courant.
+- Chaque note attrapée en l’air rend le second saut disponible. Les notes
+  deviennent un itinéraire de vol, pas seulement un compteur.
+- Les notes forment une mélodie pentatonique et des enchaînements. À dix notes
+  dans un enchaînement, Nilo gagne un peu de vitesse.
+- Chanter réveille les échos. Ils rejoignent Nilo, augmentent la portée du
+  chant et enrichissent la musique. Les fleurs repoussent, les cascades
+  reviennent et les trois voix de l’île ouvrent son passage.
+- Trois souvenirs par île offrent des détours facultatifs. Les neuf voix et
+  les neuf souvenirs sont tous accessibles par les vraies commandes du jeu.
+
+### Deux Rythmes
+
+**Balade** : les chutes ramènent au dernier sol stable, sans retirer de vie ni
+de compagnon retrouvé. L’enchaînement tolère quatre secondes entre deux notes.
+
+**Élan** : retour à la dernière lanterne après une chute, enchaînement plus
+exigeant (2,5 secondes), chrono et record personnel. Il n’y a pas de game over
+dans le Chant. Changer de rythme recommence l’île après confirmation ; les
+records des deux rythmes sont distincts.
+
+| Action | Clavier | Tactile / Souris | Manette |
+| --- | --- | --- | --- |
+| Avancer | Flèches, Q/D ou A/D | Flèches à l’écran | Stick / croix |
+| Sauter / second saut | Espace, Z ou W | Bouton plume | A / B |
+| Planer / prendre un courant | Maintenir le saut | Maintenir la plume | Maintenir A / B |
+| Chanter | X / J | Bouton étincelles | X |
+| Courir | Maj | Maintenir une direction | Gâchette |
+| Pause | Échap / P | Bouton pause | Start |
+| Recommencer / son | R / M | Menus du jeu | Menus au clavier ou au tactile |
+
+Les réglages proposent le volume, les mouvements réduits, la main dominante
+et la taille des commandes. Les boutons sont nommés pour les lecteurs d’écran
+et les dialogues contiennent le focus clavier. L’accessibilité complète d’un
+jeu de plateforme visuel n’est pas pour autant acquise.
+
+### Ce Qui Est Conservé
+
+L’atlas du Chant donne accès aux **Jardins de la lune** : les onze chapitres,
+l’observatoire et les expéditions de l’édition précédente. L’entrée directe
+classique est `index.html?classic`.
+
+Les anciennes sauvegardes ne sont pas réinitialisées. Le Chant emploie des
+clés préfixées par `chant-`, séparées des chapitres classiques, et ne les
+déverrouille pas. La reprise se fait à la prochaine île non terminée ; fermer
+le navigateur au milieu d’une île ne conserve pas sa position exacte.
+
+### Architecture Du Chant
+
+La simulation à 120 Hz, les collisions, la Résonance et le stockage restent
+partagés avec le jeu existant. Pas de second moteur concurrent.
+
+| Fichier | Responsabilité |
+| --- | --- |
+| [js/song.js](js/song.js) | Les trois îles, les neuf échos, les enchaînements et la progression de leur réveil. Aucun DOM. |
+| [js/engine.js](js/engine.js) | Session `song`, mouvements, courants, collecte, retours après chute et fin d’île. |
+| [js/song-art.js](js/song-art.js) | Rendu Canvas original, compositions adaptatives et illustrations mises en cache. Aucune mutation de la simulation. |
+| [js/song-ui.js](js/song-ui.js) | HUD, atlas, résultats, confort, focus et navigation entre les éditions. |
+| [song.css](song.css) | Interface responsive et typographies locales. |
+| [tests/song-pilot.cjs](tests/song-pilot.cjs) | Pilote de parcours partagé entre les tests Node et navigateur, sans téléportation. |
+
+Les pictogrammes viennent de **Lucide**, les polices **Fredoka** et **Outfit**
+de Fontsource. Les fichiers et leurs licences sont dans [assets](assets).
+Ce sont des ressources locales : aucune police, image ou musique n’est
+téléchargée pendant le jeu. La compilation incorpore aussi ces ressources
+dans l’édition portable.
+
+[Le bilan de conception](docs/chant-design.md) expose les choix et les
+limites. [Le backlog](BACKLOG.md) donne les prochaines vérifications humaines.
+Les commandes et les résultats des tests se trouvent dans la section
+**Vérifier**, plus bas.
+
+---
+
+## Guide De L’Édition Classique
+
+La suite documente les Jardins de la lune, conservés dans l’atlas du Chant.
 
 ![Le verger qui rêve : la Résonance vient d’ouvrir un bouton en tremplin](docs/apercu-resonance.png)
 
@@ -148,6 +253,7 @@ La session est un **état déclaré**, pas une déduction :
 | `campaign` | un chapitre de campagne |
 | `hub` | l'observatoire |
 | `expedition` | une nuit en cours |
+| `song` | une île du Chant en cours, sans règles de vie ou de progression de la campagne classique |
 
 Les transitions sont explicites : `start()` et `showMap()` quittent une nuit,
 `leaveExpedition()` l'abandonne, `retryExpedition()` la recommence avec sa
@@ -297,18 +403,18 @@ Toutes les commandes se lancent depuis le dossier `LUMEN`. Le jeu n'a besoin de
 rien ; ce qui suit ne sert qu'au développement.
 
 ```bash
-node tools/build.cjs          # régénère LUMEN.html (aucun paquet requis)
+node tools/build.cjs          # régénère LUMEN.html avec les ressources locales
 
 node tests/test-p0.cjs            # 28 promesses du jalon A (branches, apaisement,
                                   #   restauration du monde, sessions, sauvegarde)
-node tests/test-engine.cjs        # 49 contrôles de physique et de progression
-node tests/test-renderer.cjs      #  9 contrôles de dessin
+node tests/test-engine.cjs        # physique, progression et règles du Chant
+node tests/test-renderer.cjs      # dessins classiques et trois îles du Chant
 node tests/test-expedition.cjs    # 15 invariants de génération, dont 1000 graines
-node tests/playthrough.cjs        #  6 parcours joués avec de vraies entrées
+node tests/playthrough.cjs        # parcours classiques et trois îles dans les deux rythmes
 
-npm install                   # uniquement pour les tests navigateur
-npx playwright install chromium
-npm run test:browser          # 10 contrôles dans un vrai navigateur, en file://
+npm install                   # tests navigateur, polices et pictogrammes de développement
+npx playwright install chromium  # facultatif si Chrome ou Edge est installé sous Windows
+npm run test:browser          # vrais navigateurs, éditions source et portable, cinq formats
 
 npm test                      # les cinq suites Node
 npm run verify                # build + tests Node + navigateur
@@ -316,23 +422,34 @@ npm run verify                # build + tests Node + navigateur
 
 Le navigateur est résolu sans aucun chemin absolu : `LUMEN_CHROMIUM` si vous en
 désignez un, sinon le cache Playwright, sinon celui de Playwright lui-même.
+Sous Windows, Chrome ou Edge déjà installé sert de repli lorsque Chromium
+Playwright est absent. Aucune exception TLS n’est nécessaire.
 
 ### Résultats réellement obtenus
 
-Relevés à la dernière exécution complète, sur Node 22 et Chromium en conteneur
-Linux :
+Les rapports détaillés sont régénérés dans [tests](tests). La nouvelle
+version est vérifiée sous Windows avec Node et Chrome, en ouverture directe
+`file://`, ainsi que dans le navigateur intégré de VS Code.
 
 | Suite | Résultat |
 | --- | --- |
 | `test-p0.cjs` | 28 / 28 (3 / 28 avant le jalon A — voir `docs/jalon-a-reference.json`) |
-| `test-engine.cjs` | 49 / 49 |
-| `test-renderer.cjs` | 9 / 9 |
+| `test-engine.cjs` | 57 / 57 |
+| `test-renderer.cjs` | 10 / 10 |
 | `test-expedition.cjs` | 15 / 15, dont 1 012 graines sans une seule salle fautive |
-| `playthrough.cjs` | 6 parcours terminés, dont « Le verger qui rêve » en 13,4 s |
-| `test-browser.cjs` | 10 / 10, zéro erreur de console |
+| `playthrough.cjs` | 12 parcours, dont les trois îles en Balade et Élan, sans chute et avec tous leurs souvenirs |
+| `test-browser.cjs` | 16 / 16, zéro erreur de console |
 
 Quelques mesures que ces suites produisent, et qui disent quelque chose :
 
+- les **trois îles du Chant sont terminées sans téléportation**, sans état
+  de victoire forcé et avec deux actions simultanées au maximum ; le pilote
+  connaît les lieux, donc son temps n’est pas une durée de découverte humaine ;
+- les éditions **source et portable** chargent images, polices et pictogrammes
+  sans accès réseau ; les pixels du canvas sont non uniformes et changent avec
+  l’animation ;
+- les captures du Chant couvrent **1440 × 900, 390 × 844, 844 × 390,
+  320 × 740 et 2560 × 1080**, sans commandes superposées ou hors écran ;
 - le chapitre de la Résonance est **terminé au clavier par un pilote
   automatique**, en utilisant ses onze réveillables et un relais de carillon ;
 - une **nuit entière** est menée par l'interface — cinq salles, choix de route,
@@ -354,14 +471,13 @@ Dit sans emballage, parce que c'est ce qui compte :
   par un navigateur qui simule le tactile : cibles ≥ 48 px, trois doigts
   simultanés, aucun doigt collé après annulation. C'est nécessaire, pas
   suffisant ;
-- **la cadence n'est pas mesurée sur un vrai appareil.** Le chiffre relevé par
-  `npm run test:browser` vient d'un Chromium logiciel en conteneur partagé, où
-  le même code a donné 23 i/s puis 38 i/s à quelques minutes d'intervalle. Il
-  ne sert qu'à repérer un effondrement entre deux exécutions, et ne valide
-  aucune cible de performance ;
-- **l'audio n'a aucun test.** Il est simulé partout ;
-- **le rendu est testé contre un canevas factice** : cela prouve qu'aucune
-  routine ne manque et qu'aucun NaN ne passe, pas que l'image est juste ;
+- **la cadence n’est pas mesurée sur des téléphones physiques.** Les relevés
+  de Chrome sur ce poste ne valident ni une cible mobile, ni l’autonomie ;
+- **la composition et le mixage audio n’ont pas été écoutés par un testeur
+  humain.** Le volume et sa persistance sont testés dans le navigateur ;
+- **le rendu possède des tests de commandes Canvas, des contrôles de pixels
+  et des captures inspectées.** Cela ne remplace pas une évaluation de
+  lisibilité par des enfants et des adultes ;
 - **les 1 000 graines contrôlent des invariants géométriques, pas le plaisir.**
   Une nuit peut être parfaitement valide et parfaitement ennuyeuse.
 
@@ -437,8 +553,9 @@ respect des capacités, et la franchissabilité des salles qui l'emploient.
 Nilo, les créatures, les architectures botaniques, les décors et les sons sont
 originaux et dessinés ou synthétisés par le code. Chaque créature a une
 silhouette qui lui est propre : aucune n'est la recoloration d'une autre.
-Aucune ressource externe n'est utilisée, donc aucune licence tierce n'est en
-jeu.
+Les illustrations et la musique sont générées localement. Le Chant ajoute
+des polices et des pictogrammes tiers redistribués avec leurs licences dans
+[assets](assets), sans aucune requête réseau à l’exécution.
 
 Le jeu respecte `prefers-reduced-motion` dès le premier lancement, et offre
 trois réglages de confort : main dominante, taille des commandes tactiles, et

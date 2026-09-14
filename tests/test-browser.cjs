@@ -11,16 +11,19 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const fs = require('node:fs');
+const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const browserTools = require('../tools/browser.cjs');
 
 const root = path.resolve(__dirname, '..');
 const shots = path.join(root, 'work', 'shots');
-const PAGE = 'file://' + path.join(root, 'LUMEN.html').replace(/\\/g, '/');
+const PAGE = pathToFileURL(path.join(root, 'LUMEN.html')).href;
 const VIEWS = {
   bureau: { width: 1440, height: 900 },
   portrait: { width: 390, height: 844, hasTouch: true, isMobile: true },
-  paysage: { width: 844, height: 390, hasTouch: true, isMobile: true }
+  paysage: { width: 844, height: 390, hasTouch: true, isMobile: true },
+  compact: { width: 320, height: 740, hasTouch: true, isMobile: true },
+  large: { width: 2560, height: 1080 }
 };
 
 const checks = [];
@@ -37,7 +40,7 @@ async function test(name, run) {
   catch (error) { console.error(browserTools.explain(error)); process.exitCode = 1; return; }
 
   /** Ouvre la page, en collectant toute erreur au passage. */
-  async function open(view = 'bureau', profile = null) {
+  async function open(view = 'bureau', profile = null, options = {}) {
     const { width, height, hasTouch, isMobile } = VIEWS[view];
     const context = await browser.newContext({ viewport: { width, height }, hasTouch, isMobile, deviceScaleFactor: 1 });
     const page = await context.newPage();
@@ -50,10 +53,186 @@ async function test(name, run) {
     if (profile) await page.addInitScript(text => {
       try { localStorage.setItem('lumen.gardens.v3', text); } catch (_) {}
     }, JSON.stringify(profile));
-    await page.goto(PAGE);
-    await page.waitForFunction(() => window.lumen && window.lumen.mode === 'home', null, { timeout: 20000 });
+    const url = options.source ? pathToFileURL(path.join(root, 'index.html')).href : PAGE;
+    await page.goto(url + (options.song ? '' : '?classic'));
+    await page.waitForFunction(song => window.lumen && window.lumen.mode === (song ? 'playing' : 'home'), !!options.song, { timeout: 20000 });
     return { page, context, errors };
   }
+
+  await test('Le Chant démarre directement, avec ses ressources locales et un canvas animé', async () => {
+    for (const source of [false, true]) {
+      const { page, context, errors } = await open('bureau', null, { song: true, source });
+      const requests = [];
+      page.on('request', request => { if (!/^(file|data):/.test(request.url())) requests.push(request.url()); });
+      await page.reload();
+      await page.waitForFunction(() => window.lumen?.song && window.lumen.frames >= 2 && document.fonts.check('500 25px Fredoka'));
+      const before = await page.evaluate(async () => {
+        await document.fonts.ready;
+        await Promise.all([...document.images].map(image => image.decode()));
+        const game = window.lumen, canvas = game.canvas, pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+        const colors = new Set();
+        for (let index = 0; index < pixels.length; index += 1084) colors.add([pixels[index] >> 4, pixels[index + 1] >> 4, pixels[index + 2] >> 4].join(':'));
+        return { session: game.session, colors: colors.size, frame: canvas.toDataURL(), fonts: [document.fonts.check('500 25px Fredoka'), document.fonts.check('400 14px Outfit')] };
+      });
+      assert.equal(before.session, 'song');
+      assert.ok(before.colors > 45, 'Canvas presque uniforme : ' + before.colors);
+      assert.deepEqual(before.fonts, [true, true]);
+      await page.waitForTimeout(200);
+      assert.notEqual(await page.evaluate(() => window.lumen.canvas.toDataURL()), before.frame, 'Le monde doit être animé.');
+      assert.deepEqual(requests, [], 'Une ressource sort du jeu hors ligne.');
+      assert.deepEqual(errors, []);
+      if (source) await page.screenshot({ path: path.join(shots, 'chant-bureau.png') });
+      await context.close();
+    }
+  });
+
+  await test('Le clavier déplace Nilo, relance son saut, chante et fige la simulation en pause', async () => {
+    const { page, context, errors } = await open('bureau', null, { song: true });
+    await page.locator('#game').focus();
+    const start = await page.evaluate(() => window.lumen.player.x);
+    await page.keyboard.down('ArrowRight'); await page.waitForTimeout(450); await page.keyboard.up('ArrowRight');
+    assert.ok(await page.evaluate(() => window.lumen.player.x) > start + 60, 'La direction doit réellement déplacer Nilo.');
+    await page.keyboard.down('Space'); await page.waitForTimeout(120); await page.keyboard.up('Space');
+    await page.waitForTimeout(50); await page.keyboard.down('Space'); await page.waitForTimeout(40);
+    const jump = await page.evaluate(() => ({ airJumps: window.lumen.player.airJumps, vy: window.lumen.player.vy }));
+    assert.equal(jump.airJumps, 1); assert.ok(jump.vy < 0, 'Le second saut doit encore être ascendant : ' + JSON.stringify(jump));
+    await page.keyboard.up('Space'); await page.keyboard.press('KeyX');
+    await page.waitForFunction(() => window.lumen.player.actionCooldown > 0);
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.song-panel-pause');
+    const elapsed = await page.evaluate(() => window.lumen.elapsed);
+    await page.waitForTimeout(180);
+    assert.equal(await page.evaluate(() => window.lumen.elapsed), elapsed);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => window.lumen.mode), 'playing');
+    assert.deepEqual(errors, []); await context.close();
+  });
+
+  await test('L’atlas, les réglages persistants, le rythme et le retour au classique fonctionnent', async () => {
+    const { page, context, errors } = await open('portrait', null, { song: true });
+    await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
+    await page.waitForSelector('.song-panel-atlas');
+    assert.equal(await page.locator('[data-song-island]:disabled').count(), 2);
+    assert.equal(await page.evaluate(() => document.getElementById('song-shell').inert), true);
+    await page.screenshot({ path: path.join(shots, 'chant-atlas.png') });
+    await page.getByRole('button', { name: 'Reprendre', exact: true }).click();
+    await page.getByRole('button', { name: 'Réglages', exact: true }).click();
+    await page.getByRole('switch', { name: 'Mouvements réduits' }).check();
+    await page.getByRole('switch', { name: 'Commandes pour gaucher' }).check();
+    await page.locator('#song-volume').fill('61');
+    await page.locator('#song-touch-size').fill('130');
+    await page.screenshot({ path: path.join(shots, 'chant-reglages.png') });
+    await page.getByRole('button', { name: 'Revenir au ciel' }).click();
+    await page.reload(); await page.waitForFunction(() => window.lumen?.song);
+    const settings = await page.evaluate(() => ({ ...window.lumen.progress.settings, volumeInAudio: window.lumen.audio.volume }));
+    assert.equal(settings.volume, .61); assert.equal(settings.volumeInAudio, .61);
+    assert.equal(settings.leftHanded, true); assert.equal(settings.touchScale, 1.3); assert.equal(settings.reducedEffects, true);
+    await page.getByRole('button', { name: 'Réglages', exact: true }).click();
+    await page.getByRole('button', { name: 'Élan', exact: true }).click();
+    await page.getByRole('button', { name: 'Partir en Élan' }).click();
+    await page.waitForFunction(() => window.lumen.song?.style === 'flow');
+    assert.equal(await page.evaluate(() => window.lumen.runMode), 'timed');
+    await page.waitForTimeout(400);
+    await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
+    await page.getByRole('button', { name: 'Les jardins de la lune', exact: true }).click();
+    await page.waitForFunction(() => window.lumen.mode === 'home');
+    assert.equal(await page.evaluate(() => window.lumen.song), null);
+    await page.waitForTimeout(400);
+    await page.locator('[data-command="song-return"]').click();
+    await page.waitForFunction(() => window.lumen.session === 'song');
+    assert.deepEqual(errors, []); await context.close();
+  });
+
+  await test('Les trois îles se terminent via le vrai moteur, puis l’interface ouvre la suite', async () => {
+    const { page, context, errors } = await open('bureau', null, { song: true });
+    await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'song-pilot.cjs'), 'utf8') });
+    const results = [];
+    for (let index = 0; index < 3; index++) {
+      const result = await page.evaluate(() => {
+        const game = window.lumen, pilot = window.LumenSongPilot.create(game);
+        game.running = false;
+        for (let frame = 0; frame < 120 * 240 && ['playing', 'dead'].includes(game.mode); frame++) {
+          pilot.step(); game.update(1 / 120); game.input.clearFrame();
+        }
+        game.renderer.draw(game, 0); game.emit('frame', .1);
+        return pilot.summary();
+      });
+      results.push(result);
+      assert.equal(result.mode, index === 2 ? 'ending' : 'complete', JSON.stringify(result));
+      assert.equal(result.echoes, 3); assert.equal(result.stars, 3); assert.equal(result.falls, 0);
+      await page.waitForSelector('.song-panel-result');
+      await page.screenshot({ path: path.join(shots, 'chant-fin-' + (index + 1) + '.png') });
+      if (index < 2) {
+        await page.getByRole('button', { name: 'Vers la prochaine île' }).click();
+        await page.waitForFunction(next => window.lumen.song.index === next && window.lumen.mode === 'playing', index + 1);
+        await page.waitForTimeout(400);
+        await page.evaluate(() => { window.lumen.renderer.draw(window.lumen, 0); });
+        await page.screenshot({ path: path.join(shots, 'chant-ile-' + (index + 2) + '.png') });
+      }
+    }
+    assert.equal(await page.evaluate(() => window.lumen.progress.codex.creatures.filter(entry => entry.startsWith('chant-')).length), 9);
+    await page.getByRole('button', { name: 'Revoir l’archipel' }).click();
+    assert.equal(await page.locator('[data-song-island]:disabled').count(), 0);
+    await page.reload(); await page.waitForFunction(() => window.lumen?.song);
+    assert.equal(await page.evaluate(() => window.LumenSong.ISLANDS.filter(island => window.lumen.store.chapter(island.key)?.completed).length), 3);
+    assert.deepEqual(errors, []);
+    console.log('      îles jouées sans téléportation : ' + results.map(result => result.island + ' (' + result.seconds + ' s)').join(', '));
+    await context.close();
+  });
+
+  await test('Le Chant reste cadré et ses commandes ne se chevauchent pas sur cinq formats', async () => {
+    for (const view of Object.keys(VIEWS)) {
+      const { page, context, errors } = await open(view, null, { song: true });
+      await page.waitForTimeout(400);
+      const layout = await page.evaluate(() => {
+        const game = window.lumen;
+        const buttons = [...document.querySelectorAll('#song-shell button, #touch-controls button')].filter(button => button.getClientRects().length && getComputedStyle(button).visibility !== 'hidden');
+        const rectangles = buttons.map(button => ({ name: button.getAttribute('aria-label') || button.textContent.trim(),
+          rect: button.getBoundingClientRect().toJSON() }));
+        const overlaps = [];
+        for (let first = 0; first < rectangles.length; first++) for (let second = first + 1; second < rectangles.length; second++) {
+          const left = rectangles[first], right = rectangles[second];
+          if (left.rect.x < right.rect.right - 2 && left.rect.right > right.rect.x + 2 && left.rect.y < right.rect.bottom - 2 && left.rect.bottom > right.rect.y + 2) overlaps.push([left.name, right.name]);
+        }
+        const heroX = (game.player.x - game.camera.x) * game.renderer.scale;
+        const heroY = game.player.y * game.renderer.scale + game.renderer.offsetY;
+        return { overflow: document.documentElement.scrollWidth > innerWidth, overlaps,
+          outside: rectangles.filter(button => button.rect.x < -1 || button.rect.right > innerWidth + 1 || button.rect.y < 0 || button.rect.bottom > innerHeight + 1),
+          hero: heroX > 0 && heroX < innerWidth - 24 && heroY > 80 && heroY < innerHeight - 85 };
+      });
+      assert.equal(layout.overflow, false, view); assert.deepEqual(layout.overlaps, [], view + ' : commandes superposées');
+      assert.deepEqual(layout.outside, [], view + ' : commande hors écran'); assert.equal(layout.hero, true, view + ' : personnage mal cadré');
+      await page.screenshot({ path: path.join(shots, 'chant-' + view + '.png') });
+      if (view === 'portrait' || view === 'compact') {
+        await page.getByRole('button', { name: 'Réglages', exact: true }).click();
+        await page.locator('#song-touch-size').fill('130');
+        await page.getByRole('button', { name: 'Revenir au ciel' }).click();
+        assert.equal(await page.evaluate(() => [...document.querySelectorAll('[data-touch]:not([data-touch="down"])')].every(button => {
+          const rect = button.getBoundingClientRect(); return rect.x >= 0 && rect.right <= innerWidth;
+        })), true);
+      }
+      assert.deepEqual(errors, []); await context.close();
+    }
+  });
+
+  await test('Le Chant répond à deux pointeurs et annule les entrées lors d’une interruption', async () => {
+    const { page, context, errors } = await open('paysage', null, { song: true });
+    const before = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y }));
+    await page.evaluate(() => {
+      for (const [action, pointerId] of [['right', 41], ['jump', 42]]) document.querySelector(`[data-touch="${action}"]`).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId, pointerType: 'touch' }));
+    });
+    await page.waitForTimeout(450);
+    const after = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, run: window.lumen.input.down('run') }));
+    assert.ok(after.x > before.x + 80); assert.ok(after.y < before.y - 20); assert.equal(after.run, true);
+    await page.evaluate(() => {
+      for (const pointerId of [41, 42]) for (const button of document.querySelectorAll('[data-touch]')) button.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId }));
+    });
+    assert.equal(await page.evaluate(() => window.lumen.input.keys.size), 0);
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    assert.equal(await page.evaluate(() => window.lumen.mode), 'paused');
+    assert.equal(await page.locator('#touch-controls .held').count(), 0);
+    assert.deepEqual(errors, []); await context.close();
+  });
 
   await test('L’édition portable démarre seule en file://, sans aucune requête externe', async () => {
     const { page, context, errors } = await open();

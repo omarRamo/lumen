@@ -1,12 +1,12 @@
 {
   "name": "lumen-les-jardins-de-la-lune",
-  "version": "4.0.0",
-  "description": "LUMEN — Les jardins qui rêvent. Jeu de plateforme-aventure 2D original, sans dépendance à l'exécution, jouable hors ligne en file://.",
+  "version": "5.0.0",
+  "description": "LUMEN — Le Chant des îles. Aventure musicale de plateforme et de vol, trois îles originales et campagne classique conservée, jouable hors ligne.",
   "private": true,
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs > /dev/null",
+    "test": "node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs",
     "test:p0": "node tests/test-p0.cjs",
     "test:engine": "node tests/test-engine.cjs",
     "test:renderer": "node tests/test-renderer.cjs",
@@ -16,6 +16,9 @@
     "verify": "npm run build && npm test && npm run test:browser"
   },
   "devDependencies": {
+    "@fontsource-variable/fredoka": "^5.3.0",
+    "@fontsource-variable/outfit": "^5.3.0",
+    "lucide-static": "^1.46.0",
     "playwright": "^1.47.0"
   },
   "engines": {

@@ -1,5 +1,5 @@
 {
-  "passed": 49,
+  "passed": 57,
   "failed": 0,
   "checks": [
     {
@@ -12,6 +12,38 @@
     },
     {
       "name": "Jump height varies with release and lands without sinking",
+      "passed": true
+    },
+    {
+      "name": "Song flight is permanent, limited to one air jump and isolated from classic chapters",
+      "passed": true
+    },
+    {
+      "name": "Song glide slows descent only while jump is held and never changes classic gravity",
+      "passed": true
+    },
+    {
+      "name": "The three song islands are independent and progression cannot skip an island",
+      "passed": true
+    },
+    {
+      "name": "Only actual resonance rescues echoes, opens the portal and survives a fall",
+      "passed": true
+    },
+    {
+      "name": "Airborne notes recharge flight once, form a bounded combo and expire on pause-safe simulation time",
+      "passed": true
+    },
+    {
+      "name": "Wind lifts a held glide, while release restores gravity",
+      "passed": true
+    },
+    {
+      "name": "Balade returns near the fall, Elan returns to a lantern, and neither loses rescued echoes",
+      "passed": true
+    },
+    {
+      "name": "Song records persist separately, open the next island and never unlock classic chapters",
       "passed": true
     },
     {

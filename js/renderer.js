@@ -61,6 +61,7 @@
       this.skyCache.set(theme, surface); return surface;
     }
     draw(game, dt) {
+      if (game.song && window.LumenSongArt) return window.LumenSongArt.draw(this, game);
       const c = this.ctx, level = game.level || {}, theme = level.theme || 'meadow', p = LumenRenderer.palette(theme), t = game.time || 0;
       this.updateViewport(game.mode || 'home');
       this.palette = p; this.time = t; this.theme = theme; this.echoTime = game.echoTime || 0;

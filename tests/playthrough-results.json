@@ -214,5 +214,149 @@
     "bestTimedTime": 7.49,
     "goldTarget": 70,
     "ok": true
+  },
+  {
+    "test": "song island 1 (gentle) from spawn to exit, real inputs only",
+    "island": 1,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 14.1,
+    "notes": 49,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 49,
+    "waypoint": 20,
+    "target": [
+      4060,
+      600
+    ],
+    "player": {
+      "x": 3985,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 2 (gentle) from spawn to exit, real inputs only",
+    "island": 2,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 15.9,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 36,
+    "waypoint": 17,
+    "target": [
+      4590,
+      600
+    ],
+    "player": {
+      "x": 4573,
+      "y": 426
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 3 (gentle) from spawn to exit, real inputs only",
+    "island": 3,
+    "style": "gentle",
+    "mode": "ending",
+    "seconds": 16.5,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 36,
+    "waypoint": 19,
+    "target": [
+      4980,
+      600
+    ],
+    "player": {
+      "x": 4885,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 1 (flow) from spawn to exit, real inputs only",
+    "island": 1,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 14.1,
+    "notes": 49,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 49,
+    "waypoint": 20,
+    "target": [
+      4060,
+      600
+    ],
+    "player": {
+      "x": 3985,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 2 (flow) from spawn to exit, real inputs only",
+    "island": 2,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 16,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 31,
+    "waypoint": 17,
+    "target": [
+      4590,
+      600
+    ],
+    "player": {
+      "x": 4565,
+      "y": 426
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 3 (flow) from spawn to exit, real inputs only",
+    "island": 3,
+    "style": "flow",
+    "mode": "ending",
+    "seconds": 16.8,
+    "notes": 38,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 27,
+    "waypoint": 19,
+    "target": [
+      4980,
+      600
+    ],
+    "player": {
+      "x": 4883,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
   }
 ]

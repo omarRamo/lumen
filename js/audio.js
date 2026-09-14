@@ -41,6 +41,15 @@
     setDanger(value) { this._danger = clamp(Number(value) || 0, 0, 1); }
     /** 0 = no boss, 1-3 = the Veilleur's remaining thirds. */
     setBossPhase(stage) { this._bossPhase = clamp(Math.floor(Number(stage) || 0), 0, 3); }
+    setSongLayer(value) { this._songLayer = clamp(Number(value) || 0, 0, 1); }
+    songNote(index) {
+      if (!this.ctx || !this.unlocked || this.muted || this.paused) return;
+      const now = this.ctx.currentTime;
+      if (now - (this._lastSongNote ?? -1) < .045) return;
+      this._lastSongNote = now;
+      const theme = THEMES[this.theme];
+      this._tone(midi(this._degree(8 + index % 10, theme)), now, .55, .15, 'glass', false, 0);
+    }
 
     get volume() { return this._volume; }
     set volume(value) {
@@ -185,6 +194,11 @@
       const harmonic = theme.harmony[Math.floor(bar / 2) % theme.harmony.length];
       const degree = theme.melody[step % theme.melody.length];
       const phrase = Math.floor(step / 32) % 4;
+
+      if (this._songLayer > .05 && beat % 2 === 0) {
+        this._tone(midi(this._degree(harmonic + 10 + beat, theme)), at, eighth * 3,
+          .045 * this._songLayer, 'air', true, beat / 8 - .5);
+      }
 
       if (degree >= 0) {
         const pitch = this._degree(degree + (phrase === 3 && beat === 6 ? 1 : 0), theme);

@@ -7,7 +7,7 @@ function create(stage,options){
     LumenAudio:class{setMuted(){}setTheme(){}setDanger(v){this.danger=v}setBossPhase(v){this.bossPhase=v}unlock(){}resume(){}pause(){}sfx(){}}};
   const document={addEventListener(){},body:{classList:{contains:()=>true}}};
   const context=vm.createContext({window,document,localStorage:{getItem(){return null},setItem(){}},requestAnimationFrame(){},console,Math});
-  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','levels.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
+  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','levels.js','song.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
   const game=new window.LumenGame({});
   if(options)game.start(stage,options);else game.loadLevel(stage);
   game.levels=window.LUMEN_LEVELS;return game;
@@ -168,6 +168,23 @@ for(const stage of [7,8]){
     bestTimedTime:record.bestTimedTime===undefined?null:+record.bestTimedTime.toFixed(2),
     goldTarget:g.level.medalTargets.gold,
     ok:g.mode==='complete'&&!!finish&&finish.timed===true&&Number.isFinite(record.bestTimedTime)});
+}
+const songPilot = require('./song-pilot.cjs');
+for (const style of ['gentle', 'flow']) {
+  const game = create(0);
+  for (let index = 0; index < 3; index++) {
+    if (!game.startSong(index, { style })) {
+      results.push({ test: 'song island ' + (index + 1) + ' (' + style + ') unlocked by previous completion', ok: false });
+      break;
+    }
+    const pilot = songPilot.create(game);
+    for (let frame = 0; frame < 120 * 240 && ['playing', 'dead'].includes(game.mode); frame++) {
+      pilot.step(); tick(game);
+    }
+    results.push({ test: 'song island ' + (index + 1) + ' (' + style + ') from spawn to exit, real inputs only',
+      ...pilot.summary(), ok: ['complete', 'ending'].includes(game.mode) && game.song.count === 3 && game.levelStars === 3 && pilot.maxInputs <= 2 });
+    if (!['complete', 'ending'].includes(game.mode)) break;
+  }
 }
 console.log(JSON.stringify(results,null,2));
 fs.writeFileSync(path.join(__dirname,'playthrough-results.json'),JSON.stringify(results,null,2));

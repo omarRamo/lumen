@@ -49,7 +49,7 @@ function environment() {
   };
   const sandbox = { window, document, localStorage: { getItem: () => null, setItem() {} }, requestAnimationFrame() {}, console };
   const ctx = vm.createContext(sandbox);
-  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'renderer.js', 'levels.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
+  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'renderer.js', 'levels.js', 'song.js', 'song-art.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
   window.canvas = canvas;
   const game = new window.LumenGame(canvas);
   return { game, window, calls };
@@ -204,6 +204,30 @@ test('Nilo draws in every posture: running, airborne, sliding, hurt and defeated
       invuln: 0, dead: false, landTimer: 0, jumpTimer: 0, runStartTimer: 0, power, powerTime: power ? 3 : 0 }, pose);
     game.renderer.draw(game, 1 / 60);
   }
+});
+
+test('Every song island draws all routes, flight and awakened states without mutating the simulation', () => {
+  const { game, window, calls } = environment();
+  for (let index = 0; index < 3; index++) {
+    game.applyLevel(window.LumenSong.create(index), -1);
+    for (const viewport of [[1440, 900], [390, 844], [844, 390], [2560, 1080]]) {
+      game.renderer.resize(...viewport);
+      for (const count of [0, 1, 3]) {
+        game.song.count = count; game.song.bloom = count / 3;
+        game.song.lights.forEach((echo, rank) => { echo.found = rank < count; });
+        game.exit.open = count === 3;
+        for (let camera = 0; camera < game.level.width; camera += 600) {
+          game.camera.x = camera; game.player.gliding = true;
+          const before = JSON.stringify([game.song, game.player, game.platforms]);
+          game.renderer.draw(game, 1 / 60);
+          assert.equal(JSON.stringify([game.song, game.player, game.platforms]), before);
+          assert.ok(Number.isFinite(game.renderer.scale));
+        }
+      }
+      assert.ok(game.renderer.worldWidth >= 500);
+    }
+  }
+  assert.ok(calls.has('drawImage'));
 });
 
 console.log('\n' + (checks.length - failed) + '/' + checks.length + ' drawing checks passed.');
