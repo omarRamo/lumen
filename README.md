@@ -14,7 +14,7 @@ Aucune dépendance à l'exécution, aucune requête réseau, aucun compte.
 **Ouvrez `index.html`** dans un navigateur récent, ou `LUMEN.html` si vous
 préférez un fichier unique à transmettre.
 
----
+----
 
 ## Jouer
 
