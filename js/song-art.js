@@ -258,8 +258,9 @@
     }
     ellipse(ctx, -10, 5, 2.4, 1.5, '#ef9c8b'); ellipse(ctx, 10, 5, 2.4, 1.5, '#ef9c8b');
     if (!found) {
-      ctx.textAlign = 'center'; ctx.font = '600 13px Outfit, sans-serif'; ctx.fillStyle = '#245c60';
-      ctx.fillText(echo.name, 0, 51);
+      ctx.textAlign = 'center'; ctx.font = '600 13px ' + (global.LumenI18n?.canvasFont || 'Outfit, sans-serif'); ctx.fillStyle = '#245c60';
+      ctx.direction = global.LumenI18n?.direction || 'ltr';
+      ctx.fillText(global.LumenI18n?.t(echo.name) || echo.name, 0, 51);
     }
     ctx.restore();
   }
@@ -446,8 +447,10 @@
     }
     for (const text of game.floatingTexts) {
       ctx.save(); ctx.globalAlpha = Math.min(1, Math.max(0, text.life)); ctx.textAlign = 'center';
-      ctx.font = '600 16px Outfit, sans-serif'; ctx.fillStyle = '#fff6d8'; ctx.strokeStyle = '#285a5b'; ctx.lineWidth = 3;
-      ctx.strokeText(text.text, text.x, text.y); ctx.fillText(text.text, text.x, text.y); ctx.restore();
+      ctx.font = '600 16px ' + (global.LumenI18n?.canvasFont || 'Outfit, sans-serif'); ctx.fillStyle = '#fff6d8'; ctx.strokeStyle = '#285a5b'; ctx.lineWidth = 3;
+      const label = global.LumenI18n?.t(text.text) || text.text;
+      ctx.direction = global.LumenI18n?.direction || 'ltr';
+      ctx.strokeText(label, text.x, text.y); ctx.fillText(label, text.x, text.y); ctx.restore();
     }
     ctx.restore();
     for (const side of [-1, 1]) {

@@ -2,6 +2,8 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
+  const I18n = window.LumenI18n;
+  const translate = (source, values) => I18n.t(source, values);
   const screens = ['home','map','pause','help','complete','dream','route'];
   const powerInfo = {
     bloom:{name:'Fleur solaire',hint:'X / J · Graines de lumière',icon:'✺'},
@@ -12,7 +14,7 @@
   const medals={bronze:'Bronze',silver:'Argent',gold:'Or'};
   let game, toastTimer, introTimer, damageTimer, helpPrevious='home', transitioning=false, lastHud='', lastHint='', uiTime=0, selectedRunMode='explore';
   let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='';
-  let routeChoice=null, routeUpgrade=null;
+  let routeChoice=null, routeUpgrade=null, lastRoute=null, lastResult=null, lastToast=null;
   const timeLabel = (seconds, precise=false) => {
     const tenths=Math.max(0,Math.floor((Number(seconds)||0)*10));
     return `${Math.floor(tenths/600)}:${String(Math.floor(tenths/10)%60).padStart(2,'0')}${precise?'.'+tenths%10:''}`;
@@ -57,7 +59,7 @@
       if(lostNight) {
         $('pause-title').textContent='La nuit s’achève ici.';
         $('pause-screen').querySelector('.modal-card>p').textContent=
-          `Vos découvertes restent acquises. Graine ${game.lastRun.code} — refaites-la à l’identique, ou laissez-la pour une autre.`;
+          translate('Vos découvertes restent acquises. Graine {seed} : refaites-la à l’identique, ou laissez-la pour une autre.', { seed: game.lastRun.code });
         second.dataset.command='dream';second.innerHTML='Une autre nuit <span>☾</span>';
       } else if(game.session==='expedition'&&game.run) {
         // Pendant une nuit, ce bouton l'abandonne. Il doit le dire.
@@ -71,6 +73,7 @@
     else if (mode==='complete'||mode==='ending') showScreen('complete');
     else showScreen(null);
     if (mode!=='playing') {$('level-hint').classList.add('hidden');$('power-indicator').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
+    I18n.translateDOM($('app'));
   }
   /** Le dialogue s'ouvre en approchant, avance seul, et se ferme en s'éloignant.
    *  Les répliques sont courtes et passables : personne n'est retenu. */
@@ -79,12 +82,12 @@
     if (!detail || !detail.lines.length) { $('dialogue').classList.add('hidden'); dialogueWho=''; return; }
     const sameSpeaker = dialogueWho === detail.character.id;
     dialogueWho = detail.character.id; dialogueLines = detail.lines; dialogueStep = sameSpeaker ? dialogueStep : 0;
-    $('dialogue-name').textContent = detail.character.name;
-    $('dialogue-role').textContent = detail.character.role || '';
+    $('dialogue-name').textContent = translate(detail.character.name);
+    $('dialogue-role').textContent = translate(detail.character.role || '');
     $('dialogue-mark').textContent = detail.character.id === 'vesper' ? '☾' : '✧';
     $('dialogue').dataset.who = detail.character.id;
     const render = () => {
-      $('dialogue-line').textContent = dialogueLines[dialogueStep % dialogueLines.length];
+      $('dialogue-line').textContent = translate(dialogueLines[dialogueStep % dialogueLines.length]);
       $('dialogue-dots').innerHTML = dialogueLines.map((_, i) =>
         `<i class="${i === dialogueStep % dialogueLines.length ? 'on' : ''}"></i>`).join('');
     };
@@ -95,7 +98,7 @@
   function advanceDialogue() {
     if ($('dialogue').classList.contains('hidden') || dialogueLines.length < 2) return false;
     dialogueStep++;
-    $('dialogue-line').textContent = dialogueLines[dialogueStep % dialogueLines.length];
+    $('dialogue-line').textContent = translate(dialogueLines[dialogueStep % dialogueLines.length]);
     $('dialogue-dots').innerHTML = dialogueLines.map((_, i) =>
       `<i class="${i === dialogueStep % dialogueLines.length ? 'on' : ''}"></i>`).join('');
     return true;
@@ -105,23 +108,24 @@
     if (!detail) { banner.classList.add('hidden'); return; }
     banner.classList.remove('hidden');
     banner.classList.toggle('done', detail.state === 'done');
-    $('quest-title').textContent = detail.quest.title;
-    $('quest-progress').textContent = detail.state === 'done' ? detail.quest.reward : detail.quest.summary;
+    $('quest-title').textContent = translate(detail.quest.title);
+    $('quest-progress').textContent = translate(detail.state === 'done' ? detail.quest.reward : detail.quest.summary);
   }
   function refreshDream() {
     const saved=game.progress.expedition;
     const usable=saved&&saved.generationVersion===window.LumenRng.GENERATION_VERSION;
     $('dream-resume').classList.toggle('hidden',!usable);
-    if(usable) $('dream-resume').innerHTML=`Reprendre la nuit ${window.LumenRng.encodeSeed(saved.seed)} · salle ${saved.roomIndex+1} <span>☾</span>`;
+    if(usable) $('dream-resume').innerHTML=escape(translate('Reprendre la nuit {seed} · salle {room}', { seed: window.LumenRng.encodeSeed(saved.seed), room: saved.roomIndex+1 }))+' <span>☾</span>';
     const stats=game.progress.expeditions;
     $('seed-note').textContent=stats.runs
-      ? `${stats.runs} nuit${stats.runs>1?'s':''} tentée${stats.runs>1?'s':''}, ${stats.completed} menée${stats.completed>1?'s':''} au bout. Laissez vide pour une nuit inédite.`
-      : 'Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.';
+      ? translate('Nuits tentées : {runs}. Terminées : {completed}. Laissez vide pour une nuit inédite.', { runs: stats.runs, completed: stats.completed })
+      : translate('Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.');
   }
   /** La carte des routes : chaque branche s'annonce avant qu'on s'y engage. */
-  function showRoute(detail) {
-    routeChoice=detail.branches[0]?detail.branches[0].kind:null; routeUpgrade=null;
-    $('route-eyebrow').textContent=`SALLE ${detail.next.index+1} / ${detail.run.plan.rooms.length} · GRAINE ${detail.run.code}`;
+  function showRoute(detail, preserveChoice=false) {
+    lastRoute=detail;
+    if(!preserveChoice){routeChoice=detail.branches[0]?detail.branches[0].kind:null; routeUpgrade=null;}
+    $('route-eyebrow').textContent=translate('SALLE {room} / {total} · GRAINE {seed}', { room: detail.next.index+1, total: detail.run.plan.rooms.length, seed: detail.run.code });
     $('route-sub').textContent=detail.branches.length>1
       ? 'Deux chemins. Ce qu’ils annoncent est vrai : rien ne vous surprendra sans prévenir.'
       : 'Un seul chemin s’ouvre ici.';
@@ -130,19 +134,21 @@
       // garde une route lisible même si une nature nouvelle n'a pas encore
       // son libellé.
       const omen=branch.omen||{icon:'✧',label:'Un chemin',hint:'Ce qu’il contient reste à découvrir.'};
-      return `<button class="route-branch${i===0?' picked':''}" data-branch="${escape(branch.kind)}"><span class="branch-icon" aria-hidden="true">${omen.icon}</span><strong>${escape(omen.label)}</strong><span>${escape(omen.hint)}</span></button>`;
+      return `<button class="route-branch${branch.kind===routeChoice?' picked':''}" data-branch="${escape(branch.kind)}"><span class="branch-icon" aria-hidden="true">${omen.icon}</span><strong>${escape(translate(omen.label))}</strong><span>${escape(translate(omen.hint))}</span></button>`;
     }).join('');
     const equipped=detail.run.upgrades;
     $('route-offer').classList.toggle('hidden',!detail.offer.length);
     $('offer-list').innerHTML=detail.offer.map(upgrade=>
-      `<button class="offer-item" data-upgrade="${escape(upgrade.id)}"><span class="offer-icon" aria-hidden="true">${upgrade.icon}</span><div><strong>${escape(upgrade.name)}</strong><span>${escape(upgrade.hint)}</span></div></button>`).join('');
+      `<button class="offer-item${routeUpgrade===upgrade.id?' picked':''}" data-upgrade="${escape(upgrade.id)}"><span class="offer-icon" aria-hidden="true">${upgrade.icon}</span><div><strong>${escape(translate(upgrade.name))}</strong><span>${escape(translate(upgrade.hint))}</span></div></button>`).join('');
     const combo=window.LumenUpgrades.comboFor(equipped);
     $('offer-note').textContent=equipped.length>=window.LumenUpgrades.SLOTS
-      ? `Vos ${window.LumenUpgrades.SLOTS} emplacements sont pris : un nouveau souvenir remplacera le plus ancien.`
-      : combo?`${combo.name} · ${combo.effect}`:'Deux emplacements seulement : choisissez ce qui change votre façon de bouger.';
+      ? translate('Vos {slots} emplacements sont pris : un nouveau souvenir remplacera le plus ancien.', { slots: window.LumenUpgrades.SLOTS })
+      : combo?`${translate(combo.name)} · ${translate(combo.effect)}`:translate('Deux emplacements seulement : choisissez ce qui change votre façon de bouger.');
+    I18n.translateDOM($('route-screen'));
   }
-  function toast(message) {
-    clearTimeout(toastTimer);$('toast').textContent=message;$('toast').classList.add('show');
+  function toast(message, values = {}) {
+    lastToast={message,values};
+    clearTimeout(toastTimer);$('toast').textContent=translate(message,typeof values==='function'?values():values);$('toast').classList.add('show');
     toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3800);
   }
   function transition(fn) {
@@ -157,7 +163,7 @@
   }
   function updateRunMode() {
     document.querySelectorAll('[data-run-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.runMode===selectedRunMode)));
-    $('run-mode-hint').textContent=selectedRunMode==='timed'?'Un chrono, votre meilleur temps, et l’envie de recommencer.':'Le temps vous appartient. Explorez à votre rythme.';
+    $('run-mode-hint').textContent=translate(selectedRunMode==='timed'?'Un chrono, votre meilleur temps, et l’envie de recommencer.':'Le temps vous appartient. Explorez à votre rythme.');
     $('map-screen').classList.toggle('timed-selected',selectedRunMode==='timed');
   }
   function command(action) {
@@ -233,9 +239,9 @@
     }
   }
   function updateSound() {
-    document.querySelectorAll('.sound-label').forEach(el=>el.textContent=game.audio.muted?'SON COUPÉ':'SON ACTIVÉ');
+    document.querySelectorAll('.sound-label').forEach(el=>el.textContent=translate(game.audio.muted?'SON COUPÉ':'SON ACTIVÉ'));
     document.querySelectorAll('.sound-icon').forEach(el=>el.textContent=game.audio.muted?'♩':'♪');
-    document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',game.audio.muted?'Activer le son':'Couper le son');});
+    document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',translate(game.audio.muted?'Activer le son':'Couper le son'));});
   }
   function chapterArt(theme, index) {
     const colors={meadow:['#dce4bd','#bdd0a5','#5f8e7e','#f8e7b4'],cavern:['#a3b6c5','#7a95af','#49647c','#d1bbee'],tide:['#bbdad1','#81b5b0','#4f8f92','#ffe1a4'],sky:['#eee2c9','#bad1c7','#809d99','#ffedbb'],forge:['#d59a91','#af7881','#785a6b','#f8c093'],frost:['#d7e8e1','#a6c5ce','#6a929f','#faf8dd'],secret:['#e6bdce','#c39bb9','#947895','#ffe6af'],eclipse:['#697f8a','#4b636f','#314a59','#f8d393']};
@@ -255,10 +261,12 @@
       const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
       const medal=medals[r?.medal]?r.medal:r?.completed?'bronze':null;
       const targets=level.medalTargets;
-      const record=Number.isFinite(r?.bestTimedTime)?`◷ ${timeLabel(r.bestTimedTime,true)}`:'◷ À vous d’écrire le chrono';
-      const medalMarkup=medal?`<span class="card-medal ${medal}" title="Médaille ${medals[medal]}" aria-label="Médaille ${medals[medal]}">✦ ${medals[medal]}</span>`:'<span class="card-medal unearned">✧ À décrocher</span>';
-      const targetMarkup=targets?`<span class="card-targets">OR ${timeLabel(targets.gold)} <i>·</i> ARGENT ${timeLabel(targets.silver)}</span>`:'';
-      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="Chapitre ${i+1}, ${escape(level.name)}, ${status.toLowerCase()}${medal?', médaille '+medals[medal]:''}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(level.name)}</h3><p>${level.bonus?'Jardin secret · Le détour des curieux':escape(level.subtitle)}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${record}</span>${targetMarkup}</div><span class="card-action">${status} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
+      const record=Number.isFinite(r?.bestTimedTime)?`◷ ${timeLabel(r.bestTimedTime,true)}`:translate('◷ À vous d’écrire le chrono');
+      const medalTitle=medal?translate('Médaille {medal}',{medal:translate(medals[medal])}):'';
+      const medalMarkup=medal?`<span class="card-medal ${medal}" title="${escape(medalTitle)}" aria-label="${escape(medalTitle)}">✦ ${escape(translate(medals[medal]))}</span>`:'<span class="card-medal unearned">'+escape(translate('✧ À décrocher'))+'</span>';
+      const targetMarkup=targets?`<span class="card-targets">${escape(translate('OR {time}',{time:timeLabel(targets.gold)}))} <i>·</i> ${escape(translate('ARGENT {time}',{time:timeLabel(targets.silver)}))}</span>`:'';
+      const label=translate('Chapitre {index}, {name}, {status}',{index:i+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
+      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
     }).join('');
   }
   function updateHud(dt) {
@@ -266,36 +274,36 @@
     uiTime+=dt;if(uiTime<.07)return;uiTime=0;
     const p=game.player;
     const totalFragments=game.level.collectibles.filter(c=>c.type==='star').length;
-    const key=[p.hp,game.lives,game.score,game.levelCoins,game.levelStars,game.levelIndex,game.runMode].join(':');
+    const key=[p.hp,game.lives,game.score,game.levelCoins,game.levelStars,game.levelIndex,game.runMode,I18n.language].join(':');
     if(key!==lastHud) {
       lastHud=key;$('hearts').innerHTML=Array.from({length:3},(_,i)=>`<span class="${i<p.hp?'':'empty'}">♥</span>`).join('');
-      $('hearts').setAttribute('aria-label',`${p.hp} points de vie sur 3`);
-      $('lives').textContent=`${Math.max(0,game.lives)} VIE${game.lives===1?'':'S'}`;
+      $('hearts').setAttribute('aria-label',translate('{hp} points de vie sur 3',{hp:p.hp}));
+      $('lives').textContent=translate('VIES : {count}',{count:Math.max(0,game.lives)});
       $('score').textContent=String(game.score).padStart(6,'0');$('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
-      $('star-count').innerHTML=stars(game.levelStars,totalFragments);$('star-count').setAttribute('aria-label',`${game.levelStars} fragments sur ${totalFragments}`);
-      $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=game.level.name;
-      $('chapter-caption').textContent=game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE';
+      $('star-count').innerHTML=stars(game.levelStars,totalFragments);$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
+      $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=translate(game.level.name);
+      $('chapter-caption').textContent=translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
     }
     if(game.runMode==='timed') {
       $('clock-time').textContent=timeLabel(game.elapsed,true);
       const best=game.recordFor(game.levelIndex)?.bestTimedTime;
-      $('clock-best').textContent=Number.isFinite(best)?'RECORD '+timeLabel(best,true):'PREMIÈRE COURSE';
+      $('clock-best').textContent=Number.isFinite(best)?translate('RECORD {time}',{time:timeLabel(best,true)}):translate('PREMIÈRE COURSE');
       $('run-clock').classList.toggle('clock-paused',game.mode==='paused'||game.mode==='help');
     }
     if(game.mode!=='playing')return;
     $('power-indicator').classList.toggle('hidden',!p.power);
     if(p.power&&powerInfo[p.power]) {
-      const info=powerInfo[p.power];$('power-icon').innerHTML=info.icon;$('power-name').textContent=info.name;$('power-description').textContent=info.hint;
+      const info=powerInfo[p.power];$('power-icon').innerHTML=info.icon;$('power-name').textContent=translate(info.name);$('power-description').textContent=translate(info.hint);
       $('power-fill').style.width=Math.max(0,Math.min(100,p.powerTime/(p.powerDuration||35)*100))+'%';
-      $('power-time').textContent=Math.ceil(Math.max(0,p.powerTime))+' s';
+      $('power-time').textContent=translate('{seconds} s',{seconds:Math.ceil(Math.max(0,p.powerTime))});
       $('power-indicator').classList.toggle('expiring',p.powerTime<=5);
       $('power-indicator').dataset.power=p.power;
     }
     const b=game.boss;
     $('boss-hud').classList.toggle('hidden',!b||!b.activated||b.hp<=0);
     if(b&&b.activated&&b.hp>0) {
-      $('boss-fill').style.width=b.hp/b.maxHp*100+'%';$('boss-phase').textContent=b.phase===2?'PHASE II':'PHASE I';
-      $('boss-tip').textContent=b.vulnerable?'Sa couronne est ouverte ! Sautez dessus ou utilisez votre pouvoir.':b.state==='telegraph'?'Le Veilleur prépare son attaque. Gardez de l’espace.':'Évitez les orbes. Sautez par-dessus les ondes au sol.';
+      $('boss-fill').style.width=b.hp/b.maxHp*100+'%';$('boss-phase').textContent=translate(b.phase===2?'PHASE II':'PHASE I');
+      $('boss-tip').textContent=translate(b.vulnerable?'Sa couronne est ouverte ! Sautez dessus ou utilisez votre pouvoir.':b.state==='telegraph'?'Le Veilleur prépare son attaque. Gardez de l’espace.':'Évitez les orbes. Sautez par-dessus les ondes au sol.');
     }
     const quest=game.level.quest;
     if(quest) {
@@ -303,25 +311,28 @@
       const done=quest.needs.filter(id=>game.wokenOnce.has(id)).length;
       $('quest-banner').classList.remove('hidden');
       $('quest-banner').classList.toggle('done',state==='done');
-      $('quest-title').textContent=quest.title;
-      $('quest-progress').textContent=state==='done'?quest.reward:`${quest.summary} · ${done} / ${quest.needs.length}`;
+      $('quest-title').textContent=translate(quest.title);
+      $('quest-progress').textContent=state==='done'?translate(quest.reward):`${translate(quest.summary)} · ${done} / ${quest.needs.length}`;
     } else $('quest-banner').classList.add('hidden');
     const hint=(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
     $('level-hint').classList.toggle('hidden',!hint||$('chapter-intro').classList.contains('show'));
-    if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=hint.text;}
+    if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=translate(hint.text);}
   }
-  function chapterIntro(level) {
-    clearTimeout(introTimer);
-    if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
+  function updateIntroText(level) {
     // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
     // ni une salle de rêve, qui n'ont pas de place dans la campagne.
     const chapters=window.LUMEN_LEVELS.filter(l=>!l.hub);
     const rank=window.LUMEN_LEVELS.slice(0,game.levelIndex+1).filter(l=>!l.hub).length;
     $('intro-number').textContent=level.expedition
-      ? `NUIT · SALLE ${String((game.run?game.run.roomIndex:0)+1).padStart(2,'0')} / ${String(game.run?game.run.plan.rooms.length:5).padStart(2,'0')}`
-      : level.hub ? 'L’OBSERVATOIRE'
-      : `CHAPITRE ${String(rank).padStart(2,'0')} / ${String(chapters.length).padStart(2,'0')}`;
-    $('intro-name').textContent=level.name;$('intro-subtitle').textContent=level.subtitle;
+      ? translate('NUIT · SALLE {room} / {total}',{room:String((game.run?game.run.roomIndex:0)+1).padStart(2,'0'),total:String(game.run?game.run.plan.rooms.length:5).padStart(2,'0')})
+      : level.hub ? translate('L’OBSERVATOIRE')
+      : translate('CHAPITRE {chapter} / {total}',{chapter:String(rank).padStart(2,'0'),total:String(chapters.length).padStart(2,'0')});
+    $('intro-name').textContent=translate(level.name);$('intro-subtitle').textContent=translate(level.subtitle);
+  }
+  function chapterIntro(level) {
+    clearTimeout(introTimer);
+    if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
+    updateIntroText(level);
     $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),2400);
     lastHint='';lastHud='';
     $('hud').classList.remove('heart-hit');
@@ -333,27 +344,31 @@
     damageTimer=setTimeout(()=>$('hud').classList.remove('heart-hit'),650);
   }
   function completed(result) {
+    lastResult=result;
     $('complete-eyebrow').textContent=result.final?'LES JARDINS SE SOUVIENDRONT DE VOUS':'UNE LUMIÈRE DE PLUS';
     $('complete-title').textContent=result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.';
-    $('complete-subtitle').textContent=result.final?'Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.':game.level.name+' · Chapitre terminé';
+    $('complete-subtitle').textContent=result.final?translate('Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
     const total=game.level.collectibles.filter(c=>c.type==='star').length;
     const medal=medals[result.medal]?result.medal:'bronze';
     const targets=game.level.medalTargets;
     const best=game.recordFor(result.index)?.bestTimedTime;
-    $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=`${result.stars} / ${total} FRAGMENTS DE LUNE`;
-    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);$('result-score').textContent=result.score.toLocaleString('fr-FR');
+    $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total});
+    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);$('result-score').textContent=I18n.number(result.score);
     $('result-enemies').textContent=result.enemiesDefeated||0;$('result-damage').textContent=result.damageTaken||0;
     $('result-medal').className='result-medal '+medal;$('result-medal-name').textContent=medals[medal];
     $('result-mode-label').textContent=result.timed?'CONTRE-LA-MONTRE':'TEMPS DU VOYAGE';
     $('result-best-label').textContent=result.timed?'MEILLEUR CHRONO':'OBJECTIF OR';
     $('result-best').textContent=result.timed&&Number.isFinite(best)?timeLabel(best,true):targets?timeLabel(targets.gold):'—';
     $('result-record').classList.toggle('hidden',!result.record||!result.timed);
-    $('complete-note').textContent=result.secrets?`${result.secrets} passage${result.secrets>1?'s':''} secret${result.secrets>1?'s':''} découvert${result.secrets>1?'s':''} · +${result.bonus.toLocaleString('fr-FR')} points`:`+${result.bonus.toLocaleString('fr-FR')} points de fin de chapitre · ${result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !'}`;
-    $('result-medal-hint').textContent=medal==='gold'?'Un voyage éclatant. Saurez-vous encore améliorer votre temps ?':targets?`Pour l’or : 3 fragments · 1 dégât maximum · ${timeLabel(targets.gold)} ou moins.`:'Chaque retour dans les jardins est une nouvelle aventure.';
+    $('complete-note').textContent=result.secrets?translate('Passages secrets découverts : {count} · +{bonus} points',{count:result.secrets,bonus:I18n.number(result.bonus)}):translate('+{bonus} points de fin de chapitre',{bonus:I18n.number(result.bonus)})+' · '+translate(result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !');
+    $('result-medal-hint').textContent=medal==='gold'?translate('Un voyage éclatant. Saurez-vous encore améliorer votre temps ?'):targets?translate('Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.',{time:timeLabel(targets.gold)}):translate('Chaque retour dans les jardins est une nouvelle aventure.');
     $('next-button').innerHTML=result.final||game.levelIndex>=window.LUMEN_LEVELS.length-1?'Revoir les jardins <span>✧</span>':game.level.bonus&&!game.isUnlocked(game.levelIndex+1)?'Reprendre l’aventure <span>→</span>':'Le prochain jardin <span>→</span>';
+    I18n.translateDOM($('complete-screen'));
   }
   try {
     game=new window.LumenGame($('game'));window.lumen=game;
+    I18n.setLanguage(game.progress.settings.language);
+    I18n.translateDOM($('app'));
     game.on('command',command);game.on('mode',showMode);game.on('toast',toast);game.on('frame',updateHud);game.on('level',chapterIntro);game.on('complete',completed);game.on('damage',healthImpact);game.on('dialogue',showDialogue);game.on('quest',showQuest);
     game.on('portal',target=>{
       if(target!=='expedition'){transition(()=>game.showMap());return;}
@@ -366,8 +381,8 @@
     // initialisation (sauvegarde récupérée, stockage refusé, version future)
     // peut maintenant être entendu.
     game.flushNotices();
-    game.on('expedition',detail=>{toast(`Salle ${detail.room.index+1} / ${detail.run.plan.rooms.length} · ${detail.room.omen.label} · graine ${detail.run.code}`);});
-    game.on('expedition-end',detail=>{toast(detail.won?`Nuit menée au bout · graine ${detail.run.code}`:`La nuit s’achève ici · graine ${detail.run.code}`);if(detail.won){game.mode='dream';showMode('dream');}});
+    game.on('expedition',detail=>{toast('Salle {room} / {total} · {omen} · graine {seed}',()=>({room:detail.room.index+1,total:detail.run.plan.rooms.length,omen:translate(detail.room.omen.label),seed:detail.run.code}));});
+    game.on('expedition-end',detail=>{toast(detail.won?'Nuit menée au bout · graine {seed}':'La nuit s’achève ici · graine {seed}',{seed:detail.run.code});if(detail.won){game.mode='dream';showMode('dream');}});
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-command]');if(button){command(button.dataset.command);if(event.detail>0)button.blur();}
       const mode=event.target.closest('[data-run-mode]');if(mode&&!transitioning){selectedRunMode=mode.dataset.runMode;updateRunMode();}
@@ -449,12 +464,40 @@
       game.store.setSetting('reducedEffects',true);
     }
     applySettings();
-    document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+window.LUMEN_LEVELS.filter(level=>!level.hub).length+' CHAPITRES À EXPLORER';
     window.LumenSongUI?.attach(game, { transition, toast });
+    const refreshLanguage=()=>{
+      document.title=translate('LUMEN · Le Chant des îles');
+      const description='LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.';
+      document.querySelector('meta[name="description"]').content=translate(description);
+      I18n.translateDOM($('app'));
+      document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+escape(translate('{count} CHAPITRES À EXPLORER',{count:window.LUMEN_LEVELS.filter(level=>!level.hub).length}));
+      document.querySelectorAll('[data-language-select]').forEach(select=>{select.innerHTML=I18n.languageOptions();select.value=game.progress.settings.language;});
+      lastHud='';lastHint='';updateSound();
+      if(lastToast&&$('toast').classList.contains('show'))$('toast').textContent=translate(lastToast.message,typeof lastToast.values==='function'?lastToast.values():lastToast.values);
+      if(!game.song){
+        if(lastRoute&&game.run===lastRoute.run)showRoute(lastRoute,true);
+        if(lastResult&&lastResult.index===game.levelIndex)completed(lastResult);
+        if(game.mode==='map')renderMap();
+        if(game.mode==='dream')refreshDream();
+        updateIntroText(game.level);
+        const character=game.characters.find(entry=>entry.id===dialogueWho);
+        if(character){$('dialogue-name').textContent=translate(character.name);$('dialogue-role').textContent=translate(character.role);$('dialogue-line').textContent=translate(dialogueLines[dialogueStep%dialogueLines.length]);}
+        updateHud(.1);
+      }
+    };
+    I18n.onChange(refreshLanguage);
+    document.addEventListener('change',event=>{
+      const select=event.target.closest('[data-language-select]');if(!select)return;
+      const focusId=select.id;
+      game.input.reset();game.store.setSetting('language',select.value);I18n.setLanguage(select.value);
+      requestAnimationFrame(()=>$(focusId)?.focus({preventScroll:true}));
+    });
+    window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
+    refreshLanguage();
     if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
     else showMode('home');
     updateSound();game.beginLoop();
   } catch(error) {
-    console.error(error);$('error-notice').hidden=false;$('error-notice').textContent='Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : '+error.message;
+    console.error(error);$('error-notice').hidden=false;$('error-notice').textContent=translate('Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : {error}',{error:error.message});
   }
 })();

@@ -139,12 +139,12 @@
   {
     "test": "arena checkpoint to boss victory and final exit, unpowered inputs only",
     "mode": "ending",
-    "seconds": 14.24,
+    "seconds": 14.27,
     "deaths": 0,
     "lives": 5,
-    "hp": 2,
+    "hp": 1,
     "bossHp": 0,
-    "playerX": 4619.8,
+    "playerX": 4619.7,
     "changes": [
       {
         "time": 0,
@@ -192,13 +192,13 @@
         "time": 10.62,
         "state": "recover",
         "bossHp": 4,
-        "playerHp": 2
+        "playerHp": 1
       },
       {
-        "time": 12.14,
+        "time": 12.17,
         "state": "defeated",
         "bossHp": 0,
-        "playerHp": 2
+        "playerHp": 1
       }
     ]
   },

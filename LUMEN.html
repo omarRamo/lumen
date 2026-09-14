@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -319,6 +319,7 @@ body.reduced-effects .hud.heart-hit .hearts{animation:none}
 .song-shell button { pointer-events: auto; }
 .song-shell svg, .song-overlay svg { display: block; width: 21px; height: 21px; flex-shrink: 0; }
 body.song-playing #masthead, body.song-playing #vignette { display: none; }
+body.song-playing .screen { display: none; }
 body.song-playing #game { outline: none; touch-action: none; }
 .song-header {
   position: absolute;
@@ -563,6 +564,71 @@ body.song-playing .toast {
   .song-shell *, .song-overlay * { animation: none !important; transition: none !important; }
 }
 body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { animation: none !important; transition: none !important; }
+
+:root { --locale-ui: Outfit, sans-serif; --locale-display: Fredoka, sans-serif; }
+html[lang="ar"] { --locale-ui: Tahoma, 'Noto Sans Arabic', sans-serif; --locale-display: Tahoma, 'Noto Sans Arabic', sans-serif; }
+html[lang^="zh"] { --locale-ui: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif; --locale-display: var(--locale-ui); }
+html:is([lang="ar"], [lang^="zh"]) body { --font: var(--locale-ui); --serif: var(--locale-display); }
+html:is([lang="ar"], [lang^="zh"]) body * { letter-spacing: 0; }
+.song-shell, .song-overlay { font-family: var(--locale-ui); }
+html:is([lang="ar"], [lang^="zh"]) :is(.song-button, .song-text-button, .song-segment button, .song-island, .toast) { font-family: var(--locale-ui); }
+html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h1, .song-panel h2, .song-island h3, .song-brand small) { font-family: var(--locale-display); }
+.song-objective h1, .song-panel h2, .song-island h3 { overflow-wrap: anywhere; }
+.song-settings-row select, .language-setting select {
+  min-width: 0; width: min(220px, 68%); max-width: 100%; min-height: 42px;
+  border: 1px solid #aac9bd; border-radius: 5px; padding: 8px 10px;
+  background: #f8fbf2; color: #28545a; font: 400 14px var(--locale-ui);
+}
+.song-settings-row select:focus-visible, .language-setting select:focus-visible { outline: 3px solid #bd6549; outline-offset: 3px; }
+.language-setting { gap: 10px; }
+.language-setting select { width: min(230px, 65%); }
+.song-act>span:first-child, #song-island-number, #song-clock, #song-note-count, #song-memory-count,
+#song-voice-count, #song-combo-count, .song-results strong, .song-island-meta>span, .card-number,
+.star-count, .card-stars, .result-stars, #clock-time, #result-time, #result-best, #seed-input, kbd {
+  direction: ltr; unicode-bidi: isolate;
+}
+.touch-controls, .touch-move, .touch-actions { direction: ltr; }
+html[dir="rtl"] .song-brand, html[dir="rtl"] .song-island { text-align: right; }
+html[dir="rtl"] .song-objective { left: auto; right: 37px; text-align: right; }
+html[dir="rtl"] .song-notes { left: 34px; right: auto; }
+html[dir="rtl"] .song-chorus { left: auto; right: 36px; }
+html[dir="rtl"] .song-mode { left: 34px; right: auto; }
+html[dir="rtl"] .song-panel>.song-icon { left: 16px; right: auto; }
+html[dir="rtl"] .song-dialog-heading { padding-right: 0; padding-left: 14px; }
+html[dir="rtl"] .song-panel-result .song-dialog-heading { padding: 0; }
+html[dir="rtl"] .song-island-art>span { left: auto; right: 10px; }
+html[dir="rtl"] #song-clock { border-left: 0; padding-left: 0; border-right: 1px solid var(--song-line); padding-right: 13px; }
+html[dir="rtl"] .song-range-row output { text-align: left; }
+html[dir="rtl"] .song-panel-confirm-style .song-dialog-sub { text-align: right; }
+html[dir="rtl"] :is(.home-copy, .card-content, .dialogue-body, .quest-banner, .help-card) { text-align: right; }
+html[lang="ar"] .song-panel h2 { font-size: 28px; line-height: 1.5; }
+html[lang="ar"] .song-objective h1 { font-size: 23px; line-height: 1.5; }
+html[lang="ar"] .song-island h3 { font-size: 19px; line-height: 1.5; }
+html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { line-height: 1.8; }
+@media (max-width: 1050px) {
+  html[dir="rtl"] .song-objective { right: 26px; }
+  html[dir="rtl"] .song-chorus { right: 24px; }
+  html[dir="rtl"] .song-mode { left: 22px; }
+}
+@media (max-width: 700px) {
+  html[dir="rtl"] .song-objective { left: 22px; right: 22px; }
+  html[dir="rtl"] .song-notes { left: 20px; right: auto; }
+  html[dir="rtl"] .song-chorus { right: 22px; }
+  html[dir="rtl"] .song-combo { left: auto; right: 23px; text-align: right; }
+  html[dir="rtl"] .song-combo-track { margin-left: auto; margin-right: 0; }
+  html[lang="ar"] .song-island h3 { font-size: 16px; }
+  .song-settings-row select { width: min(210px, 68%); font-size: 13px; }
+}
+@media (max-width: 370px) {
+  html[dir="rtl"] .song-notes { left: 16px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  html[dir="rtl"] .song-objective { left: auto; right: 22px; }
+  html[dir="rtl"] .song-notes { left: 20px; right: auto; }
+  html[dir="rtl"] .song-chorus { left: 50%; right: auto; }
+  html[dir="rtl"] .song-combo { left: 50%; right: auto; text-align: center; }
+  html[lang="ar"] .song-objective h1 { font-size: 18px; }
+}
 </style>
 </head>
 <body>
@@ -632,6 +698,7 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
 
     <section id="help-screen" class="screen modal-screen" aria-labelledby="help-title"><div class="modal-card help-card"><button class="close-button" data-command="close-help" aria-label="Fermer les commandes">×</button><div class="eyebrow">LE PETIT GUIDE DU GARDIEN</div><h2 id="help-title">Suivez votre élan.</h2><div class="controls-grid"><div><span>Se déplacer</span><span><kbd>←</kbd><kbd>→</kbd> ou <kbd>Q</kbd><kbd>D</kbd></span></div><div><span>Sauter / nager</span><span><kbd>ESPACE</kbd> ou <kbd>Z</kbd><kbd>↑</kbd></span></div><div><span>Courir</span><kbd>MAJ</kbd></div><div><span>Glisser</span><span><kbd>↓</kbd> en courant</span></div><div><span>Utiliser un pouvoir</span><span><kbd>X</kbd> ou <kbd>J</kbd></span></div><div><span>Pause / reprendre</span><span><kbd>ÉCHAP</kbd> ou <kbd>P</kbd></span></div><div><span>Recommencer / son</span><span><kbd>R</kbd> / <kbd>M</kbd></span></div><div><span>Autres claviers</span><span><kbd>A</kbd><kbd>D</kbd> · <kbd>W</kbd> saut</span></div></div><p class="help-tip">Un appui bref fait un petit saut. Maintenez la touche pour sauter plus haut. Sautez sur les créatures pour les étourdir. Les lanternes mémorisent votre passage.</p><p class="gamepad-guide"><span aria-hidden="true">⊕</span><span><strong>À la manette</strong> · Stick ou croix pour avancer · A / B pour sauter · X pour le pouvoir · Gâchette / épaule droite pour courir · Bas pour glisser · Start pour la pause.</span></p><div class="power-guide"><div><span class="power-badge bloom">✺</span><strong>Fleur solaire</strong><p>Tirez des graines de lumière avec X.</p></div><div><span class="power-badge breeze">≋</span><strong>Plume d’azur</strong><p>Sautez une seconde fois dans les airs.</p></div><div><span class="power-badge comet">✦</span><strong>Cœur comète</strong><p>X déclenche une ruée protectrice.</p></div><div><span class="power-badge echo">♧</span><strong>Grelot d’écho</strong><p>X révèle les plateformes cachées pendant 4 secondes.</p></div></div><div class="settings-block"><div class="eyebrow">CONFORT ET ACCESSIBILITÉ</div><div class="settings-grid">
       <div class="setting"><span>Main dominante</span><div class="seg" role="group" aria-label="Main dominante"><button data-setting="leftHanded" data-value="false" aria-pressed="true">Droitier</button><button data-setting="leftHanded" data-value="true" aria-pressed="false">Gaucher</button></div></div>
+      <label class="setting language-setting" for="classic-language"><span>Langue</span><select id="classic-language" data-language-select></select></label>
       <div class="setting"><span>Taille des commandes</span><div class="seg" role="group" aria-label="Taille des commandes tactiles"><button data-setting="touchScale" data-value="0.85" aria-pressed="false">Petite</button><button data-setting="touchScale" data-value="1" aria-pressed="true">Normale</button><button data-setting="touchScale" data-value="1.3" aria-pressed="false">Grande</button></div></div>
       <div class="setting"><span>Secousses et flashs</span><div class="seg" role="group" aria-label="Effets d’écran"><button data-setting="reducedEffects" data-value="false" aria-pressed="true">Normaux</button><button data-setting="reducedEffects" data-value="true" aria-pressed="false">Atténués</button></div></div>
     </div><p class="settings-note">Sur écran tactile, maintenir une direction déclenche la course toute seule : le chemin principal ne demande jamais plus de deux doigts.</p></div><p class="power-guide-note">Chaque pouvoir est temporaire : sa jauge clignote durant les 5 dernières secondes. Un grelot se relance avec X tant que vous le portez.</p><button class="button primary" data-command="close-help">C’est parti <span>→</span></button></div></section>
@@ -651,6 +718,607 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
     <div id="error-notice" role="alert" hidden></div>
     <noscript><div class="noscript">Activez JavaScript pour entrer dans les jardins de Lumen.</div></noscript>
   </main>
+  <script>
+(function (global) {
+  'use strict';
+  const LANGUAGES = Object.freeze({
+    en: { label: 'English', locale: 'en', dir: 'ltr' },
+    fr: { label: 'Français', locale: 'fr', dir: 'ltr' },
+    es: { label: 'Español', locale: 'es', dir: 'ltr' },
+    ar: { label: 'العربية', locale: 'ar', dir: 'rtl' },
+    zh: { label: '简体中文', locale: 'zh-Hans', dir: 'ltr' }
+  });
+  const messages = new Map();
+  const listeners = new Set();
+  const originals = new WeakMap();
+  let language = 'en', preference = 'auto';
+
+  function normalize(value) {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    try {
+      const code = new Intl.Locale(value.trim().replace(/_/g, '-')).language;
+      return Object.hasOwn(LANGUAGES, code) ? code : null;
+    } catch (_) { return null; }
+  }
+  function systemLanguages() {
+    const browser = global.navigator || {};
+    return [...(Array.isArray(browser.languages) ? browser.languages : []), browser.language].filter(Boolean);
+  }
+  function resolve(selected = 'auto', candidates = systemLanguages()) {
+    const saved = normalize(selected);
+    if (saved) return saved;
+    for (const candidate of Array.isArray(candidates) ? candidates : [candidates]) {
+      const supported = normalize(candidate);
+      if (supported) return supported;
+    }
+    return 'en';
+  }
+  function add(entries) {
+    for (const [source, en, es, ar, zh] of entries) {
+      if (![source, en, es, ar, zh].every(value => typeof value === 'string' && value.length)) {
+        throw new TypeError('Incomplete translation: ' + source);
+      }
+      if (messages.has(source)) throw new Error('Duplicate translation: ' + source);
+      messages.set(source, { fr: source, en, es, ar, zh });
+    }
+  }
+  function translate(source, values = {}) {
+    if (typeof source !== 'string') return source;
+    const entry = messages.get(source);
+    const text = entry?.[language] || entry?.en || source;
+    return text.replace(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g, (token, key) =>
+      Object.hasOwn(values, key) ? String(values[key]) : token);
+  }
+  function setLanguage(selected = 'auto', candidates) {
+    preference = normalize(selected) || 'auto';
+    language = resolve(preference, candidates);
+    if (global.document) {
+      global.document.documentElement.lang = LANGUAGES[language].locale;
+      global.document.documentElement.dir = LANGUAGES[language].dir;
+    }
+    for (const listener of listeners) listener(language);
+    return language;
+  }
+  function onChange(listener) { listeners.add(listener); return () => listeners.delete(listener); }
+  function translateDOM(root = global.document?.body) {
+    if (!root) return;
+    const document = root.ownerDocument;
+    const excluded = 'script, style, svg, noscript, [translate="no"]';
+    const update = (node, field, value, write) => {
+      const fields = originals.get(node) || {};
+      let record = fields[field];
+      if (!record || record.rendered !== value) {
+        const source = value.trim().replace(/\s+/g, ' ');
+        if (!messages.has(source)) { delete fields[field]; originals.set(node, fields); return; }
+        record = { source, prefix: value.match(/^\s*/)[0], suffix: value.match(/\s*$/)[0] };
+        fields[field] = record;
+      }
+      record.rendered = record.prefix + translate(record.source) + record.suffix;
+      if (value !== record.rendered) write(record.rendered);
+      originals.set(node, fields);
+    };
+    const walker = document.createTreeWalker(root, 4);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement?.closest(excluded)) continue;
+      update(node, 'text', node.nodeValue, value => { node.nodeValue = value; });
+    }
+    for (const element of [root, ...root.querySelectorAll('[aria-label], [title], [placeholder], [alt]')]) {
+      if (element.closest(excluded)) continue;
+      for (const attribute of ['aria-label', 'title', 'placeholder', 'alt']) {
+        if (element.hasAttribute(attribute)) update(element, attribute, element.getAttribute(attribute), value => element.setAttribute(attribute, value));
+      }
+    }
+  }
+  function languageOptions() {
+    return '<option value="auto">' + translate('Langue du système') + '</option>' +
+      Object.entries(LANGUAGES).map(([code, entry]) => `<option value="${code}" lang="${entry.locale}" dir="${entry.dir}" translate="no">${entry.label}</option>`).join('');
+  }
+  global.LumenI18n = {
+    LANGUAGES, normalize, resolve, add, t: translate, setLanguage, onChange, translateDOM, languageOptions,
+    get language() { return language; }, get preference() { return preference; },
+    get locale() { return LANGUAGES[language].locale; },
+    get direction() { return LANGUAGES[language].dir; },
+    get canvasFont() { return language === 'ar' ? 'Tahoma, "Noto Sans Arabic", sans-serif' : language === 'zh' ? '"Microsoft YaHei", "PingFang SC", sans-serif' : 'Outfit, sans-serif'; },
+    entries: () => [...messages.entries()],
+    has: source => messages.has(source),
+    number: (value, options) => new Intl.NumberFormat(LANGUAGES[language].locale, options).format(value)
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+  <script>
+window.LumenI18n.add([
+  ['Langue', 'Language', 'Idioma', 'اللغة', '语言'],
+  ['Langue du système', 'System language', 'Idioma del sistema', 'لغة النظام', '系统语言'],
+  ['LUMEN · Le Chant des îles', 'LUMEN · Song of the Islands', 'LUMEN · El canto de las islas', 'LUMEN · أغنية الجزر', 'LUMEN · 群岛之歌'],
+  ['LE CHANT DES ÎLES', 'SONG OF THE ISLANDS', 'EL CANTO DE LAS ISLAS', 'أغنية الجزر', '群岛之歌'],
+  ['Le Chant des îles', 'Song of the Islands', 'El canto de las islas', 'أغنية الجزر', '群岛之歌'],
+  ['LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.', 'LUMEN — Song of the Islands. Take flight, find the nine voices of the sky and awaken an archipelago. An original adventure for keyboard, touch and gamepad, even offline.', 'LUMEN — El canto de las islas. Alza el vuelo, encuentra las nueve voces del cielo y despierta un archipiélago. Una aventura original con teclado, controles táctiles y mando, incluso sin conexión.', 'LUMEN — أغنية الجزر. حلّق واعثر على أصوات السماء التسعة وأيقظ الأرخبيل. مغامرة أصلية بلوحة المفاتيح أو اللمس أو وحدة التحكم، حتى دون اتصال.', 'LUMEN · 群岛之歌。展翅飞翔，找回天空的九个声音，唤醒群岛。支持键盘、触屏和手柄，离线也能畅玩。'],
+  ['LUMEN, jeu de plateforme', 'LUMEN, platform adventure', 'LUMEN, aventura de plataformas', 'LUMEN، مغامرة منصات', 'LUMEN，平台冒险游戏'],
+  ['Monde de Lumen. Flèches ou Q D pour avancer, Espace pour sauter et planer, X pour chanter, Échap pour mettre en pause.', 'Lumen world. Arrow keys or A D to move, Space to jump and glide, X to sing, Escape to pause.', 'Mundo de Lumen. Flechas o A D para moverte, Espacio para saltar y planear, X para cantar, Escape para pausar.', 'عالم Lumen. الأسهم أو A وD للحركة، المسافة للقفز والانزلاق في الهواء، X للغناء، وEscape للإيقاف المؤقت.', 'Lumen 世界。方向键或 A D 移动，空格键跳跃和滑翔，X 歌唱，Esc 暂停。'],
+  ['Lumen, ouvrir l’archipel', 'Lumen, open the archipelago', 'Lumen, abrir el archipiélago', 'Lumen، افتح الأرخبيل', 'Lumen，打开群岛地图'],
+  ['Menu du voyage', 'Journey menu', 'Menú del viaje', 'قائمة الرحلة', '旅程菜单'],
+  ['L’archipel', 'The archipelago', 'El archipiélago', 'الأرخبيل', '群岛'],
+  ['Réglages', 'Settings', 'Ajustes', 'الإعدادات', '设置'],
+  ['Couper le son', 'Mute sound', 'Silenciar', 'كتم الصوت', '关闭声音'],
+  ['Activer le son', 'Enable sound', 'Activar sonido', 'تشغيل الصوت', '开启声音'],
+  ['Activer ou couper le son', 'Toggle sound', 'Activar o silenciar el sonido', 'تشغيل الصوت أو كتمه', '切换声音'],
+  ['Plein écran', 'Fullscreen', 'Pantalla completa', 'ملء الشاشة', '全屏'],
+  ['Quitter le plein écran', 'Exit fullscreen', 'Salir de pantalla completa', 'الخروج من ملء الشاشة', '退出全屏'],
+  ['Le plein écran n’est pas disponible ici.', 'Fullscreen is not available here.', 'La pantalla completa no está disponible aquí.', 'وضع ملء الشاشة غير متاح هنا.', '当前无法使用全屏模式。'],
+  ['Pause', 'Pause', 'Pausa', 'إيقاف مؤقت', '暂停'],
+  ['L’ARCHIPEL DES VOIX', 'THE ARCHIPELAGO OF VOICES', 'EL ARCHIPIÉLAGO DE LAS VOCES', 'أرخبيل الأصوات', '声音群岛'],
+  ['Notes et souvenirs', 'Notes and keepsakes', 'Notas y recuerdos', 'النغمات والتذكارات', '音符与纪念物'],
+  ['Notes réunies', 'Notes collected', 'Notas reunidas', 'النغمات المجمّعة', '已收集的音符'],
+  ['Souvenirs de l’île', 'Island keepsakes', 'Recuerdos de la isla', 'تذكارات الجزيرة', '岛屿纪念物'],
+  ['LES VOIX RETROUVÉES', 'VOICES FOUND', 'VOCES ENCONTRADAS', 'الأصوات المستعادة', '已找回的声音'],
+  ['Les trois échos de l’île', 'The island’s three echoes', 'Los tres ecos de la isla', 'أصداء الجزيرة الثلاثة', '岛上的三个回声'],
+  ['Rythme de l’aventure', 'Adventure pace', 'Ritmo de la aventura', 'إيقاع المغامرة', '冒险节奏'],
+  ['Balade', 'Wander', 'Paseo', 'نزهة', '漫游'],
+  ['Élan', 'Flow', 'Impulso', 'انطلاق', '畅飞'],
+  ['LE FIL DU CHANT', 'THE SONG CONTINUES', 'EL HILO DEL CANTO', 'خيط الأغنية', '歌声延续'],
+  ['EN PLEIN ÉLAN', 'IN FULL FLOW', 'A PLENO IMPULSO', 'في ذروة الانطلاق', '全力畅飞'],
+  ['UNE PAUSE DANS LE VOYAGE', 'A PAUSE IN THE JOURNEY', 'UNA PAUSA EN EL VIAJE', 'استراحة في الرحلة', '旅途小憩'],
+  ['Le ciel peut attendre.', 'The sky can wait.', 'El cielo puede esperar.', 'السماء تستطيع الانتظار.', '天空可以等一等。'],
+  ['Reprendre', 'Resume', 'Continuar', 'متابعة', '继续'],
+  ['Reprendre le vol', 'Resume flight', 'Retomar el vuelo', 'متابعة الطيران', '继续飞翔'],
+  ['Recommencer l’île', 'Restart island', 'Reiniciar la isla', 'إعادة الجزيرة', '重新开始本岛'],
+  ['LES TROIS ÎLES DU CHANT', 'THE THREE ISLANDS OF SONG', 'LAS TRES ISLAS DEL CANTO', 'جزر الأغنية الثلاث', '歌声的三座岛屿'],
+  ['L’archipel des voix', 'The archipelago of voices', 'El archipiélago de las voces', 'أرخبيل الأصوات', '声音群岛'],
+  ['{name}, verrouillée', '{name}, locked', '{name}, bloqueada', '{name}، مقفلة', '{name}，未解锁'],
+  ['LE CHŒUR EST RÉUNI', 'THE CHORUS IS TOGETHER', 'EL CORO ESTÁ REUNIDO', 'اكتمل الجوق', '合唱团已齐聚'],
+  ['LE VOYAGE CONTINUE', 'THE JOURNEY CONTINUES', 'EL VIAJE CONTINÚA', 'تستمر الرحلة', '旅程继续'],
+  ['LE CHANT ATTEND', 'THE SONG AWAITS', 'EL CANTO ESPERA', 'الأغنية تنتظر', '歌声静候'],
+  ['Au-delà de l’archipel', 'Beyond the archipelago', 'Más allá del archipiélago', 'ما وراء الأرخبيل', '群岛之外'],
+  ['Les jardins de la lune', 'Gardens of the Moon', 'Los jardines de la luna', 'حدائق القمر', '月亮花园'],
+  ['À TON RYTHME', 'AT YOUR OWN PACE', 'A TU RITMO', 'على إيقاعك', '随心而行'],
+  ['Un peu de confort', 'Make yourself comfortable', 'Un poco de comodidad', 'مزيد من الراحة', '舒适设置'],
+  ['Le voyage', 'Journey', 'El viaje', 'الرحلة', '旅程'],
+  ['Volume', 'Volume', 'Volumen', 'مستوى الصوت', '音量'],
+  ['Mouvements réduits', 'Reduced motion', 'Movimiento reducido', 'تقليل الحركة', '减少动态效果'],
+  ['Commandes pour gaucher', 'Left-handed controls', 'Controles para zurdos', 'تحكم لليد اليسرى', '左手操作'],
+  ['Taille des commandes', 'Control size', 'Tamaño de los controles', 'حجم أزرار التحكم', '按键大小'],
+  ['Revenir au ciel', 'Back to the sky', 'Volver al cielo', 'العودة إلى السماء', '回到天空'],
+  ['UN NOUVEAU DÉPART', 'A FRESH START', 'UN NUEVO COMIENZO', 'بداية جديدة', '重新启程'],
+  ['Changer de rythme ?', 'Change pace?', '¿Cambiar de ritmo?', 'تغيير الإيقاع؟', '更换节奏？'],
+  ['Cette île recommencera. Les îles achevées restent acquises.', 'This island will restart. Completed islands stay unlocked.', 'Esta isla se reiniciará. Las islas completadas seguirán desbloqueadas.', 'ستبدأ هذه الجزيرة من جديد. ستبقى الجزر المكتملة متاحة.', '本岛将重新开始。已完成的岛屿仍会保留。'],
+  ['Partir en {style}', 'Start in {style}', 'Empezar en {style}', 'ابدأ في وضع {style}', '以「{style}」模式出发'],
+  ['Annuler', 'Cancel', 'Cancelar', 'إلغاء', '取消'],
+  ['LES NEUF VOIX SONT RÉUNIES', 'ALL NINE VOICES ARE TOGETHER', 'LAS NUEVE VOCES ESTÁN REUNIDAS', 'اجتمعت الأصوات التسعة', '九个声音已齐聚'],
+  ['UNE ÎLE A RETROUVÉ SA VOIX', 'AN ISLAND HAS FOUND ITS VOICE', 'UNA ISLA HA RECUPERADO SU VOZ', 'استعادت جزيرة صوتها', '一座岛屿找回了声音'],
+  ['Le ciel se souvient.', 'The sky remembers.', 'El cielo recuerda.', 'السماء تتذكر.', '天空依然记得。'],
+  ['Ensemble, on va plus haut.', 'Together, we soar higher.', 'Juntos volamos más alto.', 'معًا نحلّق أعلى.', '在一起，飞得更高。'],
+  ['Auralis reprend son voyage. Il emporte un peu de vous.', 'Auralis continues his journey, carrying a little of you with him.', 'Auralis retoma su viaje. Se lleva un poquito de ti.', 'يواصل أوراليس رحلته، ويحمل معه شيئًا منك.', '奥拉里斯继续踏上旅途，也带上了一点属于你的光。'],
+  ['NOTES', 'NOTES', 'NOTAS', 'النغمات', '音符'],
+  ['PLUS BEL ÉLAN', 'BEST FLOW', 'MEJOR RACHA', 'أفضل انطلاق', '最佳连击'],
+  ['SOUVENIRS', 'KEEPSAKES', 'RECUERDOS', 'التذكارات', '纪念物'],
+  ['CHRONO', 'TIME', 'TIEMPO', 'الوقت', '计时'],
+  ['VOYAGE', 'JOURNEY', 'VIAJE', 'الرحلة', '旅程'],
+  ['Nouveau record personnel', 'New personal best', 'Nuevo récord personal', 'رقم شخصي جديد', '刷新个人纪录'],
+  ['Revoir l’archipel', 'Return to the archipelago', 'Volver al archipiélago', 'العودة إلى الأرخبيل', '重返群岛'],
+  ['Vers la prochaine île', 'On to the next island', 'Hacia la próxima isla', 'إلى الجزيرة التالية', '前往下一座岛'],
+  ['Rejouer cette île', 'Replay this island', 'Volver a jugar esta isla', 'إعادة لعب هذه الجزيرة', '重玩本岛'],
+  ['{name}, retrouvé', '{name}, found', '{name}, encontrado', '{name}، تم العثور عليه', '{name}，已找到'],
+  ['{name}, à retrouver', '{name}, not yet found', '{name}, por encontrar', '{name}، لم يُعثر عليه بعد', '{name}，待寻找'],
+  ['{name} attend quelque part.', '{name} is waiting somewhere.', '{name} espera en algún lugar.', '{name} ينتظر في مكان ما.', '{name}正在某处等待。'],
+  ['{name} attend quelque part, tout près.', '{name} is waiting nearby.', '{name} espera muy cerca.', '{name} ينتظر بالقرب منك.', '{name}就在附近等待。'],
+  ['Le chœur est réuni. Le passage est ouvert.', 'The chorus is together. The passage is open.', 'El coro está reunido. El paso está abierto.', 'اكتمل الجوق. الممر مفتوح.', '合唱团齐聚了，通道已开启。'],
+  ['{name} chante avec toi.', '{name} is singing with you.', '{name} canta contigo.', '{name} يغني معك.', '{name}与你一起歌唱。'],
+  ['À gauche · Q / A / ←', 'Left · Q / A / ←', 'Izquierda · Q / A / ←', 'يسار · Q / A / ←', '向左 · Q / A / ←'],
+  ['À droite · D / →', 'Right · D / →', 'Derecha · D / →', 'يمين · D / →', '向右 · D / →'],
+  ['Sauter, planer · Espace', 'Jump, glide · Space', 'Saltar, planear · Espacio', 'قفز وانزلاق في الهواء · المسافة', '跳跃、滑翔 · 空格键'],
+  ['Chanter · X / J', 'Sing · X / J', 'Cantar · X / J', 'غناء · X / J', '歌唱 · X / J'],
+  ['Commandes tactiles', 'Touch controls', 'Controles táctiles', 'التحكم باللمس', '触屏操作'],
+  ['Aller à gauche', 'Move left', 'Ir a la izquierda', 'التحرك يسارًا', '向左移动'],
+  ['Aller à droite', 'Move right', 'Ir a la derecha', 'التحرك يمينًا', '向右移动'],
+  ['Appeler, résonance', 'Call, resonance', 'Llamar, resonancia', 'نداء ورنين', '呼唤、共鸣'],
+  ['Sauter', 'Jump', 'Saltar', 'قفز', '跳跃'],
+  ['Glisser', 'Slide', 'Deslizarse', 'انزلاق', '滑行'],
+  ['UN AUTRE JARDIN S’ÉVEILLE', 'ANOTHER GARDEN AWAKENS', 'OTRO JARDÍN DESPIERTA', 'حديقة أخرى تستيقظ', '又一座花园苏醒了'],
+  ['L’île des petits matins', 'The Island of Little Dawns', 'La isla de los amaneceres', 'جزيرة الفجر الصغير', '小小晨光岛'],
+  ['Quelque part, le ciel a perdu sa voix.', 'Somewhere, the sky has lost its voice.', 'En algún lugar, el cielo ha perdido su voz.', 'في مكان ما، فقدت السماء صوتها.', '不知何处，天空失去了声音。'],
+  ['Les récifs du ciel', 'Sky Reefs', 'Los arrecifes del cielo', 'شعاب السماء', '天空之礁'],
+  ['Les îles se rapprochent quand on les écoute.', 'The islands draw closer when you listen.', 'Las islas se acercan cuando las escuchas.', 'تتقارب الجزر حين نصغي إليها.', '用心倾听，岛屿便会靠近。'],
+  ['Le grand chœur', 'The Great Chorus', 'El gran coro', 'الجوق الكبير', '盛大合唱'],
+  ['Même les géants ont besoin d’une petite lumière.', 'Even giants need a little light.', 'Hasta los gigantes necesitan una pequeña luz.', 'حتى العمالقة يحتاجون إلى ضوء صغير.', '即使是巨人，也需要一点微光。'],
+  ['Retrouver les trois échos.', 'Find the three echoes.', 'Encuentra los tres ecos.', 'اعثر على الأصداء الثلاثة.', '找回三个回声。'],
+  ['Pip', 'Pip', 'Pip', 'بيب', '皮普'],
+  ['Sao', 'Sao', 'Sao', 'ساو', '绍'],
+  ['Milo', 'Milo', 'Milo', 'ميلو', '米洛'],
+  ['Aya', 'Aya', 'Aya', 'آيا', '阿雅'],
+  ['Lou', 'Lou', 'Lou', 'لو', '露'],
+  ['Tika', 'Tika', 'Tika', 'تيكا', '蒂卡'],
+  ['Sol', 'Sol', 'Sol', 'سول', '索尔'],
+  ['Nève', 'Neve', 'Neve', 'نيف', '妮芙'],
+  ['Orion', 'Orion', 'Orión', 'أوريون', '奥里昂']
+]);
+</script>
+  <script>
+window.LumenI18n.add([
+  ['ESPACE', 'SPACE', 'ESPACIO', 'المسافة', '空格'],
+  ['MAJ', 'SHIFT', 'MAYÚS', 'Shift', 'Shift'],
+  ['ÉCHAP', 'ESC', 'ESC', 'Esc', 'Esc'],
+  ['Accueil Lumen', 'Lumen home', 'Inicio de Lumen', 'الرئيسية في Lumen', 'Lumen 首页'],
+  ['LES JARDINS DE LA LUNE', 'GARDENS OF THE MOON', 'LOS JARDINES DE LA LUNA', 'حدائق القمر', '月亮花园'],
+  ['Navigation', 'Navigation', 'Navegación', 'التنقل', '导航'],
+  ['Comment jouer', 'How to play', 'Cómo jugar', 'طريقة اللعب', '玩法'],
+  ['SON ACTIVÉ', 'SOUND ON', 'SONIDO ACTIVADO', 'الصوت مفعّل', '声音已开启'],
+  ['SON COUPÉ', 'SOUND OFF', 'SONIDO SILENCIADO', 'الصوت مكتوم', '声音已关闭'],
+  ['Accueil', 'Home', 'Inicio', 'الرئيسية', '首页'],
+  ['UNE PETITE LUMIÈRE. UNE GRANDE AVENTURE.', 'A LITTLE LIGHT. A GREAT ADVENTURE.', 'UNA PEQUEÑA LUZ. UNA GRAN AVENTURA.', 'ضوء صغير. مغامرة كبيرة.', '一点微光，一场大冒险。'],
+  ['La lune s’est éteinte.', 'The moon has gone dark.', 'La luna se ha apagado.', 'انطفأ القمر.', '月亮失去了光芒。'],
+  ['Et si la plus petite des lumières', 'What if the smallest light', '¿Y si la luz más pequeña', 'ماذا لو استطاع أصغر ضوء', '如果最微小的光'],
+  ['pouvait réveiller tout un monde ?', 'could awaken an entire world?', 'pudiera despertar todo un mundo?', 'أن يوقظ عالمًا بأكمله؟', '也能唤醒整个世界呢？'],
+  ['Commencer l’aventure', 'Start the adventure', 'Empezar la aventura', 'ابدأ المغامرة', '开始冒险'],
+  ['Poursuivre l’aventure', 'Continue the adventure', 'Continuar la aventura', 'تابع المغامرة', '继续冒险'],
+  ['Repartir à l’aventure', 'Set off again', 'Volver a la aventura', 'انطلق من جديد', '再次启程'],
+  ['Explorer les chapitres', 'Explore the chapters', 'Explorar los capítulos', 'استكشف الفصول', '探索章节'],
+  ['L’observatoire', 'The observatory', 'El observatorio', 'المرصد', '天文台'],
+  ['Les rêves nomades', 'Wandering dreams', 'Los sueños nómadas', 'الأحلام الرحّالة', '流浪梦境'],
+  ['{count} CHAPITRES À EXPLORER', '{count} CHAPTERS TO EXPLORE', '{count} CAPÍTULOS POR EXPLORAR', '{count} فصلًا للاستكشاف', '{count} 个章节等待探索'],
+  ['10 CHAPITRES À EXPLORER', '10 CHAPTERS TO EXPLORE', '10 CAPÍTULOS POR EXPLORAR', '10 فصول للاستكشاف', '10 个章节等待探索'],
+  ['EXPLORATION & CHRONO · HORS LIGNE', 'EXPLORATION & TIME TRIAL · OFFLINE', 'EXPLORACIÓN Y CONTRARRELOJ · SIN CONEXIÓN', 'استكشاف وتحدي الوقت · دون اتصال', '探索与计时 · 离线畅玩'],
+  ['01 / LES PRAIRIES D’AURORE', '01 / DAWN MEADOWS', '01 / LAS PRADERAS DEL ALBA', '01 / مروج الفجر', '01 / 黎明草原'],
+  ['Chaque voyage commence par un saut.', 'Every journey begins with a jump.', 'Cada viaje empieza con un salto.', 'تبدأ كل رحلة بقفزة.', '每段旅程都始于一次跳跃。'],
+  ['PRENEZ LE TEMPS DE VOUS ÉMERVEILLER.', 'TAKE TIME TO WONDER.', 'TÓMATE TIEMPO PARA ASOMBRARTE.', 'امنح نفسك وقتًا للدهشة.', '慢慢走，发现美好。'],
+  ['se déplacer', 'move', 'moverse', 'تحرك', '移动'],
+  ['sauter', 'jump', 'saltar', 'اقفز', '跳跃'],
+  ['ÉDITION 02', 'CLASSIC EDITION', 'EDICIÓN CLÁSICA', 'الإصدار الكلاسيكي', '经典版'],
+  ['Informations de jeu', 'Game information', 'Información del juego', 'معلومات اللعبة', '游戏信息'],
+  ['Santé', 'Health', 'Salud', 'الصحة', '生命值'],
+  ['NILO', 'NILO', 'NILO', 'نيلو', '尼洛'],
+  ['5 VIES', '5 LIVES', '5 VIDAS', '5 محاولات', '5 条生命'],
+  ['VIES : {count}', 'LIVES: {count}', 'VIDAS: {count}', 'المحاولات: {count}', '生命：{count}'],
+  ['SCORE', 'SCORE', 'PUNTUACIÓN', 'النقاط', '得分'],
+  ['L’éveil des jardins', 'The gardens awaken', 'El despertar de los jardines', 'استيقاظ الحدائق', '花园苏醒'],
+  ['Mettre en pause', 'Pause game', 'Pausar el juego', 'إيقاف اللعبة مؤقتًا', '暂停游戏'],
+  ['Chronomètre de la course', 'Time trial clock', 'Cronómetro de la carrera', 'مؤقت السباق', '竞速计时器'],
+  ['CONTRE-LA-MONTRE', 'TIME TRIAL', 'CONTRARRELOJ', 'تحدي الوقت', '计时挑战'],
+  ['PREMIÈRE COURSE', 'FIRST RUN', 'PRIMERA CARRERA', 'المحاولة الأولى', '首次挑战'],
+  ['RECORD {time}', 'BEST {time}', 'RÉCORD {time}', 'الأفضل {time}', '纪录 {time}'],
+  ['{hp} points de vie sur 3', '{hp} health points out of 3', '{hp} puntos de salud de 3', '{hp} نقاط صحة من 3', '生命值 {hp} / 3'],
+  ['{count} fragments sur {total}', '{count} shards out of {total}', '{count} fragmentos de {total}', '{count} شظايا من {total}', '碎片 {count} / {total}'],
+  ['LE VEILLEUR DE L’ÉCLIPSE', 'THE ECLIPSE WATCHER', 'EL VIGÍA DEL ECLIPSE', 'حارس الكسوف', '日蚀守望者'],
+  ['PHASE I', 'PHASE I', 'FASE I', 'المرحلة الأولى', '第一阶段'],
+  ['PHASE II', 'PHASE II', 'FASE II', 'المرحلة الثانية', '第二阶段'],
+  ['Évitez ses attaques. Sa couronne s’ouvre après son bond.', 'Avoid its attacks. Its crown opens after it leaps.', 'Esquiva sus ataques. Su corona se abre después del salto.', 'تجنّب هجماته. ينفتح تاجه بعد قفزته.', '躲开攻击。它跳跃后会露出王冠。'],
+  ['Sa couronne est ouverte ! Sautez dessus ou utilisez votre pouvoir.', 'Its crown is open! Jump on it or use your power.', '¡Su corona está abierta! Salta sobre ella o usa tu poder.', 'تاجه مكشوف! اقفز عليه أو استخدم قوتك.', '王冠露出来了！跳上去，或使用能力。'],
+  ['Le Veilleur prépare son attaque. Gardez de l’espace.', 'The Watcher is preparing an attack. Keep your distance.', 'El Vigía prepara su ataque. Mantén la distancia.', 'الحارس يستعد للهجوم. حافظ على مسافة.', '守望者正在准备攻击，保持距离。'],
+  ['Évitez les orbes. Sautez par-dessus les ondes au sol.', 'Dodge the orbs. Jump over the waves on the ground.', 'Esquiva los orbes. Salta por encima de las ondas del suelo.', 'تجنّب الكرات واقفز فوق الموجات الأرضية.', '躲避光球，跳过地面上的波纹。'],
+  ['L’ATLAS DES LUMIÈRES', 'THE ATLAS OF LIGHTS', 'EL ATLAS DE LAS LUCES', 'أطلس الأضواء', '光之地图'],
+  ['Un monde à réveiller.', 'A world to awaken.', 'Un mundo por despertar.', 'عالم ينتظر الاستيقاظ.', '等待苏醒的世界。'],
+  ['Suivez les étoiles. Chaque jardin a son secret.', 'Follow the stars. Every garden has a secret.', 'Sigue las estrellas. Cada jardín tiene su secreto.', 'اتبع النجوم. لكل حديقة سر.', '跟随星光，每座花园都有秘密。'],
+  ['FRAGMENTS RETROUVÉS', 'SHARDS FOUND', 'FRAGMENTOS ENCONTRADOS', 'الشظايا المستعادة', '已找回的碎片'],
+  ['Mode des prochains chapitres', 'Mode for upcoming chapters', 'Modo de los próximos capítulos', 'نمط الفصول القادمة', '后续章节的模式'],
+  ['Exploration', 'Exploration', 'Exploración', 'استكشاف', '探索'],
+  ['Contre-la-montre', 'Time trial', 'Contrarreloj', 'تحدي الوقت', '计时挑战'],
+  ['Le temps vous appartient. Explorez à votre rythme.', 'Time is yours. Explore at your own pace.', 'El tiempo es tuyo. Explora a tu ritmo.', 'الوقت لك. استكشف على إيقاعك.', '时间属于你，按自己的节奏探索。'],
+  ['Un chrono, votre meilleur temps, et l’envie de recommencer.', 'A clock, your personal best, and a reason to try again.', 'Un cronómetro, tu mejor tiempo y ganas de volver a intentarlo.', 'مؤقت وأفضل وقت لك ورغبة في المحاولة مجددًا.', '计时、个人纪录，再试一次的动力。'],
+  ['Les médailles', 'Medals', 'Las medallas', 'الميداليات', '奖牌'],
+  ['Une médaille pour chaque lumière.', 'A medal for every light.', 'Una medalla por cada luz.', 'ميدالية لكل ضوء.', '每束光都值得一枚奖牌。'],
+  ['Or', 'Gold', 'Oro', 'ذهبية', '金牌'],
+  ['Argent', 'Silver', 'Plata', 'فضية', '银牌'],
+  ['Bronze', 'Bronze', 'Bronce', 'برونزية', '铜牌'],
+  ['· 3 fragments, au plus 1 dégât et le temps d’or.', '· 3 shards, at most 1 hit, within the gold time.', '· 3 fragmentos, como máximo 1 golpe y el tiempo de oro.', '· 3 شظايا، ضربة واحدة كحد أقصى، وضمن الوقت الذهبي.', '· 3 个碎片，最多受伤 1 次，并达到金牌时间。'],
+  ['· 2 fragments, au plus 3 dégâts et le temps d’argent.', '· 2 shards, at most 3 hits, within the silver time.', '· 2 fragmentos, como máximo 3 golpes y el tiempo de plata.', '· شظيتان، 3 ضربات كحد أقصى، وضمن الوقت الفضي.', '· 2 个碎片，最多受伤 3 次，并达到银牌时间。'],
+  ['· Terminer le chapitre.', '· Complete the chapter.', '· Completar el capítulo.', '· أكمل الفصل.', '· 完成章节。'],
+  ['Les objectifs de temps figurent sur chaque carte. Les médailles sont disponibles dans les deux modes ; seuls les records du contre-la-montre sont enregistrés au classement personnel. Aucun compte à rebours, aucune pénalité à prendre votre temps.', 'Time targets appear on each card. Both modes award medals; only time trials record a personal best. There is no countdown and no penalty for taking your time.', 'Los tiempos objetivo aparecen en cada tarjeta. Ambos modos otorgan medallas; solo el contrarreloj registra tus mejores tiempos. No hay cuenta atrás ni penalización por ir despacio.', 'تظهر الأوقات المستهدفة على كل بطاقة. تتوفر الميداليات في كلا النمطين، ولا يُسجّل أفضل وقت شخصي إلا في تحدي الوقت. لا عدّ تنازلي ولا عقوبة على التمهّل.', '每张卡片都显示目标时间。两种模式都可获得奖牌，只有计时挑战记录个人最佳成绩。没有倒计时，也不惩罚慢慢探索。'],
+  ['← Retour à l’accueil', '← Back home', '← Volver al inicio', '← العودة للرئيسية', '← 返回首页'],
+  ['Votre progression est sauvegardée automatiquement sur cet appareil.', 'Your progress is saved automatically on this device.', 'Tu progreso se guarda automáticamente en este dispositivo.', 'يُحفظ تقدمك تلقائيًا على هذا الجهاز.', '进度会自动保存在此设备上。'],
+  ['UNE PETITE RESPIRATION', 'A MOMENT TO BREATHE', 'UN PEQUEÑO RESPIRO', 'لحظة لالتقاط الأنفاس', '稍作喘息'],
+  ['Le monde peut attendre.', 'The world can wait.', 'El mundo puede esperar.', 'العالم يستطيع الانتظار.', '世界可以等一等。'],
+  ['Une lumière renaîtra.', 'A light will shine again.', 'Una luz volverá a brillar.', 'سيولد ضوء من جديد.', '光芒会再次亮起。'],
+  ['Votre lumière sera toujours là.', 'Your light will always be here.', 'Tu luz siempre estará aquí.', 'سيبقى نورك هنا دائمًا.', '你的光芒一直都在。'],
+  ['Vos fragments et les chapitres terminés sont conservés. Repartez avec cinq vies.', 'Your shards and completed chapters are safe. Start again with five lives.', 'Tus fragmentos y capítulos completados se conservan. Vuelve con cinco vidas.', 'تُحفظ شظاياك والفصول المكتملة. ابدأ من جديد بخمس محاولات.', '碎片和已完成章节都会保留。带着五条生命重新出发。'],
+  ['Le chronomètre est en pause. Votre record attendra.', 'The clock is paused. Your record can wait.', 'El cronómetro está en pausa. Tu récord puede esperar.', 'المؤقت متوقف. رقمك القياسي سينتظر.', '计时已暂停，纪录可以等一等。'],
+  ['Reprendre le voyage', 'Resume the journey', 'Retomar el viaje', 'تابع الرحلة', '继续旅程'],
+  ['Recommencer le chapitre', 'Restart chapter', 'Reiniciar el capítulo', 'أعد الفصل', '重新开始章节'],
+  ['L’atlas des chapitres', 'Chapter atlas', 'El atlas de capítulos', 'أطلس الفصول', '章节地图'],
+  ['Voir les commandes', 'View controls', 'Ver los controles', 'عرض أزرار التحكم', '查看操作'],
+  ['Refaire cette nuit', 'Replay this night', 'Repetir esta noche', 'أعد هذه الليلة', '重玩这一夜'],
+  ['Rallumer une lumière', 'Relight a light', 'Reavivar una luz', 'أشعل ضوءًا من جديد', '重新点亮光芒'],
+  ['La nuit s’achève ici.', 'The night ends here.', 'La noche termina aquí.', 'تنتهي الليلة هنا.', '今夜到此为止。'],
+  ['Vos découvertes restent acquises. Graine {seed} : refaites-la à l’identique, ou laissez-la pour une autre.', 'Your discoveries are safe. Seed {seed}: replay this night or choose another.', 'Tus descubrimientos se conservan. Semilla {seed}: repite esta noche o elige otra.', 'تبقى اكتشافاتك محفوظة. البذرة {seed}: أعد هذه الليلة أو اختر غيرها.', '发现都会保留。种子 {seed}：重玩这一夜，或选择另一个梦境。'],
+  ['Une autre nuit', 'Another night', 'Otra noche', 'ليلة أخرى', '另一个夜晚'],
+  ['Quitter la nuit', 'Leave the night', 'Abandonar la noche', 'غادر الليلة', '离开梦境'],
+  ['La nuit n’est enregistrée qu’aux refuges. La quitter ici perd le chemin parcouru depuis le dernier.', 'Nights are saved only at shelters. Leaving now loses progress since the last shelter.', 'La noche solo se guarda en los refugios. Si sales ahora, perderás lo recorrido desde el último.', 'تُحفظ الليلة في الملاجئ فقط. المغادرة الآن تفقدك ما قطعته منذ آخر ملجأ.', '梦境只在避难所保存。现在离开会失去自上个避难所以来的进度。'],
+  ['Fermer les commandes', 'Close controls', 'Cerrar los controles', 'أغلق دليل التحكم', '关闭操作说明'],
+  ['LE PETIT GUIDE DU GARDIEN', 'THE LITTLE GUARDIAN’S GUIDE', 'LA PEQUEÑA GUÍA DEL GUARDIÁN', 'دليل الحارس الصغير', '小小守护者指南'],
+  ['Suivez votre élan.', 'Follow your momentum.', 'Sigue tu impulso.', 'اتبع اندفاعك.', '跟随你的节奏。'],
+  ['Se déplacer', 'Move', 'Moverse', 'الحركة', '移动'],
+  ['Sauter / nager', 'Jump / swim', 'Saltar / nadar', 'قفز / سباحة', '跳跃 / 游泳'],
+  ['ou', 'or', 'o', 'أو', '或'],
+  ['Courir', 'Run', 'Correr', 'ركض', '奔跑'],
+  ['en courant', 'while running', 'al correr', 'أثناء الركض', '奔跑时'],
+  ['Utiliser un pouvoir', 'Use a power', 'Usar un poder', 'استخدم قوة', '使用能力'],
+  ['Pause / reprendre', 'Pause / resume', 'Pausar / continuar', 'إيقاف / متابعة', '暂停 / 继续'],
+  ['Recommencer / son', 'Restart / sound', 'Reiniciar / sonido', 'إعادة / صوت', '重开 / 声音'],
+  ['Autres claviers', 'Other keyboards', 'Otros teclados', 'لوحات مفاتيح أخرى', '其他键盘布局'],
+  ['·', '·', '·', '·', '·'],
+  ['saut', 'jump', 'salto', 'قفز', '跳跃'],
+  ['Un appui bref fait un petit saut. Maintenez la touche pour sauter plus haut. Sautez sur les créatures pour les étourdir. Les lanternes mémorisent votre passage.', 'Tap for a small jump; hold to jump higher. Jump on creatures to stun them. Lanterns remember your progress.', 'Pulsa brevemente para un salto corto y mantén para llegar más alto. Salta sobre las criaturas para aturdirlas. Las linternas guardan tu paso.', 'اضغط سريعًا لقفزة قصيرة، واستمر بالضغط لقفزة أعلى. اقفز فوق المخلوقات لإذهالها. تحفظ الفوانيس نقطة مرورك.', '轻按小跳，长按跳得更高。跳到生物身上可使其眩晕。灯笼会记住你的经过。'],
+  ['À la manette', 'Gamepad', 'Con mando', 'بوحدة التحكم', '手柄操作'],
+  ['· Stick ou croix pour avancer · A / B pour sauter · X pour le pouvoir · Gâchette / épaule droite pour courir · Bas pour glisser · Start pour la pause.', '· Stick or D-pad to move · A / B to jump · X for power · Right trigger / shoulder to run · Down to slide · Start to pause.', '· Stick o cruceta para moverse · A / B para saltar · X para el poder · Gatillo / botón derecho para correr · Abajo para deslizarse · Start para pausar.', '· العصا أو الأسهم للحركة · A / B للقفز · X للقوة · الزناد أو زر الكتف الأيمن للركض · أسفل للانزلاق · Start للإيقاف المؤقت.', '· 摇杆或方向键移动 · A / B 跳跃 · X 使用能力 · 右扳机或肩键奔跑 · 下键滑行 · Start 暂停。'],
+  ['Fleur solaire', 'Sunflower', 'Flor solar', 'زهرة الشمس', '太阳花'],
+  ['Plume d’azur', 'Azure feather', 'Pluma celeste', 'ريشة لازوردية', '苍蓝羽毛'],
+  ['Cœur comète', 'Comet heart', 'Corazón de cometa', 'قلب المذنب', '彗星之心'],
+  ['Grelot d’écho', 'Echo bell', 'Cascabel de eco', 'جرس الصدى', '回声铃'],
+  ['Tirez des graines de lumière avec X.', 'Fire light seeds with X.', 'Dispara semillas de luz con X.', 'أطلق بذور الضوء بزر X.', '按 X 发射光之种子。'],
+  ['Sautez une seconde fois dans les airs.', 'Jump a second time in midair.', 'Salta una segunda vez en el aire.', 'اقفز مرة ثانية في الهواء.', '在空中再次跳跃。'],
+  ['X déclenche une ruée protectrice.', 'X triggers a protective dash.', 'X activa un impulso protector.', 'زر X يطلق اندفاعًا واقيًا.', '按 X 发动保护冲刺。'],
+  ['X révèle les plateformes cachées pendant 4 secondes.', 'X reveals hidden platforms for 4 seconds.', 'X revela plataformas ocultas durante 4 segundos.', 'يكشف X المنصات الخفية لمدة 4 ثوانٍ.', '按 X 显现隐藏平台，持续 4 秒。'],
+  ['X / J · Graines de lumière', 'X / J · Light seeds', 'X / J · Semillas de luz', 'X / J · بذور الضوء', 'X / J · 光之种子'],
+  ['Un second saut dans les airs', 'A second jump in midair', 'Un segundo salto en el aire', 'قفزة ثانية في الهواء', '空中二段跳'],
+  ['X / J · Ruée protectrice', 'X / J · Protective dash', 'X / J · Impulso protector', 'X / J · اندفاع واقٍ', 'X / J · 保护冲刺'],
+  ['X / J · Révéler les chemins · 4 s', 'X / J · Reveal paths · 4 s', 'X / J · Revelar caminos · 4 s', 'X / J · كشف المسارات · 4 ث', 'X / J · 显现路径 · 4 秒'],
+  ['{seconds} s', '{seconds} s', '{seconds} s', '{seconds} ث', '{seconds} 秒'],
+  ['Réglages de confort', 'Comfort settings', 'Ajustes de comodidad', 'إعدادات الراحة', '舒适设置'],
+  ['Main dominante', 'Dominant hand', 'Mano dominante', 'اليد المفضلة', '惯用手'],
+  ['Droitier', 'Right-handed', 'Diestro', 'اليمنى', '右手'],
+  ['Gaucher', 'Left-handed', 'Zurdo', 'اليسرى', '左手'],
+  ['Taille des commandes tactiles', 'Touch control size', 'Tamaño de los controles táctiles', 'حجم أزرار اللمس', '触屏按键大小'],
+  ['Petite', 'Small', 'Pequeño', 'صغير', '小'],
+  ['Normale', 'Normal', 'Normal', 'عادي', '标准'],
+  ['Grande', 'Large', 'Grande', 'كبير', '大'],
+  ['Secousses et flashs', 'Shakes and flashes', 'Sacudidas y destellos', 'الاهتزازات والومضات', '震动与闪光'],
+  ['Effets d’écran', 'Screen effects', 'Efectos de pantalla', 'مؤثرات الشاشة', '屏幕效果'],
+  ['Normaux', 'Normal', 'Normales', 'عادية', '标准'],
+  ['Atténués', 'Reduced', 'Reducidos', 'مخففة', '减弱'],
+  ['Sur écran tactile, maintenir une direction déclenche la course toute seule : le chemin principal ne demande jamais plus de deux doigts.', 'On touchscreens, holding a direction starts running automatically. The main route needs no more than two fingers.', 'En pantallas táctiles, mantener una dirección activa la carrera. La ruta principal no necesita más de dos dedos.', 'على شاشة اللمس، يؤدي استمرار الضغط على الاتجاه إلى الركض تلقائيًا. المسار الرئيسي لا يحتاج أكثر من إصبعين.', '在触屏上，按住方向会自动奔跑。主路线最多只需两根手指。'],
+  ['Chaque pouvoir est temporaire : sa jauge clignote durant les 5 dernières secondes. Un grelot se relance avec X tant que vous le portez.', 'Powers are temporary: the meter flashes in the last 5 seconds. Use X to ring the bell again while carrying it.', 'Los poderes son temporales: la barra parpadea en los últimos 5 segundos. Vuelve a tocar el cascabel con X mientras lo lleves.', 'كل قوة مؤقتة: يومض مقياسها في آخر 5 ثوانٍ. يمكنك قرع الجرس مجددًا بزر X ما دمت تحمله.', '所有能力都有时限，最后 5 秒量条会闪烁。持有铃铛时可按 X 再次使用。'],
+  ['C’est parti', 'Let’s go', 'Vamos', 'لننطلق', '出发吧'],
+  ['UNE LUMIÈRE DE PLUS', 'ONE MORE LIGHT', 'UNA LUZ MÁS', 'ضوء إضافي', '又一束光芒'],
+  ['Le jardin s’éveille.', 'The garden awakens.', 'El jardín despierta.', 'تستيقظ الحديقة.', '花园苏醒了。'],
+  ['MÉDAILLE OBTENUE', 'MEDAL EARNED', 'MEDALLA OBTENIDA', 'الميدالية المكتسبة', '获得奖牌'],
+  ['FRAGMENTS DE LUNE', 'MOON SHARDS', 'FRAGMENTOS DE LUNA', 'شظايا القمر', '月亮碎片'],
+  ['TEMPS DU VOYAGE', 'JOURNEY TIME', 'TIEMPO DEL VIAJE', 'وقت الرحلة', '旅程时间'],
+  ['ÉCLATS', 'LIGHTS', 'DESTELLOS', 'الومضات', '光屑'],
+  ['ENNEMIS VAINCUS', 'CREATURES DEFEATED', 'CRIATURAS DERROTADAS', 'المخلوقات المهزومة', '击败生物'],
+  ['DÉGÂTS REÇUS', 'HITS TAKEN', 'GOLPES RECIBIDOS', 'الضربات المتلقاة', '受伤次数'],
+  ['OBJECTIF OR', 'GOLD TARGET', 'OBJETIVO DE ORO', 'الهدف الذهبي', '金牌目标'],
+  ['MEILLEUR CHRONO', 'PERSONAL BEST', 'MEJOR TIEMPO', 'أفضل وقت', '最佳时间'],
+  ['✦ Nouveau record personnel', '✦ New personal best', '✦ Nuevo récord personal', '✦ رقم شخصي جديد', '✦ 刷新个人纪录'],
+  ['Le prochain jardin', 'The next garden', 'El próximo jardín', 'الحديقة التالية', '下一座花园'],
+  ['Rejouer', 'Replay', 'Volver a jugar', 'أعد اللعب', '重玩'],
+  ['L’atlas', 'The atlas', 'El atlas', 'الأطلس', '地图'],
+  ['LES RÊVES NOMADES', 'WANDERING DREAMS', 'LOS SUEÑOS NÓMADAS', 'الأحلام الرحّالة', '流浪梦境'],
+  ['Chaque nuit invente un chemin.', 'Every night invents a path.', 'Cada noche inventa un camino.', 'كل ليلة تبتكر طريقًا.', '每一夜，都有新的道路。'],
+  ['Cinq salles, une carte à embranchements, un gardien au bout. Une nuit dure une dizaine de minutes et s’enregistre au refuge.', 'Five rooms, branching paths and a guardian at the end. A night lasts about ten minutes and saves at the shelter.', 'Cinco salas, caminos ramificados y un guardián al final. Una noche dura unos diez minutos y se guarda en el refugio.', 'خمس غرف ومسارات متفرعة وحارس في النهاية. تستغرق الليلة نحو عشر دقائق وتُحفظ في الملجأ.', '五个房间、分岔的路线，以及尽头的守护者。一夜约十分钟，在避难所保存。'],
+  ['GRAINE DE LA NUIT', 'NIGHT SEED', 'SEMILLA DE LA NOCHE', 'بذرة الليلة', '梦境种子'],
+  ['Tirer une graine au hasard', 'Choose a random seed', 'Elegir una semilla aleatoria', 'اختر بذرة عشوائية', '随机生成种子'],
+  ['Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.', 'Leave blank for a new night. Keep the seed to replay the same one.', 'Déjalo vacío para una noche nueva. Guarda la semilla para repetirla.', 'اتركها فارغة لليلة جديدة. احتفظ بالبذرة لإعادة الليلة نفسها.', '留空生成新梦境。记下种子即可重玩相同的梦境。'],
+  ['Partir en expédition', 'Start an expedition', 'Salir de expedición', 'انطلق في رحلة', '开始远征'],
+  ['Reprendre la nuit enregistrée', 'Resume saved night', 'Retomar la noche guardada', 'تابع الليلة المحفوظة', '继续已保存的梦境'],
+  ['Retour à l’observatoire', 'Back to the observatory', 'Volver al observatorio', 'العودة إلى المرصد', '返回天文台'],
+  ['Reprendre la nuit {seed} · salle {room}', 'Resume night {seed} · room {room}', 'Retomar la noche {seed} · sala {room}', 'تابع الليلة {seed} · الغرفة {room}', '继续梦境 {seed} · 第 {room} 个房间'],
+  ['Nuits tentées : {runs}. Terminées : {completed}. Laissez vide pour une nuit inédite.', 'Nights attempted: {runs}. Completed: {completed}. Leave blank for a new night.', 'Noches intentadas: {runs}. Completadas: {completed}. Déjalo vacío para una noche nueva.', 'الليالي المجرّبة: {runs}. المكتملة: {completed}. اتركها فارغة لليلة جديدة.', '已尝试 {runs} 夜，完成 {completed} 夜。留空生成新梦境。'],
+  ['SALLE 1 / 5', 'ROOM 1 / 5', 'SALA 1 / 5', 'الغرفة 1 / 5', '房间 1 / 5'],
+  ['SALLE {room} / {total} · GRAINE {seed}', 'ROOM {room} / {total} · SEED {seed}', 'SALA {room} / {total} · SEMILLA {seed}', 'الغرفة {room} / {total} · البذرة {seed}', '房间 {room} / {total} · 种子 {seed}'],
+  ['Où va la nuit ?', 'Where will the night lead?', '¿Adónde va la noche?', 'إلى أين تمضي الليلة؟', '今夜通向何方？'],
+  ['Chaque chemin s’annonce avant qu’on s’y engage.', 'Each path tells you what lies ahead.', 'Cada camino anuncia lo que te espera.', 'يكشف كل طريق طبيعته قبل دخوله.', '每条路都会告诉你前方有什么。'],
+  ['UN SOUVENIR À EMPORTER', 'A KEEPSAKE TO CARRY', 'UN RECUERDO PARA LLEVAR', 'تذكار لتحمله معك', '带走一份纪念'],
+  ['Continuer', 'Continue', 'Continuar', 'تابع', '继续'],
+  ['Deux chemins. Ce qu’ils annoncent est vrai : rien ne vous surprendra sans prévenir.', 'Two paths. Their signs are true: no unannounced surprises.', 'Dos caminos. Sus señales son ciertas: nada te sorprenderá sin aviso.', 'طريقان. ما يعلنان عنه صحيح: لا مفاجآت دون إنذار.', '两条路，指示都是真实的，不会有毫无预兆的意外。'],
+  ['Un seul chemin s’ouvre ici.', 'Only one path opens here.', 'Aquí se abre un solo camino.', 'يُفتح طريق واحد هنا.', '这里只有一条道路。'],
+  ['Ce qu’il contient reste à découvrir.', 'What lies inside is yours to discover.', 'Lo que contiene está por descubrir.', 'ما بداخله ينتظر اكتشافك.', '其中的秘密等待你发现。'],
+  ['Vos {slots} emplacements sont pris : un nouveau souvenir remplacera le plus ancien.', 'All {slots} slots are full: a new keepsake replaces the oldest.', 'Tus {slots} espacios están ocupados: un nuevo recuerdo sustituirá al más antiguo.', 'كل الخانات وعددها {slots} ممتلئة: سيحل التذكار الجديد محل الأقدم.', '{slots} 个栏位已满，新纪念物将替换最旧的一个。'],
+  ['Deux emplacements seulement : choisissez ce qui change votre façon de bouger.', 'Only two slots: choose what changes the way you move.', 'Solo dos espacios: elige lo que cambie tu forma de moverte.', 'خانتان فقط: اختر ما يغيّر طريقة حركتك.', '只有两个栏位，选择能改变你移动方式的纪念物。'],
+  ['TERMINÉ', 'COMPLETED', 'COMPLETADO', 'مكتمل', '已完成'],
+  ['À EXPLORER', 'TO EXPLORE', 'POR EXPLORAR', 'للاستكشاف', '待探索'],
+  ['VERROUILLÉ', 'LOCKED', 'BLOQUEADO', 'مقفل', '未解锁'],
+  ['◷ À vous d’écrire le chrono', '◷ Set your first time', '◷ Marca tu primer tiempo', '◷ سجّل وقتك الأول', '◷ 创下你的首个纪录'],
+  ['Médaille {medal}', '{medal} medal', 'Medalla de {medal}', 'ميدالية {medal}', '{medal}'],
+  ['✧ À décrocher', '✧ Yet to earn', '✧ Por conseguir', '✧ بانتظارك', '✧ 待获得'],
+  ['OR {time}', 'GOLD {time}', 'ORO {time}', 'ذهبية {time}', '金牌 {time}'],
+  ['ARGENT {time}', 'SILVER {time}', 'PLATA {time}', 'فضية {time}', '银牌 {time}'],
+  ['Chapitre {index}, {name}, {status}', 'Chapter {index}, {name}, {status}', 'Capítulo {index}, {name}, {status}', 'الفصل {index}، {name}، {status}', '第 {index} 章，{name}，{status}'],
+  ['Jardin secret · Le détour des curieux', 'Secret garden · A detour for the curious', 'Jardín secreto · El desvío de los curiosos', 'حديقة سرية · طريق الفضوليين', '秘密花园 · 好奇者的岔路'],
+  ['NUIT · SALLE {room} / {total}', 'NIGHT · ROOM {room} / {total}', 'NOCHE · SALA {room} / {total}', 'الليلة · الغرفة {room} / {total}', '梦境 · 房间 {room} / {total}'],
+  ['L’OBSERVATOIRE', 'THE OBSERVATORY', 'EL OBSERVATORIO', 'المرصد', '天文台'],
+  ['CHAPITRE {chapter} / {total}', 'CHAPTER {chapter} / {total}', 'CAPÍTULO {chapter} / {total}', 'الفصل {chapter} / {total}', '章节 {chapter} / {total}'],
+  ['LES JARDINS SE SOUVIENDRONT DE VOUS', 'THE GARDENS WILL REMEMBER YOU', 'LOS JARDINES TE RECORDARÁN', 'ستتذكرك الحدائق', '花园会记得你'],
+  ['Même la lune avait besoin de vous.', 'Even the moon needed you.', 'Hasta la luna te necesitaba.', 'حتى القمر احتاج إليك.', '月亮也需要你的帮助。'],
+  ['Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.', 'Nilo restored the Watcher’s light. The moon shines over the gardens again. The journey continues along paths yet to be explored.', 'Nilo devolvió la luz al Vigía. La luna vuelve a brillar sobre los jardines. El viaje sigue por senderos aún sin explorar.', 'أعاد نيلو النور إلى الحارس. يضيء القمر فوق الحدائق من جديد. تستمر الرحلة في الدروب التي لم تُستكشف بعد.', '尼洛让守望者重获光芒，月亮再次照耀花园。旅程将在尚未探索的小路上继续。'],
+  ['{name} · Chapitre terminé', '{name} · Chapter complete', '{name} · Capítulo completado', '{name} · اكتمل الفصل', '{name} · 章节完成'],
+  ['{count} / {total} FRAGMENTS DE LUNE', '{count} / {total} MOON SHARDS', '{count} / {total} FRAGMENTOS DE LUNA', '{count} / {total} شظايا القمر', '月亮碎片 {count} / {total}'],
+  ['Passages secrets découverts : {count} · +{bonus} points', 'Secret paths found: {count} · +{bonus} points', 'Pasajes secretos descubiertos: {count} · +{bonus} puntos', 'الممرات السرية المكتشفة: {count} · +{bonus} نقطة', '发现秘密通道：{count} · +{bonus} 分'],
+  ['+{bonus} points de fin de chapitre', '+{bonus} chapter completion points', '+{bonus} puntos por completar el capítulo', '+{bonus} نقطة لإكمال الفصل', '章节完成奖励 +{bonus} 分'],
+  ['Les jardins cachent encore quelques lumières.', 'The gardens still hide a few lights.', 'Los jardines aún esconden algunas luces.', 'ما زالت الحدائق تخفي بعض الأضواء.', '花园里还藏着一些光芒。'],
+  ['Tous les fragments sont réunis !', 'All shards are together!', '¡Todos los fragmentos reunidos!', 'اجتمعت كل الشظايا!', '碎片已全部集齐！'],
+  ['Un voyage éclatant. Saurez-vous encore améliorer votre temps ?', 'A brilliant journey. Can you improve your time?', 'Un viaje brillante. ¿Podrás mejorar tu tiempo?', 'رحلة متألقة. هل يمكنك تحسين وقتك؟', '精彩的旅程，还能再快一点吗？'],
+  ['Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.', 'For gold: 3 shards · at most 1 hit · {time} or less.', 'Para el oro: 3 fragmentos · como máximo 1 golpe · {time} o menos.', 'للذهبية: 3 شظايا · ضربة واحدة كحد أقصى · {time} أو أقل.', '金牌要求：3 个碎片 · 最多受伤 1 次 · 不超过 {time}。'],
+  ['Chaque retour dans les jardins est une nouvelle aventure.', 'Every return to the gardens is a new adventure.', 'Cada regreso a los jardines es una nueva aventura.', 'كل عودة إلى الحدائق مغامرة جديدة.', '每次重返花园，都是新的冒险。'],
+  ['Revoir les jardins', 'Return to the gardens', 'Volver a los jardines', 'العودة إلى الحدائق', '重返花园'],
+  ['Reprendre l’aventure', 'Continue the adventure', 'Retomar la aventura', 'تابع المغامرة', '继续冒险'],
+  ['Salle {room} / {total} · {omen} · graine {seed}', 'Room {room} / {total} · {omen} · seed {seed}', 'Sala {room} / {total} · {omen} · semilla {seed}', 'الغرفة {room} / {total} · {omen} · البذرة {seed}', '房间 {room} / {total} · {omen} · 种子 {seed}'],
+  ['Nuit menée au bout · graine {seed}', 'Night completed · seed {seed}', 'Noche completada · semilla {seed}', 'اكتملت الليلة · البذرة {seed}', '梦境完成 · 种子 {seed}'],
+  ['La nuit s’achève ici · graine {seed}', 'The night ends here · seed {seed}', 'La noche termina aquí · semilla {seed}', 'تنتهي الليلة هنا · البذرة {seed}', '今夜到此为止 · 种子 {seed}'],
+  ['Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : {error}', 'The garden could not awaken. Open index.html in a recent browser and make sure the js folder is beside it. Details: {error}', 'El jardín no ha podido despertar. Abre index.html en un navegador reciente y comprueba que la carpeta js esté a su lado. Detalle: {error}', 'تعذّر إيقاظ الحديقة. افتح index.html في متصفح حديث وتأكد من وجود مجلد js بجانبه. التفاصيل: {error}', '花园未能苏醒。请用较新的浏览器打开 index.html，并确认 js 文件夹位于旁边。详情：{error}'],
+  ['Activez JavaScript pour entrer dans les jardins de Lumen.', 'Enable JavaScript to enter the gardens of Lumen.', 'Activa JavaScript para entrar en los jardines de Lumen.', 'فعّل JavaScript لدخول حدائق Lumen.', '请启用 JavaScript 进入 Lumen 花园。']
+]);
+</script>
+  <script>
+window.LumenI18n.add([
+  ['Escalier de corolles · Chaque second saut sème une fleur sous vos pieds : on peut monter de saut en saut tant qu’on garde le rythme.', 'Blossom staircase · Every second jump plants a flower beneath you: climb from jump to jump while keeping the rhythm.', 'Escalera de corolas · Cada segundo salto planta una flor bajo tus pies: sube de salto en salto mientras mantengas el ritmo.', 'درج التويجات · تزرع كل قفزة ثانية زهرة تحت قدميك: اصعد قفزة بعد قفزة ما دمت تحافظ على الإيقاع.', '花冠阶梯 · 每次二段跳都会在脚下种花，保持节奏就能一步步向上。'],
+  ['Traversée filante · La ruée réveille le pont qu’elle aborde, et le vent du pont la prolonge.', 'Shooting-star crossing · Your dash awakens the bridge ahead, and its breeze carries you farther.', 'Travesía fugaz · El impulso despierta el puente y su brisa prolonga la travesía.', 'عبور خاطف · يوقظ الاندفاع الجسر أمامه وتطيله ريح الجسر.', '流星穿行 · 冲刺唤醒前方的桥，桥上的风让你走得更远。'],
+  ['Le rêve des herbes hautes', 'The Dream of Tall Grasses', 'El sueño de las hierbas altas', 'حلم الأعشاب الطويلة', '高草之梦'],
+  ['Le rêve des toits de nuage', 'The Dream of Cloud Roofs', 'El sueño de los techos de nube', 'حلم أسقف السحاب', '云顶之梦'],
+  ['Le rêve du verre froid', 'The Dream of Cold Glass', 'El sueño del cristal frío', 'حلم الزجاج البارد', '冷晶之梦'],
+  ['Le rêve du courant', 'The Dream of the Current', 'El sueño de la corriente', 'حلم التيار', '流水之梦'],
+  ['Le rêve de la pierre claire', 'The Dream of Pale Stone', 'El sueño de la piedra clara', 'حلم الحجر المضيء', '明石之梦'],
+  ['Le rêve tardif', 'The Late Dream', 'El sueño tardío', 'الحلم المتأخر', '迟来的梦'],
+  ['Les prairies d’aurore', 'Dawn Meadows', 'Las praderas del alba', 'مروج الفجر', '黎明草原'],
+  ['Un battement d’ailes suffit.', 'A single wingbeat is enough.', 'Basta un aleteo.', 'تكفي رفّة جناح.', '只需轻轻振翅。'],
+  ['Rallume la première porte des jardins.', 'Relight the first garden gate.', 'Enciende la primera puerta de los jardines.', 'أعد إضاءة بوابة الحدائق الأولى.', '重新点亮花园的第一扇门。'],
+  ['La cathédrale des racines', 'Cathedral of Roots', 'La catedral de las raíces', 'كاتدرائية الجذور', '根之圣堂'],
+  ['Sous la terre, les étoiles poussent.', 'Beneath the earth, stars grow.', 'Bajo la tierra crecen las estrellas.', 'تحت الأرض تنمو النجوم.', '地下也生长着星星。'],
+  ['Traverse les racines et leurs ponts fragiles.', 'Cross the roots and their fragile bridges.', 'Cruza las raíces y sus puentes frágiles.', 'اعبر الجذور وجسورها الهشة.', '穿过树根和脆弱的桥梁。'],
+  ['Le lagon des lucioles', 'Firefly Lagoon', 'La laguna de las luciérnagas', 'بحيرة اليراعات', '萤火虫潟湖'],
+  ['Respire. La lumière sait nager.', 'Breathe. Light knows how to swim.', 'Respira. La luz sabe nadar.', 'تنفّس. الضوء يعرف السباحة.', '放松呼吸，光也会游泳。'],
+  ['Remonte le courant et retrouve la rive.', 'Swim upstream and find the shore.', 'Remonta la corriente y encuentra la orilla.', 'اسبح عكس التيار واعثر على الضفة.', '逆流而上，重返岸边。'],
+  ['Les archipels du zéphyr', 'Zephyr Archipelagos', 'Los archipiélagos del céfiro', 'أرخبيلات النسيم', '和风群岛'],
+  ['Le ciel aussi a ses sentiers.', 'The sky has its paths too.', 'El cielo también tiene senderos.', 'للسماء دروبها أيضًا.', '天空也有自己的小径。'],
+  ['Emprunte les courants entre les îles célestes.', 'Ride the currents between the sky islands.', 'Aprovecha las corrientes entre las islas celestes.', 'اركب التيارات بين الجزر السماوية.', '乘着气流穿行于天空之岛。'],
+  ['La forge des pétales', 'Petal Forge', 'La forja de los pétalos', 'حدادة البتلات', '花瓣熔炉'],
+  ['Même le feu peut fleurir.', 'Even fire can bloom.', 'Hasta el fuego puede florecer.', 'حتى النار يمكن أن تزهر.', '火焰也能盛开。'],
+  ['Traverse la forge et garde ta lumière.', 'Cross the forge and keep your light.', 'Cruza la forja y conserva tu luz.', 'اعبر الحدادة وحافظ على نورك.', '穿越熔炉，守住光芒。'],
+  ['Le palais du givre', 'Frost Palace', 'El palacio de la escarcha', 'قصر الصقيع', '霜之宫殿'],
+  ['Le silence a mille reflets.', 'Silence has a thousand reflections.', 'El silencio tiene mil reflejos.', 'للصمت ألف انعكاس.', '寂静也有千种倒影。'],
+  ['Retrouve la cadence des miroirs lunaires.', 'Find the rhythm of the moon mirrors.', 'Encuentra el ritmo de los espejos lunares.', 'استعد إيقاع المرايا القمرية.', '找回月镜的节奏。'],
+  ['Le jardin des heures bleues', 'The Blue Hour Garden', 'El jardín de las horas azules', 'حديقة الساعات الزرقاء', '蓝调时光花园'],
+  ['Un détour que la lune avait oublié.', 'A detour the moon had forgotten.', 'Un desvío que la luna había olvidado.', 'درب جانبي نسيه القمر.', '一条被月亮遗忘的岔路。'],
+  ['Récolte les trésors du jardin oublié.', 'Gather the treasures of the forgotten garden.', 'Recoge los tesoros del jardín olvidado.', 'اجمع كنوز الحديقة المنسية.', '收集遗忘花园中的宝藏。'],
+  ['Les vergers du vent', 'Orchards of the Wind', 'Los vergeles del viento', 'بساتين الريح', '风之果园'],
+  ['Chaque branche dessine un nouveau ciel.', 'Every branch draws a new sky.', 'Cada rama dibuja un cielo nuevo.', 'كل غصن يرسم سماء جديدة.', '每根枝条都描绘着新的天空。'],
+  ['Réveille les trois fruits de lune au sommet des vergers.', 'Awaken the three moon fruits atop the orchards.', 'Despierta los tres frutos de luna en lo alto de los vergeles.', 'أيقظ ثمار القمر الثلاث في أعالي البساتين.', '唤醒果园顶端的三颗月亮果实。'],
+  ['La galerie des échos', 'Gallery of Echoes', 'La galería de los ecos', 'رواق الأصداء', '回声长廊'],
+  ['Les murs se souviennent de la lumière.', 'The walls remember the light.', 'Los muros recuerdan la luz.', 'تتذكر الجدران النور.', '墙壁还记得光。'],
+  ['Rassemble les trois notes qui ouvrent le passage de l’éclipse.', 'Gather the three notes that open the eclipse passage.', 'Reúne las tres notas que abren el paso del eclipse.', 'اجمع النغمات الثلاث التي تفتح ممر الكسوف.', '集齐三个音符，开启日蚀通道。'],
+  ['Le verger qui rêve', 'The Dreaming Orchard', 'El vergel que sueña', 'البستان الحالم', '梦中的果园'],
+  ['Ce qui dort attend seulement qu’on l’appelle.', 'What sleeps is only waiting to be called.', 'Lo que duerme solo espera que lo llames.', 'ما ينام ينتظر فقط من يناديه.', '沉睡的一切，都在等待呼唤。'],
+  ['Réveille le verger et rends sa voix au jardin.', 'Awaken the orchard and restore the garden’s voice.', 'Despierta el vergel y devuelve la voz al jardín.', 'أيقظ البستان وأعد للحديقة صوتها.', '唤醒果园，让花园重获声音。'],
+  ['Le cœur de l’éclipse', 'Heart of the Eclipse', 'El corazón del eclipse', 'قلب الكسوف', '日蚀之心'],
+  ['Une petite lumière. Une immense nuit.', 'A little light. A vast night.', 'Una pequeña luz. Una noche inmensa.', 'ضوء صغير. ليلة شاسعة.', '一点微光，无尽长夜。'],
+  ['Éveille le Gardien et rends la lune aux jardins.', 'Awaken the Guardian and return the moon to the gardens.', 'Despierta al Guardián y devuelve la luna a los jardines.', 'أيقظ الحارس وأعد القمر إلى الحدائق.', '唤醒守护者，让月亮重返花园。'],
+  ['Q / D ou ← / → pour avancer · Espace pour sauter', 'A / D or ← / → to move · Space to jump', 'A / D o ← / → para moverte · Espacio para saltar', 'A / D أو ← / → للحركة · المسافة للقفز', 'A / D 或 ← / → 移动 · 空格键跳跃'],
+  ['Un appui long donne un saut plus haut. Les éclats de lune sont là-haut !', 'Hold for a higher jump. The moon shards are up there!', 'Mantén pulsado para saltar más alto. ¡Los fragmentos de luna están arriba!', 'استمر بالضغط لقفزة أعلى. شظايا القمر في الأعلى!', '长按跳得更高，月亮碎片就在上面！'],
+  ['Saute sur les créatures. Maintiens Maj pour courir.', 'Jump on creatures. Hold Shift to run.', 'Salta sobre las criaturas. Mantén Mayús para correr.', 'اقفز على المخلوقات. اضغط Shift باستمرار للركض.', '跳到生物身上，按住 Shift 奔跑。'],
+  ['Plume azur : un second saut en plein vol, le temps du pouvoir.', 'Azure feather: a second jump in midair while the power lasts.', 'Pluma celeste: un segundo salto en el aire mientras dure el poder.', 'الريشة اللازوردية: قفزة ثانية في الهواء ما دامت القوة فعالة.', '苍蓝羽毛：能力生效时，可以在空中再跳一次。'],
+  ['Les lanternes sauvegardent ta position. Explore les chemins en hauteur.', 'Lanterns save your position. Explore the higher paths.', 'Las linternas guardan tu posición. Explora los caminos elevados.', 'تحفظ الفوانيس موقعك. استكشف الطرق المرتفعة.', '灯笼会保存位置，去探索高处的小路吧。'],
+  ['Fleur solaire : X ou J lance une étincelle.', 'Sunflower: X or J fires a spark.', 'Flor solar: X o J lanza una chispa.', 'زهرة الشمس: يطلق X أو J شرارة.', '太阳花：按 X 或 J 发射火花。'],
+  ['Comète : X ou J te propulse. ↓ permet de glisser au sol.', 'Comet: X or J sends you dashing. ↓ slides along the ground.', 'Cometa: X o J te impulsa. ↓ te desliza por el suelo.', 'المذنب: يدفعك X أو J للأمام. ↓ للانزلاق على الأرض.', '彗星：X 或 J 向前冲刺，↓ 在地面滑行。'],
+  ['Les racines gardent des chemins au-dessus du chemin.', 'The roots hide paths above the path.', 'Las raíces guardan caminos sobre el camino.', 'تخفي الجذور طرقًا فوق الطريق.', '树根上方，还藏着另一条路。'],
+  ['Le bois doré s’effrite : saute avant qu’il ne tombe.', 'Golden wood crumbles: jump before it falls.', 'La madera dorada se desmorona: salta antes de que caiga.', 'يتفتت الخشب الذهبي: اقفز قبل أن يسقط.', '金色木板会碎裂，掉落前快跳走。'],
+  ['Les sentinelles tirent devant elles. Une étincelle ou un saut suffit.', 'Sentinels fire straight ahead. A spark or a jump is enough.', 'Los centinelas disparan hacia delante. Basta una chispa o un salto.', 'تطلق الحراس أمامها. تكفي شرارة أو قفزة.', '哨兵会向前射击，一束火花或一次跳跃就足够。'],
+  ['Deux petites plateformes, deux sauts. Prends ton temps avant de partir.', 'Two small platforms, two jumps. Take your time before setting off.', 'Dos plataformas pequeñas, dos saltos. Tómate tu tiempo antes de salir.', 'منصتان صغيرتان، قفزتان. تمهّل قبل الانطلاق.', '两个小平台，两次跳跃。出发前先看清楚。'],
+  ['Grelot d’écho : X révèle les marches de lune pendant quatre secondes.', 'Echo bell: X reveals moon steps for four seconds.', 'Cascabel de eco: X revela escalones lunares durante cuatro segundos.', 'جرس الصدى: يكشف X درجات القمر لأربع ثوانٍ.', '回声铃：按 X 显现月亮阶梯，持续四秒。'],
+  ['Le dernier éclat se cache près de la voûte.', 'The last shard hides near the vault.', 'El último fragmento se esconde cerca de la bóveda.', 'تختبئ الشظية الأخيرة قرب القبو العلوي.', '最后一块碎片藏在穹顶附近。'],
+  ['Le lagon est accueillant : tu peux rester sous l’eau sans limite.', 'The lagoon is welcoming: stay underwater as long as you like.', 'La laguna es acogedora: puedes quedarte bajo el agua sin límite.', 'البحيرة ترحب بك: يمكنك البقاء تحت الماء بلا حد.', '这片潟湖很友好，你可以一直待在水下。'],
+  ['Dans l’eau, appuie sur Saut pour nager vers la surface.', 'In water, press Jump to swim toward the surface.', 'En el agua, pulsa Salto para nadar hacia la superficie.', 'في الماء، اضغط القفز للسباحة نحو السطح.', '在水中按跳跃键，游向水面。'],
+  ['Les nénuphars mènent à un jardin suspendu au-dessus de l’eau.', 'The water lilies lead to a garden suspended above the water.', 'Los nenúfares llevan a un jardín suspendido sobre el agua.', 'تقود زنابق الماء إلى حديقة معلقة فوقه.', '睡莲通向水面上的悬空花园。'],
+  ['Les ombres te poursuivent si tu approches. Utilise les hauteurs.', 'Shadows chase you when you approach. Use the high ground.', 'Las sombras te persiguen si te acercas. Usa las alturas.', 'تلاحقك الظلال إن اقتربت. استخدم المرتفعات.', '靠近时影子会追来，利用高处避开它们。'],
+  ['Nage vers le haut pour rejoindre la dernière rive.', 'Swim upward to reach the last shore.', 'Nada hacia arriba para alcanzar la última orilla.', 'اسبح إلى الأعلى للوصول إلى الضفة الأخيرة.', '向上游，抵达最后的岸边。'],
+  ['Des îlots plus bas te rattrapent. Observe le mouvement des nacelles.', 'Lower islets can catch you. Watch the moving platforms.', 'Los islotes inferiores pueden recogerte. Observa las plataformas móviles.', 'تلتقطك الجزر الصغيرة السفلى. راقب حركة المنصات.', '下方的小岛会接住你，留意移动平台。'],
+  ['Les fleurs roses sont des tremplins : reste au centre et laisse-toi porter.', 'Pink flowers are springboards: stay in the middle and let them lift you.', 'Las flores rosas son trampolines: quédate en el centro y déjate llevar.', 'الزهور الوردية منصات قفز: ابق في الوسط ودعها ترفعك.', '粉色花朵是跳板，站在中央让它带你飞。'],
+  ['Les éclats préfèrent les chemins les plus hauts.', 'Shards favor the highest paths.', 'Los fragmentos prefieren los caminos más altos.', 'تفضّل الشظايا أعلى الطرق.', '碎片喜欢躲在最高的小路上。'],
+  ['La pierre pâle apparaît puis disparaît. Attends son retour avant de sauter.', 'Pale stone appears and disappears. Wait for its return before jumping.', 'La piedra pálida aparece y desaparece. Espera a que vuelva antes de saltar.', 'يظهر الحجر الشاحب ثم يختفي. انتظر عودته قبل القفز.', '苍白石块时隐时现，等它出现再跳。'],
+  ['Au-dessus de la lave, un saut précis vaut mieux qu’un départ précipité.', 'Above lava, a precise jump beats a rushed start.', 'Sobre la lava, un salto preciso vale más que salir con prisas.', 'فوق الحمم، قفزة دقيقة أفضل من انطلاقة متسرعة.', '岩浆之上，稳稳一跳胜过匆忙出发。'],
+  ['Les tapis te transportent. Le sens des chevrons indique le courant.', 'Conveyors carry you. Their chevrons show the direction.', 'Las cintas te transportan. Las flechas indican la dirección.', 'تنقلك الأحزمة. تشير الأسهم إلى اتجاه الحركة.', '传送带会带着你走，箭头指示方向。'],
+  ['Les pouvoirs sont des raccourcis : le chemin reste possible sans eux.', 'Powers are shortcuts: the route is possible without them.', 'Los poderes son atajos: el camino sigue siendo posible sin ellos.', 'القوى اختصارات: يمكن اجتياز الطريق من دونها.', '能力只是捷径，不用它们也能通过。'],
+  ['Le dormeur accumule ta présence. Traverse sans attendre, ou passe au-dessus.', 'The sleeper senses you lingering. Cross quickly or go over it.', 'El durmiente nota si te quedas. Cruza sin esperar o pasa por arriba.', 'يشعر النائم بطول بقائك. اعبر دون انتظار أو من فوقه.', '停留太久会惊动沉睡者，快穿过去或从上方绕行。'],
+  ['Une lanterne, un souffle… puis la dernière traversée.', 'A lantern, a breath… then the final crossing.', 'Una linterna, un respiro… y el último cruce.', 'فانوس ونفَس… ثم العبور الأخير.', '一盏灯笼，一次深呼吸……然后完成最后的穿越。'],
+  ['Les miroirs respirent : observe leur lueur avant de t’engager.', 'The mirrors breathe: watch their glow before committing.', 'Los espejos respiran: observa su brillo antes de avanzar.', 'تتنفّس المرايا: راقب توهجها قبل العبور.', '镜子在呼吸，出发前先观察它的光芒。'],
+  ['Les passages au sol restent ouverts. Les sommets récompensent la patience.', 'Ground routes stay open. The summits reward patience.', 'Los caminos del suelo siguen abiertos. Las cimas recompensan la paciencia.', 'تبقى المسارات الأرضية مفتوحة. تكافئ القمم الصبر.', '地面的通道始终畅通，山顶会奖励耐心。'],
+  ['Une plateforme qui monte peut te porter jusqu’au prochain reflet.', 'A rising platform can carry you to the next reflection.', 'Una plataforma ascendente puede llevarte al próximo reflejo.', 'قد تحملك منصة صاعدة إلى الانعكاس التالي.', '上升的平台能载你抵达下一道倒影。'],
+  ['Au-delà du givre, le vent garde encore des jardins à découvrir.', 'Beyond the frost, the wind holds more gardens to discover.', 'Más allá de la escarcha, el viento guarda jardines por descubrir.', 'وراء الصقيع، تخبئ الريح حدائق أخرى لتكتشفها.', '霜雪之外，风中还有等待发现的花园。'],
+  ['Bienvenue dans le jardin oublié. Chaque détour cache une lumière.', 'Welcome to the forgotten garden. Every detour hides a light.', 'Bienvenido al jardín olvidado. Cada desvío esconde una luz.', 'مرحبًا في الحديقة المنسية. كل درب جانبي يخفي ضوءًا.', '欢迎来到遗忘花园，每条岔路都藏着光。'],
+  ['Explore à ton rythme. Les éclats conservés apparaissent sur la carte.', 'Explore at your pace. Saved shards appear on the map.', 'Explora a tu ritmo. Los fragmentos guardados aparecen en el mapa.', 'استكشف على إيقاعك. تظهر الشظايا المحفوظة على الخريطة.', '按自己的节奏探索，收集的碎片会显示在地图上。'],
+  ['Suis l’escalier de pétales jusqu’au cœur du jardin.', 'Follow the petal staircase to the garden’s heart.', 'Sigue la escalera de pétalos hasta el corazón del jardín.', 'اتبع درج البتلات إلى قلب الحديقة.', '沿着花瓣阶梯，走向花园的中心。'],
+  ['Le jardin oublié rejoint les vergers du vent. Fais le plein de lumière.', 'The forgotten garden leads to the wind orchards. Gather your light.', 'El jardín olvidado conecta con los vergeles del viento. Llénate de luz.', 'تلتقي الحديقة المنسية ببساتين الريح. تزوّد بالنور.', '遗忘花园通向风之果园，带上满满的光芒。'],
+  ['Six arbres, trois fruits de lune. Les branches hautes dessinent une seconde route.', 'Six trees, three moon fruits. The high branches form a second route.', 'Seis árboles, tres frutos de luna. Las ramas altas trazan otra ruta.', 'ست أشجار وثلاث ثمار قمرية. ترسم الأغصان العليا طريقًا ثانيًا.', '六棵树，三颗月亮果实。高处的枝条连成另一条路。'],
+  ['Les papillons voyagent en essaim. Un saut dessus disperse toute leur lumière.', 'Butterflies travel in swarms. Jumping on them scatters their light.', 'Las mariposas viajan en enjambre. Saltar sobre ellas dispersa su luz.', 'تسافر الفراشات في أسراب. القفز عليها يشتت نورها.', '蝴蝶结伴而行，跳上去会让它们散成光点。'],
+  ['Sonne le grelot avec X : les feuilles translucides deviennent des plateformes.', 'Ring the bell with X: translucent leaves become platforms.', 'Toca el cascabel con X: las hojas translúcidas se vuelven plataformas.', 'اقرع الجرس بزر X: تتحول الأوراق الشفافة إلى منصات.', '按 X 摇铃，半透明叶片就会变成平台。'],
+  ['Le dormeur se réveille si tu restes près de lui. Traverse ou saute au-dessus.', 'The sleeper wakes if you linger nearby. Cross or jump over it.', 'El durmiente despierta si te quedas cerca. Cruza o salta por encima.', 'يستيقظ النائم إذا بقيت قربه. اعبر أو اقفز فوقه.', '在旁边待久了会唤醒沉睡者，穿过去或跳过去。'],
+  ['Le courant des branches porte ta course. Les lanternes t’attendent au sol.', 'The branches’ current carries your run. Lanterns wait below.', 'La corriente de las ramas impulsa tu carrera. Las linternas esperan abajo.', 'يدعم تيار الأغصان ركضك. تنتظرك الفوانيس على الأرض.', '枝间的气流助你奔跑，地面的灯笼在等你。'],
+  ['La dernière cime se gagne marche après marche. Son fruit n’attend que toi.', 'Reach the final treetop step by step. Its fruit is waiting for you.', 'La última copa se alcanza paso a paso. Su fruto te espera.', 'تصل إلى القمة الأخيرة درجة درجة. ثمرتها تنتظرك.', '一级一级登上最后的树梢，果实正等着你。'],
+  ['La galerie résonne de tes pas. Les dormeurs préfèrent le silence.', 'The gallery echoes your footsteps. Sleepers prefer silence.', 'La galería resuena con tus pasos. Los durmientes prefieren el silencio.', 'يردد الرواق وقع خطواتك. يفضّل النائمون الصمت.', '脚步声回荡在长廊里，沉睡者更喜欢安静。'],
+  ['Les marches d’écho restent quatre secondes. Le chemin de pierre reste toujours ouvert.', 'Echo steps last four seconds. The stone path always stays open.', 'Los escalones de eco duran cuatro segundos. El camino de piedra siempre está abierto.', 'تبقى درجات الصدى أربع ثوانٍ. يظل الطريق الحجري مفتوحًا دائمًا.', '回声阶梯只持续四秒，石路始终可走。'],
+  ['Les notes dorées s’effritent. Saute à la suivante dès que tu touches la surface.', 'Golden notes crumble. Jump to the next as soon as you land.', 'Las notas doradas se desmoronan. Salta a la siguiente en cuanto aterrices.', 'تتفتت النغمات الذهبية. اقفز إلى التالية فور ملامستك السطح.', '金色音符会碎裂，一落地就跳向下一个。'],
+  ['Une lanterne avant le dernier mouvement. Respire et observe les essaims.', 'A lantern before the final movement. Breathe and watch the swarms.', 'Una linterna antes del último movimiento. Respira y observa los enjambres.', 'فانوس قبل الحركة الأخيرة. تنفّس وراقب الأسراب.', '最后一段前有盏灯笼，深呼吸，观察蝶群。'],
+  ['Le puits de lumière cache un détour. Le grelot révèle ses contours.', 'The light well hides a detour. The bell reveals its outline.', 'El pozo de luz esconde un desvío. El cascabel revela su contorno.', 'تخفي بئر الضوء طريقًا جانبيًا. يكشف الجرس حدوده.', '光井藏着岔路，铃声会显现它的轮廓。'],
+  ['Un dernier escalier. Au-delà de cette porte, le Veilleur de l’éclipse.', 'One last staircase. Beyond that gate, the Eclipse Watcher.', 'Una última escalera. Tras esa puerta, el Vigía del Eclipse.', 'درج أخير. خلف البوابة ينتظر حارس الكسوف.', '最后一段阶梯。门后，就是日蚀守望者。'],
+  ['Appuie sur X : ta voix réveille ce qui dort autour de toi.', 'Press X: your voice awakens what sleeps around you.', 'Pulsa X: tu voz despierta lo que duerme a tu alrededor.', 'اضغط X: يوقظ صوتك ما ينام حولك.', '按 X，你的声音会唤醒周围沉睡的一切。'],
+  ['Ce bouton attend d’être appelé. Réveille-le, puis saute dessus.', 'This bud is waiting for your call. Wake it, then jump on it.', 'Este brote espera tu llamada. Despiértalo y salta sobre él.', 'ينتظر هذا البرعم نداءك. أيقظه ثم اقفز عليه.', '这个花苞在等待呼唤，唤醒它，再跳上去。'],
+  ['Trois boutons, un escalier. Prends ton temps : rien ne peut te blesser ici.', 'Three buds, one staircase. Take your time: nothing can hurt you here.', 'Tres brotes, una escalera. Tómate tu tiempo: aquí nada puede hacerte daño.', 'ثلاثة براعم، درج واحد. تمهّل، لا شيء يؤذيك هنا.', '三个花苞，一道阶梯。慢慢来，这里没有危险。'],
+  ['Le pont ne dure que six secondes. Rappelle-le sous tes pieds si besoin.', 'The bridge lasts six seconds. Call it back under your feet if needed.', 'El puente dura seis segundos. Vuelve a llamarlo bajo tus pies si hace falta.', 'يدوم الجسر ست ثوانٍ فقط. ناده مجددًا تحت قدميك عند الحاجة.', '桥只能维持六秒，需要时可在脚下再次呼唤它。'],
+  ['Le gouffre est hors de portée de ta voix. Mais le carillon, lui, est à portée.', 'Your voice cannot reach across the chasm. But it can reach the chime.', 'Tu voz no alcanza el otro lado del abismo, pero sí la campanilla.', 'الهاوية خارج مدى صوتك، لكن الرنان في متناوله.', '你的声音够不到深渊彼岸，但能传到风铃那里。'],
+  ['Un carillon réveillé renvoie l’onde plus loin que toi.', 'An awakened chime relays the wave beyond your reach.', 'Una campanilla despierta lleva la onda más lejos.', 'يعيد الرنان المستيقظ إرسال الموجة أبعد منك.', '苏醒的风铃会将波纹传向更远处。'],
+  ['Celui-ci dort en travers du chemin. Appelle-le doucement plutôt que de l’attendre.', 'This one sleeps across the path. Call gently instead of waiting.', 'Este duerme en medio del camino. Llámalo suavemente en vez de esperar.', 'ينام هذا في وسط الطريق. ناده بلطف بدل الانتظار.', '它睡在路中间，轻轻呼唤它，不用等待。'],
+  ['Le verger respire. La porte est au bout, et une lumière se cache tout en haut.', 'The orchard breathes. The gate is ahead, and a light hides at the top.', 'El vergel respira. La puerta está al fondo y una luz se esconde arriba.', 'يتنفّس البستان. البوابة في النهاية وضوء يختبئ في الأعلى.', '果园在呼吸。门就在尽头，高处还藏着一束光。'],
+  ['Les neuf jardins brillent derrière toi. La lune attend le dernier éclat.', 'Nine gardens shine behind you. The moon awaits the final shard.', 'Nueve jardines brillan a tu espalda. La luna espera el último fragmento.', 'تضيء الحدائق التسع خلفك. ينتظر القمر الشظية الأخيرة.', '身后的九座花园已亮起，月亮在等待最后的碎片。'],
+  ['Un dernier passage, puis le Gardien. La prochaine lanterne est tout près.', 'One last passage, then the Guardian. The next lantern is nearby.', 'Un último paso y el Guardián. La próxima linterna está cerca.', 'ممر أخير ثم الحارس. الفانوس التالي قريب.', '通过最后一段路，就能见到守护者。下一盏灯笼就在附近。'],
+  ['Gardien : esquive ses attaques. Frappe sa tête lorsqu’il se repose.', 'Guardian: dodge its attacks. Hit its head while it rests.', 'Guardián: esquiva sus ataques. Golpea su cabeza cuando descanse.', 'الحارس: تفادَ هجماته. اضرب رأسه عندما يستريح.', '守护者：躲开攻击，趁它休息时攻击头部。'],
+  ['Sa lumière change avant chaque attaque. Observe, saute, puis riposte.', 'Its light changes before each attack. Watch, jump, then strike back.', 'Su luz cambia antes de atacar. Observa, salta y responde.', 'يتغير نوره قبل كل هجوم. راقب، اقفز، ثم ردّ.', '每次攻击前，它的光都会变化。观察、跳跃，再反击。'],
+  ['Le premier souffle.', 'The first breath.', 'El primer aliento.', 'النَفَس الأول.', '第一缕气息。'],
+  ['Le premier souffle', 'The first breath', 'El primer aliento', 'النَفَس الأول', '第一缕气息'],
+  ['Rends son souffle à la coupole.', 'Restore the dome’s breath.', 'Devuelve el aliento a la cúpula.', 'أعد النَفَس إلى القبة.', '让穹顶重新呼吸。'],
+  ['Vesper', 'Vesper', 'Vesper', 'فيسبر', '维斯珀'],
+  ['Ombeline', 'Ombeline', 'Ombeline', 'أومبيلين', '翁贝琳'],
+  ['L’archiviste de la coupole', 'Keeper of the dome’s records', 'El archivista de la cúpula', 'أمين أرشيف القبة', '穹顶档案员'],
+  ['La veilleuse de la porte', 'Keeper of the gate', 'La guardiana de la puerta', 'حارسة البوابة', '守门人'],
+  ['Ah, une petite lumière. Bienvenue.', 'Ah, a little light. Welcome.', 'Ah, una pequeña luz. Bienvenida.', 'آه، ضوء صغير. أهلًا بك.', '啊，一点小小的光。欢迎你。'],
+  ['La coupole a perdu son souffle : ses trois carillons se sont tus.', 'The dome has lost its breath: its three chimes have fallen silent.', 'La cúpula ha perdido el aliento: sus tres campanillas callaron.', 'فقدت القبة نَفَسها: صمتت رناناتها الثلاثة.', '穹顶失去了气息，三只风铃都沉默了。'],
+  ['Approche-toi d’eux et appelle. Ta voix suffira.', 'Go near them and call. Your voice will be enough.', 'Acércate y llama. Tu voz bastará.', 'اقترب منها ونادِ. سيكفي صوتك.', '靠近它们，呼唤吧。你的声音就足够了。'],
+  ['Continue. Un carillon réveillé en appelle un autre.', 'Keep going. One awakened chime calls another.', 'Sigue. Una campanilla despierta llama a otra.', 'تابع. ينادي الرنان المستيقظ رنانًا آخر.', '继续吧，一只苏醒的风铃会呼唤另一只。'],
+  ['Je note tout, tu sais. C’est mon seul talent.', 'I write everything down, you know. It is my only talent.', 'Lo anoto todo, ¿sabes? Es mi único talento.', 'أدوّن كل شيء، أتعلم؟ تلك موهبتي الوحيدة.', '我什么都会记下来。这是我唯一的本领。'],
+  ['Écoute-la respirer. Je n’avais pas entendu ça depuis longtemps.', 'Listen to it breathe. I had not heard that in so long.', 'Escucha cómo respira. Hacía mucho que no oía eso.', 'اسمعها تتنفّس. لم أسمع ذلك منذ زمن طويل.', '听，它在呼吸。我已经很久没听到了。'],
+  ['Va voir Ombeline. Elle t’attendait, elle, bien avant moi.', 'Go see Ombeline. She was waiting for you long before I was.', 'Ve a ver a Ombeline. Ella te esperaba desde mucho antes que yo.', 'اذهب إلى أومبيلين. كانت تنتظرك منذ وقت أطول مني.', '去找翁贝琳吧，她比我更早就在等你了。'],
+  ['Cette porte ? Elle ne mène nulle part tant que la coupole se tait.', 'This gate? It leads nowhere while the dome is silent.', '¿Esta puerta? No lleva a ninguna parte mientras la cúpula calle.', 'هذه البوابة؟ لا تؤدي إلى شيء ما دامت القبة صامتة.', '这扇门？穹顶沉默时，它哪里也去不了。'],
+  ['Réveille les carillons. Ensuite on parlera.', 'Awaken the chimes. Then we can talk.', 'Despierta las campanillas. Después hablaremos.', 'أيقظ الرنانات. ثم نتحدث.', '先唤醒风铃，我们再聊。'],
+  ['Pas encore. J’entends qu’il en manque.', 'Not yet. I can hear that some are missing.', 'Todavía no. Oigo que faltan algunas.', 'ليس بعد. أسمع أن بعضها ما زال غائبًا.', '还没好，我听得出还有声音没回来。'],
+  ['Voilà. Derrière cette porte, les jardins rêvent.', 'There. Beyond this gate, the gardens dream.', 'Ahí está. Detrás de esta puerta, los jardines sueñan.', 'ها نحن. خلف هذه البوابة تحلم الحدائق.', '好了，门的另一边，花园正在做梦。'],
+  ['Chaque nuit ils inventent un chemin différent. Tu veux voir ?', 'Every night they invent a different path. Want to see?', 'Cada noche inventan un camino distinto. ¿Quieres verlo?', 'تبتكر كل ليلة طريقًا مختلفًا. أتريد رؤيته؟', '每一夜它们都会创造不同的道路。想看看吗？'],
+  ['Réveille les trois carillons de la coupole.', 'Awaken the dome’s three chimes.', 'Despierta las tres campanillas de la cúpula.', 'أيقظ رنانات القبة الثلاث.', '唤醒穹顶的三只风铃。'],
+  ['La porte des rêves s’ouvre.', 'The dream gate opens.', 'La puerta de los sueños se abre.', 'تُفتح بوابة الأحلام.', '梦境之门开启了。'],
+  ['Ici, rien ne peut vous blesser. Parlez à Vesper, puis regardez en haut.', 'Nothing can hurt you here. Talk to Vesper, then look up.', 'Aquí nada puede hacerte daño. Habla con Vesper y mira arriba.', 'لا شيء يؤذيك هنا. تحدث إلى فيسبر ثم انظر للأعلى.', '这里没有危险。和维斯珀聊聊，再抬头看看。'],
+  ['Les carillons sont posés sur les corniches. Approchez-vous et appelez avec X.', 'The chimes sit on the ledges. Approach and call with X.', 'Las campanillas están en las cornisas. Acércate y llama con X.', 'الرنانات على الحواف. اقترب ونادِ بزر X.', '风铃在平台上，靠近后按 X 呼唤。'],
+  ['Ombeline garde la porte des rêves.', 'Ombeline guards the dream gate.', 'Ombeline cuida la puerta de los sueños.', 'تحرس أومبيلين بوابة الأحلام.', '翁贝琳守护着梦境之门。'],
+  ['Un chemin', 'A path', 'Un camino', 'طريق', '一条小路'],
+  ['Des corniches et des trous francs.', 'Ledges and clear gaps.', 'Cornisas y huecos bien visibles.', 'حواف وفجوات واضحة.', '平台和清晰可见的缺口。'],
+  ['Une clairière', 'A clearing', 'Un claro', 'فسحة', '一片林间空地'],
+  ['Calme. Quelque chose brille en hauteur.', 'Quiet. Something shines up above.', 'Calma. Algo brilla en lo alto.', 'هدوء. شيء يلمع في الأعلى.', '很安静，上方有什么在闪光。'],
+  ['Un silence', 'A silence', 'Un silencio', 'صمت', '一片寂静'],
+  ['Quelque chose y dort. Il faudra appeler.', 'Something sleeps there. You will need to call.', 'Algo duerme allí. Tendrás que llamar.', 'شيء ينام هناك. ستحتاج إلى النداء.', '有东西沉睡着，需要你的呼唤。'],
+  ['Des veilleurs', 'Watchers', 'Vigías', 'حراس', '守望者们'],
+  ['Trois créatures, sur un sol plein.', 'Three creatures on solid ground.', 'Tres criaturas sobre suelo firme.', 'ثلاثة مخلوقات على أرض ثابتة.', '三只生物，脚下是坚实地面。'],
+  ['Des aiguilles', 'Needles', 'Agujas', 'إبر', '尖刺之路'],
+  ['Un trésor en hauteur, une route sûre en bas.', 'Treasure above, a safe route below.', 'Un tesoro arriba, un camino seguro abajo.', 'كنز في الأعلى وطريق آمن في الأسفل.', '高处有宝藏，下方有安全路线。'],
+  ['Un refuge', 'A shelter', 'Un refugio', 'ملجأ', '一处避难所'],
+  ['On y souffle, et la nuit s’y enregistre.', 'Rest here and save the night.', 'Aquí descansas y guardas la noche.', 'تستريح هنا وتُحفظ الليلة.', '在这里歇歇脚，保存今夜的进度。'],
+  ['Le gardien', 'The guardian', 'El guardián', 'الحارس', '守护者'],
+  ['L’arène. Il n’y a plus qu’à.', 'The arena. Time to begin.', 'La arena. Ha llegado el momento.', 'الساحة. حان الوقت.', '竞技场，该开始了。'],
+  ['Rends sa lumière au gardien du rêve.', 'Restore the dream guardian’s light.', 'Devuelve la luz al guardián del sueño.', 'أعد النور إلى حارس الحلم.', '让梦境守护者重获光芒。'],
+  ['Trouve la porte suivante.', 'Find the next gate.', 'Encuentra la siguiente puerta.', 'اعثر على البوابة التالية.', '找到下一扇门。'],
+  ['Un rêve nomade. X appelle, comme toujours.', 'A wandering dream. X calls, as always.', 'Un sueño nómada. X llama, como siempre.', 'حلم رحّال. ينادي X كما دائمًا.', '一场流浪梦境，还是按 X 呼唤。'],
+  ['Corolle persistante', 'Lasting blossom', 'Corola persistente', 'تويج دائم', '不凋花冠'],
+  ['Votre onde laisse une fleur-tremplin là où elle est née.', 'Your wave leaves a springboard flower where it began.', 'Tu onda deja una flor trampolín donde nació.', 'تترك موجتك زهرة قافزة في موضع ولادتها.', '波纹会在起点留下一朵跳板花。'],
+  ['Souffle d’azur', 'Azure breath', 'Aliento celeste', 'نَفَس لازوردي', '苍蓝气息'],
+  ['Votre second saut émet une onde plus faible.', 'Your second jump emits a smaller wave.', 'Tu segundo salto emite una onda más débil.', 'تطلق قفزتك الثانية موجة أضعف.', '二段跳会发出一道较弱的波纹。'],
+  ['Sillage de comète', 'Comet trail', 'Estela de cometa', 'أثر المذنب', '彗星尾迹'],
+  ['Votre ruée réveille tout ce qu’elle traverse.', 'Your dash awakens everything it crosses.', 'Tu impulso despierta todo lo que atraviesa.', 'يوقظ اندفاعك كل ما يعبره.', '冲刺会唤醒沿途的一切。'],
+  ['Alizé du pont', 'Bridge breeze', 'Brisa del puente', 'نسيم الجسر', '桥上微风'],
+  ['Un pont réveillé garde un vent qui pousse dans le sens de la traversée.', 'An awakened bridge holds a breeze that pushes you across.', 'Un puente despierto conserva una brisa que te empuja al cruzarlo.', 'يحفظ الجسر المستيقظ ريحًا تدفعك في اتجاه العبور.', '苏醒的桥会留住顺风，助你穿行。'],
+  ['Escalier de corolles', 'Blossom staircase', 'Escalera de corolas', 'درج التويجات', '花冠阶梯'],
+  ['Chaque second saut sème une fleur sous vos pieds : on peut monter de saut en saut tant qu’on garde le rythme.', 'Every second jump plants a flower beneath you: climb from jump to jump while keeping the rhythm.', 'Cada segundo salto planta una flor bajo tus pies: sube de salto en salto mientras mantengas el ritmo.', 'تزرع كل قفزة ثانية زهرة تحت قدميك: اصعد قفزة بعد قفزة ما دمت تحافظ على الإيقاع.', '每次二段跳都会在脚下种花，保持节奏就能一步步向上。'],
+  ['Traversée filante', 'Shooting-star crossing', 'Travesía fugaz', 'عبور خاطف', '流星穿行'],
+  ['La ruée réveille le pont qu’elle aborde, et le vent du pont la prolonge.', 'Your dash awakens the bridge ahead, and its breeze carries you farther.', 'El impulso despierta el puente y su brisa prolonga la travesía.', 'يوقظ الاندفاع الجسر أمامه وتطيله ريح الجسر.', '冲刺唤醒前方的桥，桥上的风让你走得更远。'],
+  ['Sauvegarde principale illisible : la copie de secours a été restaurée.', 'The main save was unreadable: the backup has been restored.', 'La partida principal no se podía leer: se ha restaurado la copia de seguridad.', 'تعذّرت قراءة الحفظ الرئيسي: استُعيدت النسخة الاحتياطية.', '主存档无法读取，已恢复备份。'],
+  ['Cette sauvegarde vient d’une version plus récente de LUMEN : elle est laissée intacte, et cette partie ne sera pas enregistrée.', 'This save is from a newer LUMEN version. It is left untouched, and this session will not be saved.', 'Esta partida es de una versión más reciente de LUMEN. No se modificará y esta sesión no se guardará.', 'هذا الحفظ من إصدار أحدث من LUMEN. سيبقى دون تغيير ولن تُحفظ هذه الجلسة.', '此存档来自更新版本的 LUMEN。原存档不会更改，本次游戏也不会保存。'],
+  ['Sauvegarde indisponible : la progression reste disponible pendant cette session.', 'Saving is unavailable: progress remains available during this session.', 'No se puede guardar: el progreso se conserva durante esta sesión.', 'الحفظ غير متاح: يبقى التقدم متاحًا خلال هذه الجلسة.', '无法保存，进度仅在本次会话中保留。'],
+  ['La porte des rêves ne s’ouvre qu’une fois la coupole rendue à son souffle.', 'The dream gate opens only once the dome can breathe again.', 'La puerta de los sueños se abre cuando la cúpula recupera el aliento.', 'لا تُفتح بوابة الأحلام حتى تستعيد القبة نَفَسها.', '只有让穹顶重新呼吸，梦境之门才会开启。'],
+  ['Aller à l’observatoire', 'Go to the observatory', 'Ir al observatorio', 'اذهب إلى المرصد', '前往天文台'],
+  ['Cette nuit n’a pas pu être reprise : elle repart du début.', 'This night could not be resumed: it starts from the beginning.', 'No se pudo retomar esta noche: empieza desde el principio.', 'تعذّرت متابعة هذه الليلة: تبدأ من أولها.', '无法继续这一夜，将从头开始。'],
+  ['Refuge · la nuit est enregistrée. Vous pourrez repartir d’ici.', 'Shelter · the night is saved. You can resume here.', 'Refugio · la noche está guardada. Puedes continuar desde aquí.', 'ملجأ · حُفظت الليلة. يمكنك المتابعة من هنا.', '避难所 · 梦境已保存，可从这里继续。'],
+  ['Cette nuit a été rêvée dans une version antérieure : elle ne peut pas être reprise.', 'This night was dreamed in an older version and cannot be resumed.', 'Esta noche se soñó en una versión anterior y no puede retomarse.', 'حُلِمت هذه الليلة في إصدار أقدم ولا يمكن متابعتها.', '这一夜来自旧版本，无法继续。'],
+  ['Le pouvoir s’est dissipé. Continuez votre voyage !', 'The power has faded. Continue your journey!', 'El poder se ha disipado. ¡Continúa tu viaje!', 'تلاشت القوة. واصل رحلتك!', '能力消散了，继续你的旅程吧！'],
+  ['Le Veilleur s’éveille. Visez sa couronne lorsqu’elle brille !', 'The Watcher awakens. Aim for its crown when it shines!', 'El Vigía despierta. ¡Apunta a su corona cuando brille!', 'يستيقظ الحارس. استهدف تاجه حين يلمع!', '守望者苏醒了，趁王冠发光时攻击！'],
+  ['Le Veilleur se referme. L’arène se resserre et ses attaques s’enchaînent.', 'The Watcher closes its armor. The arena narrows and attacks come faster.', 'El Vigía cierra su armadura. La arena se estrecha y sus ataques se encadenan.', 'يغلق الحارس درعه. تضيق الساحة وتتتابع هجماته.', '守望者收拢护甲，场地缩小，攻击接踵而至。'],
+  ['Dernier tiers ! Sa lumière vacille — tenez bon.', 'Final third! Its light is wavering. Hold on.', '¡Último tercio! Su luz vacila. Resiste.', 'الثلث الأخير! نوره يتذبذب. اصمد.', '最后三分之一！它的光在摇曳，坚持住。'],
+  ['Le Veilleur retrouve sa lumière. Rejoignez la porte lunaire !', 'The Watcher regains its light. Reach the moon gate!', 'El Vigía recupera su luz. ¡Ve a la puerta lunar!', 'يستعيد الحارس نوره. اتجه إلى بوابة القمر!', '守望者重获光芒，前往月亮之门！'],
+  ['40 éclats : une vie supplémentaire !', '40 lights: an extra life!', '¡40 destellos: una vida extra!', '40 ومضة: محاولة إضافية!', '40 个光屑：额外一条生命！'],
+  ['Fragment lunaire +500', 'Moon shard +500', 'Fragmento lunar +500', 'شظية قمرية +500', '月亮碎片 +500'],
+  ['Une nouvelle énergie', 'Fresh energy', 'Energía renovada', 'طاقة جديدة', '恢复活力'],
+  ['Passage secret +750', 'Secret path +750', 'Pasaje secreto +750', 'ممر سري +750', '秘密通道 +750'],
+  ['Fleur solaire · X pour lancer des graines de lumière', 'Sunflower · X to fire light seeds', 'Flor solar · X para lanzar semillas de luz', 'زهرة الشمس · X لإطلاق بذور الضوء', '太阳花 · 按 X 发射光之种子'],
+  ['Plume d’azur · Un second saut dans les airs', 'Azure feather · A second jump in midair', 'Pluma celeste · Un segundo salto en el aire', 'ريشة لازوردية · قفزة ثانية في الهواء', '苍蓝羽毛 · 空中二段跳'],
+  ['Cœur comète · X pour une ruée protectrice', 'Comet heart · X for a protective dash', 'Corazón de cometa · X para un impulso protector', 'قلب المذنب · X لاندفاع واقٍ', '彗星之心 · 按 X 保护冲刺'],
+  ['Grelot d’écho · X pour révéler les chemins cachés pendant 4 s', 'Echo bell · X to reveal hidden paths for 4 s', 'Cascabel de eco · X para revelar caminos ocultos durante 4 s', 'جرس الصدى · X لكشف الطرق الخفية لمدة 4 ث', '回声铃 · 按 X 显现隐藏路径，持续 4 秒'],
+  ['Un nouveau pouvoir !', 'A new power!', '¡Un nuevo poder!', 'قوة جديدة!', '获得新能力！'],
+  ['Lanterne allumée · Énergie restaurée, passage mémorisé', 'Lantern lit · Energy restored, checkpoint saved', 'Linterna encendida · Energía restaurada, punto de control guardado', 'أُضيء الفانوس · استُعيدت الطاقة وحُفظت نقطة المرور', '灯笼点亮 · 恢复活力，记录检查点'],
+  ['Passage secret découvert ! Le Jardin oublié vous attend dans l’atlas.', 'Secret path found! The Forgotten Garden awaits in the atlas.', '¡Pasaje secreto descubierto! El Jardín Olvidado te espera en el atlas.', 'اكتُشف ممر سري! تنتظرك الحديقة المنسية في الأطلس.', '发现秘密通道！遗忘花园在地图上等着你。'],
+  ['CONFORT ET ACCESSIBILITÉ', 'COMFORT AND ACCESSIBILITY', 'COMODIDAD Y ACCESIBILIDAD', 'الراحة وإمكانية الوصول', '舒适与无障碍']
+]);
+</script>
   <script>
 /* LUMEN — déterminisme des rêves nomades.
  *
@@ -1099,7 +1767,7 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35 },
+      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto' },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -1176,6 +1844,7 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
       profile.settings.reducedEffects = !!raw.settings.reducedEffects;
       profile.settings.songStyle = raw.settings.songStyle === 'flow' ? 'flow' : 'gentle';
       profile.settings.volume = clamp(finite(raw.settings.volume, .35), 0, 1);
+      profile.settings.language = ['en', 'fr', 'es', 'ar', 'zh'].includes(raw.settings.language) ? raw.settings.language : 'auto';
     }
     if (isObject(raw.hub)) {
       if (isObject(raw.hub.quests)) {
@@ -1390,6 +2059,7 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
     setting(name) { return this.profile.settings[name]; }
     setSetting(name, value) {
       if (!(name in this.profile.settings)) return false;
+      if (name === 'language' && !['auto', 'en', 'fr', 'es', 'ar', 'zh'].includes(value)) return false;
       this.profile.settings[name] = value;
       this.save();
       return true;
@@ -3548,7 +4218,7 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
       }
       for (const w of game.waves || []) this.wave(c, w, t);
       for (const part of game.particles || []) if (this.visible(part, 25)) this.particle(c, part);
-      for (const ft of game.floatingTexts || []) { c.save(); c.globalAlpha = Math.min(1, Math.max(0, ft.life || 0)); c.textAlign = 'center'; c.font = '700 17px "Trebuchet MS", sans-serif'; c.shadowColor = '#12343b'; c.shadowBlur = 3; c.fillStyle = ft.color || '#fff0b7'; c.fillText(ft.text || '', ft.x, ft.y); c.restore(); }
+      for (const ft of game.floatingTexts || []) { c.save(); c.globalAlpha = Math.min(1, Math.max(0, ft.life || 0)); c.textAlign = 'center'; c.font = '700 17px "Trebuchet MS", sans-serif'; c.direction = window.LumenI18n?.direction || 'ltr'; c.shadowColor = '#12343b'; c.shadowBlur = 3; c.fillStyle = ft.color || '#fff0b7'; c.fillText(window.LumenI18n?.t(ft.text || '') || ft.text || '', ft.x, ft.y); c.restore(); }
       if (level.water) this.water(c, level.water, cameraX, t, p);
       c.restore();
       this.foreground(c, t, cameraX, p, theme);
@@ -4600,8 +5270,9 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
     }
     ellipse(ctx, -10, 5, 2.4, 1.5, '#ef9c8b'); ellipse(ctx, 10, 5, 2.4, 1.5, '#ef9c8b');
     if (!found) {
-      ctx.textAlign = 'center'; ctx.font = '600 13px Outfit, sans-serif'; ctx.fillStyle = '#245c60';
-      ctx.fillText(echo.name, 0, 51);
+      ctx.textAlign = 'center'; ctx.font = '600 13px ' + (global.LumenI18n?.canvasFont || 'Outfit, sans-serif'); ctx.fillStyle = '#245c60';
+      ctx.direction = global.LumenI18n?.direction || 'ltr';
+      ctx.fillText(global.LumenI18n?.t(echo.name) || echo.name, 0, 51);
     }
     ctx.restore();
   }
@@ -4788,8 +5459,10 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
     }
     for (const text of game.floatingTexts) {
       ctx.save(); ctx.globalAlpha = Math.min(1, Math.max(0, text.life)); ctx.textAlign = 'center';
-      ctx.font = '600 16px Outfit, sans-serif'; ctx.fillStyle = '#fff6d8'; ctx.strokeStyle = '#285a5b'; ctx.lineWidth = 3;
-      ctx.strokeText(text.text, text.x, text.y); ctx.fillText(text.text, text.x, text.y); ctx.restore();
+      ctx.font = '600 16px ' + (global.LumenI18n?.canvasFont || 'Outfit, sans-serif'); ctx.fillStyle = '#fff6d8'; ctx.strokeStyle = '#285a5b'; ctx.lineWidth = 3;
+      const label = global.LumenI18n?.t(text.text) || text.text;
+      ctx.direction = global.LumenI18n?.direction || 'ltr';
+      ctx.strokeText(label, text.x, text.y); ctx.fillText(label, text.x, text.y); ctx.restore();
     }
     ctx.restore();
     for (const side of [-1, 1]) {
@@ -6125,10 +6798,12 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
 (function (global) {
   'use strict';
   const byId = id => document.getElementById(id);
+  const I18n = global.LumenI18n;
+  const translate = (source, values) => I18n.t(source, values);
   const icon = name => global.LumenIcons?.[name] || '';
   const escape = value => String(value).replace(/[&<>"']/g, letter => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[letter]));
   const clock = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-  const roundButton = (command, name, glyph) => `<button class="song-icon" data-command="${command}" aria-label="${name}" title="${name}">${icon(glyph)}</button>`;
+  const roundButton = (command, name, glyph) => `<button class="song-icon" data-command="${command}" aria-label="${escape(translate(name))}" title="${escape(translate(name))}">${icon(glyph)}</button>`;
   let game, helpers, pane = null, renderedPane = null, lastResult = null, returnFocus = null, pendingStyle = null;
   let lastHud = '', frameTime = 0;
 
@@ -6175,7 +6850,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     let content = '';
     if (pane === 'pause') {
       content = title('UNE PAUSE DANS LE VOYAGE', 'Le ciel peut attendre.') +
-        `<p class="song-dialog-sub">${escape(game.level.name)}</p><div class="song-pause-echoes">${echoes()}</div>
+        `<p class="song-dialog-sub">${escape(translate(game.level.name))}</p><div class="song-pause-echoes">${echoes()}</div>
         <div class="song-dialog-actions"><button class="song-button song-primary" data-command="resume">${icon('play')} Reprendre le vol</button>
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
@@ -6184,7 +6859,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       content = title('LES TROIS ÎLES DU CHANT', 'L’archipel des voix') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
         const record = game.store.chapter(island.key), unlocked = !index || game.store.chapter(global.LumenSong.ISLANDS[index - 1].key)?.completed;
         const voices = island.lights.filter(echo => game.progress.codex.creatures.includes('chant-' + echo.id)).length;
-        return `<button class="song-island" data-song-island="${index}" ${unlocked ? '' : 'disabled'} aria-label="${escape(island.name)}${unlocked ? '' : ', verrouillée'}">
+        const name = translate(island.name);
+        return `<button class="song-island" data-song-island="${index}" ${unlocked ? '' : 'disabled'} aria-label="${escape(unlocked ? name : translate('{name}, verrouillée', { name }))}">
           <div class="song-island-art"><canvas data-island-preview="${index}" width="640" height="300" aria-hidden="true"></canvas><span>${String(index + 1).padStart(2, '0')}</span></div>
           <div class="song-island-copy"><small>${record?.completed ? 'LE CHŒUR EST RÉUNI' : unlocked ? 'LE VOYAGE CONTINUE' : 'LE CHANT ATTEND'}</small><h3>${escape(island.name)}</h3>
           <p>${escape(island.subtitle)}</p><div class="song-island-meta"><span>${icon('sparkles')} ${voices} / 3</span><span>${icon('feather')} ${record?.stars || 0} / 3</span>${record?.bestTimedTime ? `<span>${icon('wind')} ${clock(record.bestTimedTime)}</span>` : ''}</div></div>
@@ -6193,7 +6869,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
-        `<div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
+        `<label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
+        <div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
         <label class="song-settings-row song-range-row" for="song-volume"><span>Volume</span><input id="song-volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" data-song-pref="volume"><output id="song-volume-value">${Math.round(settings.volume * 100)} %</output></label>
         <label class="song-settings-row" for="song-reduced"><span>Mouvements réduits</span><input id="song-reduced" type="checkbox" role="switch" data-song-pref="reducedEffects" ${settings.reducedEffects ? 'checked' : ''}></label>
         <label class="song-settings-row" for="song-left"><span>Commandes pour gaucher</span><input id="song-left" type="checkbox" role="switch" data-song-pref="leftHanded" ${settings.leftHanded ? 'checked' : ''}></label>
@@ -6201,7 +6878,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <button class="song-button song-primary" data-command="song-close">${icon('check')} Revenir au ciel</button>`;
     } else if (pane === 'confirm-style') {
       content = title('UN NOUVEAU DÉPART', 'Changer de rythme ?') +
-        `<p class="song-dialog-sub">Cette île recommencera. Les îles achevées restent acquises.</p><div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-apply-style">${icon('rotate-ccw')} Partir en ${pendingStyle === 'flow' ? 'Élan' : 'Balade'}</button><button class="song-button" data-command="song-close">Annuler</button></div>`;
+        `<p class="song-dialog-sub">Cette île recommencera. Les îles achevées restent acquises.</p><div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-apply-style">${icon('rotate-ccw')} ${escape(translate('Partir en {style}', { style: translate(pendingStyle === 'flow' ? 'Élan' : 'Balade') }))}</button><button class="song-button" data-command="song-close">Annuler</button></div>`;
     } else if (pane === 'result' && lastResult) {
       const result = lastResult;
       content = `<div class="song-result-mark">${icon(result.final ? 'sun' : 'sparkles')}</div>` +
@@ -6215,8 +6892,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <button class="song-text-button" data-command="song-retry">${icon('rotate-ccw')} Rejouer cette île</button></div>`;
     }
     panel.innerHTML = closeButton + content;
+    I18n.translateDOM(panel);
+    const languageSelect = panel.querySelector('[data-language-select]');
+    if (languageSelect) languageSelect.value = game.progress.settings.language;
     if (pane === 'atlas') renderPreviews();
-    const focus = panel.querySelector('.song-primary, [data-song-island]:not(:disabled), input, button');
+    const focus = panel.querySelector('.song-primary, [data-song-island]:not(:disabled), input, select, button');
     requestAnimationFrame(() => { if (!byId('song-overlay').hidden) (focus || panel).focus({ preventScroll: true }); });
   }
   function renderPreviews() {
@@ -6231,7 +6911,10 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
   }
   function echoes() {
-    return game.song.lights.map(echo => `<span class="song-echo ${echo.found ? 'found' : ''}" style="--echo-color:${echo.color}" title="${escape(echo.name)}${echo.found ? ', retrouvé' : ', à retrouver'}" aria-label="${escape(echo.name)}${echo.found ? ', retrouvé' : ', à retrouver'}"><i class="echo-ear echo-ear-left"></i><i class="echo-ear echo-ear-right"></i><i class="echo-face"><b></b><b></b></i></span>`).join('');
+    return game.song.lights.map(echo => {
+      const label = escape(translate(echo.found ? '{name}, retrouvé' : '{name}, à retrouver', { name: translate(echo.name) }));
+      return `<span class="song-echo ${echo.found ? 'found' : ''}" style="--echo-color:${echo.color}" title="${label}" aria-label="${label}"><i class="echo-ear echo-ear-left"></i><i class="echo-ear echo-ear-right"></i><i class="echo-face"><b></b><b></b></i></span>`;
+    }).join('');
   }
   function sync() {
     if (!game) return;
@@ -6255,29 +6938,29 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (!game.song) return;
     frameTime += dt; if (frameTime < .08) return; frameTime = 0;
     const song = game.song, mode = game.mode;
-    const key = [song.index, song.count, game.levelStars, game.levelCoins, song.style, game.audio.muted].join(':');
+    const key = [song.index, song.count, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
     if (key !== lastHud) {
       lastHud = key;
       byId('song-island-number').textContent = String(song.index + 1).padStart(2, '0') + ' / 03';
-      byId('song-island-name').textContent = game.level.name;
+      byId('song-island-name').textContent = translate(game.level.name);
       byId('song-echoes').innerHTML = echoes();
       byId('song-voice-count').textContent = song.count + ' / 3';
       byId('song-note-count').textContent = String(game.levelCoins).padStart(2, '0');
       byId('song-memory-count').textContent = game.levelStars + ' / 3';
       byId('song-sound').innerHTML = icon(game.audio.muted ? 'volume-x' : 'volume-2');
-      byId('song-sound').setAttribute('aria-label', game.audio.muted ? 'Activer le son' : 'Couper le son');
-      byId('song-sound').title = game.audio.muted ? 'Activer le son' : 'Couper le son';
+      byId('song-sound').setAttribute('aria-label', translate(game.audio.muted ? 'Activer le son' : 'Couper le son'));
+      byId('song-sound').title = translate(game.audio.muted ? 'Activer le son' : 'Couper le son');
       byId('song-sound').setAttribute('aria-pressed', String(!game.audio.muted));
     }
     const target = song.nearest(game.player);
     const distance = target ? Math.round(Math.hypot(target.x - game.player.x, target.y - game.player.y)) : 0;
-    byId('song-goal').textContent = target ? `${target.name} attend quelque part${distance < 230 ? ', tout près.' : '.'}` : 'Le chœur est réuni. Le passage est ouvert.';
+    byId('song-goal').textContent = target ? translate(distance < 230 ? '{name} attend quelque part, tout près.' : '{name} attend quelque part.', { name: translate(target.name) }) : translate('Le chœur est réuni. Le passage est ouvert.');
     byId('song-bearing').style.transform = `rotate(${Math.atan2((target?.y || 540) - (game.player.y + 20), (target?.x || game.exit.x) - game.player.x)}rad)`;
     byId('song-clock').hidden = song.style !== 'flow';
     byId('song-clock').textContent = clock(game.elapsed);
     byId('song-combo').hidden = song.combo < 2 || mode !== 'playing';
     byId('song-combo-count').textContent = '×' + song.combo;
-    byId('song-combo-label').textContent = song.combo >= 10 ? 'EN PLEIN ÉLAN' : 'LE FIL DU CHANT';
+    byId('song-combo-label').textContent = translate(song.combo >= 10 ? 'EN PLEIN ÉLAN' : 'LE FIL DU CHANT');
     byId('song-combo-fill').style.transform = `scaleX(${song.comboTime / (song.style === 'flow' ? 2.5 : 4)})`;
   }
   function handle(action) {
@@ -6325,9 +7008,9 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     document.querySelectorAll('[data-touch]').forEach(button => {
       if (glyphs[button.dataset.touch]) button.innerHTML = icon(glyphs[button.dataset.touch]);
       const names = { left: 'À gauche · Q / A / ←', right: 'À droite · D / →', jump: 'Sauter, planer · Espace', action: 'Chanter · X / J' };
-      if (names[button.dataset.touch]) button.title = names[button.dataset.touch];
+      if (names[button.dataset.touch]) button.title = translate(names[button.dataset.touch]);
     });
-    game.on('song-rescue', echo => helpers.toast(echo.name + ' chante avec toi.'));
+    game.on('song-rescue', echo => helpers.toast('{name} chante avec toi.', () => ({ name: translate(echo.name) })));
     game.on('song-complete', result => { lastResult = result; pane = 'result'; renderedPane = null; });
     const unlockSound = event => {
       if (game.song && ['playing', 'dead'].includes(game.mode) && !event.target.closest('#song-overlay')) game.audio.unlock();
@@ -6358,7 +7041,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     });
     document.addEventListener('keydown', event => {
       if (event.key !== 'Tab' || byId('song-overlay').hidden) return;
-      const controls = [...byId('song-panel').querySelectorAll('button:not(:disabled), input, [tabindex="0"]')].filter(element => element.getClientRects().length);
+      const controls = [...byId('song-panel').querySelectorAll('button:not(:disabled), input, select, [tabindex="0"]')].filter(element => element.getClientRects().length);
       if (!controls.length) return;
       const first = controls[0], last = controls[controls.length - 1];
       if (event.shiftKey && (document.activeElement === first || !byId('song-panel').contains(document.activeElement))) { event.preventDefault(); last.focus(); }
@@ -6366,7 +7049,17 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     });
     document.addEventListener('fullscreenchange', () => {
       byId('song-fullscreen').innerHTML = icon(document.fullscreenElement ? 'minimize' : 'maximize');
-      byId('song-fullscreen').setAttribute('aria-label', document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran');
+      const label = translate(document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran');
+      byId('song-fullscreen').setAttribute('aria-label', label); byId('song-fullscreen').title = label;
+    });
+    I18n.onChange(() => {
+      renderedPane = null; lastHud = '';
+      I18n.translateDOM(byId('song-shell'));
+      const names = { left: 'À gauche · Q / A / ←', right: 'À droite · D / →', jump: 'Sauter, planer · Espace', action: 'Chanter · X / J' };
+      document.querySelectorAll('[data-touch]').forEach(button => {
+        if (names[button.dataset.touch]) button.title = translate(names[button.dataset.touch]);
+      });
+      if (game.song) sync();
     });
     if (!document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
     applyPreferences();
@@ -6379,6 +7072,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
+  const I18n = window.LumenI18n;
+  const translate = (source, values) => I18n.t(source, values);
   const screens = ['home','map','pause','help','complete','dream','route'];
   const powerInfo = {
     bloom:{name:'Fleur solaire',hint:'X / J · Graines de lumière',icon:'✺'},
@@ -6389,7 +7084,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   const medals={bronze:'Bronze',silver:'Argent',gold:'Or'};
   let game, toastTimer, introTimer, damageTimer, helpPrevious='home', transitioning=false, lastHud='', lastHint='', uiTime=0, selectedRunMode='explore';
   let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='';
-  let routeChoice=null, routeUpgrade=null;
+  let routeChoice=null, routeUpgrade=null, lastRoute=null, lastResult=null, lastToast=null;
   const timeLabel = (seconds, precise=false) => {
     const tenths=Math.max(0,Math.floor((Number(seconds)||0)*10));
     return `${Math.floor(tenths/600)}:${String(Math.floor(tenths/10)%60).padStart(2,'0')}${precise?'.'+tenths%10:''}`;
@@ -6434,7 +7129,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       if(lostNight) {
         $('pause-title').textContent='La nuit s’achève ici.';
         $('pause-screen').querySelector('.modal-card>p').textContent=
-          `Vos découvertes restent acquises. Graine ${game.lastRun.code} — refaites-la à l’identique, ou laissez-la pour une autre.`;
+          translate('Vos découvertes restent acquises. Graine {seed} : refaites-la à l’identique, ou laissez-la pour une autre.', { seed: game.lastRun.code });
         second.dataset.command='dream';second.innerHTML='Une autre nuit <span>☾</span>';
       } else if(game.session==='expedition'&&game.run) {
         // Pendant une nuit, ce bouton l'abandonne. Il doit le dire.
@@ -6448,6 +7143,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     else if (mode==='complete'||mode==='ending') showScreen('complete');
     else showScreen(null);
     if (mode!=='playing') {$('level-hint').classList.add('hidden');$('power-indicator').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
+    I18n.translateDOM($('app'));
   }
   /** Le dialogue s'ouvre en approchant, avance seul, et se ferme en s'éloignant.
    *  Les répliques sont courtes et passables : personne n'est retenu. */
@@ -6456,12 +7152,12 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (!detail || !detail.lines.length) { $('dialogue').classList.add('hidden'); dialogueWho=''; return; }
     const sameSpeaker = dialogueWho === detail.character.id;
     dialogueWho = detail.character.id; dialogueLines = detail.lines; dialogueStep = sameSpeaker ? dialogueStep : 0;
-    $('dialogue-name').textContent = detail.character.name;
-    $('dialogue-role').textContent = detail.character.role || '';
+    $('dialogue-name').textContent = translate(detail.character.name);
+    $('dialogue-role').textContent = translate(detail.character.role || '');
     $('dialogue-mark').textContent = detail.character.id === 'vesper' ? '☾' : '✧';
     $('dialogue').dataset.who = detail.character.id;
     const render = () => {
-      $('dialogue-line').textContent = dialogueLines[dialogueStep % dialogueLines.length];
+      $('dialogue-line').textContent = translate(dialogueLines[dialogueStep % dialogueLines.length]);
       $('dialogue-dots').innerHTML = dialogueLines.map((_, i) =>
         `<i class="${i === dialogueStep % dialogueLines.length ? 'on' : ''}"></i>`).join('');
     };
@@ -6472,7 +7168,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   function advanceDialogue() {
     if ($('dialogue').classList.contains('hidden') || dialogueLines.length < 2) return false;
     dialogueStep++;
-    $('dialogue-line').textContent = dialogueLines[dialogueStep % dialogueLines.length];
+    $('dialogue-line').textContent = translate(dialogueLines[dialogueStep % dialogueLines.length]);
     $('dialogue-dots').innerHTML = dialogueLines.map((_, i) =>
       `<i class="${i === dialogueStep % dialogueLines.length ? 'on' : ''}"></i>`).join('');
     return true;
@@ -6482,23 +7178,24 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (!detail) { banner.classList.add('hidden'); return; }
     banner.classList.remove('hidden');
     banner.classList.toggle('done', detail.state === 'done');
-    $('quest-title').textContent = detail.quest.title;
-    $('quest-progress').textContent = detail.state === 'done' ? detail.quest.reward : detail.quest.summary;
+    $('quest-title').textContent = translate(detail.quest.title);
+    $('quest-progress').textContent = translate(detail.state === 'done' ? detail.quest.reward : detail.quest.summary);
   }
   function refreshDream() {
     const saved=game.progress.expedition;
     const usable=saved&&saved.generationVersion===window.LumenRng.GENERATION_VERSION;
     $('dream-resume').classList.toggle('hidden',!usable);
-    if(usable) $('dream-resume').innerHTML=`Reprendre la nuit ${window.LumenRng.encodeSeed(saved.seed)} · salle ${saved.roomIndex+1} <span>☾</span>`;
+    if(usable) $('dream-resume').innerHTML=escape(translate('Reprendre la nuit {seed} · salle {room}', { seed: window.LumenRng.encodeSeed(saved.seed), room: saved.roomIndex+1 }))+' <span>☾</span>';
     const stats=game.progress.expeditions;
     $('seed-note').textContent=stats.runs
-      ? `${stats.runs} nuit${stats.runs>1?'s':''} tentée${stats.runs>1?'s':''}, ${stats.completed} menée${stats.completed>1?'s':''} au bout. Laissez vide pour une nuit inédite.`
-      : 'Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.';
+      ? translate('Nuits tentées : {runs}. Terminées : {completed}. Laissez vide pour une nuit inédite.', { runs: stats.runs, completed: stats.completed })
+      : translate('Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.');
   }
   /** La carte des routes : chaque branche s'annonce avant qu'on s'y engage. */
-  function showRoute(detail) {
-    routeChoice=detail.branches[0]?detail.branches[0].kind:null; routeUpgrade=null;
-    $('route-eyebrow').textContent=`SALLE ${detail.next.index+1} / ${detail.run.plan.rooms.length} · GRAINE ${detail.run.code}`;
+  function showRoute(detail, preserveChoice=false) {
+    lastRoute=detail;
+    if(!preserveChoice){routeChoice=detail.branches[0]?detail.branches[0].kind:null; routeUpgrade=null;}
+    $('route-eyebrow').textContent=translate('SALLE {room} / {total} · GRAINE {seed}', { room: detail.next.index+1, total: detail.run.plan.rooms.length, seed: detail.run.code });
     $('route-sub').textContent=detail.branches.length>1
       ? 'Deux chemins. Ce qu’ils annoncent est vrai : rien ne vous surprendra sans prévenir.'
       : 'Un seul chemin s’ouvre ici.';
@@ -6507,19 +7204,21 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       // garde une route lisible même si une nature nouvelle n'a pas encore
       // son libellé.
       const omen=branch.omen||{icon:'✧',label:'Un chemin',hint:'Ce qu’il contient reste à découvrir.'};
-      return `<button class="route-branch${i===0?' picked':''}" data-branch="${escape(branch.kind)}"><span class="branch-icon" aria-hidden="true">${omen.icon}</span><strong>${escape(omen.label)}</strong><span>${escape(omen.hint)}</span></button>`;
+      return `<button class="route-branch${branch.kind===routeChoice?' picked':''}" data-branch="${escape(branch.kind)}"><span class="branch-icon" aria-hidden="true">${omen.icon}</span><strong>${escape(translate(omen.label))}</strong><span>${escape(translate(omen.hint))}</span></button>`;
     }).join('');
     const equipped=detail.run.upgrades;
     $('route-offer').classList.toggle('hidden',!detail.offer.length);
     $('offer-list').innerHTML=detail.offer.map(upgrade=>
-      `<button class="offer-item" data-upgrade="${escape(upgrade.id)}"><span class="offer-icon" aria-hidden="true">${upgrade.icon}</span><div><strong>${escape(upgrade.name)}</strong><span>${escape(upgrade.hint)}</span></div></button>`).join('');
+      `<button class="offer-item${routeUpgrade===upgrade.id?' picked':''}" data-upgrade="${escape(upgrade.id)}"><span class="offer-icon" aria-hidden="true">${upgrade.icon}</span><div><strong>${escape(translate(upgrade.name))}</strong><span>${escape(translate(upgrade.hint))}</span></div></button>`).join('');
     const combo=window.LumenUpgrades.comboFor(equipped);
     $('offer-note').textContent=equipped.length>=window.LumenUpgrades.SLOTS
-      ? `Vos ${window.LumenUpgrades.SLOTS} emplacements sont pris : un nouveau souvenir remplacera le plus ancien.`
-      : combo?`${combo.name} · ${combo.effect}`:'Deux emplacements seulement : choisissez ce qui change votre façon de bouger.';
+      ? translate('Vos {slots} emplacements sont pris : un nouveau souvenir remplacera le plus ancien.', { slots: window.LumenUpgrades.SLOTS })
+      : combo?`${translate(combo.name)} · ${translate(combo.effect)}`:translate('Deux emplacements seulement : choisissez ce qui change votre façon de bouger.');
+    I18n.translateDOM($('route-screen'));
   }
-  function toast(message) {
-    clearTimeout(toastTimer);$('toast').textContent=message;$('toast').classList.add('show');
+  function toast(message, values = {}) {
+    lastToast={message,values};
+    clearTimeout(toastTimer);$('toast').textContent=translate(message,typeof values==='function'?values():values);$('toast').classList.add('show');
     toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3800);
   }
   function transition(fn) {
@@ -6534,7 +7233,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
   function updateRunMode() {
     document.querySelectorAll('[data-run-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.runMode===selectedRunMode)));
-    $('run-mode-hint').textContent=selectedRunMode==='timed'?'Un chrono, votre meilleur temps, et l’envie de recommencer.':'Le temps vous appartient. Explorez à votre rythme.';
+    $('run-mode-hint').textContent=translate(selectedRunMode==='timed'?'Un chrono, votre meilleur temps, et l’envie de recommencer.':'Le temps vous appartient. Explorez à votre rythme.');
     $('map-screen').classList.toggle('timed-selected',selectedRunMode==='timed');
   }
   function command(action) {
@@ -6610,9 +7309,9 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
   }
   function updateSound() {
-    document.querySelectorAll('.sound-label').forEach(el=>el.textContent=game.audio.muted?'SON COUPÉ':'SON ACTIVÉ');
+    document.querySelectorAll('.sound-label').forEach(el=>el.textContent=translate(game.audio.muted?'SON COUPÉ':'SON ACTIVÉ'));
     document.querySelectorAll('.sound-icon').forEach(el=>el.textContent=game.audio.muted?'♩':'♪');
-    document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',game.audio.muted?'Activer le son':'Couper le son');});
+    document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',translate(game.audio.muted?'Activer le son':'Couper le son'));});
   }
   function chapterArt(theme, index) {
     const colors={meadow:['#dce4bd','#bdd0a5','#5f8e7e','#f8e7b4'],cavern:['#a3b6c5','#7a95af','#49647c','#d1bbee'],tide:['#bbdad1','#81b5b0','#4f8f92','#ffe1a4'],sky:['#eee2c9','#bad1c7','#809d99','#ffedbb'],forge:['#d59a91','#af7881','#785a6b','#f8c093'],frost:['#d7e8e1','#a6c5ce','#6a929f','#faf8dd'],secret:['#e6bdce','#c39bb9','#947895','#ffe6af'],eclipse:['#697f8a','#4b636f','#314a59','#f8d393']};
@@ -6632,10 +7331,12 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
       const medal=medals[r?.medal]?r.medal:r?.completed?'bronze':null;
       const targets=level.medalTargets;
-      const record=Number.isFinite(r?.bestTimedTime)?`◷ ${timeLabel(r.bestTimedTime,true)}`:'◷ À vous d’écrire le chrono';
-      const medalMarkup=medal?`<span class="card-medal ${medal}" title="Médaille ${medals[medal]}" aria-label="Médaille ${medals[medal]}">✦ ${medals[medal]}</span>`:'<span class="card-medal unearned">✧ À décrocher</span>';
-      const targetMarkup=targets?`<span class="card-targets">OR ${timeLabel(targets.gold)} <i>·</i> ARGENT ${timeLabel(targets.silver)}</span>`:'';
-      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="Chapitre ${i+1}, ${escape(level.name)}, ${status.toLowerCase()}${medal?', médaille '+medals[medal]:''}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(level.name)}</h3><p>${level.bonus?'Jardin secret · Le détour des curieux':escape(level.subtitle)}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${record}</span>${targetMarkup}</div><span class="card-action">${status} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
+      const record=Number.isFinite(r?.bestTimedTime)?`◷ ${timeLabel(r.bestTimedTime,true)}`:translate('◷ À vous d’écrire le chrono');
+      const medalTitle=medal?translate('Médaille {medal}',{medal:translate(medals[medal])}):'';
+      const medalMarkup=medal?`<span class="card-medal ${medal}" title="${escape(medalTitle)}" aria-label="${escape(medalTitle)}">✦ ${escape(translate(medals[medal]))}</span>`:'<span class="card-medal unearned">'+escape(translate('✧ À décrocher'))+'</span>';
+      const targetMarkup=targets?`<span class="card-targets">${escape(translate('OR {time}',{time:timeLabel(targets.gold)}))} <i>·</i> ${escape(translate('ARGENT {time}',{time:timeLabel(targets.silver)}))}</span>`:'';
+      const label=translate('Chapitre {index}, {name}, {status}',{index:i+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
+      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
     }).join('');
   }
   function updateHud(dt) {
@@ -6643,36 +7344,36 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     uiTime+=dt;if(uiTime<.07)return;uiTime=0;
     const p=game.player;
     const totalFragments=game.level.collectibles.filter(c=>c.type==='star').length;
-    const key=[p.hp,game.lives,game.score,game.levelCoins,game.levelStars,game.levelIndex,game.runMode].join(':');
+    const key=[p.hp,game.lives,game.score,game.levelCoins,game.levelStars,game.levelIndex,game.runMode,I18n.language].join(':');
     if(key!==lastHud) {
       lastHud=key;$('hearts').innerHTML=Array.from({length:3},(_,i)=>`<span class="${i<p.hp?'':'empty'}">♥</span>`).join('');
-      $('hearts').setAttribute('aria-label',`${p.hp} points de vie sur 3`);
-      $('lives').textContent=`${Math.max(0,game.lives)} VIE${game.lives===1?'':'S'}`;
+      $('hearts').setAttribute('aria-label',translate('{hp} points de vie sur 3',{hp:p.hp}));
+      $('lives').textContent=translate('VIES : {count}',{count:Math.max(0,game.lives)});
       $('score').textContent=String(game.score).padStart(6,'0');$('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
-      $('star-count').innerHTML=stars(game.levelStars,totalFragments);$('star-count').setAttribute('aria-label',`${game.levelStars} fragments sur ${totalFragments}`);
-      $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=game.level.name;
-      $('chapter-caption').textContent=game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE';
+      $('star-count').innerHTML=stars(game.levelStars,totalFragments);$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
+      $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=translate(game.level.name);
+      $('chapter-caption').textContent=translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
     }
     if(game.runMode==='timed') {
       $('clock-time').textContent=timeLabel(game.elapsed,true);
       const best=game.recordFor(game.levelIndex)?.bestTimedTime;
-      $('clock-best').textContent=Number.isFinite(best)?'RECORD '+timeLabel(best,true):'PREMIÈRE COURSE';
+      $('clock-best').textContent=Number.isFinite(best)?translate('RECORD {time}',{time:timeLabel(best,true)}):translate('PREMIÈRE COURSE');
       $('run-clock').classList.toggle('clock-paused',game.mode==='paused'||game.mode==='help');
     }
     if(game.mode!=='playing')return;
     $('power-indicator').classList.toggle('hidden',!p.power);
     if(p.power&&powerInfo[p.power]) {
-      const info=powerInfo[p.power];$('power-icon').innerHTML=info.icon;$('power-name').textContent=info.name;$('power-description').textContent=info.hint;
+      const info=powerInfo[p.power];$('power-icon').innerHTML=info.icon;$('power-name').textContent=translate(info.name);$('power-description').textContent=translate(info.hint);
       $('power-fill').style.width=Math.max(0,Math.min(100,p.powerTime/(p.powerDuration||35)*100))+'%';
-      $('power-time').textContent=Math.ceil(Math.max(0,p.powerTime))+' s';
+      $('power-time').textContent=translate('{seconds} s',{seconds:Math.ceil(Math.max(0,p.powerTime))});
       $('power-indicator').classList.toggle('expiring',p.powerTime<=5);
       $('power-indicator').dataset.power=p.power;
     }
     const b=game.boss;
     $('boss-hud').classList.toggle('hidden',!b||!b.activated||b.hp<=0);
     if(b&&b.activated&&b.hp>0) {
-      $('boss-fill').style.width=b.hp/b.maxHp*100+'%';$('boss-phase').textContent=b.phase===2?'PHASE II':'PHASE I';
-      $('boss-tip').textContent=b.vulnerable?'Sa couronne est ouverte ! Sautez dessus ou utilisez votre pouvoir.':b.state==='telegraph'?'Le Veilleur prépare son attaque. Gardez de l’espace.':'Évitez les orbes. Sautez par-dessus les ondes au sol.';
+      $('boss-fill').style.width=b.hp/b.maxHp*100+'%';$('boss-phase').textContent=translate(b.phase===2?'PHASE II':'PHASE I');
+      $('boss-tip').textContent=translate(b.vulnerable?'Sa couronne est ouverte ! Sautez dessus ou utilisez votre pouvoir.':b.state==='telegraph'?'Le Veilleur prépare son attaque. Gardez de l’espace.':'Évitez les orbes. Sautez par-dessus les ondes au sol.');
     }
     const quest=game.level.quest;
     if(quest) {
@@ -6680,25 +7381,28 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       const done=quest.needs.filter(id=>game.wokenOnce.has(id)).length;
       $('quest-banner').classList.remove('hidden');
       $('quest-banner').classList.toggle('done',state==='done');
-      $('quest-title').textContent=quest.title;
-      $('quest-progress').textContent=state==='done'?quest.reward:`${quest.summary} · ${done} / ${quest.needs.length}`;
+      $('quest-title').textContent=translate(quest.title);
+      $('quest-progress').textContent=state==='done'?translate(quest.reward):`${translate(quest.summary)} · ${done} / ${quest.needs.length}`;
     } else $('quest-banner').classList.add('hidden');
     const hint=(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
     $('level-hint').classList.toggle('hidden',!hint||$('chapter-intro').classList.contains('show'));
-    if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=hint.text;}
+    if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=translate(hint.text);}
   }
-  function chapterIntro(level) {
-    clearTimeout(introTimer);
-    if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
+  function updateIntroText(level) {
     // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
     // ni une salle de rêve, qui n'ont pas de place dans la campagne.
     const chapters=window.LUMEN_LEVELS.filter(l=>!l.hub);
     const rank=window.LUMEN_LEVELS.slice(0,game.levelIndex+1).filter(l=>!l.hub).length;
     $('intro-number').textContent=level.expedition
-      ? `NUIT · SALLE ${String((game.run?game.run.roomIndex:0)+1).padStart(2,'0')} / ${String(game.run?game.run.plan.rooms.length:5).padStart(2,'0')}`
-      : level.hub ? 'L’OBSERVATOIRE'
-      : `CHAPITRE ${String(rank).padStart(2,'0')} / ${String(chapters.length).padStart(2,'0')}`;
-    $('intro-name').textContent=level.name;$('intro-subtitle').textContent=level.subtitle;
+      ? translate('NUIT · SALLE {room} / {total}',{room:String((game.run?game.run.roomIndex:0)+1).padStart(2,'0'),total:String(game.run?game.run.plan.rooms.length:5).padStart(2,'0')})
+      : level.hub ? translate('L’OBSERVATOIRE')
+      : translate('CHAPITRE {chapter} / {total}',{chapter:String(rank).padStart(2,'0'),total:String(chapters.length).padStart(2,'0')});
+    $('intro-name').textContent=translate(level.name);$('intro-subtitle').textContent=translate(level.subtitle);
+  }
+  function chapterIntro(level) {
+    clearTimeout(introTimer);
+    if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
+    updateIntroText(level);
     $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),2400);
     lastHint='';lastHud='';
     $('hud').classList.remove('heart-hit');
@@ -6710,27 +7414,31 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     damageTimer=setTimeout(()=>$('hud').classList.remove('heart-hit'),650);
   }
   function completed(result) {
+    lastResult=result;
     $('complete-eyebrow').textContent=result.final?'LES JARDINS SE SOUVIENDRONT DE VOUS':'UNE LUMIÈRE DE PLUS';
     $('complete-title').textContent=result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.';
-    $('complete-subtitle').textContent=result.final?'Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.':game.level.name+' · Chapitre terminé';
+    $('complete-subtitle').textContent=result.final?translate('Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
     const total=game.level.collectibles.filter(c=>c.type==='star').length;
     const medal=medals[result.medal]?result.medal:'bronze';
     const targets=game.level.medalTargets;
     const best=game.recordFor(result.index)?.bestTimedTime;
-    $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=`${result.stars} / ${total} FRAGMENTS DE LUNE`;
-    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);$('result-score').textContent=result.score.toLocaleString('fr-FR');
+    $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total});
+    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);$('result-score').textContent=I18n.number(result.score);
     $('result-enemies').textContent=result.enemiesDefeated||0;$('result-damage').textContent=result.damageTaken||0;
     $('result-medal').className='result-medal '+medal;$('result-medal-name').textContent=medals[medal];
     $('result-mode-label').textContent=result.timed?'CONTRE-LA-MONTRE':'TEMPS DU VOYAGE';
     $('result-best-label').textContent=result.timed?'MEILLEUR CHRONO':'OBJECTIF OR';
     $('result-best').textContent=result.timed&&Number.isFinite(best)?timeLabel(best,true):targets?timeLabel(targets.gold):'—';
     $('result-record').classList.toggle('hidden',!result.record||!result.timed);
-    $('complete-note').textContent=result.secrets?`${result.secrets} passage${result.secrets>1?'s':''} secret${result.secrets>1?'s':''} découvert${result.secrets>1?'s':''} · +${result.bonus.toLocaleString('fr-FR')} points`:`+${result.bonus.toLocaleString('fr-FR')} points de fin de chapitre · ${result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !'}`;
-    $('result-medal-hint').textContent=medal==='gold'?'Un voyage éclatant. Saurez-vous encore améliorer votre temps ?':targets?`Pour l’or : 3 fragments · 1 dégât maximum · ${timeLabel(targets.gold)} ou moins.`:'Chaque retour dans les jardins est une nouvelle aventure.';
+    $('complete-note').textContent=result.secrets?translate('Passages secrets découverts : {count} · +{bonus} points',{count:result.secrets,bonus:I18n.number(result.bonus)}):translate('+{bonus} points de fin de chapitre',{bonus:I18n.number(result.bonus)})+' · '+translate(result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !');
+    $('result-medal-hint').textContent=medal==='gold'?translate('Un voyage éclatant. Saurez-vous encore améliorer votre temps ?'):targets?translate('Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.',{time:timeLabel(targets.gold)}):translate('Chaque retour dans les jardins est une nouvelle aventure.');
     $('next-button').innerHTML=result.final||game.levelIndex>=window.LUMEN_LEVELS.length-1?'Revoir les jardins <span>✧</span>':game.level.bonus&&!game.isUnlocked(game.levelIndex+1)?'Reprendre l’aventure <span>→</span>':'Le prochain jardin <span>→</span>';
+    I18n.translateDOM($('complete-screen'));
   }
   try {
     game=new window.LumenGame($('game'));window.lumen=game;
+    I18n.setLanguage(game.progress.settings.language);
+    I18n.translateDOM($('app'));
     game.on('command',command);game.on('mode',showMode);game.on('toast',toast);game.on('frame',updateHud);game.on('level',chapterIntro);game.on('complete',completed);game.on('damage',healthImpact);game.on('dialogue',showDialogue);game.on('quest',showQuest);
     game.on('portal',target=>{
       if(target!=='expedition'){transition(()=>game.showMap());return;}
@@ -6743,8 +7451,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     // initialisation (sauvegarde récupérée, stockage refusé, version future)
     // peut maintenant être entendu.
     game.flushNotices();
-    game.on('expedition',detail=>{toast(`Salle ${detail.room.index+1} / ${detail.run.plan.rooms.length} · ${detail.room.omen.label} · graine ${detail.run.code}`);});
-    game.on('expedition-end',detail=>{toast(detail.won?`Nuit menée au bout · graine ${detail.run.code}`:`La nuit s’achève ici · graine ${detail.run.code}`);if(detail.won){game.mode='dream';showMode('dream');}});
+    game.on('expedition',detail=>{toast('Salle {room} / {total} · {omen} · graine {seed}',()=>({room:detail.room.index+1,total:detail.run.plan.rooms.length,omen:translate(detail.room.omen.label),seed:detail.run.code}));});
+    game.on('expedition-end',detail=>{toast(detail.won?'Nuit menée au bout · graine {seed}':'La nuit s’achève ici · graine {seed}',{seed:detail.run.code});if(detail.won){game.mode='dream';showMode('dream');}});
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-command]');if(button){command(button.dataset.command);if(event.detail>0)button.blur();}
       const mode=event.target.closest('[data-run-mode]');if(mode&&!transitioning){selectedRunMode=mode.dataset.runMode;updateRunMode();}
@@ -6826,13 +7534,41 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       game.store.setSetting('reducedEffects',true);
     }
     applySettings();
-    document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+window.LUMEN_LEVELS.filter(level=>!level.hub).length+' CHAPITRES À EXPLORER';
     window.LumenSongUI?.attach(game, { transition, toast });
+    const refreshLanguage=()=>{
+      document.title=translate('LUMEN · Le Chant des îles');
+      const description='LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.';
+      document.querySelector('meta[name="description"]').content=translate(description);
+      I18n.translateDOM($('app'));
+      document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+escape(translate('{count} CHAPITRES À EXPLORER',{count:window.LUMEN_LEVELS.filter(level=>!level.hub).length}));
+      document.querySelectorAll('[data-language-select]').forEach(select=>{select.innerHTML=I18n.languageOptions();select.value=game.progress.settings.language;});
+      lastHud='';lastHint='';updateSound();
+      if(lastToast&&$('toast').classList.contains('show'))$('toast').textContent=translate(lastToast.message,typeof lastToast.values==='function'?lastToast.values():lastToast.values);
+      if(!game.song){
+        if(lastRoute&&game.run===lastRoute.run)showRoute(lastRoute,true);
+        if(lastResult&&lastResult.index===game.levelIndex)completed(lastResult);
+        if(game.mode==='map')renderMap();
+        if(game.mode==='dream')refreshDream();
+        updateIntroText(game.level);
+        const character=game.characters.find(entry=>entry.id===dialogueWho);
+        if(character){$('dialogue-name').textContent=translate(character.name);$('dialogue-role').textContent=translate(character.role);$('dialogue-line').textContent=translate(dialogueLines[dialogueStep%dialogueLines.length]);}
+        updateHud(.1);
+      }
+    };
+    I18n.onChange(refreshLanguage);
+    document.addEventListener('change',event=>{
+      const select=event.target.closest('[data-language-select]');if(!select)return;
+      const focusId=select.id;
+      game.input.reset();game.store.setSetting('language',select.value);I18n.setLanguage(select.value);
+      requestAnimationFrame(()=>$(focusId)?.focus({preventScroll:true}));
+    });
+    window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
+    refreshLanguage();
     if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
     else showMode('home');
     updateSound();game.beginLoop();
   } catch(error) {
-    console.error(error);$('error-notice').hidden=false;$('error-notice').textContent='Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : '+error.message;
+    console.error(error);$('error-notice').hidden=false;$('error-notice').textContent=translate('Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : {error}',{error:error.message});
   }
 })();
 

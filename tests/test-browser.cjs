@@ -42,11 +42,14 @@ async function test(name, run) {
   /** Ouvre la page, en collectant toute erreur au passage. */
   async function open(view = 'bureau', profile = null, options = {}) {
     const { width, height, hasTouch, isMobile } = VIEWS[view];
-    const context = await browser.newContext({ viewport: { width, height }, hasTouch, isMobile, deviceScaleFactor: 1 });
+    const context = await browser.newContext({ viewport: { width, height }, hasTouch, isMobile, deviceScaleFactor: 1, locale: options.locale || 'fr-FR' });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    if (options.languages) await page.addInitScript(languages => {
+      Object.defineProperty(navigator, 'languages', { get: () => languages });
+    }, options.languages);
     // Un profil de joueur qui revient : écrit avant le premier script, comme
     // s'il était là depuis hier. Ce n'est pas un état forcé dans le moteur,
     // c'est une sauvegarde sur le disque — ce que le jeu doit savoir relire.
@@ -58,6 +61,148 @@ async function test(name, run) {
     await page.waitForFunction(song => window.lumen && window.lumen.mode === (song ? 'playing' : 'home'), !!options.song, { timeout: 20000 });
     return { page, context, errors };
   }
+
+  await test('Les cinq langues système traduisent les éditions source et portable sans réseau', async () => {
+    const cases = [
+      ['en-GB', 'en', 'The Island of Little Dawns'], ['fr-CA', 'fr', 'L’île des petits matins'],
+      ['es-MX', 'es', 'La isla de los amaneceres'], ['ar-SA', 'ar', 'جزيرة الفجر الصغير'], ['zh-TW', 'zh', '小小晨光岛']
+    ];
+    for (const source of [false, true]) for (const [locale, language, name] of cases) {
+      const { page, context, errors } = await open('bureau', null, { song: true, source, locale });
+      const external = [];
+      page.on('request', request => { if (!/^(file|data):/.test(request.url())) external.push(request.url()); });
+      await page.reload(); await page.waitForFunction(() => window.lumen?.frames >= 2);
+      const state = await page.evaluate(() => ({ language: window.LumenI18n.language,
+        preference: window.lumen.progress.settings.language, lang: document.documentElement.lang, dir: document.documentElement.dir,
+        name: document.getElementById('song-island-name').textContent, title: document.title,
+        settings: document.querySelector('#song-shell [data-command="song-settings"]').getAttribute('aria-label') }));
+      assert.equal(state.language, language); assert.equal(state.preference, 'auto');
+      assert.equal(state.lang, language === 'zh' ? 'zh-Hans' : language);
+      assert.equal(state.dir, language === 'ar' ? 'rtl' : 'ltr'); assert.equal(state.name, name);
+      assert.equal(state.settings, { en: 'Settings', fr: 'Réglages', es: 'Ajustes', ar: 'الإعدادات', zh: '设置' }[language]);
+      if (language !== 'fr') assert.ok(!state.title.includes('Le Chant'));
+      assert.deepEqual(external, []); assert.deepEqual(errors, []);
+      if (source) await page.screenshot({ path: path.join(shots, 'language-' + language + '-desktop.png') });
+      await context.close();
+    }
+  });
+
+  await test('La priorité système, le repli anglais et le choix sauvegardé sont respectés', async () => {
+    for (const scenario of [
+      { locale: 'de-DE', languages: ['de-DE', 'ja-JP'], expected: 'en' },
+      { locale: 'de-DE', languages: ['de-DE', 'es-ES', 'fr-FR'], expected: 'es' },
+      { locale: 'zh-CN', saved: 'ar', expected: 'ar' },
+      { locale: 'es-ES', saved: 'invalid', expected: 'es' }
+    ]) {
+      const profile = scenario.saved ? { schema: 3, settings: { language: scenario.saved } } : null;
+      const { page, context, errors } = await open('bureau', profile, { song: true, ...scenario });
+      assert.equal(await page.evaluate(() => window.LumenI18n.language), scenario.expected);
+      assert.deepEqual(errors, []); await context.close();
+    }
+  });
+
+  await test('Changer de langue conserve la partie et le focus, et le choix survit au rechargement', async () => {
+    const { page, context, errors } = await open('portrait', null, { song: true, locale: 'fr-FR' });
+    await page.locator('#game').focus(); await page.keyboard.down('ArrowRight'); await page.waitForTimeout(180); await page.keyboard.up('ArrowRight');
+    await page.locator('#song-shell [data-command="song-settings"]').click();
+    const before = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, elapsed: window.lumen.elapsed, key: window.lumen.level.key, chapters: JSON.stringify(window.lumen.progress.chapters) }));
+    for (const language of ['es', 'ar', 'zh', 'en', 'fr', 'ar']) {
+      await page.locator('#song-language').selectOption(language);
+      await page.waitForFunction(code => window.LumenI18n.language === code && document.activeElement.id === 'song-language', language);
+      assert.equal(await page.locator('#song-language').inputValue(), language);
+      const after = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, elapsed: window.lumen.elapsed, key: window.lumen.level.key, chapters: JSON.stringify(window.lumen.progress.chapters) }));
+      assert.deepEqual(after, before);
+      assert.equal(await page.locator('#song-panel-title').textContent(), await page.evaluate(() => window.LumenI18n.t('Un peu de confort')));
+      await page.screenshot({ path: path.join(shots, 'language-' + language + '-settings.png') });
+    }
+    await page.reload(); await page.waitForFunction(() => window.lumen?.song);
+    assert.equal(await page.evaluate(() => window.LumenI18n.language), 'ar');
+    await page.locator('#song-shell [data-command="song-settings"]').click();
+    await page.locator('#song-language').selectOption('auto');
+    assert.equal(await page.evaluate(() => window.LumenI18n.language), 'fr');
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, 'languages', { configurable: true, get: () => ['zh-CN'] });
+      window.dispatchEvent(new Event('languagechange'));
+    });
+    assert.equal(await page.evaluate(() => window.LumenI18n.language), 'zh');
+    assert.equal(await page.locator('#song-language').inputValue(), 'auto');
+    assert.deepEqual(errors, []); await context.close();
+  });
+
+  await test('Les traductions arabe et chinoise restent cadrées sans inverser les commandes', async () => {
+    for (const locale of ['ar-SA', 'zh-CN', 'es-ES']) for (const view of ['compact', 'paysage']) {
+      const { page, context, errors } = await open(view, null, { song: true, locale });
+      await page.waitForFunction(() => window.lumen.frames >= 2);
+      const layout = await page.evaluate(() => {
+        const rectangles = [...document.querySelectorAll('#song-shell button, #touch-controls button')]
+          .filter(button => button.getClientRects().length).map(button => ({ role: button.getAttribute('aria-label') || button.textContent, rect: button.getBoundingClientRect().toJSON() }));
+        const overlap = [];
+        for (let first = 0; first < rectangles.length; first++) for (let second = first + 1; second < rectangles.length; second++) {
+          const left = rectangles[first], right = rectangles[second];
+          if (left.rect.x < right.rect.right - 2 && left.rect.right > right.rect.x + 2 && left.rect.y < right.rect.bottom - 2 && left.rect.bottom > right.rect.y + 2) overlap.push([left.role, right.role]);
+        }
+        return { outside: rectangles.filter(button => button.rect.x < -1 || button.rect.right > innerWidth + 1 || button.rect.bottom > innerHeight + 1), overlap,
+          classicHidden: [...document.querySelectorAll('.screen')].every(screen => getComputedStyle(screen).display === 'none'),
+          overflow: document.documentElement.scrollWidth > innerWidth,
+          left: document.querySelector('[data-touch="left"]').getBoundingClientRect().x,
+          right: document.querySelector('[data-touch="right"]').getBoundingClientRect().x };
+      });
+      assert.deepEqual(layout.outside, [], locale + ' ' + view); assert.deepEqual(layout.overlap, [], locale + ' ' + view);
+      assert.equal(layout.classicHidden, true, 'The classic home must not flash over the localized game.');
+      assert.equal(layout.overflow, false); assert.ok(layout.left < layout.right);
+      await page.screenshot({ path: path.join(shots, 'language-' + locale + '-' + view + '.png') });
+      const before = await page.evaluate(() => window.lumen.player.x);
+      await page.locator('#game').focus(); await page.keyboard.down('ArrowRight'); await page.waitForTimeout(250); await page.keyboard.up('ArrowRight');
+      assert.ok(await page.evaluate(() => window.lumen.player.x) > before + 30, 'Right must still move right.');
+      await page.locator('#song-shell .song-icon[data-command="song-atlas"]').click();
+      assert.ok(await page.locator('#song-panel').evaluate(panel => panel.scrollWidth <= panel.clientWidth + 1));
+      await page.screenshot({ path: path.join(shots, 'language-' + locale + '-' + view + '-atlas.png') });
+      assert.deepEqual(errors, []); await context.close();
+    }
+  });
+
+  await test('L’édition classique, les dialogues et le changement de langue sont traduits', async () => {
+    const { page, context, errors } = await open('bureau', null, { locale: 'es-ES' });
+    assert.equal(await page.locator('#start-button span').first().textContent(), 'Empezar la aventura');
+    await page.locator('#masthead [data-command="help"]').click();
+    await page.locator('#classic-language').selectOption('ar');
+    assert.equal(await page.locator('#help-title').textContent(), 'اتبع اندفاعك.');
+    await page.locator('#help-screen [data-command="close-help"]').first().click();
+    await page.locator('#home-screen [data-command="hub"]').click();
+    await page.waitForFunction(() => window.lumen.level.hub && window.lumen.mode === 'playing');
+    await page.waitForTimeout(350);
+    await page.locator('#game').focus(); await page.keyboard.down('ArrowRight'); await page.waitForTimeout(350); await page.keyboard.up('ArrowRight');
+    await page.waitForFunction(() => !document.getElementById('dialogue').classList.contains('hidden'));
+    assert.equal(await page.locator('#dialogue-name').textContent(), 'فيسبر');
+    assert.ok(/[\u0600-\u06ff]/.test(await page.locator('#dialogue-line').textContent()));
+    assert.equal(await page.evaluate(() => window.lumen.level.key), 'observatoire');
+    assert.deepEqual(errors, []); await context.close();
+  });
+
+  await test('Les textes statiques du document possèdent une traduction sans modifier les graines', async () => {
+    const { page, context, errors } = await open('bureau', null, { song: true, locale: 'en-US' });
+    const missing = await page.evaluate(html => {
+      const source = new DOMParser().parseFromString(html, 'text/html');
+      const texts = new Set(), walker = source.createTreeWalker(source.body, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.parentElement?.closest('script, style, svg, noscript, [translate="no"], #song-goal')) continue;
+        texts.add(node.nodeValue.trim().replace(/\s+/g, ' '));
+      }
+      for (const element of source.querySelectorAll('[aria-label], [title], [placeholder]')) {
+        if (element.id === 'seed-input') continue;
+        for (const name of ['aria-label', 'title', 'placeholder']) if (element.hasAttribute(name)) texts.add(element.getAttribute(name));
+      }
+      return [...texts].filter(text => /\p{L}/u.test(text) && !/^[A-Z]$/.test(text) && !['LUMEN', 'Lumen'].includes(text) && !window.LumenI18n.has(text));
+    }, fs.readFileSync(path.join(root, 'index.html'), 'utf8'));
+    assert.deepEqual(missing, []);
+    const codes = await page.evaluate(() => {
+      const before = window.LumenRng.encodeSeed(12345);
+      window.LumenI18n.setLanguage('ar');
+      return [before, window.LumenRng.encodeSeed(12345)];
+    });
+    assert.equal(codes[0], codes[1]); assert.deepEqual(errors, []); await context.close();
+  });
 
   await test('Le Chant démarre directement, avec ses ressources locales et un canvas animé', async () => {
     for (const source of [false, true]) {

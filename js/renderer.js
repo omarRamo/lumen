@@ -100,7 +100,7 @@
       }
       for (const w of game.waves || []) this.wave(c, w, t);
       for (const part of game.particles || []) if (this.visible(part, 25)) this.particle(c, part);
-      for (const ft of game.floatingTexts || []) { c.save(); c.globalAlpha = Math.min(1, Math.max(0, ft.life || 0)); c.textAlign = 'center'; c.font = '700 17px "Trebuchet MS", sans-serif'; c.shadowColor = '#12343b'; c.shadowBlur = 3; c.fillStyle = ft.color || '#fff0b7'; c.fillText(ft.text || '', ft.x, ft.y); c.restore(); }
+      for (const ft of game.floatingTexts || []) { c.save(); c.globalAlpha = Math.min(1, Math.max(0, ft.life || 0)); c.textAlign = 'center'; c.font = '700 17px "Trebuchet MS", sans-serif'; c.direction = window.LumenI18n?.direction || 'ltr'; c.shadowColor = '#12343b'; c.shadowBlur = 3; c.fillStyle = ft.color || '#fff0b7'; c.fillText(window.LumenI18n?.t(ft.text || '') || ft.text || '', ft.x, ft.y); c.restore(); }
       if (level.water) this.water(c, level.water, cameraX, t, p);
       c.restore();
       this.foreground(c, t, cameraX, p, theme);

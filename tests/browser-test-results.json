@@ -1,7 +1,31 @@
 {
-  "passed": 16,
+  "passed": 22,
   "failed": 0,
   "checks": [
+    {
+      "name": "Les cinq langues système traduisent les éditions source et portable sans réseau",
+      "passed": true
+    },
+    {
+      "name": "La priorité système, le repli anglais et le choix sauvegardé sont respectés",
+      "passed": true
+    },
+    {
+      "name": "Changer de langue conserve la partie et le focus, et le choix survit au rechargement",
+      "passed": true
+    },
+    {
+      "name": "Les traductions arabe et chinoise restent cadrées sans inverser les commandes",
+      "passed": true
+    },
+    {
+      "name": "L’édition classique, les dialogues et le changement de langue sont traduits",
+      "passed": true
+    },
+    {
+      "name": "Les textes statiques du document possèdent une traduction sans modifier les graines",
+      "passed": true
+    },
     {
       "name": "Le Chant démarre directement, avec ses ressources locales et un canvas animé",
       "passed": true

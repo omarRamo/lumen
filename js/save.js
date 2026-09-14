@@ -52,7 +52,7 @@
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35 },
+      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto' },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -129,6 +129,7 @@
       profile.settings.reducedEffects = !!raw.settings.reducedEffects;
       profile.settings.songStyle = raw.settings.songStyle === 'flow' ? 'flow' : 'gentle';
       profile.settings.volume = clamp(finite(raw.settings.volume, .35), 0, 1);
+      profile.settings.language = ['en', 'fr', 'es', 'ar', 'zh'].includes(raw.settings.language) ? raw.settings.language : 'auto';
     }
     if (isObject(raw.hub)) {
       if (isObject(raw.hub.quests)) {
@@ -343,6 +344,7 @@
     setting(name) { return this.profile.settings[name]; }
     setSetting(name, value) {
       if (!(name in this.profile.settings)) return false;
+      if (name === 'language' && !['auto', 'en', 'fr', 'es', 'ar', 'zh'].includes(value)) return false;
       this.profile.settings[name] = value;
       this.save();
       return true;

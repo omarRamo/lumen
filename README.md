@@ -16,6 +16,47 @@ peuvent être servis par un hébergement web statique ; le tactile s’adapte au
 portrait et au paysage. Il ne s’agit pas d’une application native publiée sur
 les boutiques mobiles.
 
+## Langues
+
+Le jeu propose **français, anglais, espagnol, arabe et chinois simplifié**,
+dans le Chant comme dans l’édition classique : menus, objectifs, dialogues,
+indications, résultats, messages et noms accessibles des commandes.
+
+Au premier lancement, il utilise la première langue prise en charge dans
+les préférences exposées par le navigateur (`navigator.languages`, puis
+`navigator.language`), généralement héritées du système. Si aucune ne
+correspond, **il s’ouvre en anglais**. Les variantes régionales sont reconnues :
+`fr-CA`, `es-MX`, `ar-SA` ou `en-GB`, par exemple. Toutes les variantes `zh`
+utilisent la traduction chinoise simplifiée (`zh-Hans`).
+
+Dans **Réglages → Langue**, choisissez une langue ou **Langue du système**.
+Dans l’édition classique, ce choix se trouve dans **Comment jouer**, parmi
+les réglages de confort. Le changement est immédiat et ne recommence pas la
+partie. Le choix est conservé dans les paramètres du profil ; une ancienne
+sauvegarde utilise automatiquement la détection sans perdre sa progression.
+En mode automatique, un changement des préférences du navigateur est aussi
+pris en compte lorsque celui-ci émet l’événement `languagechange`.
+
+L’arabe emploie une interface de droite à gauche, mais **le monde, les touches
+gauche/droite et les graines ne sont jamais inversés ni traduits**. Les polices
+arabes et chinoises disponibles sur l’appareil prennent le relais des polices
+latines. Les catalogues sont locaux et intégrés à l’édition autonome : aucune
+requête à un service de traduction ou de polices n’est nécessaire.
+
+Les catalogues [js/locales-ui.js](js/locales-ui.js),
+[js/locales-classic.js](js/locales-classic.js) et
+[js/locales-world.js](js/locales-world.js) contiennent chacun des lignes
+`[sourceFrançaise, anglais, espagnol, arabe, chinoisSimplifié]`.
+[js/i18n.js](js/i18n.js) résout la langue, interpole les paramètres nommés
+et traduit le DOM sans reconstruire ses commandes. Les clés de sauvegarde,
+les identifiants de niveau et les données de simulation restent inchangés.
+
+Pour ajouter un texte, fournir les cinq versions et conserver les mêmes
+paramètres `{name}`, `{count}`, etc. dans chaque version. `npm run test:i18n`
+vérifie la résolution de langue, les paramètres et la couverture des niveaux,
+quêtes, dialogues, compagnons et expéditions. Les tests navigateur vérifient
+également le contenu statique, le rechargement, le focus et le cadrage RTL.
+
 ## Le Nouveau Voyage
 
 | Île | Intention |
@@ -58,7 +99,7 @@ records des deux rythmes sont distincts.
 | Pause | Échap / P | Bouton pause | Start |
 | Recommencer / son | R / M | Menus du jeu | Menus au clavier ou au tactile |
 
-Les réglages proposent le volume, les mouvements réduits, la main dominante
+Les réglages proposent la langue, le volume, les mouvements réduits, la main dominante
 et la taille des commandes. Les boutons sont nommés pour les lecteurs d’écran
 et les dialogues contiennent le focus clavier. L’accessibilité complète d’un
 jeu de plateforme visuel n’est pas pour autant acquise.
@@ -405,6 +446,7 @@ rien ; ce qui suit ne sert qu'au développement.
 ```bash
 node tools/build.cjs          # régénère LUMEN.html avec les ressources locales
 
+node tests/test-i18n.cjs          # détection des langues et couverture des catalogues
 node tests/test-p0.cjs            # 28 promesses du jalon A (branches, apaisement,
                                   #   restauration du monde, sessions, sauvegarde)
 node tests/test-engine.cjs        # physique, progression et règles du Chant
@@ -416,7 +458,7 @@ npm install                   # tests navigateur, polices et pictogrammes de dé
 npx playwright install chromium  # facultatif si Chrome ou Edge est installé sous Windows
 npm run test:browser          # vrais navigateurs, éditions source et portable, cinq formats
 
-npm test                      # les cinq suites Node
+npm test                      # les six suites Node, langues comprises
 npm run verify                # build + tests Node + navigateur
 ```
 
@@ -433,12 +475,13 @@ version est vérifiée sous Windows avec Node et Chrome, en ouverture directe
 
 | Suite | Résultat |
 | --- | --- |
+| `test-i18n.cjs` | 7 / 7, cinq langues et couverture des textes du monde |
 | `test-p0.cjs` | 28 / 28 (3 / 28 avant le jalon A — voir `docs/jalon-a-reference.json`) |
 | `test-engine.cjs` | 57 / 57 |
 | `test-renderer.cjs` | 10 / 10 |
 | `test-expedition.cjs` | 15 / 15, dont 1 012 graines sans une seule salle fautive |
 | `playthrough.cjs` | 12 parcours, dont les trois îles en Balade et Élan, sans chute et avec tous leurs souvenirs |
-| `test-browser.cjs` | 16 / 16, zéro erreur de console |
+| `test-browser.cjs` | 22 / 22, cinq langues, éditions source et portable, zéro erreur de console |
 
 Quelques mesures que ces suites produisent, et qui disent quelque chose :
 
@@ -465,6 +508,9 @@ Quelques mesures que ces suites produisent, et qui disent quelque chose :
 
 Dit sans emballage, parce que c'est ce qui compte :
 
+- **les traductions n’ont pas encore été relues par des locuteurs natifs.**
+  Leur couverture, l’affichage arabe/chinois et les changements de langue
+  sont testés ; une relecture linguistique reste nécessaire avant diffusion ;
 - **aucun playtest humain n'a eu lieu.** Tout ce que ce document affirme sur le
   plaisir ou la lisibilité est une hypothèse ;
 - **aucun doigt humain n'a touché les commandes tactiles.** Elles sont vérifiées

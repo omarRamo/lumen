@@ -33,6 +33,10 @@ ci-dessous concernent l’édition classique, qui reste accessible dans l’atla
 5. **Choisir un mode de distribution.** Le jeu web statique et le fichier
   autonome existent ; PWA installable, paquets Android/iOS et distribution PC
   native restent à décider puis à produire.
+6. **Faire relire les cinq langues.** Valider les formulations françaises,
+  anglaises, espagnoles, arabes et chinoises simplifiées avec des locuteurs
+  natifs, puis vérifier les polices et le RTL sur de vrais appareils iOS et
+  Android. Les tests couvrent les textes et leur affichage, pas cette relecture.
 
 ---
 

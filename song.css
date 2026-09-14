@@ -28,6 +28,7 @@
 .song-shell button { pointer-events: auto; }
 .song-shell svg, .song-overlay svg { display: block; width: 21px; height: 21px; flex-shrink: 0; }
 body.song-playing #masthead, body.song-playing #vignette { display: none; }
+body.song-playing .screen { display: none; }
 body.song-playing #game { outline: none; touch-action: none; }
 .song-header {
   position: absolute;
@@ -272,3 +273,68 @@ body.song-playing .toast {
   .song-shell *, .song-overlay * { animation: none !important; transition: none !important; }
 }
 body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { animation: none !important; transition: none !important; }
+
+:root { --locale-ui: Outfit, sans-serif; --locale-display: Fredoka, sans-serif; }
+html[lang="ar"] { --locale-ui: Tahoma, 'Noto Sans Arabic', sans-serif; --locale-display: Tahoma, 'Noto Sans Arabic', sans-serif; }
+html[lang^="zh"] { --locale-ui: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif; --locale-display: var(--locale-ui); }
+html:is([lang="ar"], [lang^="zh"]) body { --font: var(--locale-ui); --serif: var(--locale-display); }
+html:is([lang="ar"], [lang^="zh"]) body * { letter-spacing: 0; }
+.song-shell, .song-overlay { font-family: var(--locale-ui); }
+html:is([lang="ar"], [lang^="zh"]) :is(.song-button, .song-text-button, .song-segment button, .song-island, .toast) { font-family: var(--locale-ui); }
+html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h1, .song-panel h2, .song-island h3, .song-brand small) { font-family: var(--locale-display); }
+.song-objective h1, .song-panel h2, .song-island h3 { overflow-wrap: anywhere; }
+.song-settings-row select, .language-setting select {
+  min-width: 0; width: min(220px, 68%); max-width: 100%; min-height: 42px;
+  border: 1px solid #aac9bd; border-radius: 5px; padding: 8px 10px;
+  background: #f8fbf2; color: #28545a; font: 400 14px var(--locale-ui);
+}
+.song-settings-row select:focus-visible, .language-setting select:focus-visible { outline: 3px solid #bd6549; outline-offset: 3px; }
+.language-setting { gap: 10px; }
+.language-setting select { width: min(230px, 65%); }
+.song-act>span:first-child, #song-island-number, #song-clock, #song-note-count, #song-memory-count,
+#song-voice-count, #song-combo-count, .song-results strong, .song-island-meta>span, .card-number,
+.star-count, .card-stars, .result-stars, #clock-time, #result-time, #result-best, #seed-input, kbd {
+  direction: ltr; unicode-bidi: isolate;
+}
+.touch-controls, .touch-move, .touch-actions { direction: ltr; }
+html[dir="rtl"] .song-brand, html[dir="rtl"] .song-island { text-align: right; }
+html[dir="rtl"] .song-objective { left: auto; right: 37px; text-align: right; }
+html[dir="rtl"] .song-notes { left: 34px; right: auto; }
+html[dir="rtl"] .song-chorus { left: auto; right: 36px; }
+html[dir="rtl"] .song-mode { left: 34px; right: auto; }
+html[dir="rtl"] .song-panel>.song-icon { left: 16px; right: auto; }
+html[dir="rtl"] .song-dialog-heading { padding-right: 0; padding-left: 14px; }
+html[dir="rtl"] .song-panel-result .song-dialog-heading { padding: 0; }
+html[dir="rtl"] .song-island-art>span { left: auto; right: 10px; }
+html[dir="rtl"] #song-clock { border-left: 0; padding-left: 0; border-right: 1px solid var(--song-line); padding-right: 13px; }
+html[dir="rtl"] .song-range-row output { text-align: left; }
+html[dir="rtl"] .song-panel-confirm-style .song-dialog-sub { text-align: right; }
+html[dir="rtl"] :is(.home-copy, .card-content, .dialogue-body, .quest-banner, .help-card) { text-align: right; }
+html[lang="ar"] .song-panel h2 { font-size: 28px; line-height: 1.5; }
+html[lang="ar"] .song-objective h1 { font-size: 23px; line-height: 1.5; }
+html[lang="ar"] .song-island h3 { font-size: 19px; line-height: 1.5; }
+html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { line-height: 1.8; }
+@media (max-width: 1050px) {
+  html[dir="rtl"] .song-objective { right: 26px; }
+  html[dir="rtl"] .song-chorus { right: 24px; }
+  html[dir="rtl"] .song-mode { left: 22px; }
+}
+@media (max-width: 700px) {
+  html[dir="rtl"] .song-objective { left: 22px; right: 22px; }
+  html[dir="rtl"] .song-notes { left: 20px; right: auto; }
+  html[dir="rtl"] .song-chorus { right: 22px; }
+  html[dir="rtl"] .song-combo { left: auto; right: 23px; text-align: right; }
+  html[dir="rtl"] .song-combo-track { margin-left: auto; margin-right: 0; }
+  html[lang="ar"] .song-island h3 { font-size: 16px; }
+  .song-settings-row select { width: min(210px, 68%); font-size: 13px; }
+}
+@media (max-width: 370px) {
+  html[dir="rtl"] .song-notes { left: 16px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  html[dir="rtl"] .song-objective { left: auto; right: 22px; }
+  html[dir="rtl"] .song-notes { left: 20px; right: auto; }
+  html[dir="rtl"] .song-chorus { left: 50%; right: auto; }
+  html[dir="rtl"] .song-combo { left: 50%; right: auto; text-align: center; }
+  html[lang="ar"] .song-objective h1 { font-size: 18px; }
+}
