@@ -6,6 +6,50 @@
   <meta name="theme-color" content="#75c9d0">
   <meta name="description" content="LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.">
   <title>LUMEN · Le Chant des îles</title>
+  <script>
+(function (global) {
+  'use strict';
+  const CHOICES = Object.freeze(['system', 'light', 'dark']);
+  const listeners = new Set();
+  const media = global.matchMedia?.('(prefers-color-scheme: dark)');
+  let preference = 'system', current = 'light';
+
+  function normalize(value) { return CHOICES.includes(value) ? value : 'system'; }
+  function resolve(value, systemDark = !!media?.matches) {
+    const choice = normalize(value);
+    return choice === 'system' ? (systemDark ? 'dark' : 'light') : choice;
+  }
+  function apply(value = preference) {
+    preference = normalize(value);
+    const previous = current;
+    current = resolve(preference);
+    if (global.document) {
+      global.document.documentElement.dataset.appearance = current;
+      global.document.documentElement.style.colorScheme = current;
+      const meta = global.document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = current === 'dark' ? '#162f31' : '#93c2df';
+    }
+    for (const listener of listeners) listener(current, previous);
+    return current;
+  }
+  function onChange(listener) { listeners.add(listener); return () => listeners.delete(listener); }
+  function controls(selected = preference) {
+    const translate = source => global.LumenI18n?.t(source) || source;
+    const options = [['system', 'Système', 'monitor'], ['light', 'Clair', 'sun'], ['dark', 'Sombre', 'moon']];
+    return `<div class="appearance-options" role="group" aria-label="${translate('Apparence')}">` + options.map(([value, label, icon]) =>
+      `<button type="button" data-appearance="${value}" aria-pressed="${selected === value}">${global.LumenIcons?.[icon] || ''}<span>${translate(label)}</span></button>`).join('') + '</div>';
+  }
+  const systemChanged = () => { if (preference === 'system') apply(); };
+  if (media?.addEventListener) media.addEventListener('change', systemChanged);
+  else media?.addListener?.(systemChanged);
+  global.LumenAppearance = {
+    CHOICES, normalize, resolve, apply, onChange, controls,
+    get current() { return current; },
+    get preference() { return preference; }
+  };
+  apply();
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E">
   <style>
 /* Lumen's interface: botanical field notes, warm paper and deep green ink. */
@@ -566,6 +610,103 @@ body.song-playing .toast {
 body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { animation: none !important; transition: none !important; }
 
 :root { --locale-ui: Outfit, sans-serif; --locale-display: Fredoka, sans-serif; }
+:root {
+  --lumen-surface: #f4f9ed;
+  --lumen-raised: #f8fbf2;
+  --lumen-glass: #f4fbe7cc;
+  --lumen-ink: #234f55;
+  --lumen-muted: #527b78;
+  --lumen-line: #3e81732e;
+  --lumen-strong: #2d6462;
+  --lumen-on-strong: #fbf8de;
+  --lumen-gold: #9a783c;
+  --lumen-coral: #ed9b7c;
+  --lumen-hover: #e0eddd;
+  --lumen-focus: #bd6549;
+}
+:root[data-appearance="dark"] {
+  --lumen-surface: #203c3d;
+  --lumen-raised: #2b4b4b;
+  --lumen-glass: #203a3bd9;
+  --lumen-ink: #e8efd9;
+  --lumen-muted: #b1c7b8;
+  --lumen-line: #b9d5b63d;
+  --lumen-strong: #b8d9b5;
+  --lumen-on-strong: #183e40;
+  --lumen-gold: #edc18a;
+  --lumen-coral: #f2ae97;
+  --lumen-hover: #365855;
+  --lumen-focus: #f2bc90;
+}
+.song-shell, .song-overlay { --song-ink: var(--lumen-ink); --song-muted: var(--lumen-muted); --song-line: var(--lumen-line); }
+.song-panel { background-color: var(--lumen-surface); border-color: var(--lumen-line); }
+.song-panel, .modal-card {
+  background-image: repeating-linear-gradient(0deg, #4c846605 0, #4c846605 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, #ffffff0c 0, #ffffff0c 1px, transparent 1px, transparent 5px);
+}
+.song-panel::before, .song-panel::after { content: ''; position: absolute; inset-inline: 12px; height: 1px; border-top: 1px dashed var(--lumen-line); pointer-events: none; }
+.song-panel::before { top: 10px; }
+.song-panel::after { bottom: 10px; }
+.song-primary { background-image: repeating-linear-gradient(135deg, #ffffff05 0, #ffffff05 1px, transparent 1px, transparent 4px); }
+.song-notes { box-shadow: inset 0 0 0 3px #d1cf9910, 0 3px 12px #133b3210; }
+.song-brand img { filter: drop-shadow(0 2px 0 #fff9e470) drop-shadow(0 4px 7px #243c3820); }
+.song-header .song-pause { box-shadow: 0 3px 0 #173e4238, inset 0 0 0 3px #f4e8b121; }
+.song-island-art { outline: 1px solid var(--lumen-line); outline-offset: 3px; }
+.song-icon, .song-notes, .song-segment { background: var(--lumen-glass); border-color: var(--lumen-line); color: var(--lumen-ink); }
+.song-panel>.song-icon, .song-pause-tools .song-icon { border-color: var(--lumen-line); }
+.song-icon:hover, .song-button:hover { background: var(--lumen-hover); }
+.song-brand strong, .song-combo { color: var(--lumen-ink); }
+.song-act, .song-notes svg, .song-island-copy>small, .song-island-meta span { color: var(--lumen-muted); }
+.song-act i { background: var(--lumen-line); }
+.song-text-button { color: var(--lumen-ink); }
+.song-record, .song-result-mark { color: var(--lumen-gold); }
+.song-button { border-color: var(--lumen-line); }
+.song-primary, .song-segment [aria-pressed="true"], .song-header .song-pause { background: var(--lumen-strong); color: var(--lumen-on-strong); border-color: var(--lumen-strong); }
+.song-primary:hover { background: var(--lumen-strong); filter: brightness(1.08); }
+.song-segment button { color: var(--lumen-muted); }
+.song-settings-row .song-segment { border-color: var(--lumen-line); }
+.song-settings-row select, .language-setting select { background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+.song-range-row input { accent-color: var(--lumen-strong); }
+.song-settings-row input[type="checkbox"] { border-color: var(--lumen-line); background: var(--lumen-hover); }
+.song-settings-row input:checked { background: #528f7c; }
+.appearance-row { flex-wrap: wrap; }
+.appearance-options { display: flex; align-items: stretch; gap: 4px; padding: 4px; border: 1px solid var(--lumen-line); border-radius: 7px; background: var(--lumen-raised); }
+.appearance-options button { display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; padding: 9px 11px; min-height: 39px; border-radius: 4px; background: transparent; color: var(--lumen-muted); font: 500 12px var(--locale-ui); }
+.appearance-options svg { width: 17px; height: 17px; }
+.appearance-options [aria-pressed="true"] { background: var(--lumen-strong); color: var(--lumen-on-strong); }
+.appearance-options button:focus-visible, .song-shell button:focus-visible, .song-overlay button:focus-visible { outline: 3px solid var(--lumen-focus); outline-offset: 3px; }
+html[data-appearance="dark"] body { --ink: #e8efd9; --ink-light: #b1c7b8; --paper: #203c3d; --line: #b9d5b63d; background: #162f31; }
+html[data-appearance="dark"] #vignette { background: linear-gradient(90deg, #183738f5, #183738d0 32%, #18373800 75%); }
+html[data-appearance="dark"] :is(.modal-card, .map-screen, .medal-help, .dialogue, .quest-banner) { background-color: var(--lumen-surface); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.hud-left, .hud-right, .chapter-pill, .run-clock, .power-indicator, .level-hint, .sound-button, .toast) { background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.level-card, .result-fragments, .result-medal, .route-branch, .offer-item) { background: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.card-record, .card-targets, .card-medal, .power-heading span, .power-guide-note, .settings-note, .card-stars, .result-fragments small) { color: var(--lumen-muted); }
+html[data-appearance="dark"] :is(.button.secondary, .run-mode-switch, .medal-help-button, kbd, .seg, .card-medal.unearned) { background: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.button.primary, .run-mode-switch [aria-pressed="true"], .seg [aria-pressed="true"]) { background: var(--lumen-strong); color: var(--lumen-on-strong); }
+html[data-appearance="dark"] .transition { background: #1d3a3a; }
+html[data-appearance="dark"] .lunar-sigil, html[data-appearance="dark"] .lunar-sigil>b { color: var(--lumen-ink); }
+html[data-appearance="dark"] .lunar-sigil>span { color: var(--lumen-gold); }
+html[data-appearance="dark"] .song-overlay { background: #081c2680; }
+html[data-appearance="dark"] .song-chorus { color: #e3ead5; }
+html[data-appearance="dark"] .song-combo-track i { background: var(--lumen-coral); }
+html[data-appearance="dark"] .song-pause-echoes .song-echo { background: #507774; }
+html[data-appearance="dark"] .song-pause-echoes .song-echo.found { background: var(--echo-color); }
+html[data-appearance="dark"] body.song-playing .toast { background: #294748f2; color: var(--lumen-ink); border-color: var(--lumen-line); }
+.song-panel-settings { width: min(550px, 100%); }
+.song-mix-row { padding-block: 11px; }
+.song-mix-row>span { display: flex; align-items: center; gap: 8px; }
+.song-mix-row>span svg { width: 16px; height: 16px; color: var(--lumen-muted); }
+.sound-preview { min-height: 42px; gap: 9px; margin-block: 8px 0; }
+.classic-mix-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.classic-mix-row input { flex: 1; min-width: 90px; accent-color: var(--lumen-strong); }
+.classic-mix-row output { min-width: 40px; font-size: 12px; direction: ltr; }
+.song-mix-row output { direction: ltr; unicode-bidi: isolate; }
+@media (max-width: 700px) {
+  .appearance-row { row-gap: 9px; }
+  .appearance-options { width: 100%; }
+  .appearance-row>[data-appearance-control] { width: 100%; }
+  .appearance-options button { flex: 1; gap: 5px; padding-inline: 7px; }
+}
 html[lang="ar"] { --locale-ui: Tahoma, 'Noto Sans Arabic', sans-serif; --locale-display: Tahoma, 'Noto Sans Arabic', sans-serif; }
 html[lang^="zh"] { --locale-ui: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif; --locale-display: var(--locale-ui); }
 html:is([lang="ar"], [lang^="zh"]) body { --font: var(--locale-ui); --serif: var(--locale-display); }
@@ -628,6 +769,9 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
   html[dir="rtl"] .song-chorus { left: 50%; right: auto; }
   html[dir="rtl"] .song-combo { left: 50%; right: auto; text-align: center; }
   html[lang="ar"] .song-objective h1 { font-size: 18px; }
+}
+:root[data-appearance="dark"] .song-settings-row select, :root[data-appearance="dark"] .language-setting select {
+  background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line);
 }
 </style>
 </head>
@@ -699,6 +843,11 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
     <section id="help-screen" class="screen modal-screen" aria-labelledby="help-title"><div class="modal-card help-card"><button class="close-button" data-command="close-help" aria-label="Fermer les commandes">×</button><div class="eyebrow">LE PETIT GUIDE DU GARDIEN</div><h2 id="help-title">Suivez votre élan.</h2><div class="controls-grid"><div><span>Se déplacer</span><span><kbd>←</kbd><kbd>→</kbd> ou <kbd>Q</kbd><kbd>D</kbd></span></div><div><span>Sauter / nager</span><span><kbd>ESPACE</kbd> ou <kbd>Z</kbd><kbd>↑</kbd></span></div><div><span>Courir</span><kbd>MAJ</kbd></div><div><span>Glisser</span><span><kbd>↓</kbd> en courant</span></div><div><span>Utiliser un pouvoir</span><span><kbd>X</kbd> ou <kbd>J</kbd></span></div><div><span>Pause / reprendre</span><span><kbd>ÉCHAP</kbd> ou <kbd>P</kbd></span></div><div><span>Recommencer / son</span><span><kbd>R</kbd> / <kbd>M</kbd></span></div><div><span>Autres claviers</span><span><kbd>A</kbd><kbd>D</kbd> · <kbd>W</kbd> saut</span></div></div><p class="help-tip">Un appui bref fait un petit saut. Maintenez la touche pour sauter plus haut. Sautez sur les créatures pour les étourdir. Les lanternes mémorisent votre passage.</p><p class="gamepad-guide"><span aria-hidden="true">⊕</span><span><strong>À la manette</strong> · Stick ou croix pour avancer · A / B pour sauter · X pour le pouvoir · Gâchette / épaule droite pour courir · Bas pour glisser · Start pour la pause.</span></p><div class="power-guide"><div><span class="power-badge bloom">✺</span><strong>Fleur solaire</strong><p>Tirez des graines de lumière avec X.</p></div><div><span class="power-badge breeze">≋</span><strong>Plume d’azur</strong><p>Sautez une seconde fois dans les airs.</p></div><div><span class="power-badge comet">✦</span><strong>Cœur comète</strong><p>X déclenche une ruée protectrice.</p></div><div><span class="power-badge echo">♧</span><strong>Grelot d’écho</strong><p>X révèle les plateformes cachées pendant 4 secondes.</p></div></div><div class="settings-block"><div class="eyebrow">CONFORT ET ACCESSIBILITÉ</div><div class="settings-grid">
       <div class="setting"><span>Main dominante</span><div class="seg" role="group" aria-label="Main dominante"><button data-setting="leftHanded" data-value="false" aria-pressed="true">Droitier</button><button data-setting="leftHanded" data-value="true" aria-pressed="false">Gaucher</button></div></div>
       <label class="setting language-setting" for="classic-language"><span>Langue</span><select id="classic-language" data-language-select></select></label>
+      <div class="setting appearance-row"><span>Apparence</span><div data-appearance-control></div></div>
+      <label class="setting classic-mix-row" for="classic-music"><span>Musique</span><input id="classic-music" type="range" min="0" max="100" data-audio-setting="musicVolume"><output id="classic-music-value"></output></label>
+      <label class="setting classic-mix-row" for="classic-effects"><span>Effets sonores</span><input id="classic-effects" type="range" min="0" max="100" data-audio-setting="effectsVolume"><output id="classic-effects-value"></output></label>
+      <label class="setting classic-mix-row" for="classic-ambience"><span>Ambiance</span><input id="classic-ambience" type="range" min="0" max="100" data-audio-setting="ambienceVolume"><output id="classic-ambience-value"></output></label>
+      <button class="text-button sound-preview" data-command="sound-preview">Écouter LUMEN</button>
       <div class="setting"><span>Taille des commandes</span><div class="seg" role="group" aria-label="Taille des commandes tactiles"><button data-setting="touchScale" data-value="0.85" aria-pressed="false">Petite</button><button data-setting="touchScale" data-value="1" aria-pressed="true">Normale</button><button data-setting="touchScale" data-value="1.3" aria-pressed="false">Grande</button></div></div>
       <div class="setting"><span>Secousses et flashs</span><div class="seg" role="group" aria-label="Effets d’écran"><button data-setting="reducedEffects" data-value="false" aria-pressed="true">Normaux</button><button data-setting="reducedEffects" data-value="true" aria-pressed="false">Atténués</button></div></div>
     </div><p class="settings-note">Sur écran tactile, maintenir une direction déclenche la course toute seule : le chemin principal ne demande jamais plus de deux doigts.</p></div><p class="power-guide-note">Chaque pouvoir est temporaire : sa jauge clignote durant les 5 dernières secondes. Un grelot se relance avec X tant que vous le portez.</p><button class="button primary" data-command="close-help">C’est parti <span>→</span></button></div></section>
@@ -828,6 +977,14 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
 </script>
   <script>
 window.LumenI18n.add([
+  ['Apparence', 'Appearance', 'Apariencia', 'المظهر', '外观'],
+  ['Système', 'System', 'Sistema', 'النظام', '系统'],
+  ['Clair', 'Light', 'Claro', 'فاتح', '浅色'],
+  ['Sombre', 'Dark', 'Oscuro', 'داكن', '深色'],
+  ['Musique', 'Music', 'Música', 'الموسيقى', '音乐'],
+  ['Effets sonores', 'Sound effects', 'Efectos de sonido', 'المؤثرات الصوتية', '音效'],
+  ['Ambiance', 'Ambience', 'Ambiente', 'أصوات البيئة', '环境音'],
+  ['Écouter LUMEN', 'Listen to LUMEN', 'Escuchar LUMEN', 'استمع إلى LUMEN', '聆听 LUMEN'],
   ['Langue', 'Language', 'Idioma', 'اللغة', '语言'],
   ['Langue du système', 'System language', 'Idioma del sistema', 'لغة النظام', '系统语言'],
   ['LUMEN · Le Chant des îles', 'LUMEN · Song of the Islands', 'LUMEN · El canto de las islas', 'LUMEN · أغنية الجزر', 'LUMEN · 群岛之歌'],
@@ -1767,7 +1924,7 @@ window.LumenI18n.add([
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto' },
+      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto', appearance: 'system', musicVolume: .8, effectsVolume: .9, ambienceVolume: .6 },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -1845,6 +2002,10 @@ window.LumenI18n.add([
       profile.settings.songStyle = raw.settings.songStyle === 'flow' ? 'flow' : 'gentle';
       profile.settings.volume = clamp(finite(raw.settings.volume, .35), 0, 1);
       profile.settings.language = ['en', 'fr', 'es', 'ar', 'zh'].includes(raw.settings.language) ? raw.settings.language : 'auto';
+      profile.settings.appearance = ['light', 'dark'].includes(raw.settings.appearance) ? raw.settings.appearance : 'system';
+      for (const [channel, fallback] of [['musicVolume', .8], ['effectsVolume', .9], ['ambienceVolume', .6]]) {
+        profile.settings[channel] = clamp(finite(raw.settings[channel], fallback), 0, 1);
+      }
     }
     if (isObject(raw.hub)) {
       if (isObject(raw.hub.quests)) {
@@ -2060,6 +2221,11 @@ window.LumenI18n.add([
     setSetting(name, value) {
       if (!(name in this.profile.settings)) return false;
       if (name === 'language' && !['auto', 'en', 'fr', 'es', 'ar', 'zh'].includes(value)) return false;
+      if (name === 'appearance' && !['system', 'light', 'dark'].includes(value)) return false;
+      if (['musicVolume', 'effectsVolume', 'ambienceVolume', 'volume'].includes(name)) {
+        if (!Number.isFinite(value)) return false;
+        value = clamp(value, 0, 1);
+      }
       this.profile.settings[name] = value;
       this.save();
       return true;
@@ -3641,7 +3807,7 @@ window.LumenI18n.add([
         game.player.airJumps = 0; this.airNotes++;
         game.burst(note.x, note.y, 5, '#d0fff1', 70, 'trail');
       }
-      game.audio.songNote?.(this.combo - 1);
+      game.audio.songNote?.(this.combo - 1, Math.max(-.7,Math.min(.7,(note.x-game.player.x-16)/220)));
     }
     update(game, dt) {
       this.comboTime = Math.max(0, this.comboTime - dt);
@@ -3658,7 +3824,7 @@ window.LumenI18n.add([
         if (!game.waves.some(wave => Math.hypot(echo.x - wave.x, echo.y - wave.y) <= wave.radius)) continue;
         echo.found = true; this.count++; this.celebration = 2.5;
         game.addScore(750); game.burst(echo.x, echo.y, 38, echo.color, 170, 'petal');
-        game.audio.songNote?.(echo.voice + 5); game.audio.sfx('star');
+        game.audio.rescue?.(echo.voice, Math.max(-.7,Math.min(.7,(echo.x-player.x-16)/220)), this.count);
         game.store.discover('creatures', 'chant-' + echo.id); game.saveProgress();
         game.emit('song-rescue', echo);
         if (this.count === this.lights.length) {
@@ -3710,6 +3876,18 @@ window.LumenI18n.add([
 
   const midi = note => 440 * Math.pow(2, (note - 69) / 12);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const MOTIF = [5, 7, 9, 6, 5];
+  const SONG_SCORES = [
+    { root: 50, scale: [0,2,4,7,9], bpm: 88, color: 'kalimba', harmony: [0,3,1,4],
+      melody: [5,-1,7,9,-1,7,6,-1,4,-1,5,-1, 2,-1,4,5,-1,7,6,-1,4,-1,-1,-1,
+        5,-1,7,9,-1,11,9,-1,7,6,-1,5, 4,-1,2,4,-1,6,5,-1,-1,-1,-1,-1] },
+    { root: 55, scale: [0,2,4,7,9], bpm: 108, color: 'reed', harmony: [0,4,3,1],
+      melody: [5,7,-1,9,-1,7,6,4,-1,5,-1,-1, 7,9,-1,11,-1,9,7,6,-1,4,-1,-1,
+        5,-1,7,9,11,-1,12,-1,9,7,-1,6, 4,6,-1,7,-1,4,5,-1,-1,-1,-1,-1] },
+    { root: 48, scale: [0,2,4,7,9], bpm: 76, color: 'glass', harmony: [0,1,3,0],
+      melody: [5,-1,-1,7,-1,9,6,-1,-1,5,-1,-1, 4,-1,-1,2,-1,4,5,-1,7,-1,-1,-1,
+        9,-1,11,9,-1,7,6,-1,-1,4,-1,-1, 2,-1,4,5,-1,7,5,-1,-1,-1,-1,-1] }
+  ];
 
   class LumenAudio {
     constructor() {
@@ -3727,6 +3905,10 @@ window.LumenI18n.add([
       // Dynamic layers: tension answers nearby danger, boss phase drives the tempo.
       this._danger = 0;
       this._bossPhase = 0;
+      this._mix = { music: .8, effects: .9, ambience: .6 };
+      this._songIndex = -1; this._songLayer = 0; this._night = false;
+      this._beds = []; this._world = { speed: 0, height: 0, water: 0, wind: 0, pan: 0 };
+      this._worldClock = 0; this._footstep = 0; this._gliding = false; this._audioSeed = 0x6c756d65;
     }
 
     /** 0 = calm, 1 = something is actively hunting Nilo. Ramped by the engine. */
@@ -3734,13 +3916,65 @@ window.LumenI18n.add([
     /** 0 = no boss, 1-3 = the Veilleur's remaining thirds. */
     setBossPhase(stage) { this._bossPhase = clamp(Math.floor(Number(stage) || 0), 0, 3); }
     setSongLayer(value) { this._songLayer = clamp(Number(value) || 0, 0, 1); }
-    songNote(index) {
+    setNight(value) { this._night = !!value; }
+    setScene(index = -1) {
+      this._songIndex = Number.isInteger(index) && SONG_SCORES[index] ? index : -1;
+      this._step = 0; this._songLayer = 0; this._footstep = 0; this._gliding = false;
+      this._world = { speed: 0, height: 0, water: 0, wind: 0, pan: 0 };
+      if (this.ctx) { this._releaseMusic(); this._next = this.ctx.currentTime + .08; this._updateBeds(); }
+    }
+    setMix(settings = {}) {
+      for (const channel of ['music', 'effects', 'ambience']) {
+        const value = settings[channel + 'Volume'];
+        if (Number.isFinite(value)) this._mix[channel] = clamp(value, 0, 1);
+      }
+      this._applyMix();
+    }
+    get mix() { return { ...this._mix }; }
+    _applyMix() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const ramp = (parameter, value, duration) => {
+        if(parameter.cancelAndHoldAtTime)parameter.cancelAndHoldAtTime(now);
+        else {parameter.cancelScheduledValues(now);parameter.setValueAtTime(parameter.value,now);}
+        parameter.linearRampToValueAtTime(value,now+duration);
+      };
+      ramp(this.music.gain, this.paused ? 0 : .78 * this._mix.music, .1);
+      ramp(this.effects.gain, this.paused ? 0 : this._mix.effects, .07);
+      ramp(this.ambience.gain, this.paused ? 0 : this._mix.ambience, .12);
+      ramp(this.preview.gain, this._mix.effects, .03);
+      ramp(this._reverb.gain, this.paused ? 0 : .15, .1);
+    }
+    _score() { return SONG_SCORES[this._songIndex] || THEMES[this.theme]; }
+    _random() {
+      this._audioSeed = (Math.imul(this._audioSeed, 1664525) + 1013904223) >>> 0;
+      return this._audioSeed / 4294967296;
+    }
+    songNote(index, pan = 0) {
       if (!this.ctx || !this.unlocked || this.muted || this.paused) return;
       const now = this.ctx.currentTime;
       if (now - (this._lastSongNote ?? -1) < .045) return;
       this._lastSongNote = now;
-      const theme = THEMES[this.theme];
-      this._tone(midi(this._degree(8 + index % 10, theme)), now, .55, .15, 'glass', false, 0);
+      const score = this._score();
+      const degree = MOTIF[index % MOTIF.length] + 5 + Math.floor(index / 5) % 2 * 5;
+      this._tone(midi(this._degree(degree, score)), now, .62, .13, 'kalimba', false, clamp(pan,-.8,.8));
+      if (index > 0 && index % 10 === 0) this._tone(midi(this._degree(degree-5,score)),now+.06,.8,.07,'glass',false,-pan*.5);
+    }
+    rescue(voice, pan = 0, count = 1) {
+      if (!this.ctx || !this.unlocked || this.muted || this.paused) return;
+      const score = this._score(), now = this.ctx.currentTime;
+      MOTIF.slice(0, 3).forEach((degree, index) => this._tone(midi(this._degree(degree+voice%3,score)),now+index*.14,.85,.12,'reed',false,pan));
+      this._tone(midi(this._degree(voice%3,score)),now+.16,1.3,.065,'voice',false,-pan*.4,1400);
+      if(count===3) this._tone(midi(this._degree(12,score)),now+.55,1.5,.08,'glass',false,0);
+    }
+    audition() {
+      if (!this.ctx || !this.unlocked || this.muted) return;
+      const now = this.ctx.currentTime;
+      if (now - (this._lastAudition ?? -10) < 1.8) return;
+      this._lastAudition = now;
+      const score = this._score();
+      MOTIF.forEach((degree,index) => this._tone(midi(this._degree(degree,score)),now+index*.2,.8,.12,index%2?'reed':'kalimba','preview',(index-2)*.2));
+      this._hush(now,.9,.025,1200,'preview',true,-.5);
     }
 
     get volume() { return this._volume; }
@@ -3765,16 +3999,18 @@ window.LumenI18n.add([
       } catch (_) { return false; }
     }
 
-    _init() {
+    _init(context) {
       const AudioContext = global.AudioContext || global.webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = this.ctx = new AudioContext();
+      if (!context && !AudioContext) return;
+      const ctx = this.ctx = context || new AudioContext();
       this.master = ctx.createGain();
       this.master.gain.value = this.muted ? 0 : this._volume;
       this.music = ctx.createGain();
-      this.music.gain.value = this.paused ? 0 : .78;
+      this.music.gain.value = this.paused ? 0 : .78 * this._mix.music;
       this.effects = ctx.createGain();
-      this.effects.gain.value = 1;
+      this.effects.gain.value = this.paused ? 0 : this._mix.effects;
+      this.ambience = ctx.createGain(); this.ambience.gain.value = this.paused ? 0 : this._mix.ambience;
+      this.preview = ctx.createGain(); this.preview.gain.value = this._mix.effects;
       const limiter = ctx.createDynamicsCompressor();
       limiter.threshold.value = -16;
       limiter.knee.value = 18;
@@ -3783,6 +4019,7 @@ window.LumenI18n.add([
       limiter.release.value = .22;
       this.music.connect(limiter);
       this.effects.connect(limiter);
+      this.ambience.connect(limiter); this.preview.connect(limiter);
       limiter.connect(this.master);
       this.master.connect(ctx.destination);
 
@@ -3793,14 +4030,15 @@ window.LumenI18n.add([
         const data = impulse.getChannelData(channel);
         for (let i = 0; i < frames; i++) {
           const t = i / frames;
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 3.8) * .42;
+          data[i] = (this._random() * 2 - 1) * Math.pow(1 - t, 3.8) * .42;
         }
       }
       const convolver = ctx.createConvolver();
       convolver.buffer = impulse;
-      const wet = ctx.createGain();
-      wet.gain.value = .17;
+      const wet = this._reverb = ctx.createGain();
+      wet.gain.value = this.paused ? 0 : .15;
       this.music.connect(convolver);
+      this.effects.connect(convolver);
       convolver.connect(wet);
       wet.connect(limiter);
 
@@ -3808,10 +4046,19 @@ window.LumenI18n.add([
       const data = this._noise.getChannelData(0);
       let previous = 0;
       for (let i = 0; i < data.length; i++) {
-        previous = .83 * previous + .17 * (Math.random() * 2 - 1);
+        previous = .83 * previous + .17 * (this._random() * 2 - 1);
         data[i] = previous * 2;
       }
       this._next = ctx.currentTime + .08;
+      for (const [kind, frequency, pan] of [['wind', 950, -.25], ['water', 430, .45], ['leaves', 2900, -.6]]) {
+        const source = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), gain = ctx.createGain();
+        const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
+        source.buffer = this._noise; source.loop = true;
+        filter.type = 'bandpass'; filter.frequency.value = frequency; filter.Q.value = kind === 'water' ? .35 : .8;
+        gain.gain.value = 0; if(panner.pan)panner.pan.value=pan;
+        source.connect(filter); filter.connect(gain); gain.connect(panner); panner.connect(this.ambience);
+        source.start(); this._beds.push({kind,source,filter,gain,panner});
+      }
     }
 
     setMuted(muted) {
@@ -3833,20 +4080,53 @@ window.LumenI18n.add([
 
     pause() {
       this.paused = true;
-      if (this.ctx) this.music.gain.setTargetAtTime(0, this.ctx.currentTime, .08);
+      this._applyMix();
+      if (this.ctx) for (const voice of this._voices) {
+        if (voice.bus === 'preview') continue;
+        try { voice.sources.forEach(source => source.stop(this.ctx.currentTime + .16)); } catch (_) {}
+      }
     }
     resume() {
       if (!this.paused) return;
       this.paused = false;
       if (!this.ctx) return;
       this._next = this.ctx.currentTime + .07;
-      this.music.gain.setTargetAtTime(.78, this.ctx.currentTime, .12);
+      this._applyMix();
       this._schedule();
     }
 
     // Scheduling also works when the game owns the clock. The look-ahead guard
     // prevents duplicate notes when both update() and the timer are in use.
     update() { this._schedule(); }
+    updateWorld(game, dt) {
+      if (game.mode !== 'playing') return;
+      const player = game.player, song = game.song;
+      const wind = (game.level.song?.wind || []).some(current => player.x+player.w>current.x && player.x<current.x+current.w && player.y+player.h>current.y && player.y<current.y+current.h);
+      const waterfalls = song && song.count >= 2 ? game.platforms.filter(platform=>platform.type==='ground'&&platform.x>1000).map(platform=>platform.x+platform.w-70) : [];
+      const nearest = waterfalls.sort((first,second)=>Math.abs(first-player.x)-Math.abs(second-player.x))[0];
+      this._world = { speed: clamp(Math.abs(player.vx)/490,0,1), height: clamp((560-player.y)/450,0,1),
+        water: Number.isFinite(nearest)?clamp(1-Math.abs(nearest-player.x)/550,0,1):player.wet?.7:game.level.theme==='tide'?.25:0,
+        wind: wind?1:0, pan: Number.isFinite(nearest)?clamp((nearest-player.x)/500,-.8,.8):.3 };
+      if (song && player.gliding && !this._gliding) this.sfx('wings');
+      this._gliding=!!player.gliding;
+      if(song && player.grounded && !player.wet && Math.abs(player.vx)>110) {
+        this._footstep+=Math.abs(player.vx)*dt;
+        if(this._footstep>88){this._footstep%=88;this.sfx('footstep');}
+      } else this._footstep=0;
+      this._worldClock+=dt;
+      if(this._worldClock>=.08){this._worldClock=0;this._updateBeds();}
+    }
+    _updateBeds() {
+      if (!this.ctx) return;
+      const world=this._world, now=this.ctx.currentTime, active=this._songIndex>=0;
+      for(const bed of this._beds) {
+        const gain=bed.kind==='wind' ? (active?.016:.008)+world.speed*.012+world.wind*.055+(this._gliding?.028:0)
+          :bed.kind==='water'?world.water*.095:active?(this._night?.009:.016)*(1-world.height*.8):.002;
+        bed.gain.gain.setTargetAtTime(gain,now,.18);
+        if(bed.kind==='wind')bed.filter.frequency.setTargetAtTime(620+world.height*700+world.speed*450,now,.15);
+        if(bed.kind==='water'&&bed.panner.pan)bed.panner.pan.setTargetAtTime(world.pan,now,.15);
+      }
+    }
 
     _releaseMusic() {
       const now = this.ctx.currentTime;
@@ -3867,16 +4147,36 @@ window.LumenI18n.add([
     }
 
     _schedule() {
-      if (!this.unlocked || !this.ctx || this.paused || this.ctx.state !== 'running') return;
+      if (!this.unlocked || !this.ctx || this.paused || this.muted || this.ctx.state !== 'running') return;
       const now = this.ctx.currentTime;
-      const theme = THEMES[this.theme];
+      const theme = this._score();
       // The final fight tightens the pulse a little with every third of life removed.
       const eighth = 30 / (theme.bpm * (1 + this._bossPhase * .055));
       if (this._next < now - .2) this._next = now + .04;
       let count = 0;
       while (this._next < now + .22 && count++ < 8) {
-        this._playStep(this._step++, this._next, eighth, theme);
+        if(this._songIndex>=0)this._playSongStep(this._step++,this._next,eighth,theme);
+        else this._playStep(this._step++, this._next, eighth, theme);
         this._next += eighth;
+      }
+    }
+
+    _playSongStep(step, at, eighth, score) {
+      const beat=step%12, bar=Math.floor(step/12), harmony=score.harmony[Math.floor(bar/2)%score.harmony.length];
+      const melody=score.melody[step%score.melody.length];
+      if(melody>=0)this._tone(midi(this._degree(melody,score)),at,eighth*(this._night?3.8:2.1),.083,
+        this._night?'reed':score.color,true,Math.sin(bar*.8)*.3);
+      if(beat===0||beat===6)this._tone(midi(this._degree(harmony-5+(beat===6?3:0),score)),at,eighth*5.4,.095,'nylon',true,0);
+      if(beat%3===0)this._tone(midi(this._degree(harmony+2+beat/3,score)),at+.012,eighth*2.2,.041,'kalimba',true,(beat/12-.5)*.9);
+      if(beat===0) for(const [index,degree] of [0,2,4].entries())this._tone(midi(this._degree(harmony+degree,score)),at+index*.021,eighth*11.5,.023,'voice',true,(index-1)*.5,this._night?850:1350);
+      if(beat===0||beat===6)this._tone(96,at,.2,this._night?.018:.03,'kick',true);
+      if(beat===4||beat===10)this._hush(at,.065,this._night?.012:.022,1450,true,false,(beat-7)/7);
+      if(this._songLayer>.08&&beat%3===2)this._tone(midi(this._degree(harmony+8+beat%5,score)),at,eighth*3,.052*this._songLayer,'glass',true,beat%2?.55:-.55);
+      if(this._songLayer>.6&&beat===9)this._tone(midi(this._degree(harmony+5,score)),at,eighth*7,.04*this._songLayer,'voice',true,-.3,1700);
+      if(step%48===35){
+        const degree=this._night?3:10;
+        this._tone(midi(this._degree(degree,score)),at,1.65,.055,this._night?'voice':'reed','ambience',.65,950,midi(this._degree(degree+2,score)));
+        this._tone(midi(this._degree(degree+2,score)),at+.55,1.2,.035,'reed','ambience',-.5);
       }
     }
 
@@ -3935,45 +4235,44 @@ window.LumenI18n.add([
     }
 
     _track(sources, nodes, gain, music, end) {
-      const voice = { sources, nodes, gain, music, end };
+      const voice = { sources, nodes, gain, music: music===true, bus: music===true?'music':typeof music==='string'?music:'effects', end };
       this._voices.add(voice);
       sources[0].onended = () => {
         this._voices.delete(voice);
         for (const node of nodes) { try { node.disconnect(); } catch (_) {} }
       };
-      // Keep pathological bursts (e.g. hundreds of collectibles) bounded.
-      if (this._voices.size > 90) {
-        const oldest = this._voices.values().next().value;
-        try { oldest.sources.forEach(source => source.stop(this.ctx.currentTime + .02)); } catch (_) {}
-      }
     }
 
     _tone(freq, at, duration, volume, color = 'wood', music = false, pan = 0, cutoff = 1400, target = null) {
-      if (!this.ctx || !this.unlocked) return;
+      if (!this.ctx || !this.unlocked || this._voices.size>=90) return;
       const ctx = this.ctx;
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(color === 'bass' ? 360 : color === 'pad' ? cutoff : 5800, at);
+      filter.frequency.setValueAtTime(color === 'bass' ? 360 : color === 'pad'||color==='voice' ? cutoff : color==='reed'?2500:color==='nylon'?2200:5800, at);
       filter.Q.value = .45;
       const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
       if (panner.pan) panner.pan.value = pan;
       filter.connect(gain);
       gain.connect(panner);
-      panner.connect(music ? this.music : this.effects);
+      panner.connect(music===true?this.music:music==='ambience'?this.ambience:music==='preview'?this.preview:this.effects);
       const peak = Math.max(.0001, volume);
-      const attack = color === 'pad' ? .45 : color === 'air' ? .07 : .007;
+      const attack = color === 'pad'||color==='voice' ? .45 : color === 'air'||color==='reed' ? .07 : .007;
       const end = at + Math.max(duration, attack + .04);
       gain.gain.setValueAtTime(.0001, at);
       gain.gain.exponentialRampToValueAtTime(peak, at + attack);
-      if (color === 'pad') {
+      if (color === 'pad'||color==='voice') {
         gain.gain.setValueAtTime(peak * .7, Math.max(at + attack, end - .7));
         gain.gain.exponentialRampToValueAtTime(.0001, end);
       } else gain.gain.exponentialRampToValueAtTime(.0001, end);
 
       const sources = [];
       const nodes = [filter, gain, panner];
-      const partials = color === 'glass' ? [[1, 1, 'sine'], [2.001, .15, 'sine'], [3, .028, 'sine']]
+      const partials = color === 'kalimba' ? [[1,.9,'sine'],[2.76,.07,'sine'],[5.4,.015,'sine']]
+        : color === 'reed' ? [[1,.83,'sine'],[2,.12,'triangle'],[3,.035,'sine']]
+        : color === 'voice' ? [[.999,.5,'sine'],[1.001,.5,'triangle'],[3,.028,'sine']]
+        : color === 'nylon' ? [[1,.8,'triangle'],[2,.12,'sine'],[4,.015,'sine']]
+        : color === 'glass' ? [[1, 1, 'sine'], [2.001, .15, 'sine'], [3, .028, 'sine']]
         : color === 'water' ? [[1, 1, 'sine'], [2, .11, 'triangle']]
         : color === 'pad' ? [[.9985, .55, 'triangle'], [1.0015, .55, 'sine']]
         : color === 'pluck' ? [[1, .8, 'triangle'], [2, .08, 'sine']]
@@ -3991,14 +4290,20 @@ window.LumenI18n.add([
         partialGain.connect(filter);
         sources.push(osc);
         nodes.push(osc, partialGain);
+        if ((color==='reed'||color==='voice')&&ratio<1.01&&osc.detune) {
+          const vibrato=ctx.createOscillator(), depth=ctx.createGain();
+          vibrato.frequency.value=color==='reed'?4.7:3.2;depth.gain.value=color==='reed'?5:3;
+          vibrato.connect(depth);depth.connect(osc.detune);vibrato.start(at);vibrato.stop(end+.03);
+          sources.push(vibrato);nodes.push(vibrato,depth);
+        }
         osc.start(at);
         osc.stop(end + .03);
       });
       this._track(sources, nodes, gain, music, end);
     }
 
-    _hush(at, duration, volume, frequency = 1600, music = false, swell = false) {
-      if (!this.ctx || !this.unlocked) return;
+    _hush(at, duration, volume, frequency = 1600, music = false, swell = false, pan = 0) {
+      if (!this.ctx || !this.unlocked || this._voices.size>=90) return;
       const ctx = this.ctx;
       const source = ctx.createBufferSource();
       source.buffer = this._noise;
@@ -4014,19 +4319,39 @@ window.LumenI18n.add([
       gain.gain.exponentialRampToValueAtTime(.0001, end);
       source.connect(filter);
       filter.connect(gain);
-      gain.connect(music ? this.music : this.effects);
+      const panner=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
+      if(panner.pan)panner.pan.value=pan;
+      gain.connect(panner);
+      panner.connect(music===true?this.music:music==='ambience'?this.ambience:music==='preview'?this.preview:this.effects);
       source.start(at);
       source.stop(end + .03);
-      this._track([source], [source, filter, gain], gain, music, end);
+      this._track([source], [source, filter, gain, panner], gain, music, end);
     }
 
     /** Names intentionally describe game events, keeping entity code simple. */
     sfx(name) {
-      if (!this.unlocked || !this.ctx || this.ctx.state !== 'running' || this.muted) return;
+      if (!this.unlocked || !this.ctx || this.ctx.state !== 'running' || this.muted || (this.paused&&name!=='menu')) return;
       const at = this.ctx.currentTime + .004;
-      const cooldown = name === 'coin' ? .025 : name === 'land' ? .08 : name === 'conveyor' ? .3 : .035;
+      const cooldown = name === 'coin' ? .025 : name === 'land'||name==='menu' ? .08 : name === 'conveyor'||name==='wings' ? .3 : name==='footstep'?.12:.035;
       if (at - (this._lastSfx.get(name) || -100) < cooldown) return;
       this._lastSfx.set(name, at);
+      const score=this._score();
+      if(name==='menu'){this._tone(midi(this._degree(9,score)),at,.13,.042,'kalimba','preview');return;}
+      if(name==='footstep'){this._hush(at,.075,.032,680+this._random()*220,false,false,(this._random()-.5)*.3);this._tone(115+this._random()*35,at,.07,.022,'nylon');return;}
+      if(name==='wings'){this._hush(at,.42,.06,1600,false,true,-.3);this._hush(at+.06,.34,.042,2200,false,true,.35);return;}
+      if(this._songIndex>=0&&['jump','doubleJump','resonance','victory'].includes(name)){
+        const degree=name==='jump'?2:name==='doubleJump'?5:0;
+        if(name==='victory'){
+          MOTIF.concat([9,10]).forEach((pitch,index)=>this._tone(midi(this._degree(pitch,score)),at+index*.18,.85,.14,'kalimba'));
+          [0,2,4,7].forEach((pitch,index)=>this._tone(midi(this._degree(pitch,score)),at+.8+index*.03,2.4,.055,'voice',false,(index-1.5)*.2));
+        } else {
+          this._tone(midi(this._degree(degree,score)),at,name==='resonance'?.68:.24,.1,'reed',false,0,1400,midi(this._degree(degree+2,score)));
+          this._hush(at,name==='resonance'?.48:.18,name==='resonance'?.035:.04,1300,false,true);
+          if(name==='resonance')this._tone(midi(this._degree(5,score)),at+.11,.9,.062,'glass',false,.22);
+          if(name==='doubleJump')this._tone(midi(this._degree(10,score)),at+.05,.5,.065,'kalimba',false,-.2);
+        }
+        return;
+      }
       const tone = (frequency, offset, duration, gain, color = 'wood', end = null) =>
         this._tone(frequency, at + offset, duration, gain, color, false, 0, 1500, end);
       const notes = (pitches, spacing, length = .3, gain = .19, color = 'glass') =>
@@ -4102,7 +4427,11 @@ window.LumenI18n.add([
       if (this._timer) global.clearInterval(this._timer);
       this._timer = null;
       this.unlocked = false;
+      for(const voice of this._voices){for(const source of voice.sources){try{source.stop();}catch(_){}}for(const node of voice.nodes){try{node.disconnect();}catch(_){}}}
       this._voices.clear();
+      for(const bed of this._beds){try{bed.source.stop();}catch(_){}for(const node of [bed.source,bed.filter,bed.gain,bed.panner]){try{node.disconnect();}catch(_){}}}
+      this._beds=[];
+      this._lastSfx.clear();this._lastAudition=undefined;this._lastSongNote=undefined;
       if (this.ctx) {
         try { this.ctx.close(); } catch (_) {}
       }
@@ -4111,6 +4440,7 @@ window.LumenI18n.add([
   }
 
   LumenAudio.THEMES = Object.keys(THEMES);
+  LumenAudio.SONG_SCORES = SONG_SCORES;
   global.LumenAudio = LumenAudio;
 })(window);
 
@@ -4148,7 +4478,15 @@ window.LumenI18n.add([
       this.skyCache = new Map();
       this.resize(canvas.clientWidth || 1280, canvas.clientHeight || 720);
     }
-    static palette(theme) { return PALETTES[theme] || PALETTES.meadow; }
+    static palette(theme) {
+      const palette = PALETTES[theme] || PALETTES.meadow;
+      if (window.LumenAppearance?.current !== 'dark') return palette;
+      const skies = {
+        meadow: ['#162e35', '#3a6269', '#778a83'], sky: ['#1b303a', '#456773', '#9ba99b'],
+        tide: ['#122d38', '#2d626e', '#779e91'], secret: ['#352e38', '#665562', '#b0837d']
+      };
+      return { ...palette, sky: skies[theme] || palette.sky, far: palette.rock, middle: palette.dark };
+    }
     resize(width, height) {
       this.width = Math.max(1, width); this.height = Math.max(1, height);
       this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -4176,7 +4514,7 @@ window.LumenI18n.add([
       c.globalAlpha = 1;
       // A quiet paper-grain finish, cached rather than sampled every frame.
       for (let i = 0; i < 6000; i++) { c.fillStyle = i % 2 ? '#ffffff08' : '#00182709'; c.fillRect(seed(i * 2) * 1280, seed(i * 2 + 1) * 720, 1, 1); }
-      this.skyCache.set(theme, surface); return surface;
+      this.skyCache.set(theme + ':' + (window.LumenAppearance?.current || 'light'), surface); return surface;
     }
     draw(game, dt) {
       if (game.song && window.LumenSongArt) return window.LumenSongArt.draw(this, game);
@@ -4233,7 +4571,7 @@ window.LumenI18n.add([
     }
     visible(o, margin = 50) { return (o.x || 0) + (o.w || 0) >= this.cameraX - margin && (o.x || 0) <= this.cameraX + this.worldWidth + margin && (o.y || 0) < this.cameraY + 850; }
     background(c, theme, p, t, cameraX, mode) {
-      c.drawImage(this.skyCache.get(theme) || this.createSky(theme, p), 0, 0);
+      c.drawImage(this.skyCache.get(theme + ':' + (window.LumenAppearance?.current || 'light')) || this.createSky(theme, p), 0, 0);
       // Halo and crescent are the recurring visual motif of the archipelago.
       const moonX = this.worldWidth * .785 - cameraX * .015, moonY = theme === 'eclipse' ? 187 : 149;
       const halo = c.createRadialGradient(moonX, moonY, 56, moonX, moonY, 200); halo.addColorStop(0, p.glow + '19'); halo.addColorStop(1, p.glow + '00'); c.fillStyle = halo; c.fillRect(moonX - 200, moonY - 200, 400, 400);
@@ -5021,6 +5359,15 @@ window.LumenI18n.add([
     sunset: { sky: ['#e6a5a5', '#f7c7aa', '#f4e3c3'], sea: '#83b9b3', far: '#9eb9b0', middle: '#62958f',
       rock: '#37676d', shade: '#274f59', facet: '#588686', grass: '#a8d6b8', rim: '#eee6b1', leaf: '#326e67', lightLeaf: '#78ac8c', coral: '#efbc74', stone: '#e8ddc5' }
   };
+  const NIGHT_THEMES = {
+    dawn: { ...THEMES.dawn, sky: ['#142e32', '#355657', '#877576'], sea: '#427c7f', far: '#678483', middle: '#315d64',
+      rock: '#294b54', shade: '#203b46', facet: '#466a72', grass: '#83b7a2', rim: '#c5e5bc', leaf: '#356a69', lightLeaf: '#6c9e85', coral: '#f4a386', stone: '#bcc9b8', cloud: '#8dada7', night: true },
+    noon: { ...THEMES.noon, sky: ['#172c38', '#3b5e68', '#839d9b'], sea: '#457f93', far: '#728f9c', middle: '#375c70',
+      rock: '#2b475d', shade: '#203549', facet: '#52748c', grass: '#8ebfab', rim: '#dbebbe', leaf: '#416e80', lightLeaf: '#7ab6ae', coral: '#f2a3b7', stone: '#b9cbcb', cloud: '#9ebcbe', night: true },
+    sunset: { ...THEMES.sunset, sky: ['#352e38', '#64505b', '#aa8179'], sea: '#538881', far: '#909b98', middle: '#3d6770',
+      rock: '#364e5b', shade: '#293a49', facet: '#657c7e', grass: '#9ebc9d', rim: '#e3dbab', leaf: '#446967', lightLeaf: '#81a08a', coral: '#f3ba85', stone: '#c5c4ae', cloud: '#c0a7ad', night: true }
+  };
+  const paletteFor = (sky, appearance = global.LumenAppearance?.current) => (appearance === 'dark' ? NIGHT_THEMES : THEMES)[sky] || (appearance === 'dark' ? NIGHT_THEMES.dawn : THEMES.dawn);
   const random = value => { const result = Math.sin(value * 127.1 + 311.7) * 43758.5453; return result - Math.floor(result); };
   const ellipse = (ctx, x, y, width, height, color, angle = 0) => {
     ctx.beginPath(); ctx.ellipse(x, y, Math.max(.01, width), Math.max(.01, height), angle, 0, TAU);
@@ -5053,9 +5400,47 @@ window.LumenI18n.add([
     }
     return renderer.songAssets.get(key);
   }
-  function cloud(ctx, x, y, size, opacity = 1) {
+  function material(ctx, x, y, width, height, kind, palette, variation = 0) {
+    ctx.save(); ctx.globalCompositeOperation = 'source-atop';
+    const marks = Math.min(4200, Math.ceil(width * height / 62));
+    for (let index = 0; index < marks; index++) {
+      const horizontal = x + random(index + variation * 3) * width;
+      const vertical = y + random(index * 3 + variation + 928) * height;
+      const length = .7 + random(index + 755) * (kind === 'wood' ? 15 : 5);
+      ctx.globalAlpha = .07 + random(index + 383) * .11;
+      stroke(ctx, [[horizontal, vertical], [horizontal + (kind === 'wood' ? 1.8 : length), vertical + (kind === 'wood' ? length : -.8)]],
+        index % 3 ? palette.rim : palette.shade, index % 5 ? .7 : 1.4);
+    }
+    if (kind === 'stone') for (let band = 0; band < height / 23; band++) {
+      const baseline = y + band * 23;
+      ctx.globalAlpha = .18;
+      const points = Array.from({ length: Math.ceil(width / 35) + 1 }, (_, index) =>
+        [x + index * 35, baseline + Math.sin(index * .6 + band + variation) * 7]);
+      stroke(ctx, points, band % 3 ? palette.facet : palette.rim, .8);
+    }
+    ctx.restore();
+  }
+  function stitchedBanner(ctx, x, y, palette) {
+    ctx.save(); ctx.translate(x, y);
+    const outline = [[-28,0],[28,0],[25,80],[0,98],[-25,80]];
+    stroke(ctx, [[-37,-3],[37,-3]], palette.stone, 4);
+    path(ctx, outline, palette.coral);
+    ctx.save(); ctx.beginPath(); outline.forEach((point,index) => index ? ctx.lineTo(...point) : ctx.moveTo(...point)); ctx.closePath(); ctx.clip();
+    for (let thread = 0; thread < 56; thread += 3) stroke(ctx, [[thread-28,0],[thread-33,95]], thread % 2 ? '#fce7b62d' : '#713b4320', .7);
+    for (let thread = 2; thread < 100; thread += 4) stroke(ctx, [[-29,thread],[29,thread-1]], '#fff3c029', .7);
+    ctx.restore();
+    ctx.save(); ctx.setLineDash([2,3]);
+    stroke(ctx, [[-22,8],[-20,75],[0,90],[20,75],[22,8]], '#fff0bf', 1.2); ctx.restore();
+    ctx.strokeStyle = '#fff0bf'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(0,42,15,0,TAU); ctx.stroke();
+    star(ctx, 0, 42, 9, '#fff4c7');
+    stroke(ctx, [[0,20],[0,15]], '#fff2c5', 1.5);
+    for (const side of [-1,1]) leaf(ctx, side*8,66,10,side*.65,'#fff2c590');
+    stroke(ctx, [[0,98],[0,109]], palette.stone, 1); ellipse(ctx,0,110,2,3,'#efd29a');
+    ctx.restore();
+  }
+  function cloud(ctx, x, y, size, opacity = 1, color = '#f9fbed') {
     ctx.save(); ctx.translate(x, y); ctx.scale(size, size); ctx.globalAlpha = opacity;
-    ctx.fillStyle = '#f9fbed'; ctx.beginPath(); ctx.moveTo(-105, 15);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(-105, 15);
     ctx.bezierCurveTo(-147, 6, -132, -21, -91, -21); ctx.bezierCurveTo(-83, -53, -35, -50, -24, -33);
     ctx.bezierCurveTo(2, -66, 57, -45, 61, -21); ctx.bezierCurveTo(121, -24, 154, 10, 99, 20);
     ctx.bezierCurveTo(40, 32, -65, 25, -105, 15); ctx.fill();
@@ -5077,6 +5462,8 @@ window.LumenI18n.add([
         const angle = petal / 12 * TAU, length = 30 + random(index * 30 + petal) * 35;
         leaf(ctx, endX + Math.cos(angle) * 16, endY + Math.sin(angle) * 12, length,
           angle + Math.PI / 2, colors[(index + (petal % 3 === 0 ? 1 : 0)) % colors.length]);
+        stroke(ctx, [[endX + Math.cos(angle) * 18, endY + Math.sin(angle) * 13],
+          [endX + Math.cos(angle) * (length + 9), endY + Math.sin(angle) * (length + 8)]], palette.rim + '35', .75);
       }
       for (let mark = 0; mark < 3; mark++) {
         ellipse(ctx, endX + mark * 7 - 6, endY + 5, 2.3, 3.6, '#f7edb4');
@@ -5089,6 +5476,11 @@ window.LumenI18n.add([
     }
     for (let root = 0; root < 5; root++) {
       stroke(ctx, [[-6, -17], [-25 + root * 13, -3], [-60 + root * 29, 8]], palette.shade, 5);
+    }
+    material(ctx, -225, -406, 450, 418, 'wood', palette, 18);
+    for (let ring = 0; ring < 5; ring++) {
+      ctx.strokeStyle = palette.rim + '48'; ctx.lineWidth = .8; ctx.beginPath();
+      ctx.ellipse(-9, -95, 4 + ring * 2, 9 + ring * 4, -.12, 0, TAU); ctx.stroke();
     }
   }
   function arch(ctx, palette) {
@@ -5109,6 +5501,15 @@ window.LumenI18n.add([
       ctx.fillStyle = palette.stone; ctx.fillRect(side * 100 - 33, -8, 66, 18);
       ctx.fillStyle = palette.grass; ctx.fillRect(side * 100 - 37, -12, 74, 6);
     }
+    material(ctx,-139,-265,278,285,'stone',palette,72);
+    for (let carving = 0; carving < 5; carving++) {
+      const angle = Math.PI + (carving + 1) / 6 * Math.PI;
+      const x = Math.cos(angle)*100, y = -135+Math.sin(angle)*100;
+      ctx.save(); ctx.translate(x,y); ctx.rotate(angle+Math.PI/2);
+      stroke(ctx,[[-5,0],[0,-7],[5,0],[0,7],[-5,0]],palette.facet+'c0',1.1);
+      stroke(ctx,[[-3,1],[0,-4],[3,1]],'#ffffdd88',.7); ctx.restore();
+    }
+    stitchedBanner(ctx, -52, -205, palette);
     ctx.strokeStyle = palette.leaf; ctx.lineWidth = 3; ctx.beginPath();
     ctx.moveTo(63, -231); ctx.bezierCurveTo(135, -140, 40, -90, 100, -18); ctx.stroke();
     for (let index = 0; index < 13; index++) {
@@ -5165,12 +5566,31 @@ window.LumenI18n.add([
     const sky = ctx.createLinearGradient(0, 0, 0, height);
     palette.sky.forEach((color, index) => sky.addColorStop(index / 2, color)); ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
     const sunX = width * .74 - camera * .014, sunY = height * .235;
-    ellipse(ctx, sunX, sunY, Math.min(width, height) * .079, Math.min(width, height) * .079, '#fff4cf');
+    const moonRadius = Math.min(width, height) * .079;
+    if (palette.night) {
+      const skyDetails = sprite(renderer, 'night-sky:' + width + ':' + height, width, height, paint => {
+        for (let index = 0; index < 135; index++) {
+          const x = random(index + 444) * width, y = random(index + 892) * height * .55;
+          paint.globalAlpha = .25 + random(index + 94) * .55;
+          if (index % 13 === 0) star(paint, x, y, 2.8, '#fce4bb');
+          else ellipse(paint, x, y, .7, .7, '#e2efdf');
+        }
+        paint.globalAlpha = .35;
+        const pattern = [[.24,.18],[.29,.115],[.36,.145],[.395,.09],[.45,.16]];
+        stroke(paint, pattern.map(([x,y]) => [x * width, y * height]), '#d5e0c7', .7);
+        pattern.forEach(([x,y]) => star(paint, x * width, y * height, 2.5, '#fff0b9'));
+      });
+      ctx.drawImage(skyDetails, 0, 0);
+      ctx.save(); ctx.beginPath(); ctx.arc(sunX, sunY, moonRadius, 0, TAU); ctx.clip();
+      ctx.beginPath(); ctx.arc(sunX, sunY, moonRadius, 0, TAU);
+      ctx.arc(sunX + moonRadius * .47, sunY - moonRadius * .23, moonRadius * .88, 0, TAU);
+      ctx.fillStyle = '#f6e8c3'; ctx.fill('evenodd'); ctx.restore();
+    } else ellipse(ctx, sunX, sunY, moonRadius, moonRadius, '#fff4cf');
     ctx.strokeStyle = '#fff8df7a'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(sunX, sunY, Math.min(width, height) * .105, -.6, 2.5); ctx.stroke();
     for (let index = 0; index < 8; index++) {
       const position = ((index * 347 + time * (2 + index % 3) - camera * .06) % (width + 500) + width + 500) % (width + 500) - 200;
-      cloud(ctx, position, height * (.19 + random(index + 40) * .3), .5 + random(index + 9) * .6, .7);
+      cloud(ctx, position, height * (.19 + random(index + 40) * .3), .5 + random(index + 9) * .6, palette.night ? .35 : .7, palette.cloud);
     }
     const horizon = height * .59;
     const water = ctx.createLinearGradient(0, horizon, 0, height);
@@ -5230,6 +5650,13 @@ window.LumenI18n.add([
         const x = random(index + variant) * width, y = 18 + random(index + 987) * depth * .62;
         ellipse(paint, x, y, 1 + random(index) * 2.6, 1.1, palette.rim + '30');
       }
+      material(paint, 0, 15, width, depth, 'stone', palette, variant);
+      if (isGround) for (let index = 0; index < width / 170; index++) {
+        const x = index*170 + 72, y = 45 + random(index+variant)*120;
+        stroke(paint, [[x-25,y-22],[x-8,y-3],[x-12,y+15],[x+9,y+35]], palette.shade+'bb',1.5);
+        stroke(paint, [[x-11,y+3],[x+9,y+8],[x+18,y+4]], palette.shade+'bb',1);
+        ellipse(paint,x+18,y+18,9,4,palette.grass+'18',-.3);
+      }
       paint.restore();
       path(paint, [[0, 0], [width, 0], [width - 9, 12], [width * .73, 18], [width * .4, 12], [12, 18]], palette.grass);
       stroke(paint, [[1, 0], [width - 1, 0]], palette.rim, 4);
@@ -5250,7 +5677,7 @@ window.LumenI18n.add([
     });
     ctx.drawImage(image, platform.x - 18, platform.y - 26);
   }
-  function wisp(ctx, echo, time, found = false) {
+  function wisp(ctx, echo, time, found = false, night = false) {
     const x = found ? echo.followX : echo.x, y = (found ? echo.followY : echo.y) + Math.sin(time * 2.2 + echo.voice) * 5;
     const size = found ? .72 : 1;
     ctx.save(); ctx.translate(x, y); ctx.scale(size, size);
@@ -5270,7 +5697,7 @@ window.LumenI18n.add([
     }
     ellipse(ctx, -10, 5, 2.4, 1.5, '#ef9c8b'); ellipse(ctx, 10, 5, 2.4, 1.5, '#ef9c8b');
     if (!found) {
-      ctx.textAlign = 'center'; ctx.font = '600 13px ' + (global.LumenI18n?.canvasFont || 'Outfit, sans-serif'); ctx.fillStyle = '#245c60';
+      ctx.textAlign = 'center'; ctx.font = '600 13px ' + (global.LumenI18n?.canvasFont || 'Outfit, sans-serif'); ctx.fillStyle = night ? '#f3efd0' : '#245c60';
       ctx.direction = global.LumenI18n?.direction || 'ltr';
       ctx.fillText(global.LumenI18n?.t(echo.name) || echo.name, 0, 51);
     }
@@ -5289,16 +5716,28 @@ window.LumenI18n.add([
         ctx.beginPath(); ctx.moveTo(7, -24); ctx.bezierCurveTo(26, -52, 61, -57, 72, -30);
         ctx.quadraticCurveTo(56, -34, 48, -18); ctx.quadraticCurveTo(35, -26, 29, -10);
         ctx.quadraticCurveTo(16, -16, 7, -24); ctx.fill(); ctx.stroke();
-        stroke(ctx, [[10, -25], [34, -35], [64, -32]], '#86c8af', 1); ctx.restore();
+        ctx.save(); ctx.clip();
+        for (let thread = 15; thread < 73; thread += 3) stroke(ctx,[[thread,-55],[thread+5,-8]],'#5c9b8829',.5);
+        for (let thread = -49; thread < -12; thread += 4) stroke(ctx,[[9,thread],[72,thread+2]],'#ffffff38',.5);
+        ctx.restore();
+        stroke(ctx, [[10, -25], [34, -35], [64, -32]], '#86c8af', 1);
+        ctx.save(); ctx.setLineDash([1.3,2.5]); stroke(ctx,[[13,-25],[32,-41],[51,-44],[65,-34]],'#528e7d',.65); ctx.restore();
+        star(ctx,39,-35,4,'#f8edb7'); ctx.restore();
       }
     }
     ctx.save(); ctx.scale(player.facing, 1);
     ctx.fillStyle = '#e98c73'; ctx.beginPath(); ctx.moveTo(-4, -25);
     ctx.bezierCurveTo(-19, -26, -32, -18 + Math.sin(time * 8) * 5, -50 - Math.abs(player.vx) * .025, -28 + Math.sin(time * 6) * 6);
     ctx.lineTo(-41, -19 + Math.sin(time * 6) * 6); ctx.bezierCurveTo(-27, -8, -15, -16, -3, -20); ctx.fill();
-    stroke(ctx, [[-13, -22], [-27, -19], [-40, -24 + Math.sin(time * 6) * 5]], '#ffd1a0', 1.4); ctx.restore();
+    ctx.save(); ctx.clip();
+    for (let thread = -57; thread < -4; thread += 3) stroke(ctx,[[thread,-40],[thread+5,-5]],'#6a40582d',.6);
+    ctx.restore();
+    ctx.save(); ctx.setLineDash([1.6,1.5]);
+    stroke(ctx, [[-13, -22], [-27, -19], [-40, -24 + Math.sin(time * 6) * 5]], '#ffe2ac', .9); ctx.restore(); ctx.restore();
     ellipse(ctx, -7 + stride, -2, 6, 3.7, '#234f53', -.15); ellipse(ctx, 7 - stride, -2, 6, 3.7, '#234f53', .15);
     ellipse(ctx, 0, -15, 12.5, 16, '#387d76'); ellipse(ctx, 1, -15, 7.5, 11, '#99d1b7');
+    ctx.save(); ctx.setLineDash([1,2]); stroke(ctx,[[-7,-19],[-8,-9],[0,-3],[8,-9],[7,-19]],'#d2e4b3',.7); ctx.restore();
+    star(ctx, 0, -14, 4, '#f3d096'); ellipse(ctx,0,-14,1.5,1.5,'#fff0ce');
     leaf(ctx, -9, -36, 17, -.56 - Math.sin(time * 2) * .04, '#306f70');
     leaf(ctx, 9, -36, 17, .5 + Math.sin(time * 2) * .05, '#306f70');
     leaf(ctx, -10, -39, 11, -.56, '#a6dfc6'); leaf(ctx, 10, -39, 11, .5, '#a6dfc6');
@@ -5322,6 +5761,8 @@ window.LumenI18n.add([
     path(ctx, [[x + 26, y - 63 + bob], [x + 38, y - 49 + bob], [x + 26, y - 31 + bob], [x + 14, y - 49 + bob]], checkpoint.active ? '#f5cf7b' : '#80bba8');
     ellipse(ctx, x + 26, y - 49 + bob, 4, 7, checkpoint.active ? '#fff6cc' : '#c6e6c7');
     if (checkpoint.active) star(ctx, x + 26, y - 49 + bob, 8, '#fff4c5');
+    stroke(ctx,[[x+17,y-48+bob],[x+26,y-38+bob],[x+35,y-48+bob]],'#ffedb17a',1);
+    for (let mark=0;mark<3;mark++) stroke(ctx,[[x-3,y-20-mark*11],[x+2,y-23-mark*11]],palette.facet,1);
     leaf(ctx, x - 3, y - 4, 16, -.7, palette.lightLeaf);
   }
   function portal(ctx, game, time, palette) {
@@ -5344,9 +5785,10 @@ window.LumenI18n.add([
     ctx.restore();
   }
   function draw(renderer, game) {
-    const ctx = renderer.ctx, data = game.level.song, palette = THEMES[data.sky] || THEMES.dawn;
+    const ctx = renderer.ctx, data = game.level.song, palette = paletteFor(data.sky);
     const time = game.progress.settings.reducedEffects ? 0 : game.time;
-    if (renderer.songKey !== game.level.key) { renderer.songKey = game.level.key; renderer.songAssets = new Map(); }
+    const assetKey = game.level.key + ':' + (palette.night ? 'night' : 'day');
+    if (renderer.songKey !== assetKey) { renderer.songKey = assetKey; renderer.songAssets = new Map(); }
     renderer.sceneMode = 'song';
     const portrait = renderer.width < renderer.height;
     const scale = portrait ? renderer.width / 510 : Math.max(.64, renderer.height / 790);
@@ -5435,7 +5877,7 @@ window.LumenI18n.add([
       }
       ctx.restore();
     }
-    for (const echo of game.song.lights) if (echo.found || visible(echo.x)) wisp(ctx, echo, time, echo.found);
+    for (const echo of game.song.lights) if (echo.found || visible(echo.x)) wisp(ctx, echo, time, echo.found, palette.night);
     if (game.player.gliding || game.song.combo >= 5) {
       const trail = game.song.trail;
       for (let index = 1; index < trail.length; index++) {
@@ -5485,7 +5927,7 @@ window.LumenI18n.add([
     const pattern = ctx.createPattern(grain, 'repeat');
     if (pattern) { ctx.fillStyle = pattern; ctx.fillRect(0, 0, renderer.width, renderer.height); }
   }
-  global.LumenSongArt = { draw, THEMES };
+  global.LumenSongArt = { draw, THEMES, NIGHT_THEMES, paletteFor };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
   <script>
@@ -5585,6 +6027,7 @@ window.LumenI18n.add([
       this.progress = this.readProgress(); this.storageAvailable = true;
       this.audio.setMuted(!!this.progress.settings.muted);
       this.audio.volume = this.progress.settings.volume ?? .35;
+      this.audio.setMix?.(this.progress.settings);
       this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
       this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
       this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
@@ -5749,6 +6192,7 @@ window.LumenI18n.add([
         stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
       this.camera = { x:clamp(data.spawn.x - 300, 0, Math.max(0, data.width - WIDTH)), y:0, shake:0 };
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
+      this.audio.setScene?.(data.song?.index ?? -1);
       if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
     }
     /** Ce qu'une sauvegarde a déjà acquis et qui doit se revoir DANS le monde,
@@ -6009,6 +6453,7 @@ window.LumenI18n.add([
       if (this.mode !== 'playing') return;
       this.updateCheckpoints(); this.updateSecrets(); this.updateCharacters(dt);
       this.updateDanger(dt);
+      this.audio.updateWorld?.(this, dt);
       if (this.exit.open && overlap(this.player, this.exit)) {
         if (this.level.hub) { this.player.vx = 0; this.emit('portal', this.exit.leadsTo || 'map'); }
         else if (this.session === 'expedition' && this.run) this.completeRoom();
@@ -6791,7 +7236,7 @@ window.LumenI18n.add([
 
 </script>
   <script>
-window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\"/><path d=\"M15 5.764v15\"/><path d=\"M9 3.236v15\"/></svg>","settings-2":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14 17H5\"/><path d=\"M19 7h-9\"/><circle cx=\"17\" cy=\"17\" r=\"3\"/><circle cx=\"7\" cy=\"7\" r=\"3\"/></svg>","volume-2":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\"/><path d=\"M16 9a5 5 0 0 1 0 6\"/><path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\"/></svg>","volume-x":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z\"/><path d=\"m16.5 14.5 5-5\"/><path d=\"m16.5 9.5 5 5\"/></svg>","maximize":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3\"/><path d=\"M21 8V5a2 2 0 0 0-2-2h-3\"/><path d=\"M3 16v3a2 2 0 0 0 2 2h3\"/><path d=\"M16 21h3a2 2 0 0 0 2-2v-3\"/></svg>","minimize":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3\"/><path d=\"M21 8h-3a2 2 0 0 1-2-2V3\"/><path d=\"M3 16h3a2 2 0 0 1 2 2v3\"/><path d=\"M16 21v-3a2 2 0 0 1 2-2h3\"/></svg>","pause":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"14\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/><rect x=\"5\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/></svg>","play":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\"/></svg>","arrow-left":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 19-7-7 7-7\"/><path d=\"M19 12H5\"/></svg>","arrow-right":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>","arrow-up-right":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg>","leaf":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20\"/><path d=\"M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13\"/></svg>","wind":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.8 19.6A2 2 0 1 0 14 16H2\"/><path d=\"M17.5 8a2.5 2.5 0 1 1 2 4H2\"/><path d=\"M9.8 4.4A2 2 0 1 1 11 8H2\"/></svg>","music":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 18V5l12-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"18\" cy=\"16\" r=\"3\"/></svg>","feather":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49z\"/><path d=\"M16 8 2 22\"/><path d=\"M17.488 15H9\"/></svg>","sparkles":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/></svg>","rotate-ccw":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></svg>","x":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg>","check":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>","lock-keyhole":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"16\" r=\"1\"/><rect x=\"3\" y=\"10\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M7 10V7a5 5 0 0 1 10 0v3\"/></svg>","trophy":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2\"/><path d=\"M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2\"/><path d=\"M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3\"/><path d=\"M4 22h16\"/><path d=\"M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z\"/><path d=\"M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3\"/></svg>","sun":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/></svg>"};
+window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\"/><path d=\"M15 5.764v15\"/><path d=\"M9 3.236v15\"/></svg>","settings-2":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14 17H5\"/><path d=\"M19 7h-9\"/><circle cx=\"17\" cy=\"17\" r=\"3\"/><circle cx=\"7\" cy=\"7\" r=\"3\"/></svg>","volume-2":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\"/><path d=\"M16 9a5 5 0 0 1 0 6\"/><path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\"/></svg>","volume-x":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z\"/><path d=\"m16.5 14.5 5-5\"/><path d=\"m16.5 9.5 5 5\"/></svg>","maximize":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3\"/><path d=\"M21 8V5a2 2 0 0 0-2-2h-3\"/><path d=\"M3 16v3a2 2 0 0 0 2 2h3\"/><path d=\"M16 21h3a2 2 0 0 0 2-2v-3\"/></svg>","minimize":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3\"/><path d=\"M21 8h-3a2 2 0 0 1-2-2V3\"/><path d=\"M3 16h3a2 2 0 0 1 2 2v3\"/><path d=\"M16 21v-3a2 2 0 0 1 2-2h3\"/></svg>","pause":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"14\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/><rect x=\"5\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/></svg>","play":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\"/></svg>","arrow-left":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 19-7-7 7-7\"/><path d=\"M19 12H5\"/></svg>","arrow-right":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>","arrow-up-right":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/></svg>","leaf":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20\"/><path d=\"M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13\"/></svg>","wind":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.8 19.6A2 2 0 1 0 14 16H2\"/><path d=\"M17.5 8a2.5 2.5 0 1 1 2 4H2\"/><path d=\"M9.8 4.4A2 2 0 1 1 11 8H2\"/></svg>","music":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 18V5l12-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"18\" cy=\"16\" r=\"3\"/></svg>","feather":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49z\"/><path d=\"M16 8 2 22\"/><path d=\"M17.488 15H9\"/></svg>","sparkles":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/></svg>","rotate-ccw":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></svg>","x":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg>","check":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>","lock-keyhole":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"16\" r=\"1\"/><rect x=\"3\" y=\"10\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M7 10V7a5 5 0 0 1 10 0v3\"/></svg>","trophy":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2\"/><path d=\"M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2\"/><path d=\"M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3\"/><path d=\"M4 22h16\"/><path d=\"M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z\"/><path d=\"M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3\"/></svg>","sun":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/></svg>","moon":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401\"/></svg>","monitor":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\"/><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\"/></svg>","headphones":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\"/></svg>"};
 
 </script>
   <script>
@@ -6813,6 +7258,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     document.body.classList.toggle('reduced-effects', settings.reducedEffects);
     document.documentElement.style.setProperty('--touch-scale', settings.touchScale);
     game.audio.volume = settings.volume;
+    game.audio.setMix?.(settings);
     document.querySelectorAll('[data-song-style]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.songStyle === (game.song?.style || settings.songStyle)));
     });
@@ -6870,8 +7316,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
         `<label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
+        <div class="song-settings-row appearance-row"><span>Apparence</span>${global.LumenAppearance.controls(settings.appearance)}</div>
         <div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
         <label class="song-settings-row song-range-row" for="song-volume"><span>Volume</span><input id="song-volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" data-song-pref="volume"><output id="song-volume-value">${Math.round(settings.volume * 100)} %</output></label>
+        ${[['musicVolume','Musique','music'],['effectsVolume','Effets sonores','sparkles'],['ambienceVolume','Ambiance','wind']].map(([setting,label,glyph])=>`<label class="song-settings-row song-range-row song-mix-row" for="song-${setting}"><span>${icon(glyph)}<span>${translate(label)}</span></span><input id="song-${setting}" type="range" min="0" max="100" value="${Math.round(settings[setting]*100)}" data-song-pref="${setting}"><output id="song-${setting}-value">${Math.round(settings[setting]*100)} %</output></label>`).join('')}
+        <button class="song-text-button sound-preview" data-command="sound-preview">${icon('headphones')} Écouter LUMEN</button>
         <label class="song-settings-row" for="song-reduced"><span>Mouvements réduits</span><input id="song-reduced" type="checkbox" role="switch" data-song-pref="reducedEffects" ${settings.reducedEffects ? 'checked' : ''}></label>
         <label class="song-settings-row" for="song-left"><span>Commandes pour gaucher</span><input id="song-left" type="checkbox" role="switch" data-song-pref="leftHanded" ${settings.leftHanded ? 'checked' : ''}></label>
         <label class="song-settings-row song-range-row" for="song-touch-size"><span>Taille des commandes</span><input id="song-touch-size" type="range" min="85" max="130" step="5" value="${Math.round(settings.touchScale * 100)}" data-song-pref="touchScale"><output id="song-touch-size-value">${Math.round(settings.touchScale * 100)} %</output></label>
@@ -7061,6 +7510,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       });
       if (game.song) sync();
     });
+    global.LumenAppearance.onChange(() => { if (pane === 'atlas' && game.song) renderPreviews(); });
     if (!document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
     applyPreferences();
   }
@@ -7238,6 +7688,10 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
   function command(action) {
     if (transitioning) return;
+    if(action==='sound-preview'){
+      game.audio.unlock().then(()=>game.audio.audition());return;
+    }
+    if(!['sound','pause','start','confirm'].includes(action))game.audio.sfx('menu');
     if (window.LumenSongUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
@@ -7437,6 +7891,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
   try {
     game=new window.LumenGame($('game'));window.lumen=game;
+    window.LumenAppearance.apply(game.progress.settings.appearance);
     I18n.setLanguage(game.progress.settings.language);
     I18n.translateDOM($('app'));
     game.on('command',command);game.on('mode',showMode);game.on('toast',toast);game.on('frame',updateHud);game.on('level',chapterIntro);game.on('complete',completed);game.on('damage',healthImpact);game.on('dialogue',showDialogue);game.on('quest',showQuest);
@@ -7514,6 +7969,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     /* ── Réglages de confort ─────────────────────────────────────────────── */
     function applySettings() {
       const s=game.progress.settings;
+      game.audio.setMix?.(s);
       document.body.classList.toggle('left-handed',!!s.leftHanded);
       document.body.classList.toggle('reduced-effects',!!s.reducedEffects);
       document.documentElement.style.setProperty('--touch-scale',String(s.touchScale||1));
@@ -7521,7 +7977,15 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         const current=String(s[button.dataset.setting]);
         button.setAttribute('aria-pressed',String(current===button.dataset.value));
       });
+      document.querySelectorAll('[data-audio-setting]').forEach(input=>{
+        input.value=Math.round(s[input.dataset.audioSetting]*100);
+        const output=document.getElementById(input.id+'-value');if(output)output.textContent=input.value+' %';
+      });
     }
+    document.addEventListener('input',event=>{
+      const input=event.target.closest('[data-audio-setting]');if(!input)return;
+      game.store.setSetting(input.dataset.audioSetting,Number(input.value)/100);applySettings();
+    });
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-setting]');if(!button)return;
       const raw=button.dataset.value;
@@ -7535,6 +7999,18 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
     applySettings();
     window.LumenSongUI?.attach(game, { transition, toast });
+    const refreshAppearance=()=>{
+      document.querySelectorAll('[data-appearance]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearance===game.progress.settings.appearance)));
+      game.audio.setNight?.(window.LumenAppearance.current==='dark');
+      game.renderer.draw(game,0);
+    };
+    window.LumenAppearance.onChange(refreshAppearance);
+    document.addEventListener('click',event=>{
+      const button=event.target.closest('[data-appearance]');if(!button)return;
+      game.store.setSetting('appearance',button.dataset.appearance);
+      window.LumenAppearance.apply(button.dataset.appearance);
+      game.audio.sfx('menu');
+    });
     const refreshLanguage=()=>{
       document.title=translate('LUMEN · Le Chant des îles');
       const description='LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.';
@@ -7542,6 +8018,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       I18n.translateDOM($('app'));
       document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+escape(translate('{count} CHAPITRES À EXPLORER',{count:window.LUMEN_LEVELS.filter(level=>!level.hub).length}));
       document.querySelectorAll('[data-language-select]').forEach(select=>{select.innerHTML=I18n.languageOptions();select.value=game.progress.settings.language;});
+      document.querySelectorAll('[data-appearance-control]').forEach(container=>{container.innerHTML=window.LumenAppearance.controls(game.progress.settings.appearance);});
       lastHud='';lastHint='';updateSound();
       if(lastToast&&$('toast').classList.contains('show'))$('toast').textContent=translate(lastToast.message,typeof lastToast.values==='function'?lastToast.values():lastToast.values);
       if(!game.song){
@@ -7564,6 +8041,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     });
     window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
     refreshLanguage();
+    refreshAppearance();
     if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
     else showMode('home');
     updateSound();game.beginLoop();

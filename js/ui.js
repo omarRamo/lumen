@@ -168,6 +168,10 @@
   }
   function command(action) {
     if (transitioning) return;
+    if(action==='sound-preview'){
+      game.audio.unlock().then(()=>game.audio.audition());return;
+    }
+    if(!['sound','pause','start','confirm'].includes(action))game.audio.sfx('menu');
     if (window.LumenSongUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
@@ -367,6 +371,7 @@
   }
   try {
     game=new window.LumenGame($('game'));window.lumen=game;
+    window.LumenAppearance.apply(game.progress.settings.appearance);
     I18n.setLanguage(game.progress.settings.language);
     I18n.translateDOM($('app'));
     game.on('command',command);game.on('mode',showMode);game.on('toast',toast);game.on('frame',updateHud);game.on('level',chapterIntro);game.on('complete',completed);game.on('damage',healthImpact);game.on('dialogue',showDialogue);game.on('quest',showQuest);
@@ -444,6 +449,7 @@
     /* ── Réglages de confort ─────────────────────────────────────────────── */
     function applySettings() {
       const s=game.progress.settings;
+      game.audio.setMix?.(s);
       document.body.classList.toggle('left-handed',!!s.leftHanded);
       document.body.classList.toggle('reduced-effects',!!s.reducedEffects);
       document.documentElement.style.setProperty('--touch-scale',String(s.touchScale||1));
@@ -451,7 +457,15 @@
         const current=String(s[button.dataset.setting]);
         button.setAttribute('aria-pressed',String(current===button.dataset.value));
       });
+      document.querySelectorAll('[data-audio-setting]').forEach(input=>{
+        input.value=Math.round(s[input.dataset.audioSetting]*100);
+        const output=document.getElementById(input.id+'-value');if(output)output.textContent=input.value+' %';
+      });
     }
+    document.addEventListener('input',event=>{
+      const input=event.target.closest('[data-audio-setting]');if(!input)return;
+      game.store.setSetting(input.dataset.audioSetting,Number(input.value)/100);applySettings();
+    });
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-setting]');if(!button)return;
       const raw=button.dataset.value;
@@ -465,6 +479,18 @@
     }
     applySettings();
     window.LumenSongUI?.attach(game, { transition, toast });
+    const refreshAppearance=()=>{
+      document.querySelectorAll('[data-appearance]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearance===game.progress.settings.appearance)));
+      game.audio.setNight?.(window.LumenAppearance.current==='dark');
+      game.renderer.draw(game,0);
+    };
+    window.LumenAppearance.onChange(refreshAppearance);
+    document.addEventListener('click',event=>{
+      const button=event.target.closest('[data-appearance]');if(!button)return;
+      game.store.setSetting('appearance',button.dataset.appearance);
+      window.LumenAppearance.apply(button.dataset.appearance);
+      game.audio.sfx('menu');
+    });
     const refreshLanguage=()=>{
       document.title=translate('LUMEN · Le Chant des îles');
       const description='LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.';
@@ -472,6 +498,7 @@
       I18n.translateDOM($('app'));
       document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+escape(translate('{count} CHAPITRES À EXPLORER',{count:window.LUMEN_LEVELS.filter(level=>!level.hub).length}));
       document.querySelectorAll('[data-language-select]').forEach(select=>{select.innerHTML=I18n.languageOptions();select.value=game.progress.settings.language;});
+      document.querySelectorAll('[data-appearance-control]').forEach(container=>{container.innerHTML=window.LumenAppearance.controls(game.progress.settings.appearance);});
       lastHud='';lastHint='';updateSound();
       if(lastToast&&$('toast').classList.contains('show'))$('toast').textContent=translate(lastToast.message,typeof lastToast.values==='function'?lastToast.values():lastToast.values);
       if(!game.song){
@@ -494,6 +521,7 @@
     });
     window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
     refreshLanguage();
+    refreshAppearance();
     if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
     else showMode('home');
     updateSound();game.beginLoop();

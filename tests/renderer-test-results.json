@@ -1,5 +1,5 @@
 {
-  "passed": 10,
+  "passed": 11,
   "failed": 0,
   "checks": [
     {
@@ -40,6 +40,10 @@
     },
     {
       "name": "Every song island draws all routes, flight and awakened states without mutating the simulation",
+      "passed": true
+    },
+    {
+      "name": "Day and night artwork use distinct caches while preserving geometry and collected objects",
       "passed": true
     }
   ]

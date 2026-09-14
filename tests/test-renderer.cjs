@@ -230,6 +230,33 @@ test('Every song island draws all routes, flight and awakened states without mut
   assert.ok(calls.has('drawImage'));
 });
 
+test('Day and night artwork use distinct caches while preserving geometry and collected objects', () => {
+  const { game, window } = environment();
+  window.LumenAppearance = { current: 'light' };
+  for (let index = 0; index < 3; index++) {
+    game.applyLevel(window.LumenSong.create(index), -1);
+    const state = JSON.stringify([game.player, game.platforms, game.collectibles, game.song]);
+    for (const appearance of ['light', 'dark', 'light']) {
+      window.LumenAppearance.current = appearance;
+      for (const viewport of [[1440,900], [390,844], [844,390]]) {
+        game.renderer.resize(...viewport);
+        game.renderer.draw(game, 0);
+        assert.ok(game.renderer.songKey.endsWith(appearance === 'dark' ? ':night' : ':day'));
+        const cache = game.renderer.songAssets;
+        game.renderer.draw(game, 0);
+        assert.equal(game.renderer.songAssets, cache);
+        assert.equal(JSON.stringify([game.player, game.platforms, game.collectibles, game.song]), state);
+      }
+    }
+    assert.notDeepEqual(window.LumenSongArt.paletteFor(game.level.song.sky,'dark').sky,
+      window.LumenSongArt.paletteFor(game.level.song.sky,'light').sky);
+  }
+  for (const appearance of ['dark', 'light']) {
+    window.LumenAppearance.current=appearance; game.start(0); game.renderer.draw(game,0);
+    assert.ok(game.renderer.skyCache.has('meadow:'+appearance));
+  }
+});
+
 console.log('\n' + (checks.length - failed) + '/' + checks.length + ' drawing checks passed.');
 fs.writeFileSync(path.join(__dirname, 'renderer-test-results.json'), JSON.stringify({ passed: checks.length - failed, failed, checks }, null, 2));
 process.exitCode = failed ? 1 : 0;

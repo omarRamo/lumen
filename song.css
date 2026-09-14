@@ -275,6 +275,103 @@ body.song-playing .toast {
 body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { animation: none !important; transition: none !important; }
 
 :root { --locale-ui: Outfit, sans-serif; --locale-display: Fredoka, sans-serif; }
+:root {
+  --lumen-surface: #f4f9ed;
+  --lumen-raised: #f8fbf2;
+  --lumen-glass: #f4fbe7cc;
+  --lumen-ink: #234f55;
+  --lumen-muted: #527b78;
+  --lumen-line: #3e81732e;
+  --lumen-strong: #2d6462;
+  --lumen-on-strong: #fbf8de;
+  --lumen-gold: #9a783c;
+  --lumen-coral: #ed9b7c;
+  --lumen-hover: #e0eddd;
+  --lumen-focus: #bd6549;
+}
+:root[data-appearance="dark"] {
+  --lumen-surface: #203c3d;
+  --lumen-raised: #2b4b4b;
+  --lumen-glass: #203a3bd9;
+  --lumen-ink: #e8efd9;
+  --lumen-muted: #b1c7b8;
+  --lumen-line: #b9d5b63d;
+  --lumen-strong: #b8d9b5;
+  --lumen-on-strong: #183e40;
+  --lumen-gold: #edc18a;
+  --lumen-coral: #f2ae97;
+  --lumen-hover: #365855;
+  --lumen-focus: #f2bc90;
+}
+.song-shell, .song-overlay { --song-ink: var(--lumen-ink); --song-muted: var(--lumen-muted); --song-line: var(--lumen-line); }
+.song-panel { background-color: var(--lumen-surface); border-color: var(--lumen-line); }
+.song-panel, .modal-card {
+  background-image: repeating-linear-gradient(0deg, #4c846605 0, #4c846605 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, #ffffff0c 0, #ffffff0c 1px, transparent 1px, transparent 5px);
+}
+.song-panel::before, .song-panel::after { content: ''; position: absolute; inset-inline: 12px; height: 1px; border-top: 1px dashed var(--lumen-line); pointer-events: none; }
+.song-panel::before { top: 10px; }
+.song-panel::after { bottom: 10px; }
+.song-primary { background-image: repeating-linear-gradient(135deg, #ffffff05 0, #ffffff05 1px, transparent 1px, transparent 4px); }
+.song-notes { box-shadow: inset 0 0 0 3px #d1cf9910, 0 3px 12px #133b3210; }
+.song-brand img { filter: drop-shadow(0 2px 0 #fff9e470) drop-shadow(0 4px 7px #243c3820); }
+.song-header .song-pause { box-shadow: 0 3px 0 #173e4238, inset 0 0 0 3px #f4e8b121; }
+.song-island-art { outline: 1px solid var(--lumen-line); outline-offset: 3px; }
+.song-icon, .song-notes, .song-segment { background: var(--lumen-glass); border-color: var(--lumen-line); color: var(--lumen-ink); }
+.song-panel>.song-icon, .song-pause-tools .song-icon { border-color: var(--lumen-line); }
+.song-icon:hover, .song-button:hover { background: var(--lumen-hover); }
+.song-brand strong, .song-combo { color: var(--lumen-ink); }
+.song-act, .song-notes svg, .song-island-copy>small, .song-island-meta span { color: var(--lumen-muted); }
+.song-act i { background: var(--lumen-line); }
+.song-text-button { color: var(--lumen-ink); }
+.song-record, .song-result-mark { color: var(--lumen-gold); }
+.song-button { border-color: var(--lumen-line); }
+.song-primary, .song-segment [aria-pressed="true"], .song-header .song-pause { background: var(--lumen-strong); color: var(--lumen-on-strong); border-color: var(--lumen-strong); }
+.song-primary:hover { background: var(--lumen-strong); filter: brightness(1.08); }
+.song-segment button { color: var(--lumen-muted); }
+.song-settings-row .song-segment { border-color: var(--lumen-line); }
+.song-settings-row select, .language-setting select { background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+.song-range-row input { accent-color: var(--lumen-strong); }
+.song-settings-row input[type="checkbox"] { border-color: var(--lumen-line); background: var(--lumen-hover); }
+.song-settings-row input:checked { background: #528f7c; }
+.appearance-row { flex-wrap: wrap; }
+.appearance-options { display: flex; align-items: stretch; gap: 4px; padding: 4px; border: 1px solid var(--lumen-line); border-radius: 7px; background: var(--lumen-raised); }
+.appearance-options button { display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; padding: 9px 11px; min-height: 39px; border-radius: 4px; background: transparent; color: var(--lumen-muted); font: 500 12px var(--locale-ui); }
+.appearance-options svg { width: 17px; height: 17px; }
+.appearance-options [aria-pressed="true"] { background: var(--lumen-strong); color: var(--lumen-on-strong); }
+.appearance-options button:focus-visible, .song-shell button:focus-visible, .song-overlay button:focus-visible { outline: 3px solid var(--lumen-focus); outline-offset: 3px; }
+html[data-appearance="dark"] body { --ink: #e8efd9; --ink-light: #b1c7b8; --paper: #203c3d; --line: #b9d5b63d; background: #162f31; }
+html[data-appearance="dark"] #vignette { background: linear-gradient(90deg, #183738f5, #183738d0 32%, #18373800 75%); }
+html[data-appearance="dark"] :is(.modal-card, .map-screen, .medal-help, .dialogue, .quest-banner) { background-color: var(--lumen-surface); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.hud-left, .hud-right, .chapter-pill, .run-clock, .power-indicator, .level-hint, .sound-button, .toast) { background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.level-card, .result-fragments, .result-medal, .route-branch, .offer-item) { background: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.card-record, .card-targets, .card-medal, .power-heading span, .power-guide-note, .settings-note, .card-stars, .result-fragments small) { color: var(--lumen-muted); }
+html[data-appearance="dark"] :is(.button.secondary, .run-mode-switch, .medal-help-button, kbd, .seg, .card-medal.unearned) { background: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+html[data-appearance="dark"] :is(.button.primary, .run-mode-switch [aria-pressed="true"], .seg [aria-pressed="true"]) { background: var(--lumen-strong); color: var(--lumen-on-strong); }
+html[data-appearance="dark"] .transition { background: #1d3a3a; }
+html[data-appearance="dark"] .lunar-sigil, html[data-appearance="dark"] .lunar-sigil>b { color: var(--lumen-ink); }
+html[data-appearance="dark"] .lunar-sigil>span { color: var(--lumen-gold); }
+html[data-appearance="dark"] .song-overlay { background: #081c2680; }
+html[data-appearance="dark"] .song-chorus { color: #e3ead5; }
+html[data-appearance="dark"] .song-combo-track i { background: var(--lumen-coral); }
+html[data-appearance="dark"] .song-pause-echoes .song-echo { background: #507774; }
+html[data-appearance="dark"] .song-pause-echoes .song-echo.found { background: var(--echo-color); }
+html[data-appearance="dark"] body.song-playing .toast { background: #294748f2; color: var(--lumen-ink); border-color: var(--lumen-line); }
+.song-panel-settings { width: min(550px, 100%); }
+.song-mix-row { padding-block: 11px; }
+.song-mix-row>span { display: flex; align-items: center; gap: 8px; }
+.song-mix-row>span svg { width: 16px; height: 16px; color: var(--lumen-muted); }
+.sound-preview { min-height: 42px; gap: 9px; margin-block: 8px 0; }
+.classic-mix-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.classic-mix-row input { flex: 1; min-width: 90px; accent-color: var(--lumen-strong); }
+.classic-mix-row output { min-width: 40px; font-size: 12px; direction: ltr; }
+.song-mix-row output { direction: ltr; unicode-bidi: isolate; }
+@media (max-width: 700px) {
+  .appearance-row { row-gap: 9px; }
+  .appearance-options { width: 100%; }
+  .appearance-row>[data-appearance-control] { width: 100%; }
+  .appearance-options button { flex: 1; gap: 5px; padding-inline: 7px; }
+}
 html[lang="ar"] { --locale-ui: Tahoma, 'Noto Sans Arabic', sans-serif; --locale-display: Tahoma, 'Noto Sans Arabic', sans-serif; }
 html[lang^="zh"] { --locale-ui: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif; --locale-display: var(--locale-ui); }
 html:is([lang="ar"], [lang^="zh"]) body { --font: var(--locale-ui); --serif: var(--locale-display); }
@@ -337,4 +434,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
   html[dir="rtl"] .song-chorus { left: 50%; right: auto; }
   html[dir="rtl"] .song-combo { left: 50%; right: auto; text-align: center; }
   html[lang="ar"] .song-objective h1 { font-size: 18px; }
+}
+:root[data-appearance="dark"] .song-settings-row select, :root[data-appearance="dark"] .language-setting select {
+  background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line);
 }

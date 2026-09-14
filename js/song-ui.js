@@ -16,6 +16,7 @@
     document.body.classList.toggle('reduced-effects', settings.reducedEffects);
     document.documentElement.style.setProperty('--touch-scale', settings.touchScale);
     game.audio.volume = settings.volume;
+    game.audio.setMix?.(settings);
     document.querySelectorAll('[data-song-style]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.songStyle === (game.song?.style || settings.songStyle)));
     });
@@ -73,8 +74,11 @@
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
         `<label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
+        <div class="song-settings-row appearance-row"><span>Apparence</span>${global.LumenAppearance.controls(settings.appearance)}</div>
         <div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
         <label class="song-settings-row song-range-row" for="song-volume"><span>Volume</span><input id="song-volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" data-song-pref="volume"><output id="song-volume-value">${Math.round(settings.volume * 100)} %</output></label>
+        ${[['musicVolume','Musique','music'],['effectsVolume','Effets sonores','sparkles'],['ambienceVolume','Ambiance','wind']].map(([setting,label,glyph])=>`<label class="song-settings-row song-range-row song-mix-row" for="song-${setting}"><span>${icon(glyph)}<span>${translate(label)}</span></span><input id="song-${setting}" type="range" min="0" max="100" value="${Math.round(settings[setting]*100)}" data-song-pref="${setting}"><output id="song-${setting}-value">${Math.round(settings[setting]*100)} %</output></label>`).join('')}
+        <button class="song-text-button sound-preview" data-command="sound-preview">${icon('headphones')} Écouter LUMEN</button>
         <label class="song-settings-row" for="song-reduced"><span>Mouvements réduits</span><input id="song-reduced" type="checkbox" role="switch" data-song-pref="reducedEffects" ${settings.reducedEffects ? 'checked' : ''}></label>
         <label class="song-settings-row" for="song-left"><span>Commandes pour gaucher</span><input id="song-left" type="checkbox" role="switch" data-song-pref="leftHanded" ${settings.leftHanded ? 'checked' : ''}></label>
         <label class="song-settings-row song-range-row" for="song-touch-size"><span>Taille des commandes</span><input id="song-touch-size" type="range" min="85" max="130" step="5" value="${Math.round(settings.touchScale * 100)}" data-song-pref="touchScale"><output id="song-touch-size-value">${Math.round(settings.touchScale * 100)} %</output></label>
@@ -264,6 +268,7 @@
       });
       if (game.song) sync();
     });
+    global.LumenAppearance.onChange(() => { if (pane === 'atlas' && game.song) renderPreviews(); });
     if (!document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
     applyPreferences();
   }

@@ -18,6 +18,18 @@
 
   const midi = note => 440 * Math.pow(2, (note - 69) / 12);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const MOTIF = [5, 7, 9, 6, 5];
+  const SONG_SCORES = [
+    { root: 50, scale: [0,2,4,7,9], bpm: 88, color: 'kalimba', harmony: [0,3,1,4],
+      melody: [5,-1,7,9,-1,7,6,-1,4,-1,5,-1, 2,-1,4,5,-1,7,6,-1,4,-1,-1,-1,
+        5,-1,7,9,-1,11,9,-1,7,6,-1,5, 4,-1,2,4,-1,6,5,-1,-1,-1,-1,-1] },
+    { root: 55, scale: [0,2,4,7,9], bpm: 108, color: 'reed', harmony: [0,4,3,1],
+      melody: [5,7,-1,9,-1,7,6,4,-1,5,-1,-1, 7,9,-1,11,-1,9,7,6,-1,4,-1,-1,
+        5,-1,7,9,11,-1,12,-1,9,7,-1,6, 4,6,-1,7,-1,4,5,-1,-1,-1,-1,-1] },
+    { root: 48, scale: [0,2,4,7,9], bpm: 76, color: 'glass', harmony: [0,1,3,0],
+      melody: [5,-1,-1,7,-1,9,6,-1,-1,5,-1,-1, 4,-1,-1,2,-1,4,5,-1,7,-1,-1,-1,
+        9,-1,11,9,-1,7,6,-1,-1,4,-1,-1, 2,-1,4,5,-1,7,5,-1,-1,-1,-1,-1] }
+  ];
 
   class LumenAudio {
     constructor() {
@@ -35,6 +47,10 @@
       // Dynamic layers: tension answers nearby danger, boss phase drives the tempo.
       this._danger = 0;
       this._bossPhase = 0;
+      this._mix = { music: .8, effects: .9, ambience: .6 };
+      this._songIndex = -1; this._songLayer = 0; this._night = false;
+      this._beds = []; this._world = { speed: 0, height: 0, water: 0, wind: 0, pan: 0 };
+      this._worldClock = 0; this._footstep = 0; this._gliding = false; this._audioSeed = 0x6c756d65;
     }
 
     /** 0 = calm, 1 = something is actively hunting Nilo. Ramped by the engine. */
@@ -42,13 +58,65 @@
     /** 0 = no boss, 1-3 = the Veilleur's remaining thirds. */
     setBossPhase(stage) { this._bossPhase = clamp(Math.floor(Number(stage) || 0), 0, 3); }
     setSongLayer(value) { this._songLayer = clamp(Number(value) || 0, 0, 1); }
-    songNote(index) {
+    setNight(value) { this._night = !!value; }
+    setScene(index = -1) {
+      this._songIndex = Number.isInteger(index) && SONG_SCORES[index] ? index : -1;
+      this._step = 0; this._songLayer = 0; this._footstep = 0; this._gliding = false;
+      this._world = { speed: 0, height: 0, water: 0, wind: 0, pan: 0 };
+      if (this.ctx) { this._releaseMusic(); this._next = this.ctx.currentTime + .08; this._updateBeds(); }
+    }
+    setMix(settings = {}) {
+      for (const channel of ['music', 'effects', 'ambience']) {
+        const value = settings[channel + 'Volume'];
+        if (Number.isFinite(value)) this._mix[channel] = clamp(value, 0, 1);
+      }
+      this._applyMix();
+    }
+    get mix() { return { ...this._mix }; }
+    _applyMix() {
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const ramp = (parameter, value, duration) => {
+        if(parameter.cancelAndHoldAtTime)parameter.cancelAndHoldAtTime(now);
+        else {parameter.cancelScheduledValues(now);parameter.setValueAtTime(parameter.value,now);}
+        parameter.linearRampToValueAtTime(value,now+duration);
+      };
+      ramp(this.music.gain, this.paused ? 0 : .78 * this._mix.music, .1);
+      ramp(this.effects.gain, this.paused ? 0 : this._mix.effects, .07);
+      ramp(this.ambience.gain, this.paused ? 0 : this._mix.ambience, .12);
+      ramp(this.preview.gain, this._mix.effects, .03);
+      ramp(this._reverb.gain, this.paused ? 0 : .15, .1);
+    }
+    _score() { return SONG_SCORES[this._songIndex] || THEMES[this.theme]; }
+    _random() {
+      this._audioSeed = (Math.imul(this._audioSeed, 1664525) + 1013904223) >>> 0;
+      return this._audioSeed / 4294967296;
+    }
+    songNote(index, pan = 0) {
       if (!this.ctx || !this.unlocked || this.muted || this.paused) return;
       const now = this.ctx.currentTime;
       if (now - (this._lastSongNote ?? -1) < .045) return;
       this._lastSongNote = now;
-      const theme = THEMES[this.theme];
-      this._tone(midi(this._degree(8 + index % 10, theme)), now, .55, .15, 'glass', false, 0);
+      const score = this._score();
+      const degree = MOTIF[index % MOTIF.length] + 5 + Math.floor(index / 5) % 2 * 5;
+      this._tone(midi(this._degree(degree, score)), now, .62, .13, 'kalimba', false, clamp(pan,-.8,.8));
+      if (index > 0 && index % 10 === 0) this._tone(midi(this._degree(degree-5,score)),now+.06,.8,.07,'glass',false,-pan*.5);
+    }
+    rescue(voice, pan = 0, count = 1) {
+      if (!this.ctx || !this.unlocked || this.muted || this.paused) return;
+      const score = this._score(), now = this.ctx.currentTime;
+      MOTIF.slice(0, 3).forEach((degree, index) => this._tone(midi(this._degree(degree+voice%3,score)),now+index*.14,.85,.12,'reed',false,pan));
+      this._tone(midi(this._degree(voice%3,score)),now+.16,1.3,.065,'voice',false,-pan*.4,1400);
+      if(count===3) this._tone(midi(this._degree(12,score)),now+.55,1.5,.08,'glass',false,0);
+    }
+    audition() {
+      if (!this.ctx || !this.unlocked || this.muted) return;
+      const now = this.ctx.currentTime;
+      if (now - (this._lastAudition ?? -10) < 1.8) return;
+      this._lastAudition = now;
+      const score = this._score();
+      MOTIF.forEach((degree,index) => this._tone(midi(this._degree(degree,score)),now+index*.2,.8,.12,index%2?'reed':'kalimba','preview',(index-2)*.2));
+      this._hush(now,.9,.025,1200,'preview',true,-.5);
     }
 
     get volume() { return this._volume; }
@@ -73,16 +141,18 @@
       } catch (_) { return false; }
     }
 
-    _init() {
+    _init(context) {
       const AudioContext = global.AudioContext || global.webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = this.ctx = new AudioContext();
+      if (!context && !AudioContext) return;
+      const ctx = this.ctx = context || new AudioContext();
       this.master = ctx.createGain();
       this.master.gain.value = this.muted ? 0 : this._volume;
       this.music = ctx.createGain();
-      this.music.gain.value = this.paused ? 0 : .78;
+      this.music.gain.value = this.paused ? 0 : .78 * this._mix.music;
       this.effects = ctx.createGain();
-      this.effects.gain.value = 1;
+      this.effects.gain.value = this.paused ? 0 : this._mix.effects;
+      this.ambience = ctx.createGain(); this.ambience.gain.value = this.paused ? 0 : this._mix.ambience;
+      this.preview = ctx.createGain(); this.preview.gain.value = this._mix.effects;
       const limiter = ctx.createDynamicsCompressor();
       limiter.threshold.value = -16;
       limiter.knee.value = 18;
@@ -91,6 +161,7 @@
       limiter.release.value = .22;
       this.music.connect(limiter);
       this.effects.connect(limiter);
+      this.ambience.connect(limiter); this.preview.connect(limiter);
       limiter.connect(this.master);
       this.master.connect(ctx.destination);
 
@@ -101,14 +172,15 @@
         const data = impulse.getChannelData(channel);
         for (let i = 0; i < frames; i++) {
           const t = i / frames;
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 3.8) * .42;
+          data[i] = (this._random() * 2 - 1) * Math.pow(1 - t, 3.8) * .42;
         }
       }
       const convolver = ctx.createConvolver();
       convolver.buffer = impulse;
-      const wet = ctx.createGain();
-      wet.gain.value = .17;
+      const wet = this._reverb = ctx.createGain();
+      wet.gain.value = this.paused ? 0 : .15;
       this.music.connect(convolver);
+      this.effects.connect(convolver);
       convolver.connect(wet);
       wet.connect(limiter);
 
@@ -116,10 +188,19 @@
       const data = this._noise.getChannelData(0);
       let previous = 0;
       for (let i = 0; i < data.length; i++) {
-        previous = .83 * previous + .17 * (Math.random() * 2 - 1);
+        previous = .83 * previous + .17 * (this._random() * 2 - 1);
         data[i] = previous * 2;
       }
       this._next = ctx.currentTime + .08;
+      for (const [kind, frequency, pan] of [['wind', 950, -.25], ['water', 430, .45], ['leaves', 2900, -.6]]) {
+        const source = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), gain = ctx.createGain();
+        const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
+        source.buffer = this._noise; source.loop = true;
+        filter.type = 'bandpass'; filter.frequency.value = frequency; filter.Q.value = kind === 'water' ? .35 : .8;
+        gain.gain.value = 0; if(panner.pan)panner.pan.value=pan;
+        source.connect(filter); filter.connect(gain); gain.connect(panner); panner.connect(this.ambience);
+        source.start(); this._beds.push({kind,source,filter,gain,panner});
+      }
     }
 
     setMuted(muted) {
@@ -141,20 +222,53 @@
 
     pause() {
       this.paused = true;
-      if (this.ctx) this.music.gain.setTargetAtTime(0, this.ctx.currentTime, .08);
+      this._applyMix();
+      if (this.ctx) for (const voice of this._voices) {
+        if (voice.bus === 'preview') continue;
+        try { voice.sources.forEach(source => source.stop(this.ctx.currentTime + .16)); } catch (_) {}
+      }
     }
     resume() {
       if (!this.paused) return;
       this.paused = false;
       if (!this.ctx) return;
       this._next = this.ctx.currentTime + .07;
-      this.music.gain.setTargetAtTime(.78, this.ctx.currentTime, .12);
+      this._applyMix();
       this._schedule();
     }
 
     // Scheduling also works when the game owns the clock. The look-ahead guard
     // prevents duplicate notes when both update() and the timer are in use.
     update() { this._schedule(); }
+    updateWorld(game, dt) {
+      if (game.mode !== 'playing') return;
+      const player = game.player, song = game.song;
+      const wind = (game.level.song?.wind || []).some(current => player.x+player.w>current.x && player.x<current.x+current.w && player.y+player.h>current.y && player.y<current.y+current.h);
+      const waterfalls = song && song.count >= 2 ? game.platforms.filter(platform=>platform.type==='ground'&&platform.x>1000).map(platform=>platform.x+platform.w-70) : [];
+      const nearest = waterfalls.sort((first,second)=>Math.abs(first-player.x)-Math.abs(second-player.x))[0];
+      this._world = { speed: clamp(Math.abs(player.vx)/490,0,1), height: clamp((560-player.y)/450,0,1),
+        water: Number.isFinite(nearest)?clamp(1-Math.abs(nearest-player.x)/550,0,1):player.wet?.7:game.level.theme==='tide'?.25:0,
+        wind: wind?1:0, pan: Number.isFinite(nearest)?clamp((nearest-player.x)/500,-.8,.8):.3 };
+      if (song && player.gliding && !this._gliding) this.sfx('wings');
+      this._gliding=!!player.gliding;
+      if(song && player.grounded && !player.wet && Math.abs(player.vx)>110) {
+        this._footstep+=Math.abs(player.vx)*dt;
+        if(this._footstep>88){this._footstep%=88;this.sfx('footstep');}
+      } else this._footstep=0;
+      this._worldClock+=dt;
+      if(this._worldClock>=.08){this._worldClock=0;this._updateBeds();}
+    }
+    _updateBeds() {
+      if (!this.ctx) return;
+      const world=this._world, now=this.ctx.currentTime, active=this._songIndex>=0;
+      for(const bed of this._beds) {
+        const gain=bed.kind==='wind' ? (active?.016:.008)+world.speed*.012+world.wind*.055+(this._gliding?.028:0)
+          :bed.kind==='water'?world.water*.095:active?(this._night?.009:.016)*(1-world.height*.8):.002;
+        bed.gain.gain.setTargetAtTime(gain,now,.18);
+        if(bed.kind==='wind')bed.filter.frequency.setTargetAtTime(620+world.height*700+world.speed*450,now,.15);
+        if(bed.kind==='water'&&bed.panner.pan)bed.panner.pan.setTargetAtTime(world.pan,now,.15);
+      }
+    }
 
     _releaseMusic() {
       const now = this.ctx.currentTime;
@@ -175,16 +289,36 @@
     }
 
     _schedule() {
-      if (!this.unlocked || !this.ctx || this.paused || this.ctx.state !== 'running') return;
+      if (!this.unlocked || !this.ctx || this.paused || this.muted || this.ctx.state !== 'running') return;
       const now = this.ctx.currentTime;
-      const theme = THEMES[this.theme];
+      const theme = this._score();
       // The final fight tightens the pulse a little with every third of life removed.
       const eighth = 30 / (theme.bpm * (1 + this._bossPhase * .055));
       if (this._next < now - .2) this._next = now + .04;
       let count = 0;
       while (this._next < now + .22 && count++ < 8) {
-        this._playStep(this._step++, this._next, eighth, theme);
+        if(this._songIndex>=0)this._playSongStep(this._step++,this._next,eighth,theme);
+        else this._playStep(this._step++, this._next, eighth, theme);
         this._next += eighth;
+      }
+    }
+
+    _playSongStep(step, at, eighth, score) {
+      const beat=step%12, bar=Math.floor(step/12), harmony=score.harmony[Math.floor(bar/2)%score.harmony.length];
+      const melody=score.melody[step%score.melody.length];
+      if(melody>=0)this._tone(midi(this._degree(melody,score)),at,eighth*(this._night?3.8:2.1),.083,
+        this._night?'reed':score.color,true,Math.sin(bar*.8)*.3);
+      if(beat===0||beat===6)this._tone(midi(this._degree(harmony-5+(beat===6?3:0),score)),at,eighth*5.4,.095,'nylon',true,0);
+      if(beat%3===0)this._tone(midi(this._degree(harmony+2+beat/3,score)),at+.012,eighth*2.2,.041,'kalimba',true,(beat/12-.5)*.9);
+      if(beat===0) for(const [index,degree] of [0,2,4].entries())this._tone(midi(this._degree(harmony+degree,score)),at+index*.021,eighth*11.5,.023,'voice',true,(index-1)*.5,this._night?850:1350);
+      if(beat===0||beat===6)this._tone(96,at,.2,this._night?.018:.03,'kick',true);
+      if(beat===4||beat===10)this._hush(at,.065,this._night?.012:.022,1450,true,false,(beat-7)/7);
+      if(this._songLayer>.08&&beat%3===2)this._tone(midi(this._degree(harmony+8+beat%5,score)),at,eighth*3,.052*this._songLayer,'glass',true,beat%2?.55:-.55);
+      if(this._songLayer>.6&&beat===9)this._tone(midi(this._degree(harmony+5,score)),at,eighth*7,.04*this._songLayer,'voice',true,-.3,1700);
+      if(step%48===35){
+        const degree=this._night?3:10;
+        this._tone(midi(this._degree(degree,score)),at,1.65,.055,this._night?'voice':'reed','ambience',.65,950,midi(this._degree(degree+2,score)));
+        this._tone(midi(this._degree(degree+2,score)),at+.55,1.2,.035,'reed','ambience',-.5);
       }
     }
 
@@ -243,45 +377,44 @@
     }
 
     _track(sources, nodes, gain, music, end) {
-      const voice = { sources, nodes, gain, music, end };
+      const voice = { sources, nodes, gain, music: music===true, bus: music===true?'music':typeof music==='string'?music:'effects', end };
       this._voices.add(voice);
       sources[0].onended = () => {
         this._voices.delete(voice);
         for (const node of nodes) { try { node.disconnect(); } catch (_) {} }
       };
-      // Keep pathological bursts (e.g. hundreds of collectibles) bounded.
-      if (this._voices.size > 90) {
-        const oldest = this._voices.values().next().value;
-        try { oldest.sources.forEach(source => source.stop(this.ctx.currentTime + .02)); } catch (_) {}
-      }
     }
 
     _tone(freq, at, duration, volume, color = 'wood', music = false, pan = 0, cutoff = 1400, target = null) {
-      if (!this.ctx || !this.unlocked) return;
+      if (!this.ctx || !this.unlocked || this._voices.size>=90) return;
       const ctx = this.ctx;
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(color === 'bass' ? 360 : color === 'pad' ? cutoff : 5800, at);
+      filter.frequency.setValueAtTime(color === 'bass' ? 360 : color === 'pad'||color==='voice' ? cutoff : color==='reed'?2500:color==='nylon'?2200:5800, at);
       filter.Q.value = .45;
       const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
       if (panner.pan) panner.pan.value = pan;
       filter.connect(gain);
       gain.connect(panner);
-      panner.connect(music ? this.music : this.effects);
+      panner.connect(music===true?this.music:music==='ambience'?this.ambience:music==='preview'?this.preview:this.effects);
       const peak = Math.max(.0001, volume);
-      const attack = color === 'pad' ? .45 : color === 'air' ? .07 : .007;
+      const attack = color === 'pad'||color==='voice' ? .45 : color === 'air'||color==='reed' ? .07 : .007;
       const end = at + Math.max(duration, attack + .04);
       gain.gain.setValueAtTime(.0001, at);
       gain.gain.exponentialRampToValueAtTime(peak, at + attack);
-      if (color === 'pad') {
+      if (color === 'pad'||color==='voice') {
         gain.gain.setValueAtTime(peak * .7, Math.max(at + attack, end - .7));
         gain.gain.exponentialRampToValueAtTime(.0001, end);
       } else gain.gain.exponentialRampToValueAtTime(.0001, end);
 
       const sources = [];
       const nodes = [filter, gain, panner];
-      const partials = color === 'glass' ? [[1, 1, 'sine'], [2.001, .15, 'sine'], [3, .028, 'sine']]
+      const partials = color === 'kalimba' ? [[1,.9,'sine'],[2.76,.07,'sine'],[5.4,.015,'sine']]
+        : color === 'reed' ? [[1,.83,'sine'],[2,.12,'triangle'],[3,.035,'sine']]
+        : color === 'voice' ? [[.999,.5,'sine'],[1.001,.5,'triangle'],[3,.028,'sine']]
+        : color === 'nylon' ? [[1,.8,'triangle'],[2,.12,'sine'],[4,.015,'sine']]
+        : color === 'glass' ? [[1, 1, 'sine'], [2.001, .15, 'sine'], [3, .028, 'sine']]
         : color === 'water' ? [[1, 1, 'sine'], [2, .11, 'triangle']]
         : color === 'pad' ? [[.9985, .55, 'triangle'], [1.0015, .55, 'sine']]
         : color === 'pluck' ? [[1, .8, 'triangle'], [2, .08, 'sine']]
@@ -299,14 +432,20 @@
         partialGain.connect(filter);
         sources.push(osc);
         nodes.push(osc, partialGain);
+        if ((color==='reed'||color==='voice')&&ratio<1.01&&osc.detune) {
+          const vibrato=ctx.createOscillator(), depth=ctx.createGain();
+          vibrato.frequency.value=color==='reed'?4.7:3.2;depth.gain.value=color==='reed'?5:3;
+          vibrato.connect(depth);depth.connect(osc.detune);vibrato.start(at);vibrato.stop(end+.03);
+          sources.push(vibrato);nodes.push(vibrato,depth);
+        }
         osc.start(at);
         osc.stop(end + .03);
       });
       this._track(sources, nodes, gain, music, end);
     }
 
-    _hush(at, duration, volume, frequency = 1600, music = false, swell = false) {
-      if (!this.ctx || !this.unlocked) return;
+    _hush(at, duration, volume, frequency = 1600, music = false, swell = false, pan = 0) {
+      if (!this.ctx || !this.unlocked || this._voices.size>=90) return;
       const ctx = this.ctx;
       const source = ctx.createBufferSource();
       source.buffer = this._noise;
@@ -322,19 +461,39 @@
       gain.gain.exponentialRampToValueAtTime(.0001, end);
       source.connect(filter);
       filter.connect(gain);
-      gain.connect(music ? this.music : this.effects);
+      const panner=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
+      if(panner.pan)panner.pan.value=pan;
+      gain.connect(panner);
+      panner.connect(music===true?this.music:music==='ambience'?this.ambience:music==='preview'?this.preview:this.effects);
       source.start(at);
       source.stop(end + .03);
-      this._track([source], [source, filter, gain], gain, music, end);
+      this._track([source], [source, filter, gain, panner], gain, music, end);
     }
 
     /** Names intentionally describe game events, keeping entity code simple. */
     sfx(name) {
-      if (!this.unlocked || !this.ctx || this.ctx.state !== 'running' || this.muted) return;
+      if (!this.unlocked || !this.ctx || this.ctx.state !== 'running' || this.muted || (this.paused&&name!=='menu')) return;
       const at = this.ctx.currentTime + .004;
-      const cooldown = name === 'coin' ? .025 : name === 'land' ? .08 : name === 'conveyor' ? .3 : .035;
+      const cooldown = name === 'coin' ? .025 : name === 'land'||name==='menu' ? .08 : name === 'conveyor'||name==='wings' ? .3 : name==='footstep'?.12:.035;
       if (at - (this._lastSfx.get(name) || -100) < cooldown) return;
       this._lastSfx.set(name, at);
+      const score=this._score();
+      if(name==='menu'){this._tone(midi(this._degree(9,score)),at,.13,.042,'kalimba','preview');return;}
+      if(name==='footstep'){this._hush(at,.075,.032,680+this._random()*220,false,false,(this._random()-.5)*.3);this._tone(115+this._random()*35,at,.07,.022,'nylon');return;}
+      if(name==='wings'){this._hush(at,.42,.06,1600,false,true,-.3);this._hush(at+.06,.34,.042,2200,false,true,.35);return;}
+      if(this._songIndex>=0&&['jump','doubleJump','resonance','victory'].includes(name)){
+        const degree=name==='jump'?2:name==='doubleJump'?5:0;
+        if(name==='victory'){
+          MOTIF.concat([9,10]).forEach((pitch,index)=>this._tone(midi(this._degree(pitch,score)),at+index*.18,.85,.14,'kalimba'));
+          [0,2,4,7].forEach((pitch,index)=>this._tone(midi(this._degree(pitch,score)),at+.8+index*.03,2.4,.055,'voice',false,(index-1.5)*.2));
+        } else {
+          this._tone(midi(this._degree(degree,score)),at,name==='resonance'?.68:.24,.1,'reed',false,0,1400,midi(this._degree(degree+2,score)));
+          this._hush(at,name==='resonance'?.48:.18,name==='resonance'?.035:.04,1300,false,true);
+          if(name==='resonance')this._tone(midi(this._degree(5,score)),at+.11,.9,.062,'glass',false,.22);
+          if(name==='doubleJump')this._tone(midi(this._degree(10,score)),at+.05,.5,.065,'kalimba',false,-.2);
+        }
+        return;
+      }
       const tone = (frequency, offset, duration, gain, color = 'wood', end = null) =>
         this._tone(frequency, at + offset, duration, gain, color, false, 0, 1500, end);
       const notes = (pitches, spacing, length = .3, gain = .19, color = 'glass') =>
@@ -410,7 +569,11 @@
       if (this._timer) global.clearInterval(this._timer);
       this._timer = null;
       this.unlocked = false;
+      for(const voice of this._voices){for(const source of voice.sources){try{source.stop();}catch(_){}}for(const node of voice.nodes){try{node.disconnect();}catch(_){}}}
       this._voices.clear();
+      for(const bed of this._beds){try{bed.source.stop();}catch(_){}for(const node of [bed.source,bed.filter,bed.gain,bed.panner]){try{node.disconnect();}catch(_){}}}
+      this._beds=[];
+      this._lastSfx.clear();this._lastAudition=undefined;this._lastSongNote=undefined;
       if (this.ctx) {
         try { this.ctx.close(); } catch (_) {}
       }
@@ -419,5 +582,6 @@
   }
 
   LumenAudio.THEMES = Object.keys(THEMES);
+  LumenAudio.SONG_SCORES = SONG_SCORES;
   global.LumenAudio = LumenAudio;
 })(window);

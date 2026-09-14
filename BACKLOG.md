@@ -37,6 +37,10 @@ ci-dessous concernent l’édition classique, qui reste accessible dans l’atla
   anglaises, espagnoles, arabes et chinoises simplifiées avec des locuteurs
   natifs, puis vérifier les polices et le RTL sur de vrais appareils iOS et
   Android. Les tests couvrent les textes et leur affichage, pas cette relecture.
+7. **Écouter et observer jour/nuit sur matériel réel.** Comparer le mixage sur
+  casque et haut-parleurs mobiles, le bruit de fond, le retour après appel
+  téléphonique et les contrastes en extérieur. Les palettes, volumes, fondus,
+  sources audio et signaux sont testés ; leur confort sensoriel reste à valider.
 
 ---
 

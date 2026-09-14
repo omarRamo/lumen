@@ -1,7 +1,27 @@
 {
-  "passed": 22,
+  "passed": 27,
   "failed": 0,
   "checks": [
+    {
+      "name": "Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions",
+      "passed": true
+    },
+    {
+      "name": "Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau",
+      "passed": true
+    },
+    {
+      "name": "Le vrai rendu Web Audio produit trois thèmes distincts, sans saturation et avec silence intégral",
+      "passed": true
+    },
+    {
+      "name": "Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient",
+      "passed": true
+    },
+    {
+      "name": "Les réglages de thème et de son restent disponibles dans l’aventure classique",
+      "passed": true
+    },
     {
       "name": "Les cinq langues système traduisent les éditions source et portable sans réseau",
       "passed": true

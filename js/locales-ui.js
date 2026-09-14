@@ -1,4 +1,12 @@
 window.LumenI18n.add([
+  ['Apparence', 'Appearance', 'Apariencia', 'المظهر', '外观'],
+  ['Système', 'System', 'Sistema', 'النظام', '系统'],
+  ['Clair', 'Light', 'Claro', 'فاتح', '浅色'],
+  ['Sombre', 'Dark', 'Oscuro', 'داكن', '深色'],
+  ['Musique', 'Music', 'Música', 'الموسيقى', '音乐'],
+  ['Effets sonores', 'Sound effects', 'Efectos de sonido', 'المؤثرات الصوتية', '音效'],
+  ['Ambiance', 'Ambience', 'Ambiente', 'أصوات البيئة', '环境音'],
+  ['Écouter LUMEN', 'Listen to LUMEN', 'Escuchar LUMEN', 'استمع إلى LUMEN', '聆听 LUMEN'],
   ['Langue', 'Language', 'Idioma', 'اللغة', '语言'],
   ['Langue du système', 'System language', 'Idioma del sistema', 'لغة النظام', '系统语言'],
   ['LUMEN · Le Chant des îles', 'LUMEN · Song of the Islands', 'LUMEN · El canto de las islas', 'LUMEN · أغنية الجزر', 'LUMEN · 群岛之歌'],

@@ -16,6 +16,51 @@ peuvent être servis par un hébergement web statique ; le tactile s’adapte au
 portrait et au paysage. Il ne s’agit pas d’une application native publiée sur
 les boutiques mobiles.
 
+## Apparence Et Son
+
+Dans **Réglages → Apparence**, choisissez **Système**, **Clair** ou **Sombre**.
+Le réglage par défaut suit `prefers-color-scheme`, y compris ses changements
+pendant la partie. Un choix explicite reste prioritaire et est sauvegardé.
+Le changement de thème ne recommence pas l’île et ne modifie aucune collision.
+Les mêmes réglages existent dans le guide de l’édition classique.
+
+![Les petits matins en version nocturne](docs/chant-nuit.png)
+
+Le mode sombre n’est pas un filtre sur le canvas : chaque île possède sa
+palette nocturne, avec lune, constellations et atmosphère plus douce. Les
+notes, les compagnons et les surfaces jouables conservent leurs accents clairs.
+Les menus suivent la même apparence, dans les cinq langues et en RTL.
+
+Les falaises portent désormais des strates et des fissures, les arbres des
+veines et des cernes, et les arches des gravures et des bannières tissées.
+L’écharpe, la tunique et les ailes de Nilo ont leurs coutures et leurs motifs.
+Ces textures sont dessinées localement ; les détails statiques sont mis en
+cache et recalculés seulement lorsque leur palette change.
+
+### Une Signature Musicale
+
+Trois partitions originales partagent un motif de cinq notes, repris par les
+collectibles et les réponses des compagnons. L’aube privilégie le kalimba et
+les cordes pincées, les récifs un timbre de souffle, et le grand chœur les
+résonances cristallines et les voix synthétiques. La nuit change
+l’orchestration sans remettre le morceau à zéro.
+
+Le vent varie avec l’altitude, la vitesse et l’ouverture des ailes. Les
+cascades s’entendent du côté où elles se trouvent et deviennent plus présentes
+quand on approche. Les pas, le déploiement des ailes, le chant, les compagnons
+et les menus possèdent leurs retours sonores.
+
+Les réglages séparent **Musique**, **Effets sonores** et **Ambiance**, en plus
+du volume général. **Écouter LUMEN** joue une courte signature stéréo, même
+depuis les réglages en pause, en respectant le volume et le mode silencieux.
+L’audio ne démarre qu’après une interaction du joueur. La pause éteint les
+canaux du monde par un bref fondu ; la reprise retrouve la musique.
+
+Tout est synthétisé en Web Audio : aucun échantillon téléchargé, aucune
+ressource audio externe. Trois sources d’ambiance sont réutilisées, les voix
+ponctuelles sont plafonnées à 90 et leurs nœuds sont libérés après lecture.
+Le bruit sonore possède son propre générateur, indépendant de la simulation.
+
 ## Langues
 
 Le jeu propose **français, anglais, espagnol, arabe et chinois simplifié**,
@@ -99,8 +144,8 @@ records des deux rythmes sont distincts.
 | Pause | Échap / P | Bouton pause | Start |
 | Recommencer / son | R / M | Menus du jeu | Menus au clavier ou au tactile |
 
-Les réglages proposent la langue, le volume, les mouvements réduits, la main dominante
-et la taille des commandes. Les boutons sont nommés pour les lecteurs d’écran
+Les réglages proposent la langue, l’apparence, le mixage audio, les mouvements
+réduits, la main dominante et la taille des commandes. Les boutons sont nommés pour les lecteurs d’écran
 et les dialogues contiennent le focus clavier. L’accessibilité complète d’un
 jeu de plateforme visuel n’est pas pour autant acquise.
 
@@ -126,6 +171,8 @@ partagés avec le jeu existant. Pas de second moteur concurrent.
 | [js/engine.js](js/engine.js) | Session `song`, mouvements, courants, collecte, retours après chute et fin d’île. |
 | [js/song-art.js](js/song-art.js) | Rendu Canvas original, compositions adaptatives et illustrations mises en cache. Aucune mutation de la simulation. |
 | [js/song-ui.js](js/song-ui.js) | HUD, atlas, résultats, confort, focus et navigation entre les éditions. |
+| [js/appearance.js](js/appearance.js) | Choix système/clair/sombre, adaptation immédiate et commandes partagées. |
+| [js/audio.js](js/audio.js) | Partitions originales, synthèse, spatialisation, mixage, ambiance et cycle de vie audio. |
 | [song.css](song.css) | Interface responsive et typographies locales. |
 | [tests/song-pilot.cjs](tests/song-pilot.cjs) | Pilote de parcours partagé entre les tests Node et navigateur, sans téléportation. |
 
@@ -446,6 +493,8 @@ rien ; ce qui suit ne sert qu'au développement.
 ```bash
 node tools/build.cjs          # régénère LUMEN.html avec les ressources locales
 
+node tests/test-appearance.cjs    # système, thème manuel et sauvegardes
+node tests/test-audio.cjs         # partitions, effets, mixage et règles de silence
 node tests/test-i18n.cjs          # détection des langues et couverture des catalogues
 node tests/test-p0.cjs            # 28 promesses du jalon A (branches, apaisement,
                                   #   restauration du monde, sessions, sauvegarde)
@@ -458,9 +507,13 @@ npm install                   # tests navigateur, polices et pictogrammes de dé
 npx playwright install chromium  # facultatif si Chrome ou Edge est installé sous Windows
 npm run test:browser          # vrais navigateurs, éditions source et portable, cinq formats
 
-npm test                      # les six suites Node, langues comprises
+npm test                      # les huit suites Node, apparence et audio compris
 npm run verify                # build + tests Node + navigateur
 ```
+
+Pour rejouer un contrôle navigateur ciblé :
+`npm run test:browser -- "mixage|palettes"`. Un passage filtré ne remplace
+pas le rapport du dernier passage complet.
 
 Le navigateur est résolu sans aucun chemin absolu : `LUMEN_CHROMIUM` si vous en
 désignez un, sinon le cache Playwright, sinon celui de Playwright lui-même.
@@ -475,16 +528,26 @@ version est vérifiée sous Windows avec Node et Chrome, en ouverture directe
 
 | Suite | Résultat |
 | --- | --- |
+| `test-appearance.cjs` | 4 / 4 |
+| `test-audio.cjs` | 5 / 5 |
 | `test-i18n.cjs` | 7 / 7, cinq langues et couverture des textes du monde |
 | `test-p0.cjs` | 28 / 28 (3 / 28 avant le jalon A — voir `docs/jalon-a-reference.json`) |
 | `test-engine.cjs` | 57 / 57 |
-| `test-renderer.cjs` | 10 / 10 |
+| `test-renderer.cjs` | 11 / 11, rendu et caches jour/nuit sans mutation du monde |
 | `test-expedition.cjs` | 15 / 15, dont 1 012 graines sans une seule salle fautive |
 | `playthrough.cjs` | 12 parcours, dont les trois îles en Balade et Élan, sans chute et avec tous leurs souvenirs |
-| `test-browser.cjs` | 22 / 22, cinq langues, éditions source et portable, zéro erreur de console |
+| `test-browser.cjs` | 27 / 27, thèmes, audio réel, cinq langues, éditions source et portable |
 
 Quelques mesures que ces suites produisent, et qui disent quelque chose :
 
+- les palettes **jour et nuit** sont capturées sur cinq formats ; la luminance
+  du fond baisse en mode sombre et les textes des réglages gardent un rapport
+  de contraste d’au moins 4,5:1 ;
+- les trois thèmes sont rendus dans un **OfflineAudioContext réel** : signal
+  fini, stéréo présente, compositions distinctes, absence de saturation et
+  silence intégral si le son est coupé ou si tous les canaux sont à zéro ;
+- les volumes survivent au rechargement, la démonstration produit des
+  échantillons audibles pendant la pause et les sources sont nettoyées ;
 - les **trois îles du Chant sont terminées sans téléportation**, sans état
   de victoire forcé et avec deux actions simultanées au maximum ; le pilote
   connaît les lieux, donc son temps n’est pas une durée de découverte humaine ;
@@ -520,7 +583,9 @@ Dit sans emballage, parce que c'est ce qui compte :
 - **la cadence n’est pas mesurée sur des téléphones physiques.** Les relevés
   de Chrome sur ce poste ne valident ni une cible mobile, ni l’autonomie ;
 - **la composition et le mixage audio n’ont pas été écoutés par un testeur
-  humain.** Le volume et sa persistance sont testés dans le navigateur ;
+  humain.** Leur signal est mesuré et le cycle de vie est testé dans le
+  navigateur ; l’équilibre sur écouteurs et haut-parleurs de téléphone reste
+  à apprécier sur des appareils réels ;
 - **le rendu possède des tests de commandes Canvas, des contrôles de pixels
   et des captures inspectées.** Cela ne remplace pas une évaluation de
   lisibilité par des enfants et des adultes ;

@@ -131,7 +131,7 @@
         game.player.airJumps = 0; this.airNotes++;
         game.burst(note.x, note.y, 5, '#d0fff1', 70, 'trail');
       }
-      game.audio.songNote?.(this.combo - 1);
+      game.audio.songNote?.(this.combo - 1, Math.max(-.7,Math.min(.7,(note.x-game.player.x-16)/220)));
     }
     update(game, dt) {
       this.comboTime = Math.max(0, this.comboTime - dt);
@@ -148,7 +148,7 @@
         if (!game.waves.some(wave => Math.hypot(echo.x - wave.x, echo.y - wave.y) <= wave.radius)) continue;
         echo.found = true; this.count++; this.celebration = 2.5;
         game.addScore(750); game.burst(echo.x, echo.y, 38, echo.color, 170, 'petal');
-        game.audio.songNote?.(echo.voice + 5); game.audio.sfx('star');
+        game.audio.rescue?.(echo.voice, Math.max(-.7,Math.min(.7,(echo.x-player.x-16)/220)), this.count);
         game.store.discover('creatures', 'chant-' + echo.id); game.saveProgress();
         game.emit('song-rescue', echo);
         if (this.count === this.lights.length) {

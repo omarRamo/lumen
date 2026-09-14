@@ -52,7 +52,7 @@
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto' },
+      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto', appearance: 'system', musicVolume: .8, effectsVolume: .9, ambienceVolume: .6 },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -130,6 +130,10 @@
       profile.settings.songStyle = raw.settings.songStyle === 'flow' ? 'flow' : 'gentle';
       profile.settings.volume = clamp(finite(raw.settings.volume, .35), 0, 1);
       profile.settings.language = ['en', 'fr', 'es', 'ar', 'zh'].includes(raw.settings.language) ? raw.settings.language : 'auto';
+      profile.settings.appearance = ['light', 'dark'].includes(raw.settings.appearance) ? raw.settings.appearance : 'system';
+      for (const [channel, fallback] of [['musicVolume', .8], ['effectsVolume', .9], ['ambienceVolume', .6]]) {
+        profile.settings[channel] = clamp(finite(raw.settings[channel], fallback), 0, 1);
+      }
     }
     if (isObject(raw.hub)) {
       if (isObject(raw.hub.quests)) {
@@ -345,6 +349,11 @@
     setSetting(name, value) {
       if (!(name in this.profile.settings)) return false;
       if (name === 'language' && !['auto', 'en', 'fr', 'es', 'ar', 'zh'].includes(value)) return false;
+      if (name === 'appearance' && !['system', 'light', 'dark'].includes(value)) return false;
+      if (['musicVolume', 'effectsVolume', 'ambienceVolume', 'volume'].includes(name)) {
+        if (!Number.isFinite(value)) return false;
+        value = clamp(value, 0, 1);
+      }
       this.profile.settings[name] = value;
       this.save();
       return true;

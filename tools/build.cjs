@@ -15,7 +15,7 @@ const iconSource = path.join(root, 'node_modules', 'lucide-static');
 if (fs.existsSync(path.join(iconSource, 'icon-nodes.json'))) {
 	const nodes = JSON.parse(fs.readFileSync(path.join(iconSource, 'icon-nodes.json'), 'utf8'));
 	const names = ['map', 'settings-2', 'volume-2', 'volume-x', 'maximize', 'minimize', 'pause', 'play',
-		'arrow-left', 'arrow-right', 'arrow-up-right', 'leaf', 'wind', 'music', 'feather', 'sparkles', 'rotate-ccw', 'x', 'check', 'lock-keyhole', 'trophy', 'sun'];
+		'arrow-left', 'arrow-right', 'arrow-up-right', 'leaf', 'wind', 'music', 'feather', 'sparkles', 'rotate-ccw', 'x', 'check', 'lock-keyhole', 'trophy', 'sun', 'moon', 'monitor', 'headphones'];
 	const icons = Object.fromEntries(names.map(name => {
 		if (!nodes[name]) throw new Error('Missing Lucide icon: ' + name);
 		const body = nodes[name].map(([tag, attrs]) => `<${tag} ${Object.entries(attrs).map(([key, value]) => `${key}="${String(value).replace(/"/g, '&quot;')}"`).join(' ')}/>`).join('');

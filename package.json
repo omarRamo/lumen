@@ -1,12 +1,14 @@
 {
   "name": "lumen-les-jardins-de-la-lune",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "LUMEN — Le Chant des îles. Aventure musicale de plateforme et de vol, trois îles originales et campagne classique conservée, jouable hors ligne.",
   "private": true,
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs",
+    "test": "node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs",
+    "test:appearance": "node tests/test-appearance.cjs",
+    "test:audio": "node tests/test-audio.cjs",
     "test:i18n": "node tests/test-i18n.cjs",
     "test:p0": "node tests/test-p0.cjs",
     "test:engine": "node tests/test-engine.cjs",

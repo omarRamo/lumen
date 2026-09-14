@@ -94,6 +94,7 @@
       this.progress = this.readProgress(); this.storageAvailable = true;
       this.audio.setMuted(!!this.progress.settings.muted);
       this.audio.volume = this.progress.settings.volume ?? .35;
+      this.audio.setMix?.(this.progress.settings);
       this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
       this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
       this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
@@ -258,6 +259,7 @@
         stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
       this.camera = { x:clamp(data.spawn.x - 300, 0, Math.max(0, data.width - WIDTH)), y:0, shake:0 };
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
+      this.audio.setScene?.(data.song?.index ?? -1);
       if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
     }
     /** Ce qu'une sauvegarde a déjà acquis et qui doit se revoir DANS le monde,
@@ -518,6 +520,7 @@
       if (this.mode !== 'playing') return;
       this.updateCheckpoints(); this.updateSecrets(); this.updateCharacters(dt);
       this.updateDanger(dt);
+      this.audio.updateWorld?.(this, dt);
       if (this.exit.open && overlap(this.player, this.exit)) {
         if (this.level.hub) { this.player.vx = 0; this.emit('portal', this.exit.leadsTo || 'map'); }
         else if (this.session === 'expedition' && this.run) this.completeRoom();

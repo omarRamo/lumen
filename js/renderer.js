@@ -30,7 +30,15 @@
       this.skyCache = new Map();
       this.resize(canvas.clientWidth || 1280, canvas.clientHeight || 720);
     }
-    static palette(theme) { return PALETTES[theme] || PALETTES.meadow; }
+    static palette(theme) {
+      const palette = PALETTES[theme] || PALETTES.meadow;
+      if (window.LumenAppearance?.current !== 'dark') return palette;
+      const skies = {
+        meadow: ['#162e35', '#3a6269', '#778a83'], sky: ['#1b303a', '#456773', '#9ba99b'],
+        tide: ['#122d38', '#2d626e', '#779e91'], secret: ['#352e38', '#665562', '#b0837d']
+      };
+      return { ...palette, sky: skies[theme] || palette.sky, far: palette.rock, middle: palette.dark };
+    }
     resize(width, height) {
       this.width = Math.max(1, width); this.height = Math.max(1, height);
       this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -58,7 +66,7 @@
       c.globalAlpha = 1;
       // A quiet paper-grain finish, cached rather than sampled every frame.
       for (let i = 0; i < 6000; i++) { c.fillStyle = i % 2 ? '#ffffff08' : '#00182709'; c.fillRect(seed(i * 2) * 1280, seed(i * 2 + 1) * 720, 1, 1); }
-      this.skyCache.set(theme, surface); return surface;
+      this.skyCache.set(theme + ':' + (window.LumenAppearance?.current || 'light'), surface); return surface;
     }
     draw(game, dt) {
       if (game.song && window.LumenSongArt) return window.LumenSongArt.draw(this, game);
@@ -115,7 +123,7 @@
     }
     visible(o, margin = 50) { return (o.x || 0) + (o.w || 0) >= this.cameraX - margin && (o.x || 0) <= this.cameraX + this.worldWidth + margin && (o.y || 0) < this.cameraY + 850; }
     background(c, theme, p, t, cameraX, mode) {
-      c.drawImage(this.skyCache.get(theme) || this.createSky(theme, p), 0, 0);
+      c.drawImage(this.skyCache.get(theme + ':' + (window.LumenAppearance?.current || 'light')) || this.createSky(theme, p), 0, 0);
       // Halo and crescent are the recurring visual motif of the archipelago.
       const moonX = this.worldWidth * .785 - cameraX * .015, moonY = theme === 'eclipse' ? 187 : 149;
       const halo = c.createRadialGradient(moonX, moonY, 56, moonX, moonY, 200); halo.addColorStop(0, p.glow + '19'); halo.addColorStop(1, p.glow + '00'); c.fillStyle = halo; c.fillRect(moonX - 200, moonY - 200, 400, 400);

@@ -27,8 +27,10 @@ const VIEWS = {
 };
 
 const checks = [];
+const filter = process.argv[2] ? new RegExp(process.argv[2], 'i') : null;
 let failed = 0;
 async function test(name, run) {
+  if(filter && !filter.test(name))return;
   try { await run(); checks.push({ name, passed: true }); console.log('PASS  ' + name); }
   catch (error) { failed++; checks.push({ name, passed: false, error: error.message }); console.error('FAIL  ' + name + '\n      ' + error.message); }
 }
@@ -42,7 +44,7 @@ async function test(name, run) {
   /** Ouvre la page, en collectant toute erreur au passage. */
   async function open(view = 'bureau', profile = null, options = {}) {
     const { width, height, hasTouch, isMobile } = VIEWS[view];
-    const context = await browser.newContext({ viewport: { width, height }, hasTouch, isMobile, deviceScaleFactor: 1, locale: options.locale || 'fr-FR' });
+    const context = await browser.newContext({ viewport: { width, height }, hasTouch, isMobile, deviceScaleFactor: 1, locale: options.locale || 'fr-FR', colorScheme: options.colorScheme || 'light' });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
@@ -61,6 +63,155 @@ async function test(name, run) {
     await page.waitForFunction(song => window.lumen && window.lumen.mode === (song ? 'playing' : 'home'), !!options.song, { timeout: 20000 });
     return { page, context, errors };
   }
+
+  await test('Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions', async () => {
+    for(const source of [false,true]){
+      const {page,context,errors}=await open('bureau',null,{song:true,source,colorScheme:'dark'});
+      await page.waitForFunction(()=>window.lumen.frames>=2);
+      assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'dark');
+      assert.equal(await page.evaluate(()=>window.lumen.progress.settings.appearance),'system');
+      await page.locator('#song-shell [data-command="song-settings"]').click();
+      const before=await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed]));
+      await page.locator('#song-panel [data-appearance="light"]').click();
+      assert.equal(await page.locator('#song-panel [data-appearance="light"]').getAttribute('aria-pressed'),'true');
+      await page.emulateMedia({colorScheme:'light'});await page.emulateMedia({colorScheme:'dark'});
+      assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
+      assert.equal(await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed])),before);
+      await page.reload();await page.waitForFunction(()=>window.lumen?.song);
+      assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
+      await page.locator('#song-shell [data-command="song-settings"]').click();
+      await page.locator('#song-panel [data-appearance="system"]').click();
+      await page.waitForFunction(()=>window.LumenAppearance.current==='dark');
+      await page.emulateMedia({colorScheme:'light'});await page.waitForFunction(()=>window.LumenAppearance.current==='light');
+      await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>window.LumenAppearance.current==='dark');
+      assert.equal(await page.evaluate(()=>window.lumen.audio._night),true);
+      assert.deepEqual(errors,[]);await context.close();
+    }
+  });
+
+  await test('Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau', async () => {
+    for(const view of ['bureau','portrait','paysage','compact','large']){
+      const {page,context,errors}=await open(view,null,{song:true});
+      await page.waitForFunction(()=>window.lumen.frames>=2);
+      const readings={};
+      for(const appearance of ['light','dark']){
+        await page.locator('#song-shell [data-command="song-settings"]').click();
+        await page.locator('#song-panel [data-appearance="'+appearance+'"]').click();
+        const contrast=await page.evaluate(()=>{
+          const panel=getComputedStyle(document.getElementById('song-panel'));
+          const luminance=color=>{
+            const rgb=color.match(/[\d.]+/g).slice(0,3).map(value=>{const normalized=Number(value)/255;return normalized<=.04045?normalized/12.92:Math.pow((normalized+.055)/1.055,2.4);});
+            return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+          };
+          const ink=luminance(panel.color),surface=luminance(panel.backgroundColor);
+          return (Math.max(ink,surface)+.05)/(Math.min(ink,surface)+.05);
+        });
+        assert.ok(contrast>=4.5,view+' '+appearance+' contrast '+contrast);
+        assert.equal(await page.locator('#song-panel').evaluate(panel=>panel.scrollWidth<=panel.clientWidth+1),true);
+        if(view==='bureau'||view==='portrait')await page.screenshot({path:path.join(shots,'appearance-'+appearance+'-'+view+'-settings.png')});
+        await page.locator('#song-panel [data-command="song-close"]').first().click();
+        readings[appearance]=await page.evaluate(()=>{
+          const game=window.lumen;game.renderer.draw(game,0);
+          const canvas=game.canvas,pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+          let brightness=0,count=0;const colors=new Set();
+          for(let index=0;index<pixels.length;index+=1612){brightness+=pixels[index]*.2126+pixels[index+1]*.7152+pixels[index+2]*.0722;count++;colors.add([pixels[index]>>3,pixels[index+1]>>3,pixels[index+2]>>3].join(':'));}
+          const controls=[...document.querySelectorAll('#song-shell button,#touch-controls button')].filter(button=>button.getClientRects().length);
+          const outside=controls.filter(button=>{const rect=button.getBoundingClientRect();return rect.left<0||rect.right>innerWidth+1||rect.bottom>innerHeight+1;});
+          return {brightness:brightness/count,colors:colors.size,outside:outside.map(button=>button.getAttribute('aria-label')),key:game.renderer.songKey};
+        });
+        assert.deepEqual(readings[appearance].outside,[]);
+        assert.ok(readings[appearance].colors>45,'Canvas is too uniform: '+view+' '+appearance+' '+JSON.stringify(readings[appearance]));
+        await page.screenshot({path:path.join(shots,'appearance-'+appearance+'-'+view+'.png')});
+      }
+      assert.ok(readings.dark.brightness<readings.light.brightness*.85,view+' night should reduce background luminance');
+      assert.notEqual(readings.dark.key,readings.light.key);
+      assert.deepEqual(errors,[]);await context.close();
+    }
+    const {page,context,errors}=await open('portrait',null,{song:true,locale:'ar-SA',colorScheme:'dark'});
+    await page.locator('#song-shell [data-command="song-settings"]').click();
+    assert.equal(await page.locator('#song-panel [data-appearance="dark"]').textContent(),'داكن');
+    await page.screenshot({path:path.join(shots,'appearance-dark-arabic-settings.png')});
+    assert.deepEqual(errors,[]);await context.close();
+  });
+
+  await test('Le vrai rendu Web Audio produit trois thèmes distincts, sans saturation et avec silence intégral', async () => {
+    const {page,context,errors}=await open('bureau',null,{song:true});
+    const renders=await page.evaluate(async()=>{
+      const results=[];
+      for(const config of [{island:0},{island:1},{island:2},{island:0,night:true},{island:0,muted:true},{island:0,zero:true}]){
+        const audio=new window.LumenAudio(),offline=new OfflineAudioContext(2,44100*6,44100);
+        audio.setScene(config.island);audio.setNight(config.night);audio.setMuted(config.muted);
+        audio.setMix({musicVolume:config.zero?0:.8,effectsVolume:config.zero?0:.9,ambienceVolume:config.zero?0:.6});
+        audio._init(offline);audio.unlocked=true;audio.setSongLayer(.7);audio._updateBeds();
+        const score=window.LumenAudio.SONG_SCORES[config.island];
+        for(let step=0;step<12;step++)audio._playSongStep(step,.05+step*.3,.3,score);
+        audio.sfx('resonance');audio.rescue(2,.65,1);
+        const rendered=await offline.startRendering(),left=rendered.getChannelData(0),right=rendered.getChannelData(1);
+        let peak=0,energy=0,stereo=0,signature=0,finite=true;
+        for(let index=0;index<left.length;index++){
+          peak=Math.max(peak,Math.abs(left[index]),Math.abs(right[index]));energy+=(left[index]**2+right[index]**2)/2;
+          stereo+=(left[index]-right[index])**2;finite=finite&&Number.isFinite(left[index])&&Number.isFinite(right[index]);
+          if(index%97===0)signature+=Math.round(left[index]*1e7);
+        }
+        results.push({...config,peak,rms:Math.sqrt(energy/left.length),stereo:Math.sqrt(stereo/left.length),signature,finite,voices:audio._voices.size,beds:audio._beds.length});
+        audio.destroy();
+      }
+      return results;
+    });
+    for(const result of renders){
+      assert.equal(result.finite,true);assert.ok(result.peak<.95,'Clipping risk: '+JSON.stringify(result));
+      if(result.muted||result.zero)assert.equal(result.peak,0,'Silence must include reverb and ambience.');
+      else {assert.ok(result.rms>.002,'Silent composition: '+JSON.stringify(result));assert.ok(result.stereo>.0001);}
+      assert.equal(result.voices,0,'Finished sounds should release their nodes.');assert.equal(result.beds,3);
+    }
+    assert.equal(new Set(renders.slice(0,4).map(result=>result.signature)).size,4);
+    console.log('      audio mesuré : '+renders.slice(0,4).map(result=>'île '+(result.island+1)+(result.night?' nuit':'')+' RMS '+result.rms.toFixed(4)+' crête '+result.peak.toFixed(3)).join(' · '));
+    assert.deepEqual(errors,[]);await context.close();
+  });
+
+  await test('Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient', async () => {
+    const {page,context,errors}=await open('portrait',null,{song:true});
+    assert.equal(await page.evaluate(()=>window.lumen.audio.ctx),null,'No audio context before a gesture.');
+    await page.locator('#song-shell [data-command="song-settings"]').click();
+    await page.locator('#song-musicVolume').fill('25');await page.locator('#song-effectsVolume').fill('70');await page.locator('#song-ambienceVolume').fill('40');
+    await page.locator('#song-panel [data-command="sound-preview"]').click();
+    await page.waitForFunction(()=>window.lumen.audio.unlocked&&[...window.lumen.audio._voices].some(voice=>voice.bus==='preview'));
+    assert.equal(await page.evaluate(()=>window.lumen.mode),'paused');
+    const audible=await page.evaluate(async()=>{
+      const audio=window.lumen.audio,analyser=audio.ctx.createAnalyser();analyser.fftSize=2048;audio.master.connect(analyser);
+      await new Promise(resolve=>setTimeout(resolve,300));
+      const samples=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(samples);analyser.disconnect();
+      return [...samples].some(value=>Math.abs(value)>.0001);
+    });
+    assert.equal(audible,true,'The preview should produce actual samples.');
+    await page.reload();await page.waitForFunction(()=>window.lumen?.song);
+    assert.deepEqual(await page.evaluate(()=>window.lumen.audio.mix),{music:.25,effects:.7,ambience:.4});
+    await page.locator('#game').focus();await page.keyboard.press('KeyX');await page.waitForFunction(()=>window.lumen.audio.unlocked);
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(()=>window.lumen.mode==='paused');
+    await page.waitForTimeout(450);
+    const paused=await page.evaluate(()=>({music:window.lumen.audio.music.gain.value,effects:window.lumen.audio.effects.gain.value,ambience:window.lumen.audio.ambience.gain.value}));
+    assert.ok(Object.values(paused).every(value=>value<.002),'All world audio must fade on pause: '+JSON.stringify(paused));
+    const cleanup=await page.evaluate(()=>{
+      const audio=window.lumen.audio;
+      for(let index=0;index<150;index++)audio._tone(220+index,audio.ctx.currentTime+.01,.3,.001,'reed');
+      const count=audio._voices.size;audio.destroy();return {count,voices:audio._voices.size,beds:audio._beds.length,context:audio.ctx,timer:audio._timer};
+    });
+    assert.ok(cleanup.count<=90);assert.deepEqual({...cleanup,count:0},{count:0,voices:0,beds:0,context:null,timer:null});
+    assert.deepEqual(errors,[]);await context.close();
+  });
+
+  await test('Les réglages de thème et de son restent disponibles dans l’aventure classique', async () => {
+    const {page,context,errors}=await open('bureau',null,{colorScheme:'dark'});
+    await page.locator('#masthead [data-command="help"]').click();
+    await page.locator('#help-screen [data-appearance="light"]').click();
+    assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
+    await page.locator('#help-screen [data-appearance="dark"]').click();
+    await page.locator('#classic-music').fill('35');
+    assert.equal(await page.evaluate(()=>window.lumen.audio.mix.music),.35);
+    await page.screenshot({path:path.join(shots,'appearance-dark-classic-settings.png')});
+    assert.deepEqual(errors,[]);await context.close();
+  });
 
   await test('Les cinq langues système traduisent les éditions source et portable sans réseau', async () => {
     const cases = [
@@ -754,7 +905,7 @@ async function test(name, run) {
 
   await browser.close();
   console.log('\n' + (checks.length - failed) + '/' + checks.length + ' contrôles navigateur réussis.');
-  fs.writeFileSync(path.join(root, 'tests', 'browser-test-results.json'),
+  if(!filter)fs.writeFileSync(path.join(root, 'tests', 'browser-test-results.json'),
     JSON.stringify({ passed: checks.length - failed, failed, checks }, null, 2));
   process.exitCode = failed ? 1 : 0;
 })();

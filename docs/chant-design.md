@@ -60,6 +60,39 @@ Le monde occupe tout l’écran sans étirer les personnages. Les contrôles
 s’adaptent au portrait et au paysage. Un voile atmosphérique sur les petits
 écrans en paysage préserve la lisibilité de l’en-tête.
 
+### Du Jour À La Nuit
+
+Le joueur choisit son confort visuel, pas une difficulté supplémentaire.
+Le mode sombre baisse la luminance des grands aplats de ciel et des menus,
+mais garde une lumière franche sur Nilo, les notes et les bords des plateformes.
+Les trois îles ont des palettes nocturnes distinctes ; le corail, les verts
+végétaux et les lumières dorées restent présents. Le réglage suit le système
+par défaut et ne modifie jamais l’état de la simulation.
+
+Les nouvelles matières donnent des repères d’échelle et de fabrication :
+strates minérales, cernes de bois, pierre gravée et bannières brodées. Le
+motif étoilé se retrouve dans les architectures, la tunique et les ailes.
+Les textures sont discrètes sur les surfaces jouables et calculées en cache.
+
+### Un Ensemble Qui Répond
+
+Une phrase pentatonique de cinq notes relie les trois partitions aux petites
+récompenses sonores du jeu. Cordes pincées, kalimba, souffle et chœur sont
+synthétisés localement. Les compagnons ne déclenchent plus une simple fanfare
+de collectible : leur réponse utilise la même gamme que l’île.
+
+Le son environnemental traduit des informations physiques : vitesse dans le
+vent, déploiement des ailes, altitude et position des cascades. Les trois
+canaux indépendants permettent d’atténuer la musique sans perdre ces repères,
+ou de garder seulement l’ambiance. Le mode nocturne change les timbres et la
+densité percussive sans désynchroniser la partition.
+
+L’immersion implique aussi le silence : aucune lecture avant le premier geste,
+fondus courts à la pause, silence du mixage à zéro, voix et connexions bornées.
+La démonstration dans les réglages est le seul son autorisé explicitement
+pendant cette pause. Les échantillons sont mesurés dans un vrai moteur Web Audio,
+mais cela ne remplace pas une séance d’écoute humaine.
+
 ## Les Contrats Préservés
 
 ```mermaid
