@@ -805,7 +805,7 @@
   newPlaces.push(
     {
       id: 16, key: 'colonne-des-saisons', journeyAct: 3, name: 'La colonne des saisons',
-      subtitle: 'Le ciel se rejoint un palier à la fois.', theme: 'sky', width: 2000, height: 2100,
+      subtitle: 'Le ciel se rejoint un palier à la fois.', theme: 'shaft', width: 2000, height: 2100,
       medalTargets: { gold: 105, silver: 170 }, spawn: { x: 150, y: 1754 },
       exit: { x: 700, y: 110, w: 70, h: 100, open: true },
       goal: 'Remonte le jardin suspendu jusqu’à sa couronne.',

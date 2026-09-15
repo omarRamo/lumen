@@ -32,7 +32,14 @@
     secret: { ...THEMES.sunset, sky: ['#c8a7b8', '#dfc4c6', '#ede2c9'], sea: '#97b9b0',
       rock: '#536470', shade: '#2c3b48', facet: '#80868a', grass: '#bfd8ad', rim: '#f1edbf' },
     eclipse: { ...THEMES.sunset, sky: ['#6b7e89', '#99a6a7', '#c5c9b5'], sea: '#749b9e',
-      rock: '#3c5c66', shade: '#2c434e', facet: '#67838a', grass: '#b2cdb6', rim: '#eeebbd' }
+      rock: '#3c5c66', shade: '#2c434e', facet: '#67838a', grass: '#b2cdb6', rim: '#eeebbd' },
+    // Un puits de racines, et non le ciel ouvert : l'écorce est proche, la
+    // lumière vient d'en haut. Les trois bandes vont du fond sombre vers la
+    // couronne ; `rootShaft` les fait glisser avec la montée.
+    shaft: { ...THEMES.dawn, sky: ['#dbe7c2', '#8ea78c', '#3e4f4a'], sea: '#3c4f4a',
+      far: '#54655c', middle: '#495a51', rock: '#3a4a45', shade: '#25322f', facet: '#5b6f62',
+      grass: '#c2dca0', rim: '#f2f6cf', leaf: '#33584a', lightLeaf: '#87ab7e', coral: '#eaa76e',
+      stone: '#dfd9c0' }
   };
   const CAMPAIGN_NIGHT_THEMES = {
     meadow: { ...NIGHT_THEMES.dawn },
@@ -49,7 +56,11 @@
     secret: { ...NIGHT_THEMES.sunset, sky: ['#3c3541', '#695965', '#ab8c8d'], sea: '#627f80',
       rock: '#414859', shade: '#2c3443', facet: '#716e7f', grass: '#b6c99f', rim: '#f1e6b1', coral: '#f2b19e' },
     eclipse: { ...NIGHT_THEMES.dawn, sky: ['#152b33', '#355058', '#708883'], sea: '#38616b',
-      rock: '#294550', shade: '#1c303c', facet: '#506c77', grass: '#96baa5', rim: '#e6dfb3', coral: '#e9b78d' }
+      rock: '#294550', shade: '#1c303c', facet: '#506c77', grass: '#96baa5', rim: '#e6dfb3', coral: '#e9b78d' },
+    shaft: { ...NIGHT_THEMES.dawn, sky: ['#5e7563', '#33463f', '#131c1c'], sea: '#182220',
+      far: '#25322d', middle: '#1f2b27', rock: '#1a2422', shade: '#101715', facet: '#2f3f37',
+      grass: '#8fb47c', rim: '#d9e6b4', leaf: '#1e3a31', lightLeaf: '#5b7d60', coral: '#e0a173',
+      stone: '#9aa48c', night: true }
   };
   const campaignPalette = (theme, appearance = global.LumenAppearance?.current) => {
     const themes = appearance === 'dark' ? CAMPAIGN_NIGHT_THEMES : CAMPAIGN_THEMES;

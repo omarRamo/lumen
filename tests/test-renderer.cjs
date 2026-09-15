@@ -149,7 +149,8 @@ test('The eight platform types share terrain and retain contrast in every day an
         baseX: 100, type, active: true, direction: -1 }, 1, palette);
     }
   }
-  assert.equal(terrainCalls, 8 * 8 * 2);
+  // Dérivé du catalogue, pas figé : un thème ajouté est couvert sans rien toucher.
+  assert.equal(terrainCalls, types.length * Object.keys(Art.CAMPAIGN_THEMES).length * 2);
 });
 
 test('Every particle shape and both projectile kinds draw', () => {

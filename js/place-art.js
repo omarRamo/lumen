@@ -6,6 +6,15 @@
   const Art = global.LumenArt;
   const ready = new Set(['ride','escort','chain','river','ascent','rain']);
   const hash = n => { const value=Math.sin(n*127.1+311.7)*43758.5453;return value-Math.floor(value); };
+  const clamp01 = value => Math.max(0, Math.min(1, value));
+  const random = hash;
+  /** Mélange deux couleurs #rrggbb. Sert à faire GLISSER une palette avec le
+   *  mouvement — ici, le ciel qui s'ouvre au fur et à mesure de l'ascension. */
+  function mix(from, to, amount) {
+    const parse = value => [1,3,5].map(i => parseInt(value.slice(i,i+2),16));
+    const a=parse(from), b=parse(to), k=clamp01(amount);
+    return '#' + a.map((channel,i)=>Math.round(channel+(b[i]-channel)*k).toString(16).padStart(2,'0')).join('');
+  }
   function oval(c,x,y,rx,ry,color,rotation=0) { c.beginPath();c.ellipse(x,y,Math.max(.01,rx),Math.max(.01,ry),rotation,0,TAU);c.fillStyle=color;c.fill(); }
   function stroke(c,points,color,width=2) { c.beginPath();points.forEach((point,index)=>index?c.lineTo(...point):c.moveTo(...point));c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(); }
   function star(c,x,y,r,color) { c.beginPath();c.moveTo(x,y-r);c.quadraticCurveTo(x+r*.2,y-r*.2,x+r,y);c.quadraticCurveTo(x+r*.2,y+r*.2,x,y+r);c.quadraticCurveTo(x-r*.2,y+r*.2,x-r,y);c.quadraticCurveTo(x-r*.2,y-r*.2,x,y-r);c.fillStyle=color;c.fill(); }
@@ -65,32 +74,91 @@
     if(kind(game)==='rain')rainSky(renderer,game,p,t);
     c.restore();return true;
   }
-  function rootShaft(renderer,game,p) {
-    const {c,w,h}=sky(renderer,p,p.sky[0],p.sky[1]),camY=game.camera?.y||0;
-    // The tall walls continue beyond the frame. Bark strata move vertically
-    // with the ascent; the open crown becomes visible near the actual summit.
-    c.save();c.globalAlpha=.29;c.fillStyle=p.middle;
+  function rootShaft(renderer,game,p,t) {
+    // La colonne est le seul lieu vraiment vertical du jeu. Tout ici sert une
+    // seule chose : qu'on SENTE qu'on monte. Le ciel s'ouvre avec l'altitude,
+    // les parois se resserrent en bas, et les strates d'écorce défilent.
+    const h0=game.level?.height||2100,view=renderer.height;
+    const camY=game.camera?.y||0,span=Math.max(1,h0-view);
+    // 0 au fond du puits, 1 sous la couronne.
+    const rise=clamp01(1-camY/span);
+    const c=renderer.ctx,w=renderer.width,h=view;
+    const gradient=c.createLinearGradient(0,0,0,h);
+    gradient.addColorStop(0,mix(p.sky[1],p.sky[0],rise));
+    gradient.addColorStop(.55,mix(p.sky[2],p.sky[1],rise*.85));
+    gradient.addColorStop(1,mix(p.shade,p.sky[2],rise*.6));
+    c.fillStyle=gradient;c.fillRect(0,0,w,h);
+
+    // Les parois. Elles se referment vers le fond et s'écartent vers le haut :
+    // l'ouverture du cadrage raconte l'ascension autant que la couleur.
+    const close=.10+(1-rise)*.11;
+    c.save();c.globalAlpha=.88;
     for(const side of [-1,1]) {
       c.save();c.translate(side<0?0:w,0);c.scale(side<0?1:-1,1);
-      c.beginPath();c.moveTo(0,0);c.lineTo(w*.13,0);c.bezierCurveTo(w*.25,h*.27,w*.07,h*.5,w*.2,h*.75);c.lineTo(w*.15,h);c.lineTo(0,h);c.fill();
-      for(let ridge=0;ridge<4;ridge++) {
-        const x=25+ridge*30;c.strokeStyle=p.facet;c.lineWidth=2+ridge*.6;c.beginPath();c.moveTo(x,-10);c.bezierCurveTo(x+25,h*.33,x-9,h*.7,x+17,h+10);c.stroke();
+      c.fillStyle=p.middle;
+      c.beginPath();c.moveTo(0,0);c.lineTo(w*close*.78,0);
+      c.bezierCurveTo(w*(close+.09),h*.27,w*(close-.04),h*.5,w*(close+.06),h*.75);
+      c.lineTo(w*close,h);c.lineTo(0,h);c.fill();
+      // L'écorce : des nervures qui montent, plus serrées près du bord.
+      for(let ridge=0;ridge<5;ridge++) {
+        const x=16+ridge*Math.max(18,w*close/5.5);
+        c.strokeStyle=ridge%2?p.facet:p.shade;c.globalAlpha=.55-ridge*.07;
+        c.lineWidth=3+ridge*.9;c.beginPath();c.moveTo(x,-10);
+        c.bezierCurveTo(x+22,h*.33,x-8,h*.7,x+15,h+10);c.stroke();
       }
+      c.globalAlpha=.88;
+      // Le liseré mousseux qui sépare la paroi du vide : c'est lui qui donne
+      // le bord franc, et qui défile visiblement quand on grimpe.
+      c.strokeStyle=p.lightLeaf;c.globalAlpha=.5;c.lineWidth=3;
+      c.beginPath();c.moveTo(w*close*.78,0);
+      c.bezierCurveTo(w*(close+.09),h*.27,w*(close-.04),h*.5,w*(close+.06),h*.75);
+      c.lineTo(w*close,h);c.stroke();
       c.restore();
     }
     c.restore();
-    const offset=camY*.32,step=195;
-    c.save();c.globalAlpha=.12;
+
+    // Les strates. Elles défilent avec la caméra — c'est la preuve du mouvement.
+    const offset=camY*.62,step=168;
+    c.save();
     for(let i=Math.floor(offset/step)-1;i<(offset+h)/step+1;i++) {
       const y=i*step-offset,side=i%2?1:-1;
-      c.strokeStyle=p.middle;c.lineWidth=15;c.beginPath();c.moveTo(side<0?0:w,y-30);c.bezierCurveTo(w*.35,y-70,w*.55,y+120,side<0?w:0,y+90);c.stroke();
-      for(let leaf=0;leaf<3;leaf++)petal(c,w*(.27+leaf*.19),y+leaf*20,26+leaf*9,side*.7,p.lightLeaf);
+      const depth=clamp01(1-Math.abs(y-h*.5)/(h*.75));
+      c.globalAlpha=.30+depth*.22;
+      c.strokeStyle=p.facet;c.lineWidth=13;
+      c.beginPath();c.moveTo(side<0?0:w,y-30);
+      c.bezierCurveTo(w*.35,y-70,w*.55,y+120,side<0?w:0,y+90);c.stroke();
+      c.globalAlpha=.42+depth*.28;
+      for(let leaf=0;leaf<3;leaf++) petal(c,w*(.24+leaf*.21),y+leaf*22,24+leaf*10,side*.7,p.lightLeaf);
     }
     c.restore();
-    if(camY<550) {
-      c.save();c.globalAlpha=.18*(1-Math.max(0,camY)/550);oval(c,w*.5,-30,w*.29,h*.24,p.rim);c.restore();
+
+    // Des motes qui descendent : lentes, discrètes, et toujours dans le même
+    // sens. Sans elles, un joueur immobile ne voit pas que le lieu est vertical.
+    if(!game.progress?.settings?.reducedEffects) {
+      c.save();c.globalAlpha=.30;c.fillStyle=p.rim;
+      for(let i=0;i<26;i++) {
+        const seed=random(i*7.3),x=seed*w;
+        const y=((random(i*3.1)*h)+t*(14+seed*22)+camY*.25)%(h+40)-20;
+        c.beginPath();c.arc(x,y,1+seed*1.6,0,TAU);c.fill();
+      }
+      c.restore();
+    }
+
+    // La couronne : elle n'apparaît qu'en haut, et elle est la récompense.
+    if(rise>.55) {
+      const open=(rise-.55)/.45;
+      c.save();c.globalAlpha=.34*open;
+      oval(c,w*.5,-40+open*70,w*(.22+open*.14),h*(.2+open*.1),p.rim);
+      c.globalAlpha=.5*open;c.strokeStyle=p.rim;c.lineWidth=2;
+      for(let ray=0;ray<7;ray++) {
+        const angle=-Math.PI/2+(ray-3)*.26;
+        c.beginPath();c.moveTo(w*.5,-10+open*40);
+        c.lineTo(w*.5+Math.cos(angle)*w*.34,-10+open*40+Math.sin(angle)*h*.4+h*.34);c.stroke();
+      }
+      c.restore();
     }
   }
+
   function rainSky(renderer,game,p,t) {
     const {c,w,h}=sky(renderer,p),cam=game.camera?.x||0;
     // Long, low weather banks and open air below. Only the playable cloud
@@ -259,8 +327,30 @@
     stroke(c,[[w*.52,79],[w*.57,77]],p.shade,2);
     for(let i=0;i<7;i++) {const px=-w*.43+i*w*.13;petal(c,px,15,10+(i%3)*4,(i-3)*.1,p.grass);}
     c.restore();
-    c.save();c.fillStyle=p.grass;c.beginPath();c.roundRect(x,y,w,18,6);c.fill();
-    stroke(c,[[x,y],[x+w,y]],p.rim,4);stroke(c,[[x+2,y+4],[x+w-2,y+4]],p.shade,2);
+    // La surface d'atterrissage EST le dos de la bête : une carapace mousseuse,
+    // dans ses couleurs à elle, et non une dalle d'herbe posée dessus. La boîte
+    // de collision ne bouge pas d'un pixel ; seul le dessin change.
+    c.save();
+    c.fillStyle=p.facet;c.beginPath();c.roundRect(x,y,w,18,7);c.fill();
+    // Les écailles du dos, plus serrées vers la tête : elles donnent le sens
+    // de la monture sans qu'aucun texte ne l'explique.
+    c.save();c.beginPath();c.roundRect(x,y,w,18,7);c.clip();
+    for(let plate=0;plate<7;plate++) {
+      const px=x+w*(.06+plate*.145),radius=13-plate*.7;
+      c.globalAlpha=.5;oval(c,px,y+15,radius,9,p.middle);
+      c.globalAlpha=.32;oval(c,px-2,y+13,radius*.62,5,p.lightLeaf);
+    }
+    c.restore();
+    // La mousse du dos : le liseré clair devient la ligne où la mousse rencontre
+    // l'air. Il reste le repère d'atterrissage le plus net de l'image.
+    stroke(c,[[x,y],[x+w,y]],p.rim,4);
+    c.save();c.globalAlpha=.85;
+    for(let tuft=0;tuft<9;tuft++) {
+      const tx=x+4+tuft*((w-8)/8),lean=((tuft%3)-1)*.42;
+      petal(c,tx,y-1,8+(tuft%3)*3,lean-Math.PI/2,p.grass);
+    }
+    c.restore();
+    stroke(c,[[x+2,y+5],[x+w-2,y+5]],p.shade,1.5);
     Art.platformMarks(c,deck,p,t);c.restore();
   }
   function platform(c,object,p,t,game) {
