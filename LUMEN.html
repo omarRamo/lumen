@@ -379,7 +379,7 @@ body .touch-controls button svg { width: 22px; height: 22px; flex-shrink: 0; }
 body:not(.song-playing) .touch-controls button { display: flex; align-items: center; justify-content: center; background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
 body:not(.song-playing) .touch-controls .touch-jump { background: var(--lumen-strong); color: var(--lumen-on-strong); }
 body:not(.song-playing) .touch-controls .touch-action { background: var(--lumen-coral); color: #453b3c; }
-body .chapter-pill { display: flex; align-items: center; gap: 10px; position: static; transform: none; min-width: 0; max-width: 340px; justify-self: center; text-align: left; background: none; padding: 8px 0; box-shadow: none; border: 0; }
+body .chapter-pill { display: flex; align-items: center; gap: 10px; position: static; transform: none; min-width: 0; max-width: 340px; justify-self: center; text-align: left; background: var(--lumen-glass); padding: 8px 12px; border-radius: 8px; box-shadow: none; border: 0; }
 body .hud [hidden] { display: none !important; }
 body .chapter-pill>span { font: 500 22px var(--serif); color: var(--lumen-muted); }
 body .chapter-pill strong { font: 500 18px/1.2 var(--serif); white-space: normal; }
@@ -839,6 +839,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
 :root[data-appearance="dark"] .song-settings-row select, :root[data-appearance="dark"] .language-setting select {
   background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line);
 }
+
 </style>
   <style>
 /* A sky, never a grid of chapter cards. The geometry carries the journey. */
