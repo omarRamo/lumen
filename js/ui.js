@@ -252,15 +252,7 @@
     document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',translate(game.audio.muted?'Activer le son':'Couper le son'));});
   }
   function chapterArt(theme, index) {
-    const colors={meadow:['#dce4bd','#bdd0a5','#5f8e7e','#f8e7b4'],cavern:['#a3b6c5','#7a95af','#49647c','#d1bbee'],tide:['#bbdad1','#81b5b0','#4f8f92','#ffe1a4'],sky:['#eee2c9','#bad1c7','#809d99','#ffedbb'],forge:['#d59a91','#af7881','#785a6b','#f8c093'],frost:['#d7e8e1','#a6c5ce','#6a929f','#faf8dd'],secret:['#e6bdce','#c39bb9','#947895','#ffe6af'],eclipse:['#697f8a','#4b636f','#314a59','#f8d393']};
-    const [sky,far,land,moon]=colors[theme]||colors.meadow;
-    let special='';
-    if(theme==='cavern')special='<path d="M0 0h260l-27 28-17-18-24 34-27-37-39 18-18-19-43 30-20-13L0 43Z" fill="'+land+'" opacity=".55"/><path d="m63 62 7-35 12 35-10 8Zm111 8 8-30 12 29-10 10Z" fill="'+moon+'" opacity=".65"/>';
-    if(theme==='tide')special='<path d="M0 77q30-12 60 0t60 0t60 0t80 0v35H0" fill="#70abb6" opacity=".7"/><path d="M0 86q30-8 60 0t60 0t60 0t80 0" fill="none" stroke="#e8eed0" opacity=".5"/>';
-    if(theme==='forge')special='<path d="m100 84 28-58 33 58" fill="'+land+'"/><path d="m118 47 10-21 12 20-11-5Z" fill="'+moon+'"/><path d="M0 103q40-14 85-2t90 0t85 0v12H0" fill="#eaaa82"/>';
-    if(theme==='eclipse')special='<circle cx="177" cy="27" r="19" fill="'+moon+'"/><circle cx="171" cy="23" r="17" fill="'+sky+'"/><path d="M113 86V48l8 5 8-16 8 16 9-5v38" fill="'+land+'"/>';
-    const clouds=theme==='sky'?'<path d="M0 64q45-18 81-2t79-6t100 0v18H0" fill="#fff8e5" opacity=".5"/>':'';
-    return `<svg viewBox="0 0 260 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="260" height="110" fill="${sky}"/><circle cx="191" cy="31" r="${theme==='eclipse'?0:19}" fill="${moon}" opacity=".8"/><path d="M-20 83Q30 26 74 71T151 50T285 74v50H-20" fill="${far}"/>${clouds}<path d="M-15 98Q37 54 95 88T187 78T280 79v50H-15" fill="${land}" opacity=".6"/><path d="M68 73h101l-12 17-30 12-45-13Z" fill="${land}"/><path d="M67 71q50-9 103 0v5H67" fill="${moon}" opacity=".75"/><path d="M111 72V56a12 12 0 0 1 24 0v16" fill="none" stroke="${moon}" stroke-width="5"/><path d="m32 36 2-6 2 6 6 2-6 2-2 6-2-6-6-2Z" fill="${moon}" opacity=".7"/>${special}</svg>`;
+    return `<canvas data-chapter-preview="${index}" width="640" height="300" aria-hidden="true"></canvas>`;
   }
   function renderMap() {
     const chapters=window.LUMEN_LEVELS.map((level,index)=>({level,index})).filter(({level})=>!level.hub);
@@ -277,6 +269,16 @@
       const label=translate('Chapitre {index}, {name}, {status}',{index:rank+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
       return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(chapters.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
     }).join('');
+    for (const canvas of $('level-grid').querySelectorAll('[data-chapter-preview]')) {
+      const level = window.LUMEN_LEVELS[Number(canvas.dataset.chapterPreview)];
+      const renderer = new window.LumenRenderer(canvas); renderer.resize(640, 300);
+      renderer.draw({ ...game, level, song: null, mode: 'playing', time: 3,
+        player: { ...game.player, x: 180, y: 554, grounded: true, vx: 0, vy: 0, dead: false, gliding: false,
+          anim: 0, power: null, invuln: 0, landTimer: 0, jumpTimer: 0, dashTime: 0, slide: false },
+        camera: { x: 0, y: 0, shake: 0 }, platforms: level.platforms.map(platform => ({ ...platform, active: platform.type !== 'echo' })),
+        collectibles: level.collectibles, wakeables: [], waves: [], particles: [], floatingTexts: [],
+        enemies: [], hazards: [], characters: [], checkpoints: [], boss: null, secrets: [], exit: level.exit }, 0);
+    }
   }
   function updateHud(dt) {
     if (game.song) { window.LumenSongUI?.update(dt); return; }
@@ -287,9 +289,9 @@
     if(key!==lastHud) {
       lastHud=key;$('hearts').innerHTML=Array.from({length:3},(_,i)=>`<span class="${i<p.hp?'':'empty'}">♥</span>`).join('');
       $('hearts').setAttribute('aria-label',translate('{hp} points de vie sur 3',{hp:p.hp}));
-      $('lives').textContent=translate('VIES : {count}',{count:Math.max(0,game.lives)});
-      $('score').textContent=String(game.score).padStart(6,'0');$('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
-      $('star-count').innerHTML=stars(game.levelStars,totalFragments);$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
+      $('remaining-lives').textContent=translate('Souffles restants : {count}',{count:Math.max(0,game.lives)});
+      $('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
+      $('star-count').textContent=game.levelStars+' / '+totalFragments;$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
       $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=translate(game.level.name);
       $('chapter-caption').textContent=translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
     }

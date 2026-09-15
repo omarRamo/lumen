@@ -1,75 +1,6 @@
 (function (global) {
   'use strict';
-  const TAU = Math.PI * 2;
-  const THEMES = {
-    dawn: { sky: ['#93c2df', '#d0e3df', '#f6e6c7'], sea: '#83bdbd', far: '#9bafba', middle: '#528c89',
-      rock: '#336e70', shade: '#24565d', facet: '#518b87', grass: '#c3df9f', rim: '#eaf1c1', leaf: '#276b63', lightLeaf: '#78b28e', coral: '#ef9679', stone: '#e9e5d3' },
-    noon: { sky: ['#72bade', '#b7e1e9', '#e3f2ec'], sea: '#65b6c9', far: '#84bdc3', middle: '#558f9c',
-      rock: '#3d737f', shade: '#2b555f', facet: '#64929a', grass: '#a3dec9', rim: '#e2f5d9', leaf: '#397e82', lightLeaf: '#84c7b6', coral: '#ed9db3', stone: '#e4e7df' },
-    sunset: { sky: ['#e6a5a5', '#f7c7aa', '#f4e3c3'], sea: '#83b9b3', far: '#9eb9b0', middle: '#62958f',
-      rock: '#37676d', shade: '#274f59', facet: '#588686', grass: '#a8d6b8', rim: '#eee6b1', leaf: '#326e67', lightLeaf: '#78ac8c', coral: '#efbc74', stone: '#e8ddc5' }
-  };
-  const NIGHT_THEMES = {
-    dawn: { ...THEMES.dawn, sky: ['#142e32', '#355657', '#877576'], sea: '#427c7f', far: '#678483', middle: '#315d64',
-      rock: '#294b54', shade: '#203b46', facet: '#466a72', grass: '#83b7a2', rim: '#c5e5bc', leaf: '#356a69', lightLeaf: '#6c9e85', coral: '#f4a386', stone: '#bcc9b8', cloud: '#8dada7', night: true },
-    noon: { ...THEMES.noon, sky: ['#172c38', '#3b5e68', '#839d9b'], sea: '#457f93', far: '#728f9c', middle: '#375c70',
-      rock: '#2b475d', shade: '#203549', facet: '#52748c', grass: '#8ebfab', rim: '#dbebbe', leaf: '#416e80', lightLeaf: '#7ab6ae', coral: '#f2a3b7', stone: '#b9cbcb', cloud: '#9ebcbe', night: true },
-    sunset: { ...THEMES.sunset, sky: ['#352e38', '#64505b', '#aa8179'], sea: '#538881', far: '#909b98', middle: '#3d6770',
-      rock: '#364e5b', shade: '#293a49', facet: '#657c7e', grass: '#9ebc9d', rim: '#e3dbab', leaf: '#446967', lightLeaf: '#81a08a', coral: '#f3ba85', stone: '#c5c4ae', cloud: '#c0a7ad', night: true }
-  };
-  const paletteFor = (sky, appearance = global.LumenAppearance?.current) => (appearance === 'dark' ? NIGHT_THEMES : THEMES)[sky] || (appearance === 'dark' ? NIGHT_THEMES.dawn : THEMES.dawn);
-  const random = value => { const result = Math.sin(value * 127.1 + 311.7) * 43758.5453; return result - Math.floor(result); };
-  const ellipse = (ctx, x, y, width, height, color, angle = 0) => {
-    ctx.beginPath(); ctx.ellipse(x, y, Math.max(.01, width), Math.max(.01, height), angle, 0, TAU);
-    ctx.fillStyle = color; ctx.fill();
-  };
-  function path(ctx, points, color) {
-    ctx.beginPath(); points.forEach((point, index) => index ? ctx.lineTo(...point) : ctx.moveTo(...point));
-    ctx.closePath(); ctx.fillStyle = color; ctx.fill();
-  }
-  function stroke(ctx, points, color, width = 2) {
-    ctx.beginPath(); points.forEach((point, index) => index ? ctx.lineTo(...point) : ctx.moveTo(...point));
-    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
-  }
-  function leaf(ctx, x, y, size, angle, color) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(angle); ctx.fillStyle = color;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(-size * .6, -size * .4, -size * .5, -size, 0, -size * 1.5);
-    ctx.bezierCurveTo(size * .5, -size, size * .6, -size * .4, 0, 0); ctx.fill(); ctx.restore();
-  }
-  function star(ctx, x, y, size, color) {
-    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x, y - size);
-    ctx.quadraticCurveTo(x + size * .18, y - size * .18, x + size, y);
-    ctx.quadraticCurveTo(x + size * .18, y + size * .18, x, y + size);
-    ctx.quadraticCurveTo(x - size * .18, y + size * .18, x - size, y);
-    ctx.quadraticCurveTo(x - size * .18, y - size * .18, x, y - size); ctx.fill();
-  }
-  function sprite(renderer, key, width, height, paint) {
-    if (!renderer.songAssets.has(key)) {
-      const surface = document.createElement('canvas'); surface.width = Math.ceil(width); surface.height = Math.ceil(height);
-      paint(surface.getContext('2d')); renderer.songAssets.set(key, surface);
-    }
-    return renderer.songAssets.get(key);
-  }
-  function material(ctx, x, y, width, height, kind, palette, variation = 0) {
-    ctx.save(); ctx.globalCompositeOperation = 'source-atop';
-    const marks = Math.min(4200, Math.ceil(width * height / 62));
-    for (let index = 0; index < marks; index++) {
-      const horizontal = x + random(index + variation * 3) * width;
-      const vertical = y + random(index * 3 + variation + 928) * height;
-      const length = .7 + random(index + 755) * (kind === 'wood' ? 15 : 5);
-      ctx.globalAlpha = .07 + random(index + 383) * .11;
-      stroke(ctx, [[horizontal, vertical], [horizontal + (kind === 'wood' ? 1.8 : length), vertical + (kind === 'wood' ? length : -.8)]],
-        index % 3 ? palette.rim : palette.shade, index % 5 ? .7 : 1.4);
-    }
-    if (kind === 'stone') for (let band = 0; band < height / 23; band++) {
-      const baseline = y + band * 23;
-      ctx.globalAlpha = .18;
-      const points = Array.from({ length: Math.ceil(width / 35) + 1 }, (_, index) =>
-        [x + index * 35, baseline + Math.sin(index * .6 + band + variation) * 7]);
-      stroke(ctx, points, band % 3 ? palette.facet : palette.rim, .8);
-    }
-    ctx.restore();
-  }
+  const { TAU, THEMES, NIGHT_THEMES, paletteFor, random, ellipse, path, stroke, leaf, star, sprite, material, tree, terrain } = global.LumenArt;
   function stitchedBanner(ctx, x, y, palette) {
     ctx.save(); ctx.translate(x, y);
     const outline = [[-28,0],[28,0],[25,80],[0,98],[-25,80]];
@@ -87,51 +18,6 @@
     for (const side of [-1,1]) leaf(ctx, side*8,66,10,side*.65,'#fff2c590');
     stroke(ctx, [[0,98],[0,109]], palette.stone, 1); ellipse(ctx,0,110,2,3,'#efd29a');
     ctx.restore();
-  }
-  function cloud(ctx, x, y, size, opacity = 1, color = '#f9fbed') {
-    ctx.save(); ctx.translate(x, y); ctx.scale(size, size); ctx.globalAlpha = opacity;
-    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(-105, 15);
-    ctx.bezierCurveTo(-147, 6, -132, -21, -91, -21); ctx.bezierCurveTo(-83, -53, -35, -50, -24, -33);
-    ctx.bezierCurveTo(2, -66, 57, -45, 61, -21); ctx.bezierCurveTo(121, -24, 154, 10, 99, 20);
-    ctx.bezierCurveTo(40, 32, -65, 25, -105, 15); ctx.fill();
-    stroke(ctx, [[-97, 18], [-50, 22], [30, 23], [86, 18]], '#c1ded45c', 2);
-    ctx.restore();
-  }
-  function tree(ctx, palette) {
-    ctx.translate(230, 416);
-    ctx.strokeStyle = palette.shade; ctx.lineWidth = 28; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(0, 5); ctx.bezierCurveTo(-34, -80, 29, -143, -12, -260); ctx.stroke();
-    ctx.strokeStyle = palette.facet; ctx.lineWidth = 11;
-    ctx.beginPath(); ctx.moveTo(-6, 0); ctx.bezierCurveTo(-22, -84, 20, -137, -18, -241); ctx.stroke();
-    for (let index = 0; index < 7; index++) {
-      const direction = index % 2 ? 1 : -1, endX = direction * (80 + random(index) * 85), endY = -170 - random(index + 2) * 130;
-      ctx.strokeStyle = palette.shade; ctx.lineWidth = 10 - index * .8;
-      ctx.beginPath(); ctx.moveTo(0, -82 - index * 18); ctx.quadraticCurveTo(endX * .85, endY + 38, endX, endY); ctx.stroke();
-      const colors = [palette.leaf, palette.lightLeaf, palette.coral, palette.grass];
-      for (let petal = 0; petal < 12; petal++) {
-        const angle = petal / 12 * TAU, length = 30 + random(index * 30 + petal) * 35;
-        leaf(ctx, endX + Math.cos(angle) * 16, endY + Math.sin(angle) * 12, length,
-          angle + Math.PI / 2, colors[(index + (petal % 3 === 0 ? 1 : 0)) % colors.length]);
-        stroke(ctx, [[endX + Math.cos(angle) * 18, endY + Math.sin(angle) * 13],
-          [endX + Math.cos(angle) * (length + 9), endY + Math.sin(angle) * (length + 8)]], palette.rim + '35', .75);
-      }
-      for (let mark = 0; mark < 3; mark++) {
-        ellipse(ctx, endX + mark * 7 - 6, endY + 5, 2.3, 3.6, '#f7edb4');
-      }
-      if (index % 2 === 0) {
-        ctx.strokeStyle = palette.lightLeaf; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(endX, endY + 20); ctx.quadraticCurveTo(endX + 23, endY + 78, endX - 2, endY + 119); ctx.stroke();
-        for (let vine = 0; vine < 6; vine++) leaf(ctx, endX + Math.sin(vine * .6) * 10, endY + 35 + vine * 13, 10, vine % 2 ? 1 : -1, palette.lightLeaf);
-      }
-    }
-    for (let root = 0; root < 5; root++) {
-      stroke(ctx, [[-6, -17], [-25 + root * 13, -3], [-60 + root * 29, 8]], palette.shade, 5);
-    }
-    material(ctx, -225, -406, 450, 418, 'wood', palette, 18);
-    for (let ring = 0; ring < 5; ring++) {
-      ctx.strokeStyle = palette.rim + '48'; ctx.lineWidth = .8; ctx.beginPath();
-      ctx.ellipse(-9, -95, 4 + ring * 2, 9 + ring * 4, -.12, 0, TAU); ctx.stroke();
-    }
   }
   function arch(ctx, palette) {
     ctx.translate(180, 322);
@@ -171,22 +57,6 @@
     path(ctx, [[0, -171], [9, -156], [0, -132], [-9, -156]], palette.coral);
     ellipse(ctx, 0, -154, 3, 6, '#fff9d6');
   }
-  function distantIsland(ctx, x, y, width, color, palette, variant) {
-    path(ctx, [[x - width * .5, y], [x + width * .5, y - 4], [x + width * .28, y + width * .22],
-      [x + width * .05, y + width * .34], [x - width * .22, y + width * .24]], color);
-    ellipse(ctx, x, y - 2, width * .51, width * .04, palette.grass);
-    path(ctx, [[x - width * .12, y + 8], [x + width * .12, y], [x + width * .04, y + width * .31]], palette.rim + '25');
-    ctx.strokeStyle = color; ctx.lineWidth = Math.max(3, width * .022);
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - width * .06, y - width * .1, x + width * .06, y - width * .14, x, y - width * .25); ctx.stroke();
-    for (let index = 0; index < 6; index++) {
-      const angle = index / 6 * TAU;
-      leaf(ctx, x, y - width * .2, width * .15, angle, variant % 2 ? palette.lightLeaf : color);
-    }
-    if (variant % 3 === 0) {
-      ctx.globalAlpha *= .5; ctx.fillStyle = '#d9fbec'; ctx.fillRect(x + width * .2, y, width * .035, width * .8);
-      ctx.fillStyle = '#ffffff80'; ctx.fillRect(x + width * .2, y, 2, width * .7);
-    }
-  }
   function leviathan(ctx, x, y, size, time, palette, awakened) {
     ctx.save(); ctx.translate(x, y); ctx.scale(size, size);
     const wing = Math.sin(time * 1.1) * 14;
@@ -213,54 +83,7 @@
   }
   function background(renderer, game, palette, time) {
     const ctx = renderer.ctx, width = renderer.width, height = renderer.height, camera = game.camera.x;
-    const sky = ctx.createLinearGradient(0, 0, 0, height);
-    palette.sky.forEach((color, index) => sky.addColorStop(index / 2, color)); ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
-    const sunX = width * .74 - camera * .014, sunY = height * .235;
-    const moonRadius = Math.min(width, height) * .079;
-    if (palette.night) {
-      const skyDetails = sprite(renderer, 'night-sky:' + width + ':' + height, width, height, paint => {
-        for (let index = 0; index < 135; index++) {
-          const x = random(index + 444) * width, y = random(index + 892) * height * .55;
-          paint.globalAlpha = .25 + random(index + 94) * .55;
-          if (index % 13 === 0) star(paint, x, y, 2.8, '#fce4bb');
-          else ellipse(paint, x, y, .7, .7, '#e2efdf');
-        }
-        paint.globalAlpha = .35;
-        const pattern = [[.24,.18],[.29,.115],[.36,.145],[.395,.09],[.45,.16]];
-        stroke(paint, pattern.map(([x,y]) => [x * width, y * height]), '#d5e0c7', .7);
-        pattern.forEach(([x,y]) => star(paint, x * width, y * height, 2.5, '#fff0b9'));
-      });
-      ctx.drawImage(skyDetails, 0, 0);
-      ctx.save(); ctx.beginPath(); ctx.arc(sunX, sunY, moonRadius, 0, TAU); ctx.clip();
-      ctx.beginPath(); ctx.arc(sunX, sunY, moonRadius, 0, TAU);
-      ctx.arc(sunX + moonRadius * .47, sunY - moonRadius * .23, moonRadius * .88, 0, TAU);
-      ctx.fillStyle = '#f6e8c3'; ctx.fill('evenodd'); ctx.restore();
-    } else ellipse(ctx, sunX, sunY, moonRadius, moonRadius, '#fff4cf');
-    ctx.strokeStyle = '#fff8df7a'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(sunX, sunY, Math.min(width, height) * .105, -.6, 2.5); ctx.stroke();
-    for (let index = 0; index < 8; index++) {
-      const position = ((index * 347 + time * (2 + index % 3) - camera * .06) % (width + 500) + width + 500) % (width + 500) - 200;
-      cloud(ctx, position, height * (.19 + random(index + 40) * .3), .5 + random(index + 9) * .6, palette.night ? .35 : .7, palette.cloud);
-    }
-    const horizon = height * .59;
-    const water = ctx.createLinearGradient(0, horizon, 0, height);
-    water.addColorStop(0, palette.sea + '0a'); water.addColorStop(.4, palette.sea + '95'); water.addColorStop(1, palette.middle);
-    ctx.fillStyle = water; ctx.fillRect(0, horizon, width, height - horizon);
-    for (let layer = 0; layer < 3; layer++) {
-      const gap = [440, 610, 900][layer], factor = [.075, .14, .22][layer], offset = camera * factor;
-      for (let index = Math.floor(offset / gap) - 1; index < Math.floor((offset + width) / gap) + 2; index++) {
-        const islandWidth = [220, 330, 420][layer] + random(index + layer * 7) * 180;
-        ctx.save(); ctx.globalAlpha = [.25, .36, .44][layer];
-        distantIsland(ctx, index * gap - offset + random(index) * 100, height * [.51, .66, .91][layer] + random(index + 4) * 45,
-          islandWidth, layer ? palette.middle : palette.far, palette, index + layer);
-        ctx.restore();
-      }
-    }
-    for (let index = 0; index < 22; index++) {
-      const depth = random(index + 92), y = horizon + 22 + depth * (height - horizon);
-      const x = (random(index + 91) * (width + 220) + time * (3 + depth * 5) - camera * .035) % (width + 220) - 110;
-      stroke(ctx, [[x, y], [x + 15 + depth * 72, y]], '#f5f9e8' + (depth > .5 ? '35' : '60'), 1 + depth);
-    }
+      global.LumenArt.horizon(renderer, palette, time, camera);
     const awake = game.song.count === 3;
     leviathan(ctx, width * .56 + Math.sin(time * .12) * 26 - camera * .024,
       height * (width < height ? .245 : .31) + Math.sin(time * .75) * 9, Math.min(1.15, width / 900) * (awake ? 1.12 : 1), time, palette, awake);
@@ -271,61 +94,6 @@
       points.slice(0, game.song.count).forEach(point => star(ctx, point[0], point[1], 4, '#ffffef'));
       ctx.restore();
     }
-  }
-  function terrain(renderer, platform, palette) {
-    const ctx = renderer.ctx, width = platform.w, isGround = platform.type === 'ground';
-    if (!platform.active) {
-      ctx.save(); ctx.setLineDash([4, 9]); stroke(ctx, [[platform.x, platform.y], [platform.x + width, platform.y]], '#f2ffde80', 2); ctx.restore(); return;
-    }
-    if (platform.wakeId && platform.type === 'solid') {
-      ctx.save(); ctx.globalAlpha = platform.warning ? .4 : .83;
-      for (let index = 0; index < width; index += 26) {
-        path(ctx, [[platform.x + index, platform.y], [platform.x + index + 24, platform.y],
-          [platform.x + index + 21, platform.y + 12], [platform.x + index + 3, platform.y + 12]], '#ddf6d8');
-      }
-      stroke(ctx, [[platform.x, platform.y], [platform.x + width, platform.y]], '#fff9c9', 3); ctx.restore(); return;
-    }
-    const variant = Math.floor(platform.baseX || platform.x), depth = isGround ? 300 : 77;
-    const image = sprite(renderer, 'terrain:' + width + ':' + isGround + ':' + variant, width + 36, depth + 36, paint => {
-      paint.translate(18, 26);
-      const points = [[0, 0], [width, 0], [width - 18, depth * .29], [width * .85, depth * .69],
-        [width * .69, depth * .77], [width * .49, depth], [width * .34, depth * .73], [width * .11, depth * .7], [15, depth * .25]];
-      path(paint, points, palette.rock); paint.save(); paint.beginPath(); points.forEach((point, index) => index ? paint.lineTo(...point) : paint.moveTo(...point)); paint.closePath(); paint.clip();
-      for (let index = 0; index < Math.ceil(width / 85); index++) {
-        const x = index * 94 - 35, lower = depth * (.25 + random(index + variant) * .6);
-        path(paint, [[x, 10], [x + 130, 4], [x + 81, lower], [x + 35, depth + 40]], index % 2 ? palette.shade : palette.facet);
-        stroke(paint, [[x + 86, 31], [x + 54, lower * .7], [x + 55, lower]], palette.grass + '25', 1.5);
-      }
-      for (let index = 0; index < width / 13; index++) {
-        const x = random(index + variant) * width, y = 18 + random(index + 987) * depth * .62;
-        ellipse(paint, x, y, 1 + random(index) * 2.6, 1.1, palette.rim + '30');
-      }
-      material(paint, 0, 15, width, depth, 'stone', palette, variant);
-      if (isGround) for (let index = 0; index < width / 170; index++) {
-        const x = index*170 + 72, y = 45 + random(index+variant)*120;
-        stroke(paint, [[x-25,y-22],[x-8,y-3],[x-12,y+15],[x+9,y+35]], palette.shade+'bb',1.5);
-        stroke(paint, [[x-11,y+3],[x+9,y+8],[x+18,y+4]], palette.shade+'bb',1);
-        ellipse(paint,x+18,y+18,9,4,palette.grass+'18',-.3);
-      }
-      paint.restore();
-      path(paint, [[0, 0], [width, 0], [width - 9, 12], [width * .73, 18], [width * .4, 12], [12, 18]], palette.grass);
-      stroke(paint, [[1, 0], [width - 1, 0]], palette.rim, 4);
-      for (let index = 0; index < width / 16; index++) {
-        const x = 8 + index * 16, length = 5 + random(index + variant) * 15;
-        leaf(paint, x, 0, length, (random(index + 46) - .5) * 1.9, index % 5 ? palette.grass : palette.rim);
-        if (index % 7 === 0) {
-          stroke(paint, [[x, 0], [x + 2, -18]], palette.leaf, 1);
-          for (let petal = 0; petal < 4; petal++) ellipse(paint, x + Math.cos(petal * Math.PI / 2) * 3, -19 + Math.sin(petal * Math.PI / 2) * 3, 3.5, 2.5, palette.coral, petal);
-          ellipse(paint, x, -19, 1.8, 1.8, '#fff3bd');
-        }
-      }
-      for (let vine = 0; vine < Math.ceil(width / 125); vine++) {
-        const x = 30 + vine * 127, length = (isGround ? 48 : 20) + random(vine + variant) * 48;
-        stroke(paint, [[x, 12], [x + 5, length * .4], [x - 5, length]], palette.lightLeaf, 2);
-        for (let index = 0; index < length / 15; index++) leaf(paint, x, 16 + index * 14, 10, index % 2 ? 1 : -1, palette.lightLeaf);
-      }
-    });
-    ctx.drawImage(image, platform.x - 18, platform.y - 26);
   }
   function wisp(ctx, echo, time, found = false, night = false) {
     const x = found ? echo.followX : echo.x, y = (found ? echo.followY : echo.y) + Math.sin(time * 2.2 + echo.voice) * 5;
@@ -554,8 +322,7 @@
         ctx.rotate(time * .3); ctx.strokeStyle = '#fff2c49c'; ctx.lineWidth = 1.5; ctx.strokeRect(-17, -17, 34, 34);
         star(ctx, 0, 0, 17, '#fff9da'); star(ctx, 0, 0, 10, '#efb967');
       } else {
-        ellipse(ctx, 0, 0, 7, 9, '#f4c967', .25); ellipse(ctx, -1, -2, 3, 4.5, '#fff6c0', .25);
-        stroke(ctx, [[5, 0], [7, -15], [12, -12]], '#ffefb3', 2);
+        global.LumenArt.note(ctx, 0, 0, palette);
       }
       ctx.restore();
     }

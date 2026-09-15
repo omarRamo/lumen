@@ -11,6 +11,8 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
+const { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const browserTools = require('../tools/browser.cjs');
@@ -132,6 +134,69 @@ async function test(name, run) {
     assert.equal(await page.locator('#song-panel [data-appearance="dark"]').textContent(),'داكن');
     await page.screenshot({path:path.join(shots,'appearance-dark-arabic-settings.png')});
     assert.deepEqual(errors,[]);await context.close();
+  });
+
+  await test('Les huit plateformes ont des pixels contrastés et des formes distinctes en jour et en nuit', async () => {
+    const { page, context, errors } = await open('bureau', null, { song: true, source: true });
+    const gallery = path.join(root, 'docs', 'iteration-05', 'platforms');
+    fs.mkdirSync(gallery, { recursive: true });
+    const measurements = [];
+    for (const appearance of ['light', 'dark']) for (const theme of ['meadow', 'cavern', 'tide', 'sky', 'forge', 'frost', 'secret', 'eclipse']) {
+      const result = await page.evaluate(({ appearance, theme }) => {
+        document.getElementById('platform-gallery')?.remove();
+        const canvas = document.createElement('canvas'); canvas.id = 'platform-gallery';
+        canvas.style.cssText = 'position:fixed;inset:0;z-index:100;width:1440px;height:380px';
+        document.body.append(canvas);
+        const renderer = new window.LumenRenderer(canvas); renderer.resize(1440, 380);
+        const ctx = renderer.ctx, Art = window.LumenArt, palette = Art.campaignPalette(theme, appearance);
+        const types = Object.keys(Art.PLATFORM_MARKS), rows = [], shapes = [];
+        Art.horizon(renderer, palette, 2, 0, 1440, 380);
+        const luminance = (red, green, blue) => {
+          const channels = [red, green, blue].map(value => value / 255)
+            .map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+          return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+        };
+        const appearanceState = JSON.stringify(window.lumen.progress.settings);
+        for (const [index, type] of types.entries()) {
+          const platform = { x: 16 + index * 178, y: 190, w: 160, h: type === 'ground' ? 300 : 22,
+            type, baseX: 0, active: true, direction: 1 };
+          const before = ctx.getImageData(platform.x + 8, platform.y - 3, 144, 10).data;
+          renderer.platform(ctx, platform, 2, palette);
+          const after = ctx.getImageData(platform.x + 8, platform.y - 3, 144, 10).data;
+          let contrasted = 0;
+          for (let offset = 0; offset < before.length; offset += 4) {
+            const backdrop = luminance(before[offset], before[offset + 1], before[offset + 2]);
+            const surface = luminance(after[offset], after[offset + 1], after[offset + 2]);
+            if ((Math.max(backdrop, surface) + .05) / (Math.min(backdrop, surface) + .05) >= 3) contrasted++;
+          }
+          const maskCanvas = document.createElement('canvas'); maskCanvas.width = 180; maskCanvas.height = 180;
+          const mask = maskCanvas.getContext('2d'), saved = renderer.ctx;
+          renderer.ctx = mask;
+          renderer.platform(mask, { ...platform, x: 10, y: 30 }, 2, palette);
+          renderer.ctx = saved;
+          const pixels = mask.getImageData(0, 0, 180, 180).data;
+          let fingerprint = 2166136261;
+          for (let offset = 0; offset < pixels.length; offset += 4) {
+            const grey = Math.round(luminance(pixels[offset], pixels[offset + 1], pixels[offset + 2]) * 255);
+            fingerprint = Math.imul(fingerprint ^ grey ^ pixels[offset + 3], 16777619);
+          }
+          shapes.push(fingerprint);
+          rows.push({ type, contrasted, fingerprint });
+          ctx.font = '500 14px Outfit'; ctx.fillStyle = palette.night ? palette.rim : palette.shade;
+          ctx.fillText(type, platform.x + 8, 125);
+        }
+        return { theme, appearance, rows, distinct: new Set(shapes).size,
+          untouched: appearanceState === JSON.stringify(window.lumen.progress.settings) };
+      }, { appearance, theme });
+      assert.ok(result.untouched);
+      for (const row of result.rows) assert.ok(row.contrasted >= 144,
+        `${appearance}/${theme}/${row.type}: ${row.contrasted} reception pixels at 3:1`);
+      assert.equal(result.distinct, 8, appearance + '/' + theme + ': identical platform shapes');
+      await page.locator('#platform-gallery').screenshot({ path: path.join(gallery, appearance + '-' + theme + '.png') });
+      measurements.push(result);
+    }
+    fs.writeFileSync(path.join(gallery, 'measurements.json'), JSON.stringify(measurements, null, 2) + '\n');
+    assert.deepEqual(errors, []); await context.close();
   });
 
   await test('Le vrai rendu Web Audio produit trois thèmes distincts, sans saturation et avec silence intégral', async () => {
@@ -600,6 +665,16 @@ async function test(name, run) {
   });
 
   await test('L’édition portable démarre seule en file://, sans aucune requête externe', async () => {
+    const standalone = fs.mkdtempSync(path.join(os.tmpdir(), 'lumen-build-'));
+    try {
+      for (const file of ['index.html', 'style.css', 'song.css', 'icon.svg', 'assets', 'js', 'tools']) {
+        fs.cpSync(path.join(root, file), path.join(standalone, file), { recursive: true });
+      }
+      assert.equal(fs.existsSync(path.join(standalone, 'node_modules')), false);
+      const build = spawnSync(process.execPath, [path.join(standalone, 'tools', 'build.cjs')], { encoding: 'utf8', cwd: standalone });
+      assert.equal(build.status, 0, build.stderr);
+      assert.equal(fs.readFileSync(path.join(standalone, 'LUMEN.html'), 'utf8'), fs.readFileSync(path.join(root, 'LUMEN.html'), 'utf8'));
+    } finally { fs.rmSync(standalone, { recursive: true, force: true }); }
     const { page, context, errors } = await open();
     const requests = [];
     page.on('request', r => { if (!r.url().startsWith('file:') && !r.url().startsWith('data:')) requests.push(r.url()); });

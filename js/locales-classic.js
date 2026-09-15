@@ -1,4 +1,5 @@
 window.LumenI18n.add([
+  ['Souffles restants : {count}', 'Breaths remaining: {count}', 'Alientos restantes: {count}', 'الأنفاس المتبقية: {count}', '剩余气息：{count}'],
   ['ESPACE', 'SPACE', 'ESPACIO', 'المسافة', '空格'],
   ['MAJ', 'SHIFT', 'MAYÚS', 'Shift', 'Shift'],
   ['ÉCHAP', 'ESC', 'ESC', 'Esc', 'Esc'],

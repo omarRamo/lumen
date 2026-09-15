@@ -12,6 +12,57 @@
   font-display: swap;
   src: url('assets/fredoka.woff2') format('woff2');
 }
+:root { --font: Outfit, sans-serif; --serif: Fredoka, sans-serif; }
+body { --ink: var(--lumen-ink); --ink-light: var(--lumen-muted); --paper: var(--lumen-surface); --line: var(--lumen-line); }
+body :is(.screen, .hud, .masthead, .power-indicator, .dialogue, .quest-banner, .level-hint, .run-clock, .chapter-intro) *,
+body :is(.screen, .hud, .masthead, .power-indicator, .dialogue, .quest-banner, .level-hint, .run-clock, .chapter-intro) { letter-spacing: 0; }
+body .modal-card { background: var(--lumen-surface); color: var(--lumen-ink); border: 1px solid var(--lumen-line); border-radius: 8px; }
+body .modal-card h2 { font: 500 30px/1.2 var(--serif); }
+body :is(.modal-card, .screen) p { color: var(--lumen-muted); }
+body .button { border-radius: 6px; font-family: var(--font); letter-spacing: 0; }
+body .button.primary { background: var(--lumen-strong); color: var(--lumen-on-strong); border-color: var(--lumen-strong); }
+body .button.secondary { background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
+body :is(.run-mode-switch, .run-mode-switch button, .seg, .seg button, .route-branch, .offer-item, .level-card) { border-radius: 6px; }
+body :is(.route-branch, .offer-item, .level-card) { background: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line); }
+body :is(.run-clock, .power-indicator, .level-hint, .dialogue, .quest-banner) { background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); border-radius: 8px; }
+body .map-screen { background: var(--lumen-surface); }
+body .map-heading h2 { font: 500 36px/1.2 var(--serif); }
+body .card-content h3 { font: 500 20px/1.25 var(--serif); }
+body .card-art canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
+body :is(.result-medal, .result-fragments, .route-offer) { background: none; border: 0; box-shadow: none; border-radius: 0; }
+body .hud { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 20px; }
+body .hud.hidden { display: none; }
+body :is(.hud-left, .hud-right) { min-height: 48px; padding: 7px 12px; gap: 14px; border: 1px solid var(--lumen-line); border-radius: 8px; background: var(--lumen-glass); box-shadow: none; color: var(--lumen-ink); }
+body .hud-left img { flex: 0 0 29px; object-fit: contain; }
+body .hearts { display: flex; gap: 3px; font-size: 17px; }
+body .hud :is(.collect-counter, .chapter-pill) { color: var(--lumen-ink); }
+body .hud .collect-counter { display: flex; align-items: center; gap: 7px; }
+body .hud .collect-counter strong { font: 500 15px var(--font); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body .hud svg { display: block; width: 18px; height: 18px; }
+body .hud .song-icon { width: 34px; height: 34px; }
+body .touch-controls button svg { width: 22px; height: 22px; flex-shrink: 0; }
+body:not(.song-playing) .touch-controls button { display: flex; align-items: center; justify-content: center; background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
+body:not(.song-playing) .touch-controls .touch-jump { background: var(--lumen-strong); color: var(--lumen-on-strong); }
+body:not(.song-playing) .touch-controls .touch-action { background: var(--lumen-coral); color: #453b3c; }
+body .chapter-pill { position: static; transform: none; min-width: 0; max-width: 340px; justify-self: center; text-align: left; background: none; padding: 8px 0; box-shadow: none; border: 0; }
+body .chapter-pill>span { font: 500 22px var(--serif); color: var(--lumen-muted); }
+body .chapter-pill strong { font: 500 18px/1.2 var(--serif); white-space: normal; }
+body .chapter-pill small { font: 500 9px var(--font); }
+body .chapter-intro h2 { font: 500 34px/1.2 var(--serif); }
+@media (max-width: 700px) {
+  body .hud { gap: 6px; grid-template-columns: auto 1fr; left: 16px; right: 16px; top: max(18px, env(safe-area-inset-top)); }
+  body .hud-left { gap: 7px; padding: 7px 9px; }
+  body .hud-right { justify-self: end; gap: 10px; padding: 7px 9px; }
+  body .chapter-pill { grid-row: 2; grid-column: 1 / -1; justify-self: start; max-width: 100%; padding-top: 6px; }
+  body .chapter-pill strong { font-size: 18px; }
+  body .chapter-pill small { font-size: 8px; }
+  body .hud .collect-counter { gap: 5px; }
+  body .hud .collect-counter strong { font-size: 13px; }
+  body .quest-banner { top: 140px; }
+  body .chapter-intro h2 { font-size: 26px; }
+  body .map-heading h2 { font-size: 28px; }
+  body .modal-card h2 { font-size: 26px; }
+}
 .song-shell, .song-overlay {
   --song-ink: #234f55;
   --song-muted: #527b78;

@@ -50,7 +50,7 @@ function environment() {
   };
   const sandbox = { window, document, localStorage: { getItem: () => null, setItem() {} }, requestAnimationFrame() {}, console };
   const ctx = vm.createContext(sandbox);
-  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'renderer.js', 'levels.js', 'song.js', 'song-art.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
+  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'world-art.js', 'renderer.js', 'levels.js', 'song.js', 'song-art.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
   window.canvas = canvas;
   const game = new window.LumenGame(canvas);
   return { game, window, calls };
@@ -76,7 +76,7 @@ test('The title garden, the atlas pose and the portrait viewport all draw', () =
   }
   game.renderer.resize(420, 860);
   game.mode = 'playing'; game.renderer.draw(game, 1 / 60);
-  assert.equal(game.renderer.worldWidth, 600, 'Portrait play must narrow the viewport.');
+  assert.equal(game.renderer.worldWidth, 510, 'Portrait play shares the island framing.');
   game.renderer.resize(1280, 720);
 });
 
@@ -116,6 +116,40 @@ test('Every platform type, hazard and collectible has artwork', () => {
     game.platforms.forEach(p => { if (p.type === 'crumble' || p.type === 'vanish') p.active = !p.active; });
     game.renderer.draw(game, 1 / 60);
   }
+});
+
+test('The eight platform types share terrain and retain contrast in every day and night theme', () => {
+  const { game, window } = environment();
+  const Art = window.LumenArt, terrain = Art.terrain, types = Object.keys(Art.PLATFORM_MARKS);
+  let terrainCalls = 0;
+  Art.terrain = (...args) => { terrainCalls++; return terrain(...args); };
+  const luminance = color => {
+    const channels = color.slice(1).match(/.{2}/g).map(channel => parseInt(channel, 16) / 255)
+      .map(channel => channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4);
+    return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+  };
+  const contrast = (first, second) => (Math.max(luminance(first), luminance(second)) + .05) /
+    (Math.min(luminance(first), luminance(second)) + .05);
+  assert.equal(new Set(Object.values(Art.PLATFORM_MARKS)).size, 8);
+  game.loadLevel(0);
+  for (const appearance of ['light', 'dark']) for (const theme of Object.keys(Art.CAMPAIGN_THEMES)) {
+    const palette = Art.campaignPalette(theme, appearance);
+    assert.notDeepEqual(Art.CAMPAIGN_THEMES[theme], Art.CAMPAIGN_NIGHT_THEMES[theme]);
+    for (const type of types) {
+      const style = Art.platformStyle(type, palette);
+      for (const background of [...palette.sky, palette.sea, palette.far, palette.middle]) {
+        assert.ok(Math.max(...[style.body, style.rim].map(color => Math.abs(luminance(color) - luminance(background)))) >= .12,
+          `${appearance}/${theme}/${type}: silhouette does not separate from ${background}`);
+        assert.ok(Math.max(contrast(style.body, background), contrast(style.rim, background)) >= 3,
+          `${appearance}/${theme}/${type}: silhouette contrast against ${background}`);
+      }
+      assert.ok(contrast(style.rim, style.body) >= 3, `${appearance}/${theme}/${type}: landing rim`);
+      assert.ok(contrast(style.ink, style.surface) >= 3, `${appearance}/${theme}/${type}: behavior mark`);
+      game.renderer.platform(game.renderer.ctx, { x: 100, y: 480, w: 140, h: type === 'ground' ? 300 : 22,
+        baseX: 100, type, active: true, direction: -1 }, 1, palette);
+    }
+  }
+  assert.equal(terrainCalls, 8 * 8 * 2);
 });
 
 test('Every particle shape and both projectile kinds draw', () => {
