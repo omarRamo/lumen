@@ -191,7 +191,7 @@
       if(game.mode==='help')command('close-help');
       else if(game.mode==='paused')game.resume();
       else if(game.mode==='playing')game.pause();
-      else if(game.mode==='map')transition(()=>game.showHome());
+      else if(game.mode==='map')command('home');
       return;
     }
     if(action==='resume'){game.resume();return;}
@@ -224,7 +224,11 @@
     if(action==='dream-resume'){transition(()=>{if(!game.resumeExpedition()){game.mode='dream';showMode('dream');}});return;}
     if(action==='dream-again'){transition(()=>{if(!game.retryExpedition()){game.mode='dream';showMode('dream');}});return;}
     if(action==='route-go'){const kind=routeChoice,up=routeUpgrade;transition(()=>game.chooseRoute(kind,up));return;}
-    if(action==='home'){transition(()=>game.showHome());return;}
+    if(action==='home'){
+      if(new URLSearchParams(window.location.search).has('classic'))transition(()=>game.showHome());
+      else window.LumenSongUI.handle('song-return');
+      return;
+    }
     if(action==='map'){transition(()=>game.showMap());return;}
     if(action==='start'||action==='confirm') {
       if(game.mode==='home'){game.audio.unlock();transition(()=>startLevel(game.progress.finished?0:game.nextChapterIndex(),'explore'));}
@@ -259,9 +263,10 @@
     return `<svg viewBox="0 0 260 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="260" height="110" fill="${sky}"/><circle cx="191" cy="31" r="${theme==='eclipse'?0:19}" fill="${moon}" opacity=".8"/><path d="M-20 83Q30 26 74 71T151 50T285 74v50H-20" fill="${far}"/>${clouds}<path d="M-15 98Q37 54 95 88T187 78T280 79v50H-15" fill="${land}" opacity=".6"/><path d="M68 73h101l-12 17-30 12-45-13Z" fill="${land}"/><path d="M67 71q50-9 103 0v5H67" fill="${moon}" opacity=".75"/><path d="M111 72V56a12 12 0 0 1 24 0v16" fill="none" stroke="${moon}" stroke-width="5"/><path d="m32 36 2-6 2 6 6 2-6 2-2 6-2-6-6-2Z" fill="${moon}" opacity=".7"/>${special}</svg>`;
   }
   function renderMap() {
-    $('total-stars').textContent=window.LUMEN_LEVELS.reduce((sum,level)=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+window.LUMEN_LEVELS.reduce((n,l)=>n+l.collectibles.filter(c=>c.type==='star').length,0);
-    $('level-grid').innerHTML=window.LUMEN_LEVELS.map((level,i)=>{
-      const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(i+1).padStart(2,'0');
+    const chapters=window.LUMEN_LEVELS.map((level,index)=>({level,index})).filter(({level})=>!level.hub);
+    $('total-stars').textContent=chapters.reduce((sum,{level})=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+chapters.reduce((total,{level})=>total+level.collectibles.filter(item=>item.type==='star').length,0);
+    $('level-grid').innerHTML=chapters.map(({level,index:i},rank)=>{
+      const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(rank+1).padStart(2,'0');
       const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
       const medal=medals[r?.medal]?r.medal:r?.completed?'bronze':null;
       const targets=level.medalTargets;
@@ -269,8 +274,8 @@
       const medalTitle=medal?translate('Médaille {medal}',{medal:translate(medals[medal])}):'';
       const medalMarkup=medal?`<span class="card-medal ${medal}" title="${escape(medalTitle)}" aria-label="${escape(medalTitle)}">✦ ${escape(translate(medals[medal]))}</span>`:'<span class="card-medal unearned">'+escape(translate('✧ À décrocher'))+'</span>';
       const targetMarkup=targets?`<span class="card-targets">${escape(translate('OR {time}',{time:timeLabel(targets.gold)}))} <i>·</i> ${escape(translate('ARGENT {time}',{time:timeLabel(targets.silver)}))}</span>`:'';
-      const label=translate('Chapitre {index}, {name}, {status}',{index:i+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
-      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
+      const label=translate('Chapitre {index}, {name}, {status}',{index:rank+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
+      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(chapters.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
     }).join('');
   }
   function updateHud(dt) {
@@ -522,7 +527,7 @@
     window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
     refreshLanguage();
     refreshAppearance();
-    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
+    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(0);
     else showMode('home');
     updateSound();game.beginLoop();
   } catch(error) {

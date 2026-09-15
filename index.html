@@ -22,7 +22,7 @@
 
     <div id="song-shell" class="song-shell" hidden>
       <header class="song-header">
-        <button class="song-brand" data-command="song-atlas" aria-label="Lumen, ouvrir l’archipel"><img src="icon.svg" alt="" width="43" height="49"><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
+        <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><img src="icon.svg" alt="" width="43" height="49"><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
         <nav aria-label="Menu du voyage">
           <button class="song-icon" data-command="song-atlas" aria-label="L’archipel" title="L’archipel"><span data-icon="map"></span></button>
           <button class="song-icon" data-command="song-settings" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button>
@@ -31,7 +31,8 @@
           <button class="song-icon song-pause" data-command="pause" aria-label="Pause" title="Pause"><span data-icon="pause"></span></button>
         </nav>
       </header>
-      <div class="song-objective"><div class="song-act"><span id="song-island-number">01 / 03</span><i></i><span>L’ARCHIPEL DES VOIX</span></div><h1 id="song-island-name">L’île des petits matins</h1><p><span id="song-bearing" aria-hidden="true" data-icon="arrow-right"></span><span id="song-goal">Pip attend quelque part.</span></p></div>
+      <div id="song-welcome" class="song-welcome" hidden><h1>LUMEN</h1><p>Le Chant des îles</p><span>Viens, le ciel nous attend.</span></div>
+      <div class="song-objective"><div class="song-act"><span id="song-island-number">01 / 03</span><i></i><span>L’ARCHIPEL DES VOIX</span></div><h2 id="song-island-name">L’île des petits matins</h2><p><span id="song-bearing" aria-hidden="true" data-icon="arrow-right"></span><span id="song-goal">Pip attend quelque part.</span></p></div>
       <div class="song-notes" aria-label="Notes et souvenirs"><span title="Notes réunies"><i data-icon="music"></i><strong id="song-note-count">00</strong></span><span title="Souvenirs de l’île"><i data-icon="feather"></i><strong id="song-memory-count">0 / 3</strong></span><strong id="song-clock" hidden>0:00</strong></div>
       <div class="song-chorus"><div class="song-chorus-label"><span>LES VOIX RETROUVÉES</span><strong id="song-voice-count">0 / 3</strong></div><div id="song-echoes" role="group" aria-label="Les trois échos de l’île"></div></div>
       <div class="song-mode"><div class="song-segment" role="group" aria-label="Rythme de l’aventure"><button data-song-style="gentle" aria-pressed="true"><span data-icon="leaf"></span> Balade</button><button data-song-style="flow" aria-pressed="false"><span data-icon="wind"></span> Élan</button></div></div>
@@ -42,7 +43,7 @@
     <section id="home-screen" class="screen home-screen active" aria-label="Accueil">
       <div class="home-copy">
         <div class="eyebrow"><span class="tiny-star">✦</span> UNE PETITE LUMIÈRE. UNE GRANDE AVENTURE.</div>
-        <h1>Lumen<span class="title-spark" aria-hidden="true">✧</span><small>Les jardins de la lune</small></h1>
+        <h1>LUMEN<span class="title-spark" aria-hidden="true">✧</span><small>Les jardins de la lune</small></h1>
         <p>La lune s’est éteinte.<br>Et si la plus petite des lumières<br>pouvait réveiller tout un monde ?</p>
         <div class="home-actions"><button id="start-button" class="button primary" data-command="start"><span>Commencer l’aventure</span><span class="button-arrow">↗</span></button><button class="button secondary" data-command="map"><span>Explorer les chapitres</span><span>→</span></button><button class="button secondary" data-command="hub"><span>L’observatoire</span><span>☾</span></button><button class="button secondary" data-command="dream"><span>Les rêves nomades</span><span>⚄</span></button></div>
         <button class="text-button" data-command="song-return">Le Chant des îles <span>↗</span></button>
@@ -71,7 +72,7 @@
       <div class="atlas-toolbar"><div class="run-mode-switch" role="group" aria-label="Mode des prochains chapitres"><button data-run-mode="explore" aria-pressed="true"><span aria-hidden="true">☾</span> Exploration</button><button data-run-mode="timed" aria-pressed="false"><span aria-hidden="true">◷</span> Contre-la-montre</button></div><p id="run-mode-hint">Le temps vous appartient. Explorez à votre rythme.</p><button class="medal-help-button" data-command="medal-help" aria-expanded="false" aria-controls="medal-help">Les médailles <span aria-hidden="true">ⓘ</span></button></div>
       <div id="medal-help" class="medal-help hidden"><strong>Une médaille pour chaque lumière.</strong><p><span class="medal-dot gold">✦</span><b>Or</b> · 3 fragments, au plus 1 dégât et le temps d’or. <span class="medal-dot silver">✦</span><b>Argent</b> · 2 fragments, au plus 3 dégâts et le temps d’argent. <span class="medal-dot bronze">✦</span><b>Bronze</b> · Terminer le chapitre.</p><p>Les objectifs de temps figurent sur chaque carte. Les médailles sont disponibles dans les deux modes ; seuls les records du contre-la-montre sont enregistrés au classement personnel. Aucun compte à rebours, aucune pénalité à prendre votre temps.</p></div>
       <div id="level-grid" class="level-grid"></div>
-      <div class="map-bottom"><button class="button secondary" data-command="home">← Retour à l’accueil</button><button class="button secondary" data-command="hub">L’observatoire <span>☾</span></button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
+      <div class="map-bottom"><button class="button secondary" data-command="song-return"><span data-icon="arrow-left"></span> L’archipel</button><button class="button secondary" data-command="hub">L’observatoire <span>☾</span></button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
     </section>
 
     <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="text-button" data-command="help">Voir les commandes</button></div></div></section>

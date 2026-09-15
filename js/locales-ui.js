@@ -1,4 +1,5 @@
 window.LumenI18n.add([
+  ['Viens, le ciel nous attend.', 'Come, the sky is waiting.', 'Ven, el cielo nos espera.', 'تعال، السماء تنتظرنا.', '来吧，天空在等我们。'],
   ['Apparence', 'Appearance', 'Apariencia', 'المظهر', '外观'],
   ['Système', 'System', 'Sistema', 'النظام', '系统'],
   ['Clair', 'Light', 'Claro', 'فاتح', '浅色'],
@@ -15,7 +16,7 @@ window.LumenI18n.add([
   ['LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.', 'LUMEN — Song of the Islands. Take flight, find the nine voices of the sky and awaken an archipelago. An original adventure for keyboard, touch and gamepad, even offline.', 'LUMEN — El canto de las islas. Alza el vuelo, encuentra las nueve voces del cielo y despierta un archipiélago. Una aventura original con teclado, controles táctiles y mando, incluso sin conexión.', 'LUMEN — أغنية الجزر. حلّق واعثر على أصوات السماء التسعة وأيقظ الأرخبيل. مغامرة أصلية بلوحة المفاتيح أو اللمس أو وحدة التحكم، حتى دون اتصال.', 'LUMEN · 群岛之歌。展翅飞翔，找回天空的九个声音，唤醒群岛。支持键盘、触屏和手柄，离线也能畅玩。'],
   ['LUMEN, jeu de plateforme', 'LUMEN, platform adventure', 'LUMEN, aventura de plataformas', 'LUMEN، مغامرة منصات', 'LUMEN，平台冒险游戏'],
   ['Monde de Lumen. Flèches ou Q D pour avancer, Espace pour sauter et planer, X pour chanter, Échap pour mettre en pause.', 'Lumen world. Arrow keys or A D to move, Space to jump and glide, X to sing, Escape to pause.', 'Mundo de Lumen. Flechas o A D para moverte, Espacio para saltar y planear, X para cantar, Escape para pausar.', 'عالم Lumen. الأسهم أو A وD للحركة، المسافة للقفز والانزلاق في الهواء، X للغناء، وEscape للإيقاف المؤقت.', 'Lumen 世界。方向键或 A D 移动，空格键跳跃和滑翔，X 歌唱，Esc 暂停。'],
-  ['Lumen, ouvrir l’archipel', 'Lumen, open the archipelago', 'Lumen, abrir el archipiélago', 'Lumen، افتح الأرخبيل', 'Lumen，打开群岛地图'],
+  ['LUMEN, ouvrir l’archipel', 'LUMEN, open the archipelago', 'LUMEN, abrir el archipiélago', 'LUMEN، افتح الأرخبيل', 'LUMEN，打开群岛地图'],
   ['Menu du voyage', 'Journey menu', 'Menú del viaje', 'قائمة الرحلة', '旅程菜单'],
   ['L’archipel', 'The archipelago', 'El archipiélago', 'الأرخبيل', '群岛'],
   ['Réglages', 'Settings', 'Ajustes', 'الإعدادات', '设置'],

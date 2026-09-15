@@ -9,6 +9,7 @@
   const roundButton = (command, name, glyph) => `<button class="song-icon" data-command="${command}" aria-label="${escape(translate(name))}" title="${escape(translate(name))}">${icon(glyph)}</button>`;
   let game, helpers, pane = null, renderedPane = null, lastResult = null, returnFocus = null, pendingStyle = null;
   let lastHud = '', frameTime = 0;
+  let welcomeJourney = null, welcomeVisible = false, returnIsland = 0;
 
   function applyPreferences() {
     const settings = game.progress.settings;
@@ -60,7 +61,7 @@
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
         <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
     } else if (pane === 'atlas') {
-      content = title('LES TROIS ÎLES DU CHANT', 'L’archipel des voix') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
+      content = title('L’ATLAS DES LUMIÈRES', 'L’archipel') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
         const record = game.store.chapter(island.key), unlocked = !index || game.store.chapter(global.LumenSong.ISLANDS[index - 1].key)?.completed;
         const voices = island.lights.filter(echo => game.progress.codex.creatures.includes('chant-' + echo.id)).length;
         const name = translate(island.name);
@@ -69,7 +70,11 @@
           <div class="song-island-copy"><small>${record?.completed ? 'LE CHŒUR EST RÉUNI' : unlocked ? 'LE VOYAGE CONTINUE' : 'LE CHANT ATTEND'}</small><h3>${escape(island.name)}</h3>
           <p>${escape(island.subtitle)}</p><div class="song-island-meta"><span>${icon('sparkles')} ${voices} / 3</span><span>${icon('feather')} ${record?.stars || 0} / 3</span>${record?.bestTimedTime ? `<span>${icon('wind')} ${clock(record.bestTimedTime)}</span>` : ''}</div></div>
           <span class="song-island-arrow">${icon(unlocked ? 'arrow-up-right' : 'lock-keyhole')}</span></button>`;
-      }).join('') + `</div><div class="song-atlas-footer"><span>Au-delà de l’archipel</span><button class="song-text-button" data-command="song-classic">Les jardins de la lune ${icon('arrow-right')}</button></div>`;
+      }).join('') + `<button class="song-island" data-command="song-classic" aria-label="${escape(translate('Les jardins de la lune'))}">
+        <div class="song-island-art"><canvas data-classic-preview width="640" height="300" aria-hidden="true"></canvas></div>
+        <div class="song-island-copy"><small>${escape(translate('{count} CHAPITRES À EXPLORER', { count: global.LUMEN_LEVELS.filter(level => !level.hub).length }))}</small>
+        <h3>Les jardins de la lune</h3><p>Suivez les étoiles. Chaque jardin a son secret.</p></div>
+        <span class="song-island-arrow">${icon('arrow-up-right')}</span></button></div>`;
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
@@ -107,13 +112,15 @@
     requestAnimationFrame(() => { if (!byId('song-overlay').hidden) (focus || panel).focus({ preventScroll: true }); });
   }
   function renderPreviews() {
-    for (const canvas of byId('song-panel').querySelectorAll('[data-island-preview]')) {
-      const index = Number(canvas.dataset.islandPreview), level = global.LumenSong.create(index);
+    for (const canvas of byId('song-panel').querySelectorAll('[data-island-preview], [data-classic-preview]')) {
+      const classic = canvas.hasAttribute('data-classic-preview');
+      const index = Number(canvas.dataset.islandPreview), level = classic ? global.LUMEN_LEVELS[0] : global.LumenSong.create(index);
       const renderer = new global.LumenRenderer(canvas); renderer.resize(640, 300);
-      const preview = { ...game, level, song: new global.LumenSong.Journey(level.song),
+      const preview = { ...game, level, mode: 'playing', song: classic ? null : new global.LumenSong.Journey(level.song),
         player: { ...game.player, x: 230, y: 554, vx: 0, vy: 0, grounded: true, gliding: false, dead: false, anim: 0, landTimer: 0 },
         camera: { x: 0, y: 0, shake: 0 }, time: 3, platforms: level.platforms.map(platform => ({ ...platform, active: true })),
-        wakeables: [], collectibles: level.collectibles, checkpoints: [], particles: [], floatingTexts: [], waves: [], exit: level.exit };
+        wakeables: [], collectibles: level.collectibles, checkpoints: [], particles: [], floatingTexts: [], waves: [],
+        enemies: [], characters: [], hazards: [], boss: null, secrets: [], exit: level.exit };
       renderer.draw(preview, 0);
     }
   }
@@ -128,7 +135,11 @@
     const active = !!game.song;
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
-    if (!active) { pane = null; renderedPane = null; byId('song-overlay').hidden = true; byId('touch-controls').inert = false; return; }
+    if (welcomeJourney !== game.song) { welcomeJourney = game.song; welcomeVisible = game.song?.index === 0; }
+    if (!active) {
+      pane = null; renderedPane = null; byId('song-overlay').hidden = true; byId('touch-controls').inert = false;
+      byId('song-welcome').hidden = true; document.body.classList.remove('song-welcoming'); return;
+    }
     const mode = game.mode;
     if (mode === 'playing' || mode === 'dead') pane = null;
     else if (mode === 'paused' && !pane) pane = 'pause';
@@ -145,6 +156,9 @@
     if (!game.song) return;
     frameTime += dt; if (frameTime < .08) return; frameTime = 0;
     const song = game.song, mode = game.mode;
+    if (Math.abs(game.player.vx) > 1 || game.player.jumpTimer > 0) welcomeVisible = false;
+    byId('song-welcome').hidden = !welcomeVisible || mode !== 'playing';
+    document.body.classList.toggle('song-welcoming', !byId('song-welcome').hidden);
     const key = [song.index, song.count, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
     if (key !== lastHud) {
       lastHud = key;
@@ -173,7 +187,7 @@
   function handle(action) {
     if (!game) return false;
     if (action === 'song-return') {
-      helpers.transition(() => game.startSong(game.nextSongIndex())); return true;
+      helpers.transition(() => game.startSong(returnIsland)); return true;
     }
     if (!game.song) return false;
     if (action === 'sound') {
@@ -190,7 +204,10 @@
     if (action === 'song-settings' || action === 'help') { open('settings'); return true; }
     if (action === 'pause') { if (game.mode === 'playing') open('pause'); else if (game.mode === 'paused') close(); return true; }
     if (action === 'resume' || action === 'song-close' || action === 'close-help') { close(); return true; }
-    if (action === 'song-classic') { helpers.transition(() => game.showHome()); return true; }
+    if (action === 'song-classic') {
+      returnIsland = game.song.index;
+      helpers.transition(() => { game.showHome(); game.showMap(); }); return true;
+    }
     if (action === 'song-retry' || action === 'retry' || action === 'replay') {
       const index = game.song.index, style = game.song.style;
       helpers.transition(() => game.startSong(index, { style })); return true;

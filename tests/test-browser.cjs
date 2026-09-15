@@ -360,6 +360,8 @@ async function test(name, run) {
       const { page, context, errors } = await open('bureau', null, { song: true, source });
       const requests = [];
       page.on('request', request => { if (!/^(file|data):/.test(request.url())) requests.push(request.url()); });
+      await page.evaluate(() => localStorage.setItem('lumen.gardens.v3', JSON.stringify({ schema: 3,
+        chapters: { [window.LumenSong.ISLANDS[0].key]: { completed: true, stars: 2 } } })));
       await page.reload();
       await page.waitForFunction(() => window.lumen?.song && window.lumen.frames >= 2 && document.fonts.check('500 25px Fredoka'));
       const before = await page.evaluate(async () => {
@@ -371,6 +373,12 @@ async function test(name, run) {
         return { session: game.session, colors: colors.size, frame: canvas.toDataURL(), fonts: [document.fonts.check('500 25px Fredoka'), document.fonts.check('400 14px Outfit')] };
       });
       assert.equal(before.session, 'song');
+      assert.equal(await page.evaluate(() => window.lumen.song.index), 0);
+      assert.equal(await page.locator('#song-welcome').isVisible(), true);
+      await page.keyboard.down('ArrowRight');
+      await page.waitForFunction(() => window.lumen.player.vx > 1);
+      await page.waitForFunction(() => document.getElementById('song-welcome').hidden);
+      await page.keyboard.up('ArrowRight');
       assert.ok(before.colors > 45, 'Canvas presque uniforme : ' + before.colors);
       assert.deepEqual(before.fonts, [true, true]);
       await page.waitForTimeout(200);
@@ -409,6 +417,8 @@ async function test(name, run) {
     await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
     await page.waitForSelector('.song-panel-atlas');
     assert.equal(await page.locator('[data-song-island]:disabled').count(), 2);
+    assert.equal(await page.locator('.song-island').count(), 4);
+    assert.equal(await page.locator('.song-islands [data-command="song-classic"] canvas').count(), 1);
     assert.equal(await page.evaluate(() => document.getElementById('song-shell').inert), true);
     await page.screenshot({ path: path.join(shots, 'chant-atlas.png') });
     await page.getByRole('button', { name: 'Reprendre', exact: true }).click();
@@ -431,12 +441,71 @@ async function test(name, run) {
     await page.waitForTimeout(400);
     await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
     await page.getByRole('button', { name: 'Les jardins de la lune', exact: true }).click();
-    await page.waitForFunction(() => window.lumen.mode === 'home');
+    await page.waitForFunction(() => window.lumen.mode === 'map');
     assert.equal(await page.evaluate(() => window.lumen.song), null);
+    const chapterCount = await page.evaluate(() => window.LUMEN_LEVELS.filter(level => !level.hub).length);
+    assert.equal(await page.locator('#level-grid [data-level]').count(), chapterCount);
+    const hubIndex = await page.evaluate(() => window.LUMEN_LEVELS.findIndex(level => level.hub));
+    assert.equal(await page.locator('#level-grid [data-level="' + hubIndex + '"]').count(), 0);
     await page.waitForTimeout(400);
-    await page.locator('[data-command="song-return"]').click();
+    await page.locator('#map-screen [data-command="song-return"]').click();
     await page.waitForFunction(() => window.lumen.session === 'song');
     assert.deepEqual(errors, []); await context.close();
+  });
+
+  await test('Le parcours île, atlas, chapitre joué et retour conserve la progression sans triche', async () => {
+    for (const source of [true, false]) {
+      const { page, context, errors } = await open('bureau', null, { song: true, source });
+      assert.equal(await page.evaluate(() => window.lumen.song.index), 0);
+      await page.keyboard.down('ArrowRight');
+      await page.waitForFunction(() => window.lumen.player.x > 180);
+      await page.keyboard.up('ArrowRight');
+      await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
+      await page.getByRole('button', { name: 'Les jardins de la lune', exact: true }).click();
+      await page.waitForSelector('#map-screen.active');
+      await page.locator('[data-level="0"]').click();
+      await page.waitForFunction(() => window.lumen.session === 'campaign' && window.lumen.mode === 'playing');
+      const played = await page.evaluate(() => {
+        const game = window.lumen;
+        let jumpUntil = 0, lastJump = -10, jumps = 0;
+        for (let frame = 0; frame < 120 * 90 && ['playing', 'dead'].includes(game.mode); frame++) {
+          if (game.mode === 'playing') {
+            game.input.virtual('right', true, 'identity-pilot');
+            const player = game.player;
+            const ground = game.platforms.filter(platform => platform.type === 'ground' &&
+              platform.x <= player.x + 16 && platform.x + platform.w >= player.x + 16)
+              .sort((first, second) => second.x - first.x)[0];
+            const edge = ground ? ground.x + ground.w : Infinity;
+            const creature = game.enemies.some(enemy => enemy.alive && enemy.x > player.x &&
+              enemy.x - player.x < 125 && Math.abs(enemy.y - player.y) < 110);
+            if (player.grounded && game.elapsed - lastJump > .12 && (edge - player.x < 80 || creature)) {
+              game.input.virtual('jump', true, 'identity-pilot');
+              jumpUntil = game.elapsed + .45; lastJump = game.elapsed; jumps++;
+            } else if (game.elapsed > jumpUntil) game.input.virtual('jump', false, 'identity-pilot');
+          }
+          game.update(1 / 120); game.input.clearFrame();
+        }
+        game.input.reset(); game.renderer.draw(game, 0); game.emit('frame', .1);
+        return { mode: game.mode, key: game.level.key, record: JSON.stringify(game.store.chapter(game.level.key)),
+          jumps, notes: game.levelCoins, deaths: game.deaths, hp: game.player.hp, seconds: game.elapsed };
+      });
+      assert.equal(played.mode, 'complete', JSON.stringify(played));
+      assert.ok(played.jumps > 0 && played.notes > 0 && played.hp > 0);
+      assert.equal(JSON.parse(played.record).completed, true);
+      await page.waitForSelector('#complete-screen.active');
+      await page.screenshot({ path: path.join(shots, 'identity-route-' + (source ? 'source' : 'portable') + '.png') });
+      await page.locator('#complete-screen [data-command="map"]').click();
+      await page.waitForSelector('#map-screen.active');
+      await page.locator('#map-screen [data-command="song-return"]').click();
+      await page.waitForFunction(() => window.lumen.song?.index === 0 && window.lumen.mode === 'playing');
+      assert.equal(await page.evaluate(key => JSON.stringify(window.lumen.store.chapter(key)), played.key), played.record);
+      await page.reload(); await page.waitForFunction(() => window.lumen?.song?.index === 0);
+      assert.equal(await page.evaluate(key => JSON.stringify(window.lumen.store.chapter(key)), played.key), played.record);
+      assert.deepEqual(errors, []);
+      console.log('      parcours ' + (source ? 'source' : 'portable') + ' : ' + played.jumps + ' sauts, ' + played.notes +
+        ' notes, ' + played.deaths + ' chute(s), aucune position ni invulnérabilité injectée');
+      await context.close();
+    }
   });
 
   await test('Les trois îles se terminent via le vrai moteur, puis l’interface ouvre la suite', async () => {

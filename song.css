@@ -54,10 +54,16 @@ body.song-playing #game { outline: none; touch-action: none; }
 .song-icon:focus-visible, .song-button:focus-visible, .song-island:focus-visible,
 .song-text-button:focus-visible, .song-segment button:focus-visible { outline: 3px solid #bd6549; outline-offset: 4px; }
 .song-objective { position: absolute; left: 37px; top: 121px; max-width: min(500px, calc(100% - 60px)); }
+.song-welcome { position: absolute; top: 126px; left: 36px; max-width: min(480px, calc(100% - 48px)); }
+.song-welcome h1 { font: 500 72px/1 Fredoka, sans-serif; margin: 0; }
+.song-welcome p { font: 500 23px/1.3 Fredoka, sans-serif; margin: 12px 0; }
+.song-welcome>span { font-size: 14px; line-height: 1.5; }
+.song-welcoming .song-objective { visibility: hidden; }
+.song-welcoming .song-brand>span { visibility: hidden; }
 .song-kicker { font-size: 10px; line-height: 1.5; font-weight: 600; color: var(--song-muted); }
 .song-act { display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 500; color: #427572; }
 .song-act i { width: 28px; height: 1px; background: #397c745e; }
-.song-objective h1 { font: 500 25px/1.2 Fredoka, sans-serif; margin: 8px 0 9px; text-wrap: balance; }
+.song-objective h2 { font: 500 25px/1.2 Fredoka, sans-serif; margin: 8px 0 9px; text-wrap: balance; }
 .song-objective p { margin: 0; font-size: 12px; line-height: 1.5; display: flex; align-items: center; gap: 7px; }
 .song-objective p svg { width: 14px; height: 14px; }
 #song-bearing { display: inline-block; transition: transform .2s; }
@@ -198,7 +204,11 @@ body.song-playing .toast {
   .song-header .song-icon svg { width: 17px; height: 17px; }
   #song-fullscreen { display: none; }
   .song-objective { top: 105px; left: 22px; right: 22px; max-width: none; }
-  .song-objective h1 { font-size: 22px; max-width: 100%; }
+  .song-objective h2 { font-size: 22px; max-width: 100%; }
+  .song-welcome { top: 104px; left: 22px; }
+  .song-welcome h1 { font-size: 54px; }
+  .song-welcome p { font-size: 20px; margin: 8px 0; }
+  .song-welcome>span { font-size: 12px; }
   .song-objective p { font-size: 11px; max-width: 285px; align-items: flex-start; }
   .song-objective p svg { margin-top: 1px; }
   .song-notes { top: auto; bottom: 145px; right: 20px; padding: 8px 10px; font-size: 13px; gap: 12px; }
@@ -250,7 +260,11 @@ body.song-playing .toast {
   .song-header .song-icon { width: 35px; height: 35px; }
   .song-objective { top: 77px; left: 22px; }
   .song-act { font-size: 8px; }
-  .song-objective h1 { font-size: 18px; margin-top: 4px; }
+  .song-objective h2 { font-size: 18px; margin-top: 4px; }
+  .song-welcome { top: 82px; }
+  .song-welcome h1 { font-size: 44px; }
+  .song-welcome p { font-size: 18px; margin: 6px 0; }
+  .song-welcome>span { font-size: 12px; }
   .song-objective p { display: none; }
   .song-notes { top: 66px; bottom: auto; right: 20px; padding: 7px 10px; font-size: 12px; }
   .song-chorus { left: 50%; bottom: 20px; transform: translateX(-50%); }
@@ -378,8 +392,8 @@ html:is([lang="ar"], [lang^="zh"]) body { --font: var(--locale-ui); --serif: var
 html:is([lang="ar"], [lang^="zh"]) body * { letter-spacing: 0; }
 .song-shell, .song-overlay { font-family: var(--locale-ui); }
 html:is([lang="ar"], [lang^="zh"]) :is(.song-button, .song-text-button, .song-segment button, .song-island, .toast) { font-family: var(--locale-ui); }
-html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h1, .song-panel h2, .song-island h3, .song-brand small) { font-family: var(--locale-display); }
-.song-objective h1, .song-panel h2, .song-island h3 { overflow-wrap: anywhere; }
+html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h2, .song-welcome p, .song-panel h2, .song-island h3, .song-brand small) { font-family: var(--locale-display); }
+.song-objective h2, .song-welcome p, .song-panel h2, .song-island h3 { overflow-wrap: anywhere; }
 .song-settings-row select, .language-setting select {
   min-width: 0; width: min(220px, 68%); max-width: 100%; min-height: 42px;
   border: 1px solid #aac9bd; border-radius: 5px; padding: 8px 10px;
@@ -408,7 +422,7 @@ html[dir="rtl"] .song-range-row output { text-align: left; }
 html[dir="rtl"] .song-panel-confirm-style .song-dialog-sub { text-align: right; }
 html[dir="rtl"] :is(.home-copy, .card-content, .dialogue-body, .quest-banner, .help-card) { text-align: right; }
 html[lang="ar"] .song-panel h2 { font-size: 28px; line-height: 1.5; }
-html[lang="ar"] .song-objective h1 { font-size: 23px; line-height: 1.5; }
+html[lang="ar"] .song-objective h2 { font-size: 23px; line-height: 1.5; }
 html[lang="ar"] .song-island h3 { font-size: 19px; line-height: 1.5; }
 html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { line-height: 1.8; }
 @media (max-width: 1050px) {
@@ -433,7 +447,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
   html[dir="rtl"] .song-notes { left: 20px; right: auto; }
   html[dir="rtl"] .song-chorus { left: 50%; right: auto; }
   html[dir="rtl"] .song-combo { left: 50%; right: auto; text-align: center; }
-  html[lang="ar"] .song-objective h1 { font-size: 18px; }
+  html[lang="ar"] .song-objective h2 { font-size: 18px; }
 }
 :root[data-appearance="dark"] .song-settings-row select, :root[data-appearance="dark"] .language-setting select {
   background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line);

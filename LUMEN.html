@@ -389,10 +389,16 @@ body.song-playing #game { outline: none; touch-action: none; }
 .song-icon:focus-visible, .song-button:focus-visible, .song-island:focus-visible,
 .song-text-button:focus-visible, .song-segment button:focus-visible { outline: 3px solid #bd6549; outline-offset: 4px; }
 .song-objective { position: absolute; left: 37px; top: 121px; max-width: min(500px, calc(100% - 60px)); }
+.song-welcome { position: absolute; top: 126px; left: 36px; max-width: min(480px, calc(100% - 48px)); }
+.song-welcome h1 { font: 500 72px/1 Fredoka, sans-serif; margin: 0; }
+.song-welcome p { font: 500 23px/1.3 Fredoka, sans-serif; margin: 12px 0; }
+.song-welcome>span { font-size: 14px; line-height: 1.5; }
+.song-welcoming .song-objective { visibility: hidden; }
+.song-welcoming .song-brand>span { visibility: hidden; }
 .song-kicker { font-size: 10px; line-height: 1.5; font-weight: 600; color: var(--song-muted); }
 .song-act { display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 500; color: #427572; }
 .song-act i { width: 28px; height: 1px; background: #397c745e; }
-.song-objective h1 { font: 500 25px/1.2 Fredoka, sans-serif; margin: 8px 0 9px; text-wrap: balance; }
+.song-objective h2 { font: 500 25px/1.2 Fredoka, sans-serif; margin: 8px 0 9px; text-wrap: balance; }
 .song-objective p { margin: 0; font-size: 12px; line-height: 1.5; display: flex; align-items: center; gap: 7px; }
 .song-objective p svg { width: 14px; height: 14px; }
 #song-bearing { display: inline-block; transition: transform .2s; }
@@ -533,7 +539,11 @@ body.song-playing .toast {
   .song-header .song-icon svg { width: 17px; height: 17px; }
   #song-fullscreen { display: none; }
   .song-objective { top: 105px; left: 22px; right: 22px; max-width: none; }
-  .song-objective h1 { font-size: 22px; max-width: 100%; }
+  .song-objective h2 { font-size: 22px; max-width: 100%; }
+  .song-welcome { top: 104px; left: 22px; }
+  .song-welcome h1 { font-size: 54px; }
+  .song-welcome p { font-size: 20px; margin: 8px 0; }
+  .song-welcome>span { font-size: 12px; }
   .song-objective p { font-size: 11px; max-width: 285px; align-items: flex-start; }
   .song-objective p svg { margin-top: 1px; }
   .song-notes { top: auto; bottom: 145px; right: 20px; padding: 8px 10px; font-size: 13px; gap: 12px; }
@@ -585,7 +595,11 @@ body.song-playing .toast {
   .song-header .song-icon { width: 35px; height: 35px; }
   .song-objective { top: 77px; left: 22px; }
   .song-act { font-size: 8px; }
-  .song-objective h1 { font-size: 18px; margin-top: 4px; }
+  .song-objective h2 { font-size: 18px; margin-top: 4px; }
+  .song-welcome { top: 82px; }
+  .song-welcome h1 { font-size: 44px; }
+  .song-welcome p { font-size: 18px; margin: 6px 0; }
+  .song-welcome>span { font-size: 12px; }
   .song-objective p { display: none; }
   .song-notes { top: 66px; bottom: auto; right: 20px; padding: 7px 10px; font-size: 12px; }
   .song-chorus { left: 50%; bottom: 20px; transform: translateX(-50%); }
@@ -713,8 +727,8 @@ html:is([lang="ar"], [lang^="zh"]) body { --font: var(--locale-ui); --serif: var
 html:is([lang="ar"], [lang^="zh"]) body * { letter-spacing: 0; }
 .song-shell, .song-overlay { font-family: var(--locale-ui); }
 html:is([lang="ar"], [lang^="zh"]) :is(.song-button, .song-text-button, .song-segment button, .song-island, .toast) { font-family: var(--locale-ui); }
-html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h1, .song-panel h2, .song-island h3, .song-brand small) { font-family: var(--locale-display); }
-.song-objective h1, .song-panel h2, .song-island h3 { overflow-wrap: anywhere; }
+html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h2, .song-welcome p, .song-panel h2, .song-island h3, .song-brand small) { font-family: var(--locale-display); }
+.song-objective h2, .song-welcome p, .song-panel h2, .song-island h3 { overflow-wrap: anywhere; }
 .song-settings-row select, .language-setting select {
   min-width: 0; width: min(220px, 68%); max-width: 100%; min-height: 42px;
   border: 1px solid #aac9bd; border-radius: 5px; padding: 8px 10px;
@@ -743,7 +757,7 @@ html[dir="rtl"] .song-range-row output { text-align: left; }
 html[dir="rtl"] .song-panel-confirm-style .song-dialog-sub { text-align: right; }
 html[dir="rtl"] :is(.home-copy, .card-content, .dialogue-body, .quest-banner, .help-card) { text-align: right; }
 html[lang="ar"] .song-panel h2 { font-size: 28px; line-height: 1.5; }
-html[lang="ar"] .song-objective h1 { font-size: 23px; line-height: 1.5; }
+html[lang="ar"] .song-objective h2 { font-size: 23px; line-height: 1.5; }
 html[lang="ar"] .song-island h3 { font-size: 19px; line-height: 1.5; }
 html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { line-height: 1.8; }
 @media (max-width: 1050px) {
@@ -768,7 +782,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
   html[dir="rtl"] .song-notes { left: 20px; right: auto; }
   html[dir="rtl"] .song-chorus { left: 50%; right: auto; }
   html[dir="rtl"] .song-combo { left: 50%; right: auto; text-align: center; }
-  html[lang="ar"] .song-objective h1 { font-size: 18px; }
+  html[lang="ar"] .song-objective h2 { font-size: 18px; }
 }
 :root[data-appearance="dark"] .song-settings-row select, :root[data-appearance="dark"] .language-setting select {
   background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line);
@@ -786,7 +800,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
 
     <div id="song-shell" class="song-shell" hidden>
       <header class="song-header">
-        <button class="song-brand" data-command="song-atlas" aria-label="Lumen, ouvrir l’archipel"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="43" height="49"><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
+        <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="43" height="49"><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
         <nav aria-label="Menu du voyage">
           <button class="song-icon" data-command="song-atlas" aria-label="L’archipel" title="L’archipel"><span data-icon="map"></span></button>
           <button class="song-icon" data-command="song-settings" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button>
@@ -795,7 +809,8 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
           <button class="song-icon song-pause" data-command="pause" aria-label="Pause" title="Pause"><span data-icon="pause"></span></button>
         </nav>
       </header>
-      <div class="song-objective"><div class="song-act"><span id="song-island-number">01 / 03</span><i></i><span>L’ARCHIPEL DES VOIX</span></div><h1 id="song-island-name">L’île des petits matins</h1><p><span id="song-bearing" aria-hidden="true" data-icon="arrow-right"></span><span id="song-goal">Pip attend quelque part.</span></p></div>
+      <div id="song-welcome" class="song-welcome" hidden><h1>LUMEN</h1><p>Le Chant des îles</p><span>Viens, le ciel nous attend.</span></div>
+      <div class="song-objective"><div class="song-act"><span id="song-island-number">01 / 03</span><i></i><span>L’ARCHIPEL DES VOIX</span></div><h2 id="song-island-name">L’île des petits matins</h2><p><span id="song-bearing" aria-hidden="true" data-icon="arrow-right"></span><span id="song-goal">Pip attend quelque part.</span></p></div>
       <div class="song-notes" aria-label="Notes et souvenirs"><span title="Notes réunies"><i data-icon="music"></i><strong id="song-note-count">00</strong></span><span title="Souvenirs de l’île"><i data-icon="feather"></i><strong id="song-memory-count">0 / 3</strong></span><strong id="song-clock" hidden>0:00</strong></div>
       <div class="song-chorus"><div class="song-chorus-label"><span>LES VOIX RETROUVÉES</span><strong id="song-voice-count">0 / 3</strong></div><div id="song-echoes" role="group" aria-label="Les trois échos de l’île"></div></div>
       <div class="song-mode"><div class="song-segment" role="group" aria-label="Rythme de l’aventure"><button data-song-style="gentle" aria-pressed="true"><span data-icon="leaf"></span> Balade</button><button data-song-style="flow" aria-pressed="false"><span data-icon="wind"></span> Élan</button></div></div>
@@ -806,7 +821,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
     <section id="home-screen" class="screen home-screen active" aria-label="Accueil">
       <div class="home-copy">
         <div class="eyebrow"><span class="tiny-star">✦</span> UNE PETITE LUMIÈRE. UNE GRANDE AVENTURE.</div>
-        <h1>Lumen<span class="title-spark" aria-hidden="true">✧</span><small>Les jardins de la lune</small></h1>
+        <h1>LUMEN<span class="title-spark" aria-hidden="true">✧</span><small>Les jardins de la lune</small></h1>
         <p>La lune s’est éteinte.<br>Et si la plus petite des lumières<br>pouvait réveiller tout un monde ?</p>
         <div class="home-actions"><button id="start-button" class="button primary" data-command="start"><span>Commencer l’aventure</span><span class="button-arrow">↗</span></button><button class="button secondary" data-command="map"><span>Explorer les chapitres</span><span>→</span></button><button class="button secondary" data-command="hub"><span>L’observatoire</span><span>☾</span></button><button class="button secondary" data-command="dream"><span>Les rêves nomades</span><span>⚄</span></button></div>
         <button class="text-button" data-command="song-return">Le Chant des îles <span>↗</span></button>
@@ -835,7 +850,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
       <div class="atlas-toolbar"><div class="run-mode-switch" role="group" aria-label="Mode des prochains chapitres"><button data-run-mode="explore" aria-pressed="true"><span aria-hidden="true">☾</span> Exploration</button><button data-run-mode="timed" aria-pressed="false"><span aria-hidden="true">◷</span> Contre-la-montre</button></div><p id="run-mode-hint">Le temps vous appartient. Explorez à votre rythme.</p><button class="medal-help-button" data-command="medal-help" aria-expanded="false" aria-controls="medal-help">Les médailles <span aria-hidden="true">ⓘ</span></button></div>
       <div id="medal-help" class="medal-help hidden"><strong>Une médaille pour chaque lumière.</strong><p><span class="medal-dot gold">✦</span><b>Or</b> · 3 fragments, au plus 1 dégât et le temps d’or. <span class="medal-dot silver">✦</span><b>Argent</b> · 2 fragments, au plus 3 dégâts et le temps d’argent. <span class="medal-dot bronze">✦</span><b>Bronze</b> · Terminer le chapitre.</p><p>Les objectifs de temps figurent sur chaque carte. Les médailles sont disponibles dans les deux modes ; seuls les records du contre-la-montre sont enregistrés au classement personnel. Aucun compte à rebours, aucune pénalité à prendre votre temps.</p></div>
       <div id="level-grid" class="level-grid"></div>
-      <div class="map-bottom"><button class="button secondary" data-command="home">← Retour à l’accueil</button><button class="button secondary" data-command="hub">L’observatoire <span>☾</span></button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
+      <div class="map-bottom"><button class="button secondary" data-command="song-return"><span data-icon="arrow-left"></span> L’archipel</button><button class="button secondary" data-command="hub">L’observatoire <span>☾</span></button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
     </section>
 
     <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="text-button" data-command="help">Voir les commandes</button></div></div></section>
@@ -977,6 +992,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
 </script>
   <script>
 window.LumenI18n.add([
+  ['Viens, le ciel nous attend.', 'Come, the sky is waiting.', 'Ven, el cielo nos espera.', 'تعال، السماء تنتظرنا.', '来吧，天空在等我们。'],
   ['Apparence', 'Appearance', 'Apariencia', 'المظهر', '外观'],
   ['Système', 'System', 'Sistema', 'النظام', '系统'],
   ['Clair', 'Light', 'Claro', 'فاتح', '浅色'],
@@ -993,7 +1009,7 @@ window.LumenI18n.add([
   ['LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.', 'LUMEN — Song of the Islands. Take flight, find the nine voices of the sky and awaken an archipelago. An original adventure for keyboard, touch and gamepad, even offline.', 'LUMEN — El canto de las islas. Alza el vuelo, encuentra las nueve voces del cielo y despierta un archipiélago. Una aventura original con teclado, controles táctiles y mando, incluso sin conexión.', 'LUMEN — أغنية الجزر. حلّق واعثر على أصوات السماء التسعة وأيقظ الأرخبيل. مغامرة أصلية بلوحة المفاتيح أو اللمس أو وحدة التحكم، حتى دون اتصال.', 'LUMEN · 群岛之歌。展翅飞翔，找回天空的九个声音，唤醒群岛。支持键盘、触屏和手柄，离线也能畅玩。'],
   ['LUMEN, jeu de plateforme', 'LUMEN, platform adventure', 'LUMEN, aventura de plataformas', 'LUMEN، مغامرة منصات', 'LUMEN，平台冒险游戏'],
   ['Monde de Lumen. Flèches ou Q D pour avancer, Espace pour sauter et planer, X pour chanter, Échap pour mettre en pause.', 'Lumen world. Arrow keys or A D to move, Space to jump and glide, X to sing, Escape to pause.', 'Mundo de Lumen. Flechas o A D para moverte, Espacio para saltar y planear, X para cantar, Escape para pausar.', 'عالم Lumen. الأسهم أو A وD للحركة، المسافة للقفز والانزلاق في الهواء، X للغناء، وEscape للإيقاف المؤقت.', 'Lumen 世界。方向键或 A D 移动，空格键跳跃和滑翔，X 歌唱，Esc 暂停。'],
-  ['Lumen, ouvrir l’archipel', 'Lumen, open the archipelago', 'Lumen, abrir el archipiélago', 'Lumen، افتح الأرخبيل', 'Lumen，打开群岛地图'],
+  ['LUMEN, ouvrir l’archipel', 'LUMEN, open the archipelago', 'LUMEN, abrir el archipiélago', 'LUMEN، افتح الأرخبيل', 'LUMEN，打开群岛地图'],
   ['Menu du voyage', 'Journey menu', 'Menú del viaje', 'قائمة الرحلة', '旅程菜单'],
   ['L’archipel', 'The archipelago', 'El archipiélago', 'الأرخبيل', '群岛'],
   ['Réglages', 'Settings', 'Ajustes', 'الإعدادات', '设置'],
@@ -7216,6 +7232,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   const roundButton = (command, name, glyph) => `<button class="song-icon" data-command="${command}" aria-label="${escape(translate(name))}" title="${escape(translate(name))}">${icon(glyph)}</button>`;
   let game, helpers, pane = null, renderedPane = null, lastResult = null, returnFocus = null, pendingStyle = null;
   let lastHud = '', frameTime = 0;
+  let welcomeJourney = null, welcomeVisible = false, returnIsland = 0;
 
   function applyPreferences() {
     const settings = game.progress.settings;
@@ -7267,7 +7284,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
         <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
     } else if (pane === 'atlas') {
-      content = title('LES TROIS ÎLES DU CHANT', 'L’archipel des voix') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
+      content = title('L’ATLAS DES LUMIÈRES', 'L’archipel') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
         const record = game.store.chapter(island.key), unlocked = !index || game.store.chapter(global.LumenSong.ISLANDS[index - 1].key)?.completed;
         const voices = island.lights.filter(echo => game.progress.codex.creatures.includes('chant-' + echo.id)).length;
         const name = translate(island.name);
@@ -7276,7 +7293,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
           <div class="song-island-copy"><small>${record?.completed ? 'LE CHŒUR EST RÉUNI' : unlocked ? 'LE VOYAGE CONTINUE' : 'LE CHANT ATTEND'}</small><h3>${escape(island.name)}</h3>
           <p>${escape(island.subtitle)}</p><div class="song-island-meta"><span>${icon('sparkles')} ${voices} / 3</span><span>${icon('feather')} ${record?.stars || 0} / 3</span>${record?.bestTimedTime ? `<span>${icon('wind')} ${clock(record.bestTimedTime)}</span>` : ''}</div></div>
           <span class="song-island-arrow">${icon(unlocked ? 'arrow-up-right' : 'lock-keyhole')}</span></button>`;
-      }).join('') + `</div><div class="song-atlas-footer"><span>Au-delà de l’archipel</span><button class="song-text-button" data-command="song-classic">Les jardins de la lune ${icon('arrow-right')}</button></div>`;
+      }).join('') + `<button class="song-island" data-command="song-classic" aria-label="${escape(translate('Les jardins de la lune'))}">
+        <div class="song-island-art"><canvas data-classic-preview width="640" height="300" aria-hidden="true"></canvas></div>
+        <div class="song-island-copy"><small>${escape(translate('{count} CHAPITRES À EXPLORER', { count: global.LUMEN_LEVELS.filter(level => !level.hub).length }))}</small>
+        <h3>Les jardins de la lune</h3><p>Suivez les étoiles. Chaque jardin a son secret.</p></div>
+        <span class="song-island-arrow">${icon('arrow-up-right')}</span></button></div>`;
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
@@ -7314,13 +7335,15 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     requestAnimationFrame(() => { if (!byId('song-overlay').hidden) (focus || panel).focus({ preventScroll: true }); });
   }
   function renderPreviews() {
-    for (const canvas of byId('song-panel').querySelectorAll('[data-island-preview]')) {
-      const index = Number(canvas.dataset.islandPreview), level = global.LumenSong.create(index);
+    for (const canvas of byId('song-panel').querySelectorAll('[data-island-preview], [data-classic-preview]')) {
+      const classic = canvas.hasAttribute('data-classic-preview');
+      const index = Number(canvas.dataset.islandPreview), level = classic ? global.LUMEN_LEVELS[0] : global.LumenSong.create(index);
       const renderer = new global.LumenRenderer(canvas); renderer.resize(640, 300);
-      const preview = { ...game, level, song: new global.LumenSong.Journey(level.song),
+      const preview = { ...game, level, mode: 'playing', song: classic ? null : new global.LumenSong.Journey(level.song),
         player: { ...game.player, x: 230, y: 554, vx: 0, vy: 0, grounded: true, gliding: false, dead: false, anim: 0, landTimer: 0 },
         camera: { x: 0, y: 0, shake: 0 }, time: 3, platforms: level.platforms.map(platform => ({ ...platform, active: true })),
-        wakeables: [], collectibles: level.collectibles, checkpoints: [], particles: [], floatingTexts: [], waves: [], exit: level.exit };
+        wakeables: [], collectibles: level.collectibles, checkpoints: [], particles: [], floatingTexts: [], waves: [],
+        enemies: [], characters: [], hazards: [], boss: null, secrets: [], exit: level.exit };
       renderer.draw(preview, 0);
     }
   }
@@ -7335,7 +7358,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     const active = !!game.song;
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
-    if (!active) { pane = null; renderedPane = null; byId('song-overlay').hidden = true; byId('touch-controls').inert = false; return; }
+    if (welcomeJourney !== game.song) { welcomeJourney = game.song; welcomeVisible = game.song?.index === 0; }
+    if (!active) {
+      pane = null; renderedPane = null; byId('song-overlay').hidden = true; byId('touch-controls').inert = false;
+      byId('song-welcome').hidden = true; document.body.classList.remove('song-welcoming'); return;
+    }
     const mode = game.mode;
     if (mode === 'playing' || mode === 'dead') pane = null;
     else if (mode === 'paused' && !pane) pane = 'pause';
@@ -7352,6 +7379,9 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (!game.song) return;
     frameTime += dt; if (frameTime < .08) return; frameTime = 0;
     const song = game.song, mode = game.mode;
+    if (Math.abs(game.player.vx) > 1 || game.player.jumpTimer > 0) welcomeVisible = false;
+    byId('song-welcome').hidden = !welcomeVisible || mode !== 'playing';
+    document.body.classList.toggle('song-welcoming', !byId('song-welcome').hidden);
     const key = [song.index, song.count, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
     if (key !== lastHud) {
       lastHud = key;
@@ -7380,7 +7410,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   function handle(action) {
     if (!game) return false;
     if (action === 'song-return') {
-      helpers.transition(() => game.startSong(game.nextSongIndex())); return true;
+      helpers.transition(() => game.startSong(returnIsland)); return true;
     }
     if (!game.song) return false;
     if (action === 'sound') {
@@ -7397,7 +7427,10 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (action === 'song-settings' || action === 'help') { open('settings'); return true; }
     if (action === 'pause') { if (game.mode === 'playing') open('pause'); else if (game.mode === 'paused') close(); return true; }
     if (action === 'resume' || action === 'song-close' || action === 'close-help') { close(); return true; }
-    if (action === 'song-classic') { helpers.transition(() => game.showHome()); return true; }
+    if (action === 'song-classic') {
+      returnIsland = game.song.index;
+      helpers.transition(() => { game.showHome(); game.showMap(); }); return true;
+    }
     if (action === 'song-retry' || action === 'retry' || action === 'replay') {
       const index = game.song.index, style = game.song.style;
       helpers.transition(() => game.startSong(index, { style })); return true;
@@ -7676,7 +7709,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       if(game.mode==='help')command('close-help');
       else if(game.mode==='paused')game.resume();
       else if(game.mode==='playing')game.pause();
-      else if(game.mode==='map')transition(()=>game.showHome());
+      else if(game.mode==='map')command('home');
       return;
     }
     if(action==='resume'){game.resume();return;}
@@ -7709,7 +7742,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if(action==='dream-resume'){transition(()=>{if(!game.resumeExpedition()){game.mode='dream';showMode('dream');}});return;}
     if(action==='dream-again'){transition(()=>{if(!game.retryExpedition()){game.mode='dream';showMode('dream');}});return;}
     if(action==='route-go'){const kind=routeChoice,up=routeUpgrade;transition(()=>game.chooseRoute(kind,up));return;}
-    if(action==='home'){transition(()=>game.showHome());return;}
+    if(action==='home'){
+      if(new URLSearchParams(window.location.search).has('classic'))transition(()=>game.showHome());
+      else window.LumenSongUI.handle('song-return');
+      return;
+    }
     if(action==='map'){transition(()=>game.showMap());return;}
     if(action==='start'||action==='confirm') {
       if(game.mode==='home'){game.audio.unlock();transition(()=>startLevel(game.progress.finished?0:game.nextChapterIndex(),'explore'));}
@@ -7744,9 +7781,10 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     return `<svg viewBox="0 0 260 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="260" height="110" fill="${sky}"/><circle cx="191" cy="31" r="${theme==='eclipse'?0:19}" fill="${moon}" opacity=".8"/><path d="M-20 83Q30 26 74 71T151 50T285 74v50H-20" fill="${far}"/>${clouds}<path d="M-15 98Q37 54 95 88T187 78T280 79v50H-15" fill="${land}" opacity=".6"/><path d="M68 73h101l-12 17-30 12-45-13Z" fill="${land}"/><path d="M67 71q50-9 103 0v5H67" fill="${moon}" opacity=".75"/><path d="M111 72V56a12 12 0 0 1 24 0v16" fill="none" stroke="${moon}" stroke-width="5"/><path d="m32 36 2-6 2 6 6 2-6 2-2 6-2-6-6-2Z" fill="${moon}" opacity=".7"/>${special}</svg>`;
   }
   function renderMap() {
-    $('total-stars').textContent=window.LUMEN_LEVELS.reduce((sum,level)=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+window.LUMEN_LEVELS.reduce((n,l)=>n+l.collectibles.filter(c=>c.type==='star').length,0);
-    $('level-grid').innerHTML=window.LUMEN_LEVELS.map((level,i)=>{
-      const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(i+1).padStart(2,'0');
+    const chapters=window.LUMEN_LEVELS.map((level,index)=>({level,index})).filter(({level})=>!level.hub);
+    $('total-stars').textContent=chapters.reduce((sum,{level})=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+chapters.reduce((total,{level})=>total+level.collectibles.filter(item=>item.type==='star').length,0);
+    $('level-grid').innerHTML=chapters.map(({level,index:i},rank)=>{
+      const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(rank+1).padStart(2,'0');
       const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
       const medal=medals[r?.medal]?r.medal:r?.completed?'bronze':null;
       const targets=level.medalTargets;
@@ -7754,8 +7792,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       const medalTitle=medal?translate('Médaille {medal}',{medal:translate(medals[medal])}):'';
       const medalMarkup=medal?`<span class="card-medal ${medal}" title="${escape(medalTitle)}" aria-label="${escape(medalTitle)}">✦ ${escape(translate(medals[medal]))}</span>`:'<span class="card-medal unearned">'+escape(translate('✧ À décrocher'))+'</span>';
       const targetMarkup=targets?`<span class="card-targets">${escape(translate('OR {time}',{time:timeLabel(targets.gold)}))} <i>·</i> ${escape(translate('ARGENT {time}',{time:timeLabel(targets.silver)}))}</span>`:'';
-      const label=translate('Chapitre {index}, {name}, {status}',{index:i+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
-      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(window.LUMEN_LEVELS.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
+      const label=translate('Chapitre {index}, {name}, {status}',{index:rank+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
+      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(chapters.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
     }).join('');
   }
   function updateHud(dt) {
@@ -8007,7 +8045,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
     refreshLanguage();
     refreshAppearance();
-    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(game.nextSongIndex());
+    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(0);
     else showMode('home');
     updateSound();game.beginLoop();
   } catch(error) {
