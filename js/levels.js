@@ -725,8 +725,16 @@
         ledge(500, 585, 240, 'solid', { placeRole: 'mount' }),
         ledge(1070, 490, 230), ledge(1280, 390, 240), ledge(1490, 490, 310),
         ledge(2660, 485, 220), ledge(2850, 390, 180)],
-      enemies: [{ ...enemy('sleeper', 500, 660, 500, 2410), x: 500, y: 588, w: 240, h: 78, mount: true }],
-      collectibles: [...coins(235, 552, 6), ...arc(620, 525, 5), ...coins(1310, 345, 5), ...coins(2680, 443, 5),
+      enemies: [{ ...enemy('sleeper', 500, 660, 500, 2410), x: 500, y: 588, w: 240, h: 78, mount: true },
+        // Sur la route de la monture : l'essaim oblige à décider si l'on baisse
+        // la tête, si l'on saute, ou si l'on quitte le dos avant qu'il n'arrive.
+        enemy('swarm', 1560, 430, 1400, 1760),
+        // À l'arrivée, un veilleur : descendre du songe n'est pas gratuit.
+        enemy('hopper', 2700, 600, 2560, 2900)],
+      collectibles: [...coins(235, 552, 6), ...arc(620, 525, 5), ...coins(1310, 345, 5),
+        // Le long du trajet de la monture : ce qu'on ramasse sans descendre.
+        ...arc(1500, 500, 6), ...coins(1880, 470, 5), ...arc(2120, 500, 5),
+        ...coins(2680, 443, 5),
         item('star', 1140, 442), item('star', 1400, 340), item('star', 2930, 340), item('heart', 2500, 550)],
       checkpoints: [checkpoint(350), checkpoint(2560)], hazards: [],
       secrets: [secret(1290, 280, 210, 105)], wakeables: [],
@@ -744,9 +752,18 @@
         captureAfter: 11 },
       platforms: [ground(0, 3100), ledge(600, 480, 230), ledge(1070, 400, 230), ledge(1600, 480, 240),
         ledge(2030, 375, 220, 'echo'), ledge(2480, 470, 220)],
-      enemies: [], hazards: [],
+      // Le dormeur est posté juste devant la quatrième fleur : une seule onde
+      // l'apaise ET ouvre la corolle. La créature ne s'ajoute pas à l'idée, elle
+      // la resserre. Le patrouilleur, lui, fait payer la course en avant.
+      enemies: [{ ...enemy('sleeper', 1615, 600, 1560, 1720) },
+        enemy('patrol', 2260, 600, 2140, 2440)],
+      hazards: [],
       wakeables: [440,850,1260,1670,2080,2490,2840].map((x, i) => wake('bloom', x, 575, { id: 'astre-fleur-' + (i + 1) })),
-      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5), ...coins(1700, 438, 4),
+      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5),
+        // Dans le vide 1218→1700 : de quoi occuper l'attente pendant que l'astre
+        // rattrape la fleur qu'on vient d'ouvrir.
+        ...arc(1290, 520, 6), ...coins(1500, 470, 4),
+        ...coins(1700, 438, 4),
         ...coins(2070, 333, 4), ...coins(2520, 428, 4), item('star', 1170, 352), item('star', 2140, 323), item('star', 2610, 417), item('echo', 1900, 550)],
       checkpoints: [checkpoint(950), checkpoint(2190)], secrets: [secret(2035, 250, 210, 130)],
       hints: [{ x: 180, text: 'Réveille les fleurs avec X. Le petit astre avance seulement dans leur lumière.' },
@@ -765,8 +782,17 @@
       platforms: [ground(0, 720), ground(1270, 310), ground(2180, 820),
         ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge' }), ledge(1550, 600, 660, 'solid', { placeRole: 'living-bridge' }),
         ledge(390, 490, 210), ledge(1320, 485, 200), ledge(1480, 380, 230), ledge(2340, 480, 220), ledge(2590, 380, 230, 'vanish')],
-      enemies: [], hazards: [], wakeables: [], checkpoints: [checkpoint(400), checkpoint(1430)],
-      collectibles: [...coins(270, 547, 5), ...arc(890, 548, 6), ...coins(1360, 442, 4), ...arc(1760, 548, 6), ...coins(2390, 438, 4),
+      // Un veilleur endormi à côté du deuxième maillon : l'apaiser prolonge la
+      // chaîne au lieu de la rompre — c'est la même onde qui sert aux deux.
+      // Et un patrouilleur sur la rive d'arrivée : le pont expire, lui non.
+      enemies: [{ ...enemy('sleeper', 1455, 600, 1400, 1560) },
+        enemy('patrol', 2520, 600, 2330, 2830)],
+      hazards: [], wakeables: [], checkpoints: [checkpoint(400), checkpoint(1430)],
+      collectibles: [...coins(270, 547, 5), ...arc(890, 548, 6),
+        // Suspendus au-dessus des deux travées : on ne les a qu'en passant PAR
+        // le pont, jamais en contournant.
+        ...arc(600, 500, 5), ...arc(2010, 500, 6),
+        ...coins(1360, 442, 4), ...arc(1760, 548, 6), ...coins(2390, 438, 4),
         item('star', 480, 440), item('star', 1600, 333), item('star', 2700, 330)],
       secrets: [secret(1490, 275, 210, 108)],
       hints: [{ x: 180, text: 'Appelle un veilleur. Sa voix traverse toute la chaîne et le pont prend forme.' },
@@ -792,8 +818,14 @@
         wake('chime', 2390, 545, { id: 'riviere-relais-5' }), wake('chime', 2540, 545, { id: 'riviere-relais-6' }),
         wake('chime', 2680, 545, { id: 'riviere-relais-7' }), wake('bridge', 2700, 600, { id: 'riviere-pont-2', span: 700 }),
         wake('bloom', 3420, 575, { id: 'riviere-lune' })],
-      enemies: [enemy('sleeper', 1830, 600, 1720, 1930)], hazards: [],
-      collectibles: [...coins(240, 550, 5), ...coins(660, 333, 4), ...arc(1050, 548, 6), ...coins(1920, 333, 4),
+      // Une tourelle sur la rive d'en face de la deuxième balise : allumer
+      // devient une question de POSITION, pas seulement d'ordre.
+      enemies: [enemy('sleeper', 1830, 600, 1720, 1930),
+        enemy('turret', 2760, 600, 2700, 2820)], hazards: [],
+      collectibles: [...coins(240, 550, 5), ...coins(660, 333, 4), ...arc(1050, 548, 6),
+        // Les deux vides suivent le lit de la rivière remise en marche.
+        ...arc(1320, 490, 6), ...coins(1620, 430, 5), ...arc(2900, 500, 6), ...coins(3200, 440, 5),
+        ...coins(1920, 333, 4),
         ...arc(2490, 548, 6), ...coins(3480, 338, 5), item('star', 730, 325), item('star', 2200, 235), item('star', 3580, 330)],
       checkpoints: [checkpoint(1630), checkpoint(3170)],
       secrets: [secret(645, 270, 205, 108), secret(2100, 180, 215, 108), secret(3450, 275, 230, 108)],
@@ -822,7 +854,12 @@
         ledge(390, 545, 240), ledge(180, 430, 240, 'moving', { axis: 'y', range: 15, speed: .6 }),
         ledge(0, 320, 250, 'conveyor', { direction: 1 }), { ...ground(310, 500, 210), h: 38 },
         ledge(1700, 1010, 190, 'crumble'), ledge(1720, 900, 170)],
-      enemies: [], hazards: [], wakeables: [],
+      // Deux paliers gardés, à mi-hauteur et sous la couronne : dans une
+      // ascension, une créature ne barre pas la route — elle décide du MOMENT
+      // où l'on quitte le palier qui porte.
+      enemies: [enemy('hopper', 1000, 1295, 880, 1180),
+        enemy('swarm', 700, 700, 540, 900)],
+      hazards: [], wakeables: [],
       collectibles: [...coins(420, 1638, 4), ...arc(910, 1295, 5), ...coins(1460, 1073, 6), ...coins(960, 843, 4),
         ...arc(420, 493, 5), ...coins(410, 164, 4), item('star', 555, 1635), item('star', 1800, 850), item('star', 570, 160)],
       checkpoints: [checkpoint(260, 1800), checkpoint(1600, 1120)], secrets: [secret(1710, 795, 190, 110)],
@@ -843,8 +880,16 @@
       platforms: [ground(0, 560), ground(1430, 420), ground(2670, 480),
         ...[600,820,1040,1260,1860,2080,2300,2520].map(x => ledge(x, 585, 180, 'solid', { placeRole: 'rain-step' })),
         ledge(250, 490, 210), ledge(1510, 490, 230), ledge(2790, 490, 250)],
-      enemies: [], hazards: [], wakeables: [], checkpoints: [checkpoint(300), checkpoint(1630)],
-      collectibles: [...coins(290, 446, 4), ...arc(830, 525, 5), ...coins(1540, 445, 4), ...arc(2120, 525, 5),
+      // Un lieu sans sol continu appelle une créature qui n'en a pas besoin :
+      // l'essaim dérive au-dessus des vides, là où la pluie fait pousser.
+      enemies: [enemy('swarm', 1180, 400, 1000, 1420),
+        enemy('swarm', 2450, 420, 2280, 2700)],
+      hazards: [], wakeables: [], checkpoints: [checkpoint(300), checkpoint(1630)],
+      collectibles: [...coins(290, 446, 4), ...arc(830, 525, 5),
+        // Dans les quatre vides : ce que la pluie fait pousser mérite d'être
+        // parcouru, pas seulement franchi.
+        ...arc(520, 470, 5), ...coins(1120, 400, 5), ...arc(1780, 470, 6), ...coins(2420, 400, 5),
+        ...coins(1540, 445, 4), ...arc(2120, 525, 5),
         ...coins(2820, 446, 4), item('star', 355, 440), item('star', 1620, 440), item('star', 2920, 440)],
       secrets: [secret(1515, 385, 220, 110)],
       hints: [{ x: 160, text: 'Appelle avec X : le nuage vient pleuvoir devant toi. Attends que le prochain pas ait poussé.' },

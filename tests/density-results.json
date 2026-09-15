@@ -1,0 +1,28 @@
+{
+  "ranAt": "2026-09-15T22:50:23.600Z",
+  "floors": {
+    "creatures": 1,
+    "optionalDetours": 1,
+    "collectiblesPer1000px": 11
+  },
+  "total": 4,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Chaque lieu est habité : aucun n’est traversé sans rien y rencontrer",
+      "passed": true
+    },
+    {
+      "name": "Chaque lieu récompense d’avoir regardé ailleurs que devant soi",
+      "passed": true
+    },
+    {
+      "name": "La densité tient au mètre, pas en moyenne : un lieu pauvre ne se cache pas derrière un lieu riche",
+      "passed": true
+    },
+    {
+      "name": "Les îles restent des repos : c’est une décision, pas un oubli",
+      "passed": true
+    }
+  ]
+}
