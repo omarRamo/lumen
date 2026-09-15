@@ -53,7 +53,7 @@
       this._worldClock = 0; this._footstep = 0; this._gliding = false; this._audioSeed = 0x6c756d65;
     }
 
-    /** 0 = calm, 1 = something is actively hunting Nilo. Ramped by the engine. */
+    /** 0 = calm, 1 = something is actively hunting Lumen. Ramped by the engine. */
     setDanger(value) { this._danger = clamp(Number(value) || 0, 0, 1); }
     /** 0 = no boss, 1-3 = the Veilleur's remaining thirds. */
     setBossPhase(stage) { this._bossPhase = clamp(Math.floor(Number(stage) || 0), 0, 3); }
@@ -369,7 +369,7 @@
         if (beat % 2 === 0) this._tone(midi(this._degree(harmonic - 9, theme)), at, eighth * 1.85, .052 * tension, 'bass', true, 0);
         // Then an uneasy breath between the beats.
         if (tension > .45 && beat % 4 === 2) this._hush(at, eighth * 1.3, .024 * tension, 2500, true);
-        // Finally a high, nervous shimmer when the threat is right behind Nilo.
+        // Finally a high, nervous shimmer when the threat is right behind Lumen.
         if (tension > .7 && step % 8 === 5) this._tone(midi(this._degree(harmonic + 7, theme) + 12), at, eighth * .95, .032 * tension, 'glass', true, .38);
       }
       if (this._bossPhase >= 2 && beat % 2 === 1) this._tone(85, at, .11, theme.rhythm * (this._bossPhase >= 3 ? 1.25 : .85), 'kick', true);
@@ -525,7 +525,7 @@
         // The arena closing in: a slow rising sweep with no melodic pitch of its own.
         case 'arena': this._hush(at, .95, .17, 380, false, true); tone(110, 0, .95, .11, 'pad', 300); break;
         // Each special platform answers differently, by ear alone:
-        // a dry creak when a crumbling note gives way under Nilo's weight,
+        // a dry creak when a crumbling note gives way under Lumen's weight,
         case 'crumble': tone(240, 0, .14, .13, 'pluck', 150); this._hush(at, .13, .12, 1350); break;
         // a soft mechanical tick while a conveyor carries him,
         case 'conveyor': tone(430, 0, .06, .055, 'pluck', 360); this._hush(at, .05, .04, 2700); break;
@@ -538,7 +538,7 @@
         case 'sleeperWake': tone(64, 0, .55, .22, 'bass', 120); this._hush(at, .5, .2, 460, false, true); tone(190, .12, .3, .1, 'pluck', 330); break;
         // The swarm bursts apart: a flutter, then motes scattering upwards.
         case 'swarm': this._hush(at, .26, .16, 3100); notes([81, 88, 93, 97], .038, .3, .11); break;
-        // La voix de Nilo : une note ronde qui s'ouvre, suivie de son souffle.
+        // La voix de Lumen : une note ronde qui s'ouvre, suivie de son souffle.
         // Elle doit rester douce — on l'entendra des milliers de fois.
         case 'resonance': tone(196, 0, .5, .13, 'water', 340); tone(midi(74), .03, .55, .07, 'glass'); this._hush(at, .32, .045, 1700, false, true); break;
         // Le relais d'un carillon : la même idée, plus haute et plus courte, pour

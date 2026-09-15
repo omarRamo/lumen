@@ -4,7 +4,7 @@
 
 **Une petite voix peut réveiller tout un ciel.**
 
-Nilo retrouve les neuf voix perdues d’Auralis, un grand voyageur céleste.
+Lumen retrouve les neuf voix perdues d’Auralis, un grand voyageur céleste.
 Trois îles suspendues, des notes à attraper en plein vol, des compagnons qui
 vous suivent et des jardins qui refleurissent. On entre directement dans le
 jeu, sans écran publicitaire ni compte à créer.
@@ -33,7 +33,7 @@ Les menus suivent la même apparence, dans les cinq langues et en RTL.
 
 Les falaises portent désormais des strates et des fissures, les arbres des
 veines et des cernes, et les arches des gravures et des bannières tissées.
-L’écharpe, la tunique et les ailes de Nilo ont leurs coutures et leurs motifs.
+L’écharpe, la tunique et les ailes de Lumen ont leurs coutures et leurs motifs.
 Ces textures sont dessinées localement ; les détails statiques sont mis en
 cache et recalculés seulement lorsque leur palette change.
 
@@ -117,8 +117,8 @@ quêtes, dialogues, compagnons et expéditions. Les tests navigateur vérifient
 - Chaque note attrapée en l’air rend le second saut disponible. Les notes
   deviennent un itinéraire de vol, pas seulement un compteur.
 - Les notes forment une mélodie pentatonique et des enchaînements. À dix notes
-  dans un enchaînement, Nilo gagne un peu de vitesse.
-- Chanter réveille les échos. Ils rejoignent Nilo, augmentent la portée du
+  dans un enchaînement, Lumen gagne un peu de vitesse.
+- Chanter réveille les échos. Ils rejoignent Lumen, augmentent la portée du
   chant et enrichissent la musique. Les fleurs repoussent, les cascades
   reviennent et les trois voix de l’île ouvrent son passage.
 - Trois souvenirs par île offrent des détours facultatifs. Les neuf voix et
@@ -197,7 +197,7 @@ La suite documente les Jardins de la lune, conservés dans l’atlas du Chant.
 
 > Le jour, tu répares un monde. La nuit, ce monde rêve de nouvelles aventures.
 
-Un jeu de plateforme-aventure 2D original. Nilo, un petit gardien ailé, a une
+Un jeu de plateforme-aventure 2D original. Lumen, un petit gardien ailé, a une
 voix : une onde qui réveille ce qui dort dans les jardins de la lune. Onze
 chapitres écrits à la main, un observatoire où l'on parle à deux personnes, et
 des expéditions nocturnes qui n'existent qu'une nuit — sauf si vous notez leur
@@ -231,7 +231,7 @@ vient du maintien, pas d'un troisième appui.
 
 C'est le verbe central, et il est **toujours disponible** : pas un pouvoir, pas
 une ressource, rien qui puisse expirer au mauvais moment. Une onde part de
-Nilo et réveille ce qu'elle touche, pendant quelques secondes.
+Lumen et réveille ce qu'elle touche, pendant quelques secondes.
 
 Quatre natures de réveil, délibérément différentes les unes des autres :
 
@@ -641,9 +641,9 @@ Contrat : `{ type, x, y, w, h, minX, maxX }`. Six comportements existent :
 | --- | --- | --- |
 | `patrol` | Va-et-vient au sol | Coquille spiralée |
 | `hopper` | Bonds réguliers | Corps rond sur deux pattes |
-| `turret` | Immobile, tire vers Nilo | Fleur sur une tige |
+| `turret` | Immobile, tire vers Lumen | Fleur sur une tige |
 | `chaser` | Poursuite aérienne | Papillon de nuit |
-| `sleeper` | Dort ; se réveille si Nilo s'attarde, puis charge | Monticule de mousse, œil ambre |
+| `sleeper` | Dort ; se réveille si Lumen s'attarde, puis charge | Monticule de mousse, œil ambre |
 | `swarm` | Anneau de lucioles ; se **disperse** quand on saute dessus | Cinq lucioles ailées |
 
 Deux détails comptent : **un dormeur endormi est inoffensif au contact** — ce
@@ -661,7 +661,7 @@ respect des capacités, et la franchissabilité des salles qui l'emploient.
 
 ## Direction artistique
 
-Nilo, les créatures, les architectures botaniques, les décors et les sons sont
+Lumen, les créatures, les architectures botaniques, les décors et les sons sont
 originaux et dessinés ou synthétisés par le code. Chaque créature a une
 silhouette qui lui est propre : aucune n'est la recoloration d'une autre.
 Les illustrations et la musique sont générées localement. Le Chant ajoute

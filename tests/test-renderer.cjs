@@ -19,6 +19,7 @@ let failed = 0;
 function context2d(calls) {
   const gradient = { addColorStop() {} };
   const target = {
+    globalAlpha: 1,
     canvas: { width: 1280, height: 720 },
     createLinearGradient: () => gradient,
     createRadialGradient: () => gradient,
@@ -32,7 +33,7 @@ function context2d(calls) {
       if (typeof key !== 'string') return undefined;
       return (...args) => { calls.add(key); for (const a of args) if (Number.isNaN(a)) throw new TypeError('NaN passed to ' + key); };
     },
-    set() { return true; }
+    set(object, key, value) { object[key] = value; return true; }
   });
 }
 
@@ -160,7 +161,7 @@ test('The echo bell ring and the revealed ledges draw over their whole lifetime'
     game.camera.x = Math.max(0, game.platforms.find(p => p.type === 'echo').x - 300);
     game.renderer.draw(game, 1 / 60);
   }
-  // An expiring power also draws its countdown ring around Nilo.
+  // An expiring power also draws its countdown ring around Lumen.
   game.player.powerTime = 3; game.echoTime = 0; game.renderer.draw(game, 1 / 60);
 });
 
@@ -188,7 +189,7 @@ test('Tout ce qui dort se dessine endormi, réveillé et clignotant', () => {
   game.renderer.draw(game, 1 / 60);
 });
 
-test('Nilo draws in every posture: running, airborne, sliding, hurt and defeated', () => {
+test('Lumen draws in every posture: running, airborne, sliding, hurt and defeated', () => {
   const { game } = environment();
   game.loadLevel(0);
   const poses = [
@@ -204,6 +205,44 @@ test('Nilo draws in every posture: running, airborne, sliding, hurt and defeated
       invuln: 0, dead: false, landTimer: 0, jumpTimer: 0, runStartTimer: 0, power, powerTime: power ? 3 : 0 }, pose);
     game.renderer.draw(game, 1 / 60);
   }
+});
+
+test('One Lumen drawing serves both modes, with powers, postures and song-only wings', () => {
+  const { game, window } = environment();
+  const shared = window.LumenSongArt.drawLumen;
+  assert.equal(game.renderer.player, undefined);
+  let renders = 0;
+  window.LumenSongArt.drawLumen = (...args) => { renders++; return shared(...args); };
+  game.start(0); game.renderer.draw(game, 0);
+  game.applyLevel(window.LumenSong.create(0), -1); game.renderer.draw(game, 0);
+  assert.equal(renders, 2);
+  function trace(pose = {}, time = .1, flight = false) {
+    const operations = [], base = context2d(new Set());
+    const canvas = new Proxy(base, {
+      get(target, key) {
+        const value = target[key];
+        return typeof value === 'function' ? (...args) => { operations.push([key, ...args]); return value(...args); } : value;
+      },
+      set(target, key, value) { operations.push([key, value]); target[key] = value; return true; }
+    });
+    const player = { x: 180, y: 554, w: 32, h: 46, grounded: true, vx: 0, vy: 0, facing: 1, anim: 0, ...pose };
+    const before = JSON.stringify(player);
+    shared(canvas, player, time, flight);
+    assert.equal(JSON.stringify(player), before);
+    return operations;
+  }
+  const resting = trace();
+  for (const pose of [{ slide: true }, { dashTime: .15 }, { dead: true }, { invuln: 1 },
+    { landTimer: .12 }, { jumpTimer: .08 }, { vx: 420, anim: 1 }]) assert.notDeepEqual(trace(pose), resting);
+  for (const [power, color] of Object.entries({ bloom: '#ffc193', breeze: '#b5f3d0', comet: '#dbb2f6', echo: '#c5f5de' })) {
+    assert.ok(trace({ power, powerTime: 10 }).some(call => call[0] === 'fillStyle' && call[1] === color));
+    assert.ok(trace({ power, powerTime: 3 }).some(call => call[0] === 'arc' && call[3] === 39));
+    assert.ok(!trace({ power, powerTime: 10 }).some(call => call[0] === 'arc'));
+    assert.deepEqual(trace({ power, powerTime: 0 }), resting);
+    assert.ok(trace({ power, powerTime: 3 }, 0).some(call => call[0] === 'globalAlpha' && call[1] === .25));
+  }
+  assert.deepEqual(trace({ gliding: true, grounded: false }), trace({ grounded: false }));
+  assert.notDeepEqual(trace({ gliding: true, grounded: false }, .1, true), trace({ grounded: false }));
 });
 
 test('Every song island draws all routes, flight and awakened states without mutating the simulation', () => {

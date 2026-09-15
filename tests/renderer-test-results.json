@@ -1,5 +1,5 @@
 {
-  "passed": 11,
+  "passed": 12,
   "failed": 0,
   "checks": [
     {
@@ -35,7 +35,11 @@
       "passed": true
     },
     {
-      "name": "Nilo draws in every posture: running, airborne, sliding, hurt and defeated",
+      "name": "Lumen draws in every posture: running, airborne, sliding, hurt and defeated",
+      "passed": true
+    },
+    {
+      "name": "One Lumen drawing serves both modes, with powers, postures and song-only wings",
       "passed": true
     },
     {

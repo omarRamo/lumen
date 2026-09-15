@@ -351,7 +351,7 @@
     lastResult=result;
     $('complete-eyebrow').textContent=result.final?'LES JARDINS SE SOUVIENDRONT DE VOUS':'UNE LUMIÈRE DE PLUS';
     $('complete-title').textContent=result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.';
-    $('complete-subtitle').textContent=result.final?translate('Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
+    $('complete-subtitle').textContent=result.final?translate('Lumen a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
     const total=game.level.collectibles.filter(c=>c.type==='star').length;
     const medal=medals[result.medal]?result.medal:'bronze';
     const targets=game.level.medalTargets;

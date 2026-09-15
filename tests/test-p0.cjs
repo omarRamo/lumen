@@ -7,7 +7,7 @@
  *
  * Tous ont d'abord été écrits en ÉCHEC contre le code d'avant le jalon A ; ce
  * fichier est donc la preuve du défaut autant que du correctif. Aucun ne force
- * un état interne pour se faire plaisir : quand il faut poser Nilo quelque part
+ * un état interne pour se faire plaisir : quand il faut poser Lumen quelque part
  * pour observer une règle, c'est dit dans le nom du test.
  *
  * Exécution : node tests/test-p0.cjs
@@ -252,7 +252,7 @@ test('Une nouvelle onde prolonge l’apaisement au lieu de le redémarrer à zé
   assert.ok(sleeper.calmTime > before, `l’onde n’a pas prolongé : ${before.toFixed(2)} → ${sleeper.calmTime.toFixed(2)}`);
 });
 
-test('Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Nilo', () => {
+test('Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Lumen', () => {
   const { game } = environment();
   game.loadLevel(0); bareStage(game);
   const sleeper = addSleeper(game, 700, { timer: -3 });
@@ -262,10 +262,10 @@ test('Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Nilo', 
   tick(game, 5);
   assert.equal(sleeper.state, 'calm', 'la proximité a réveillé la créature apaisée');
   assert.equal(sleeper.chargeProgress, 0, 'la créature apaisée accumule de la charge');
-  assert.equal(game.player.hp, hp, 'la créature apaisée a blessé Nilo');
+  assert.equal(game.player.hp, hp, 'la créature apaisée a blessé Lumen');
 });
 
-test('Un dormeur apaisé porte Nilo : on peut se tenir sur son dos', () => {
+test('Un dormeur apaisé porte Lumen : on peut se tenir sur son dos', () => {
   const { game } = environment();
   game.loadLevel(0); bareStage(game);
   const sleeper = addSleeper(game, 700, { timer: -3 });
@@ -278,9 +278,9 @@ test('Un dormeur apaisé porte Nilo : on peut se tenir sur son dos', () => {
   Object.assign(game.player, { x: sleeper.x + 4, y: sleeper.y - 46 - 6, vx: 0, vy: 40,
     grounded: false, previousBottom: sleeper.y - 6 });
   tick(game, 2);
-  assert.ok(game.player.grounded, 'Nilo traverse le dos de la créature apaisée');
+  assert.ok(game.player.grounded, 'Lumen traverse le dos de la créature apaisée');
   assert.ok(Math.abs((game.player.y + game.player.h) - sleeper.y) < 3,
-    `Nilo n’est pas posé sur son dos (y=${Math.round(game.player.y + game.player.h)}, dos=${sleeper.y})`);
+    `Lumen n’est pas posé sur son dos (y=${Math.round(game.player.y + game.player.h)}, dos=${sleeper.y})`);
 });
 
 test('La fin de l’apaisement est annoncée, puis rendue sans attaque instantanée', () => {
@@ -319,7 +319,7 @@ test('Un retour au checkpoint remet le dormeur dans un état cohérent', () => {
 
 function hubIndex(window) { return window.LUMEN_LEVELS.findIndex(level => level.hub); }
 
-/** Termine la quête de la coupole en JOUANT : Nilo grimpe et appelle. Aucun
+/** Termine la quête de la coupole en JOUANT : Lumen grimpe et appelle. Aucun
  *  état n'est forcé — seules les positions de départ sont posées, ce qui est
  *  dit dans le nom du test qui s'en sert. */
 function completeDomeQuest(game, window) {
@@ -329,7 +329,7 @@ function completeDomeQuest(game, window) {
   for (const id of quest.needs) {
     const chime = game.wakeables.find(w => w.id === id);
     assert.ok(chime, 'carillon introuvable : ' + id);
-    // Posé sur la corniche sous le carillon, Nilo appelle.
+    // Posé sur la corniche sous le carillon, Lumen appelle.
     place(game, chime.x - 16, chime.y + 40);
     game.usePower();
     tick(game, .8);

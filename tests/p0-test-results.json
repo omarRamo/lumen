@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-14T21:13:29.074Z",
+  "ranAt": "2026-09-15T09:16:55.511Z",
   "total": 28,
   "failed": 0,
   "checks": [
@@ -32,11 +32,11 @@
       "passed": true
     },
     {
-      "name": "Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Nilo",
+      "name": "Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Lumen",
       "passed": true
     },
     {
-      "name": "Un dormeur apaisé porte Nilo : on peut se tenir sur son dos",
+      "name": "Un dormeur apaisé porte Lumen : on peut se tenir sur son dos",
       "passed": true
     },
     {

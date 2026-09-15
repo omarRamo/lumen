@@ -609,7 +609,7 @@ function creature(game, type, x, surface = 600, extra = {}) {
   return e;
 }
 
-test('The sleeper only wakes when Nilo lingers, then charges and settles back', () => {
+test('The sleeper only wakes when Lumen lingers, then charges and settles back', () => {
   const game = fresh(); safeWorld(game);
   const e = creature(game, 'sleeper', 400);
   // Standing far away leaves it asleep no matter how long the player waits.
@@ -641,7 +641,7 @@ test('A stomped swarm scatters harmlessly before it disappears', () => {
   game.updateEnemies(DT);
   assert.ok(e.scatterTime > 0, 'The swarm must scatter rather than vanish.');
   assert.equal(e.alive, true);
-  assert.ok(game.player.vy < 0, 'Stomping a swarm must still bounce Nilo.');
+  assert.ok(game.player.vy < 0, 'Stomping a swarm must still bounce Lumen.');
   assert.equal(game.enemiesDefeated, 1);
   assert.equal(game.levelScore, 220);
   game.player.hp = 3; game.player.invuln = 0;
@@ -651,7 +651,7 @@ test('A stomped swarm scatters harmlessly before it disappears', () => {
   assert.equal(e.alive, false);
 });
 
-test('A hunting swarm leans towards Nilo without ever leaving its thicket', () => {
+test('A hunting swarm leans towards Lumen without ever leaving its thicket', () => {
   const game = fresh(); safeWorld(game);
   const e = creature(game, 'swarm', 700, 500, { grounded: false });
   place(game, 300); game.player.invuln = 100;
@@ -703,7 +703,7 @@ test('Every power announces its own expiry and leaves a distinct sound', () => {
   }
 });
 
-test('Each garden throws its own debris when Nilo lands', () => {
+test('Each garden throws its own debris when Lumen lands', () => {
   for (const [stage, type] of [[0, 'leaf'], [2, 'bubble'], [4, 'ember'], [5, 'flake']]) {
     const game = fresh(stage); game.particles = [];
     game.groundBurst(200, 600, 8, 90);
@@ -760,7 +760,7 @@ test('Each third of the boss taken announces itself and drives the music', () =>
   game.loadLevel(0); assert.equal(game.audio.bossPhase, 0, 'Leaving the finale must clear the boss layer.');
 });
 
-test('Phase two adds a third attack pattern and narrows the arena around Nilo', () => {
+test('Phase two adds a third attack pattern and narrows the arena around Lumen', () => {
   const game = fresh(FINAL_INDEX); game.enemies = []; game.hazards = []; game.collectibles = []; game.checkpoints = [];
   place(game, 3500); game.player.invuln = 1e4;
   const b = game.boss; b.activated = true; b.state = 'telegraph'; b.timer = .1; b.hp = 6;
@@ -772,7 +772,7 @@ test('Phase two adds a third attack pattern and narrows the arena around Nilo', 
   assert.ok(seen.has('leap') && seen.has('volley'), 'The earlier patterns must remain.');
   assert.ok(b.arenaActive && b.arenaLeft > openLeft && b.arenaRight < openRight, 'The arena must close in.');
   assert.ok(game.projectiles.every(s => s.y < 900), 'Falling light must stay inside the arena.');
-  // The walls nudge rather than trap: Nilo is pushed back in, never crushed or killed.
+  // The walls nudge rather than trap: Lumen is pushed back in, never crushed or killed.
   game.player.x = b.arenaLeft - 300; game.updateArena(b, DT);
   assert.ok(game.player.x >= b.arenaLeft);
   game.player.x = b.arenaRight + 300; game.updateArena(b, DT);
@@ -882,7 +882,7 @@ test('Ré-émettre prolonge au lieu de ne rien faire : le joueur ne peut pas êt
   const bridge = wakeableIn(game, 'verger-pont-1');
   // Au bord de la prairie, sur le sol : c'est là que le joueur se tiendra.
   place(game, 1985);
-  assert.ok(game.player.grounded, 'Le rig doit poser Nilo sur un sol réel.');
+  assert.ok(game.player.grounded, 'Le rig doit poser Lumen sur un sol réel.');
   game.player.actionCooldown = 0; game.usePower();
   tick(game, .35);
   assert.equal(bridge.state, 'awake');
@@ -920,7 +920,7 @@ test('Le carillon relaie l’onde une seule fois et la chaîne reste finie', () 
   assert.equal(game.waves.length, 0, 'Aucune onde ne doit survivre indéfiniment.');
 });
 
-test('Le grand pont porte réellement Nilo au-dessus du gouffre, avec la vraie physique', () => {
+test('Le grand pont porte réellement Lumen au-dessus du gouffre, avec la vraie physique', () => {
   const game = fresh(RESONANCE_STAGE);
   game.enemies = []; game.collectibles = []; game.checkpoints = []; game.secrets = [];
   place(game, 2500); game.player.actionCooldown = 0;
@@ -971,7 +971,7 @@ test('La créature réveillée en douceur devient une marche, et cesse d’être
   game.player.grounded = false; game.player.vy = 120;
   let landed = false;
   for (let i = 0; i < 90; i++) { tick(game, DT); if (game.player.grounded && game.player.y + game.player.h <= sleeper.y + 2) { landed = true; break; } }
-  assert.ok(landed, 'Le dos de la créature apaisée doit porter Nilo.');
+  assert.ok(landed, 'Le dos de la créature apaisée doit porter Lumen.');
 });
 
 test('Le retour à la lanterne rendort tout le jardin, sans état à moitié', () => {

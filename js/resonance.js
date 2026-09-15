@@ -1,6 +1,6 @@
 /* LUMEN — la Résonance.
  *
- * Nilo n'a pas d'arme : il a une voix. Une onde part de lui, touche ce qui dort
+ * Lumen n'a pas d'arme : il a une voix. Une onde part de lui, touche ce qui dort
  * dans le jardin, et le réveille un moment. C'est le verbe central du jeu.
  *
  * Quatre choses comptent, et ce module les rend explicites plutôt que diffuses

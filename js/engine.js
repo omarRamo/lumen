@@ -11,7 +11,7 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const approach = (v, target, delta) => v < target ? Math.min(target, v + delta) : Math.max(target, v - delta);
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-  // Each garden throws its own debris when Nilo lands, starts running or bounces.
+  // Each garden throws its own debris when Lumen lands, starts running or bounces.
   // The type drives the renderer's particle shape, the colour its palette.
   const GROUND_DUST = {
     meadow: { type:'leaf', colors:['#c8e88a','#9ed08a','#f3d9a0'] },
@@ -780,7 +780,7 @@
       // La créature endormie a sa propre réaction : l'onde la lève en douceur
       // au lieu de la faire charger. Elle devient une marche, pas une menace.
       // L'apaisement a UN SEUL propriétaire : cette boucle. Elle tourne à chaque
-      // image, quelle que soit la distance à Nilo, et le minuteur générique des
+      // image, quelle que soit la distance à Lumen, et le minuteur générique des
       // créatures (`timer`) n'a plus rien à dire dessus — c'est exactement ce
       // qui faisait retomber un dormeur au sommeil au bout d'une image.
       for (const enemy of this.enemies) {
@@ -828,7 +828,7 @@
           continue;
         }
         if (e.type === 'swarm') {
-          // Fireflies keep a loose ring around their thicket until Nilo comes close,
+          // Fireflies keep a loose ring around their thicket until Lumen comes close,
           // then the whole cloud leans towards him without ever matching his speed.
           const dy=(p.y+20)-(e.y+e.h/2), reach=Math.hypot(distance,dy);
           e.state=reach<330?'hunt':'orbit';
@@ -1004,7 +1004,7 @@
       const full=this.level.width-1400, open=this.level.width-180;
       b.arenaLeft=approach(b.arenaLeft,full+150,55*dt);
       b.arenaRight=approach(b.arenaRight,open-110,45*dt);
-      // The walls push rather than crush: Nilo is nudged back inside, never trapped.
+      // The walls push rather than crush: Lumen is nudged back inside, never trapped.
       const p=this.player;
       if (p.x<b.arenaLeft) { p.x=b.arenaLeft; if (p.vx<0) p.vx=0; }
       if (p.x+p.w>b.arenaRight) { p.x=b.arenaRight-p.w; if (p.vx>0) p.vx=0; }
@@ -1256,7 +1256,7 @@
     }
     /** Une secousse, mise à l'échelle du réglage de confort. */
     shake(amount) { this.camera.shake = Math.max(this.camera.shake, amount * this.effectScale); }
-    /** Keeps the score's extra tension layer in step with what is actually hunting Nilo. */
+    /** Keeps the score's extra tension layer in step with what is actually hunting Lumen. */
     updateDanger(dt) {
       const p=this.player;
       let target=0;

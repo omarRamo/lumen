@@ -817,7 +817,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
     </section>
 
     <section id="hud" class="hud hidden" aria-label="Informations de jeu">
-      <div class="hud-left"><div class="portrait" aria-hidden="true">✦</div><div><div id="hearts" class="hearts" aria-label="Santé"></div><div class="lives-line"><span>NILO</span><span id="lives">5 VIES</span></div></div><span class="hud-divider"></span><div class="score-wrap"><span class="hud-caption">SCORE</span><strong id="score">000000</strong></div></div>
+      <div class="hud-left"><div class="portrait" aria-hidden="true">✦</div><div><div id="hearts" class="hearts" aria-label="Santé"></div><div class="lives-line"><span>Lumen</span><span id="lives">5 VIES</span></div></div><span class="hud-divider"></span><div class="score-wrap"><span class="hud-caption">SCORE</span><strong id="score">000000</strong></div></div>
       <div class="chapter-pill"><span id="chapter-number">01</span><div><small id="chapter-caption">LES JARDINS DE LA LUNE</small><strong id="chapter-name">L’éveil des jardins</strong></div></div>
       <div class="hud-right"><div class="collect-counter"><span class="coin-icon">✧</span><strong id="coin-count">00</strong></div><div id="star-count" class="star-count">✧ ✧ ✧</div><button class="icon-button" data-command="pause" aria-label="Mettre en pause">Ⅱ</button></div>
     </section>
@@ -1123,7 +1123,7 @@ window.LumenI18n.add([
   ['ÉDITION 02', 'CLASSIC EDITION', 'EDICIÓN CLÁSICA', 'الإصدار الكلاسيكي', '经典版'],
   ['Informations de jeu', 'Game information', 'Información del juego', 'معلومات اللعبة', '游戏信息'],
   ['Santé', 'Health', 'Salud', 'الصحة', '生命值'],
-  ['NILO', 'NILO', 'NILO', 'نيلو', '尼洛'],
+  ['Lumen', 'Lumen', 'Lumen', 'Lumen', 'Lumen'],
   ['5 VIES', '5 LIVES', '5 VIDAS', '5 محاولات', '5 条生命'],
   ['VIES : {count}', 'LIVES: {count}', 'VIDAS: {count}', 'المحاولات: {count}', '生命：{count}'],
   ['SCORE', 'SCORE', 'PUNTUACIÓN', 'النقاط', '得分'],
@@ -1275,7 +1275,7 @@ window.LumenI18n.add([
   ['CHAPITRE {chapter} / {total}', 'CHAPTER {chapter} / {total}', 'CAPÍTULO {chapter} / {total}', 'الفصل {chapter} / {total}', '章节 {chapter} / {total}'],
   ['LES JARDINS SE SOUVIENDRONT DE VOUS', 'THE GARDENS WILL REMEMBER YOU', 'LOS JARDINES TE RECORDARÁN', 'ستتذكرك الحدائق', '花园会记得你'],
   ['Même la lune avait besoin de vous.', 'Even the moon needed you.', 'Hasta la luna te necesitaba.', 'حتى القمر احتاج إليك.', '月亮也需要你的帮助。'],
-  ['Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.', 'Nilo restored the Watcher’s light. The moon shines over the gardens again. The journey continues along paths yet to be explored.', 'Nilo devolvió la luz al Vigía. La luna vuelve a brillar sobre los jardines. El viaje sigue por senderos aún sin explorar.', 'أعاد نيلو النور إلى الحارس. يضيء القمر فوق الحدائق من جديد. تستمر الرحلة في الدروب التي لم تُستكشف بعد.', '尼洛让守望者重获光芒，月亮再次照耀花园。旅程将在尚未探索的小路上继续。'],
+  ['Lumen a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.', 'Lumen restored the Watcher’s light. The moon shines over the gardens again. The journey continues along paths yet to be explored.', 'Lumen devolvió la luz al Vigía. La luna vuelve a brillar sobre los jardines. El viaje sigue por senderos aún sin explorar.', 'أعاد Lumen النور إلى الحارس. يضيء القمر فوق الحدائق من جديد. تستمر الرحلة في الدروب التي لم تُستكشف بعد.', 'Lumen让守望者重获光芒，月亮再次照耀花园。旅程将在尚未探索的小路上继续。'],
   ['{name} · Chapitre terminé', '{name} · Chapter complete', '{name} · Capítulo completado', '{name} · اكتمل الفصل', '{name} · 章节完成'],
   ['{count} / {total} FRAGMENTS DE LUNE', '{count} / {total} MOON SHARDS', '{count} / {total} FRAGMENTOS DE LUNA', '{count} / {total} شظايا القمر', '月亮碎片 {count} / {total}'],
   ['Passages secrets découverts : {count} · +{bonus} points', 'Secret paths found: {count} · +{bonus} points', 'Pasajes secretos descubiertos: {count} · +{bonus} puntos', 'الممرات السرية المكتشفة: {count} · +{bonus} نقطة', '发现秘密通道：{count} · +{bonus} 分'],
@@ -1697,7 +1697,7 @@ window.LumenI18n.add([
   <script>
 /* LUMEN — la Résonance.
  *
- * Nilo n'a pas d'arme : il a une voix. Une onde part de lui, touche ce qui dort
+ * Lumen n'a pas d'arme : il a une voix. Une onde part de lui, touche ce qui dort
  * dans le jardin, et le réveille un moment. C'est le verbe central du jeu.
  *
  * Quatre choses comptent, et ce module les rend explicites plutôt que diffuses
@@ -3911,7 +3911,7 @@ window.LumenI18n.add([
       this._worldClock = 0; this._footstep = 0; this._gliding = false; this._audioSeed = 0x6c756d65;
     }
 
-    /** 0 = calm, 1 = something is actively hunting Nilo. Ramped by the engine. */
+    /** 0 = calm, 1 = something is actively hunting Lumen. Ramped by the engine. */
     setDanger(value) { this._danger = clamp(Number(value) || 0, 0, 1); }
     /** 0 = no boss, 1-3 = the Veilleur's remaining thirds. */
     setBossPhase(stage) { this._bossPhase = clamp(Math.floor(Number(stage) || 0), 0, 3); }
@@ -4227,7 +4227,7 @@ window.LumenI18n.add([
         if (beat % 2 === 0) this._tone(midi(this._degree(harmonic - 9, theme)), at, eighth * 1.85, .052 * tension, 'bass', true, 0);
         // Then an uneasy breath between the beats.
         if (tension > .45 && beat % 4 === 2) this._hush(at, eighth * 1.3, .024 * tension, 2500, true);
-        // Finally a high, nervous shimmer when the threat is right behind Nilo.
+        // Finally a high, nervous shimmer when the threat is right behind Lumen.
         if (tension > .7 && step % 8 === 5) this._tone(midi(this._degree(harmonic + 7, theme) + 12), at, eighth * .95, .032 * tension, 'glass', true, .38);
       }
       if (this._bossPhase >= 2 && beat % 2 === 1) this._tone(85, at, .11, theme.rhythm * (this._bossPhase >= 3 ? 1.25 : .85), 'kick', true);
@@ -4383,7 +4383,7 @@ window.LumenI18n.add([
         // The arena closing in: a slow rising sweep with no melodic pitch of its own.
         case 'arena': this._hush(at, .95, .17, 380, false, true); tone(110, 0, .95, .11, 'pad', 300); break;
         // Each special platform answers differently, by ear alone:
-        // a dry creak when a crumbling note gives way under Nilo's weight,
+        // a dry creak when a crumbling note gives way under Lumen's weight,
         case 'crumble': tone(240, 0, .14, .13, 'pluck', 150); this._hush(at, .13, .12, 1350); break;
         // a soft mechanical tick while a conveyor carries him,
         case 'conveyor': tone(430, 0, .06, .055, 'pluck', 360); this._hush(at, .05, .04, 2700); break;
@@ -4396,7 +4396,7 @@ window.LumenI18n.add([
         case 'sleeperWake': tone(64, 0, .55, .22, 'bass', 120); this._hush(at, .5, .2, 460, false, true); tone(190, .12, .3, .1, 'pluck', 330); break;
         // The swarm bursts apart: a flutter, then motes scattering upwards.
         case 'swarm': this._hush(at, .26, .16, 3100); notes([81, 88, 93, 97], .038, .3, .11); break;
-        // La voix de Nilo : une note ronde qui s'ouvre, suivie de son souffle.
+        // La voix de Lumen : une note ronde qui s'ouvre, suivie de son souffle.
         // Elle doit rester douce — on l'entendra des milliers de fois.
         case 'resonance': tone(196, 0, .5, .13, 'water', 340); tone(midi(74), .03, .55, .07, 'glass'); this._hush(at, .32, .045, 1700, false, true); break;
         // Le relais d'un carillon : la même idée, plus haute et plus courte, pour
@@ -4550,8 +4550,8 @@ window.LumenI18n.add([
       if (game.player) {
         if (game.mode === 'home') {
           const center = game.player.x + (game.player.w || 32) / 2, foot = game.player.y + (game.player.h || 46);
-          c.save(); c.translate(center, foot); c.scale(1.75, 1.75); c.translate(-center, -foot); this.player(c, game.player, t, p); c.restore();
-        } else this.player(c, game.player, t, p);
+          c.save(); c.translate(center, foot); c.scale(1.75, 1.75); c.translate(-center, -foot); window.LumenSongArt.drawLumen(c, game.player, t); c.restore();
+        } else window.LumenSongArt.drawLumen(c, game.player, t);
         if (game.echoTime > 0) this.echoWave(c, game.player, game.echoTime, t);
       }
       for (const w of game.waves || []) this.wave(c, w, t);
@@ -4648,7 +4648,7 @@ window.LumenI18n.add([
     homeGarden(c, t, p) {
       c.save();
       // The title's botanical vignette is intentionally larger than play-scale.
-      // Its tree, carved arch and hanging lamps frame Nilo's first little island.
+      // Its tree, carved arch and hanging lamps frame Lumen's first little island.
       const trunkX = 1112, floorY = 520, sway = Math.sin(t * .55) * 2;
       c.save(); c.globalAlpha = .18;
       const light = c.createRadialGradient(1055, 381, 10, 1055, 381, 230); light.addColorStop(0, '#ffffd8'); light.addColorStop(1, '#ffffd800'); c.fillStyle = light; c.fillRect(810, 140, 490, 490); c.restore();
@@ -4788,7 +4788,7 @@ window.LumenI18n.add([
         c.restore();
       }
     }
-    /** The echo bell's ring, expanding from Nilo and fading as the reveal runs out. */
+    /** The echo bell's ring, expanding from Lumen and fading as the reveal runs out. */
     echoWave(c, a, remaining, t) {
       const cx = a.x + (a.w || 32) / 2, cy = a.y + (a.h || 46) / 2;
       const elapsed = Math.max(0, 4 - remaining);
@@ -5083,72 +5083,6 @@ window.LumenI18n.add([
         }
         else { c.rotate(-.4); leaf(c, 4, 11, 22, .4, color + '66'); leaf(c, 0, 4, 16, .4, color); star(c, 0, 3, 10, '#ffecce'); }
       }
-      c.restore();
-    }
-    player(c, a, t, p) {
-      const cx = a.x + (a.w || 32) / 2, foot = a.y + (a.h || 46), grounded = !!a.grounded, speed = Math.abs(a.vx || 0), run = grounded && speed > 20, cycle = t * (9 + speed * .025), face = a.facing || 1;
-      c.save();
-      if (a.invuln > 0 && Math.floor(t * 16) % 2) c.globalAlpha = .4;
-      if (grounded) ellipse(c, cx, foot + 2, a.slide ? 23 : 18, 5, '#092b3540');
-      if (a.power && (a.powerTime === undefined || a.powerTime > 0)) {
-        const powerColor = { bloom: '#ffc193', breeze: '#b5f3d0', comet: '#dbb2f6', echo: '#c5f5de' }[a.power] || '#fff0c1';
-        const expiring = a.powerTime > 0 && a.powerTime <= 5;
-        c.save(); c.globalAlpha *= expiring ? .25 + Math.abs(Math.sin(t * 10)) * .75 : 1;
-        c.save(); c.globalAlpha *= .18; ellipse(c, cx, foot - 25, 29 + Math.sin(t * 4) * 3, 35, powerColor); c.restore();
-        for (let j = 0; j < 3; j++) star(c, cx + Math.sin(t * 3 + j * 2.1) * 28, foot - 24 + Math.cos(t * 3 + j * 2.1) * 29, 2.7, powerColor, t);
-        if (expiring) { c.strokeStyle = powerColor + 'a0'; c.lineWidth = 1.3; c.beginPath(); c.arc(cx, foot - 26, 35, -Math.PI / 2, -Math.PI / 2 + TAU * a.powerTime / 5); c.stroke(); }
-        c.restore();
-      }
-      c.translate(cx, foot);
-      if (a.dead) { c.rotate(Math.sin(t * 3) * .4 + .8 * face); c.globalAlpha *= .8; }
-      // Short impulses are applied around the feet: collision bounds stay stable.
-      const landing = Math.max(0, a.landTimer || 0), squash = Math.sin(Math.min(1, landing / .16) * Math.PI) * .22;
-      const jump = Math.sin(Math.min(1, Math.max(0, a.jumpTimer || 0) / .16) * Math.PI) * .15;
-      const start = Math.sin(Math.min(1, Math.max(0, a.runStartTimer || 0) / .15) * Math.PI) * .07;
-      c.scale(face * (1 + squash - jump - start), 1 - squash + jump + start - (a.slide ? .27 : 0));
-      const bounce = run ? Math.abs(Math.sin(cycle)) * 2.3 : grounded ? Math.sin(t * 2.4) * .6 : -1;
-      c.translate(0, -bounce); c.rotate(a.slide ? .25 : (a.vx || 0) * .0001 * face);
-      // A mint flight-scarf and petal ears keep the lunar explorer unmistakable.
-      const scarfTail = Math.min(speed * .035, 18), flutter = Math.sin(t * 12) * (run ? 3 : 1);
-      c.fillStyle = '#7ed6bc'; c.beginPath(); c.moveTo(-9, -28); c.bezierCurveTo(-18, -34, -22 - scarfTail, -21 + flutter, -30 - scarfTail, -29 + flutter); c.lineTo(-26 - scarfTail, -18 + flutter); c.bezierCurveTo(-19, -15, -16, -25, -8, -22); c.fill();
-      if (!grounded && a.power === 'breeze') {
-        c.save(); c.globalAlpha *= .65; const flap = Math.sin(t * 24) * .3;
-        ellipse(c, -15, -24, 12, 18, '#d6f5d5', -.65 + flap); ellipse(c, 14, -23, 10, 17, '#e9f9dc', .7 - flap); c.restore();
-      }
-      const stride = run ? Math.sin(cycle) * 7 : grounded ? 0 : (a.vy || 0) < 0 ? 5 : -3;
-      const backFoot = -7 + stride, frontFoot = 7 - stride;
-      line(c, [[-6, -13], [backFoot - 1, -6]], '#365f9a', 8);
-      ellipse(c, backFoot, -3 + Math.max(0, -stride) * .2, 7.5, 4.7, '#6d575d', -.12); ellipse(c, backFoot + 1, -1, 6.8, 1.6, '#c4a581');
-      // Coral tunic, cobalt dungarees, brass moon buttons: deliberate clothing,
-      // not a recolour of the old moth body or a borrowed sprite.
-      const tunic = c.createLinearGradient(-13, -25, 14, -9); tunic.addColorStop(0, '#df6d68'); tunic.addColorStop(.55, '#f1917d'); tunic.addColorStop(1, '#c85868');
-      ellipse(c, 0, -17, 13, 13, tunic);
-      const denim = c.createLinearGradient(-11, -22, 11, -7); denim.addColorStop(0, '#497bc0'); denim.addColorStop(.55, '#3b72ae'); denim.addColorStop(1, '#28517f');
-      rounded(c, -10, -21, 20, 16, 6, denim); line(c, [[-7, -25], [-6, -14]], '#477ab6', 4); line(c, [[7, -25], [6, -14]], '#6090c5', 4);
-      ellipse(c, -6, -18, 2.1, 2.2, '#f8d48a'); ellipse(c, 6, -18, 2.1, 2.2, '#ffdda0');
-      line(c, [[-3, -12], [0, -10], [4, -12]], '#91b2d666', 1); line(c, [[6, -10], [frontFoot, -5]], '#477ab5', 8);
-      ellipse(c, frontFoot + 1, -3 + Math.max(0, stride) * .2, 8, 4.8, '#816162', .06); ellipse(c, frontFoot + 2, -1, 7.1, 1.7, '#d7b48b'); ellipse(c, frontFoot + 3, -5, 3.5, 1.2, '#b98e7e');
-      const backHandY = -19 + (run ? Math.sin(cycle) * 5 : 1);
-      line(c, [[-10, -23], [-15 - (run ? stride * .3 : 0), backHandY]], '#d06a69', 5.5); ellipse(c, -15 - (run ? stride * .3 : 0), backHandY + 3, 4.4, 5, '#eee9d5', -.3);
-      // Ear petals emerge around a broad moon cap. The crescent is drawn as a
-      // true cutout, never a letter or a logo.
-      leaf(c, -12, -37, 15, -.95 + Math.sin(t * 3) * .03, '#f5edd3'); leaf(c, 12, -38, 14, .9 + Math.sin(t * 3 + 1) * .03, '#fff1d4');
-      leaf(c, -14, -40, 9, -.95, '#c4d6be'); leaf(c, 14, -41, 8, .9, '#d4dfc3');
-      ellipse(c, 0, -34, 15.8, 13.7, '#f9ebcd'); ellipse(c, 7, -30, 8.5, 7.7, '#fff3d7');
-      c.fillStyle = '#31515d'; c.beginPath(); c.moveTo(-12, -38); c.bezierCurveTo(-6, -41, -2, -36, 1, -36); c.bezierCurveTo(5, -37, 9, -41, 13, -37); c.bezierCurveTo(15, -26, 8, -24, 1, -25); c.bezierCurveTo(-7, -24, -14, -27, -12, -38); c.fill();
-      const blink = !run && grounded && Math.sin(t * 1.9) > .995;
-      if (a.dead) { for (const ex of [-5, 6]) { line(c, [[ex - 2, -35], [ex + 2, -30]], '#ffe4a2', 1.6); line(c, [[ex - 2, -30], [ex + 2, -35]], '#ffe4a2', 1.6); } }
-      else { ellipse(c, -4, -33, 2.8, blink ? .6 : 4.3, '#ffe6a0'); ellipse(c, 7, -33, 3, blink ? .6 : 4.4, '#ffe6a0'); if (!blink) { ellipse(c, -3.2, -34.7, .9, 1.3, '#fffdef'); ellipse(c, 7.8, -34.7, .9, 1.3, '#fffdef'); } }
-      ellipse(c, 3, -27, 1.8, 1, '#f4ba94');
-      const cap = c.createLinearGradient(0, -56, 0, -38); cap.addColorStop(0, '#fa9b86'); cap.addColorStop(.25, '#ee7d74'); cap.addColorStop(1, '#ca5669');
-      c.fillStyle = cap; c.beginPath(); c.moveTo(-17, -41); c.bezierCurveTo(-18, -54, -5, -61, 8, -56); c.bezierCurveTo(17, -54, 19, -45, 17, -39); c.quadraticCurveTo(0, -43, -17, -41); c.fill();
-      c.fillStyle = '#d35b68'; c.beginPath(); c.moveTo(-13, -41); c.bezierCurveTo(0, -45, 15, -44, 23, -39); c.quadraticCurveTo(24, -35, 16, -36); c.quadraticCurveTo(0, -40, -13, -38); c.fill();
-      line(c, [[-12, -48], [-7, -52], [-2, -53]], '#ffbc9a9a', 1.7);
-      ellipse(c, 4, -49, 6.2, 6.1, '#ffdfbc');
-      c.save(); c.beginPath(); c.arc(4, -49, 4.4, 0, TAU); c.clip(); c.beginPath(); c.arc(4, -49, 4.4, 0, TAU); c.arc(6, -50.5, 3.8, 0, TAU); c.fillStyle = '#cb626c'; c.fill('evenodd'); c.restore();
-      c.fillStyle = '#93dec1'; c.beginPath(); c.moveTo(-12, -26); c.quadraticCurveTo(0, -20, 12, -26); c.lineTo(11, -22); c.quadraticCurveTo(0, -17, -11, -22); c.fill(); ellipse(c, 9, -24, 3.2, 3, '#ccf2d4');
-      const airborneHand = !grounded && (a.vy || 0) < -30, handX = airborneHand ? 15 : 14 - (run ? stride * .35 : 0), handY = airborneHand ? -40 : -17 - (run ? Math.sin(cycle) * 5 : 0);
-      line(c, [[10, -23], [handX, handY]], '#e27c71', 6); ellipse(c, handX, handY - (airborneHand ? 3 : 0), 4.5, 5.2, '#fff1d9', airborneHand ? -.15 : .15); ellipse(c, handX + 2, handY - 2, 2.3, 2.8, '#fff9e8');
       c.restore();
     }
     enemy(c, e, t, p) {
@@ -5703,13 +5637,40 @@ window.LumenI18n.add([
     }
     ctx.restore();
   }
-  function nilo(ctx, player, time) {
-    ctx.save(); ctx.translate(player.x + player.w / 2, player.y + player.h); ctx.scale(1.2, 1.2);
-    const stride = player.grounded ? Math.sin(player.anim * 1.5) * Math.min(6, Math.abs(player.vx) / 55) : 3;
-    const squash = player.landTimer > 0 ? 1 - player.landTimer * .7 : 1;
-    ctx.scale(1 / squash, squash); ctx.rotate(player.dead ? -.5 : player.vx * .00009);
-    if (player.dead) ctx.globalAlpha = .6;
-    if (player.gliding && !player.grounded) {
+  function drawLumen(ctx, player, time, flight = false) {
+    const center = player.x + (player.w || 32) / 2, foot = player.y + (player.h || 46);
+    const speed = Math.abs(player.vx || 0), direction = player.facing || 1, dashing = player.dashTime > 0;
+    ctx.save();
+    if (player.invuln > 0 && Math.floor(time * 16) % 2) ctx.globalAlpha *= .4;
+    if (player.grounded) ellipse(ctx, center, foot + 2, player.slide ? 27 : 22, 4, '#1d5b5c40');
+    if (player.power && (player.powerTime === undefined || player.powerTime > 0)) {
+      const color = { bloom: '#ffc193', breeze: '#b5f3d0', comet: '#dbb2f6', echo: '#c5f5de' }[player.power];
+      const expiring = player.powerTime > 0 && player.powerTime <= 5;
+      if (color) {
+        ctx.save(); ctx.globalAlpha *= expiring ? .25 + Math.abs(Math.sin(time * 10)) * .75 : 1;
+        ctx.save(); ctx.globalAlpha *= .18;
+        ellipse(ctx, center, foot - 30, 32 + Math.sin(time * 4) * 3, 39, color); ctx.restore();
+        for (let spark = 0; spark < 3; spark++) star(ctx, center + Math.sin(time * 3 + spark * 2.1) * 32,
+          foot - 30 + Math.cos(time * 3 + spark * 2.1) * 33, 2.7, color);
+        if (expiring) {
+          ctx.strokeStyle = color + 'a0'; ctx.lineWidth = 1.3; ctx.beginPath();
+          ctx.arc(center, foot - 30, 39, -Math.PI / 2, -Math.PI / 2 + TAU * player.powerTime / 5); ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+    if (dashing) for (let trail = 0; trail < 3; trail++) {
+      stroke(ctx, [[center - direction * (27 + trail * 7), foot - 18 - trail * 12],
+        [center - direction * (58 + trail * 9), foot - 18 - trail * 12]], '#f8eccb', 3 - trail * .6);
+    }
+    ctx.translate(center, foot); ctx.scale(1.2, 1.2);
+    const stride = player.grounded ? Math.sin((player.anim || 0) * 1.5) * Math.min(6, speed / 55) : 3;
+    const jump = Math.sin(Math.min(1, Math.max(0, player.jumpTimer || 0) / .16) * Math.PI) * .13;
+    const squash = (player.landTimer > 0 ? 1 - player.landTimer * .7 : 1) + jump;
+    ctx.scale((1 / squash) * (dashing ? 1.16 : 1), squash * (player.slide ? .61 : dashing ? .86 : 1));
+    ctx.rotate(player.dead ? -.5 * direction : player.slide ? .2 * direction : dashing ? .18 * direction : (player.vx || 0) * .00009);
+    if (player.dead) ctx.globalAlpha *= .6;
+    if (flight && player.gliding && !player.grounded && !player.dead) {
       for (const side of [-1, 1]) {
         ctx.save(); ctx.scale(side, 1); ctx.rotate(Math.sin(time * 4) * .06);
         ctx.fillStyle = '#d9f8d4'; ctx.strokeStyle = '#67baa5'; ctx.lineWidth = 1.5;
@@ -5725,9 +5686,9 @@ window.LumenI18n.add([
         star(ctx,39,-35,4,'#f8edb7'); ctx.restore();
       }
     }
-    ctx.save(); ctx.scale(player.facing, 1);
+    ctx.save(); ctx.scale(direction, 1);
     ctx.fillStyle = '#e98c73'; ctx.beginPath(); ctx.moveTo(-4, -25);
-    ctx.bezierCurveTo(-19, -26, -32, -18 + Math.sin(time * 8) * 5, -50 - Math.abs(player.vx) * .025, -28 + Math.sin(time * 6) * 6);
+    ctx.bezierCurveTo(-19, -26, -32, -18 + Math.sin(time * 8) * 5, -50 - speed * .025, -28 + Math.sin(time * 6) * 6);
     ctx.lineTo(-41, -19 + Math.sin(time * 6) * 6); ctx.bezierCurveTo(-27, -8, -15, -16, -3, -20); ctx.fill();
     ctx.save(); ctx.clip();
     for (let thread = -57; thread < -4; thread += 3) stroke(ctx,[[thread,-40],[thread+5,-5]],'#6a40582d',.6);
@@ -5744,10 +5705,15 @@ window.LumenI18n.add([
     ctx.fillStyle = '#fff7dc'; ctx.beginPath(); ctx.moveTo(-17, -33);
     ctx.bezierCurveTo(-25, -48, 3, -56, 17, -42); ctx.bezierCurveTo(28, -33, 15, -21, 0, -22);
     ctx.bezierCurveTo(-9, -21, -17, -25, -17, -33); ctx.fill();
-    const blink = Math.sin(time * 1.4) > .994, facing = player.facing * 2;
-    ellipse(ctx, -6 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
-    ellipse(ctx, 5 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
-    if (!blink) { ellipse(ctx, -5.3 + facing, -36.4, .8, 1.1, '#ffffff'); ellipse(ctx, 5.7 + facing, -36.4, .8, 1.1, '#ffffff'); }
+    const blink = Math.sin(time * 1.4) > .994, facing = direction * 2;
+    if (player.dead) for (const eye of [-6 + facing, 5 + facing]) {
+      stroke(ctx, [[eye - 2, -37], [eye + 2, -33]], '#25575b', 1.6);
+      stroke(ctx, [[eye - 2, -33], [eye + 2, -37]], '#25575b', 1.6);
+    } else {
+      ellipse(ctx, -6 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
+      ellipse(ctx, 5 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
+      if (!blink) { ellipse(ctx, -5.3 + facing, -36.4, .8, 1.1, '#ffffff'); ellipse(ctx, 5.7 + facing, -36.4, .8, 1.1, '#ffffff'); }
+    }
     ellipse(ctx, -12, -30, 3, 1.7, '#edba9c'); ellipse(ctx, 12, -30, 3, 1.7, '#edba9c');
     star(ctx, 0, -47, 3.6, '#edc371');
     ctx.strokeStyle = '#ed9b77'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(0, -23, 10, 3, 0, 0, Math.PI); ctx.stroke();
@@ -5886,8 +5852,7 @@ window.LumenI18n.add([
         stroke(ctx, [[first.x, first.y], [second.x, second.y]], '#f7f4b4', index / trail.length * 4); ctx.restore();
       }
     }
-    if (game.player.grounded) ellipse(ctx, game.player.x + 16, game.player.y + game.player.h + 2, 22, 4, '#1d5b5c40');
-    nilo(ctx, game.player, time);
+    global.LumenSongArt.drawLumen(ctx, game.player, time, true);
     for (const wave of game.waves) {
       ctx.save(); ctx.globalAlpha = Math.max(0, 1 - wave.radius / wave.reach) * .8;
       ctx.strokeStyle = '#faffd8'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(wave.x, wave.y, wave.radius, 0, TAU); ctx.stroke();
@@ -5927,7 +5892,7 @@ window.LumenI18n.add([
     const pattern = ctx.createPattern(grain, 'repeat');
     if (pattern) { ctx.fillStyle = pattern; ctx.fillRect(0, 0, renderer.width, renderer.height); }
   }
-  global.LumenSongArt = { draw, THEMES, NIGHT_THEMES, paletteFor };
+  global.LumenSongArt = { draw, drawLumen, THEMES, NIGHT_THEMES, paletteFor };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
   <script>
@@ -5944,7 +5909,7 @@ window.LumenI18n.add([
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const approach = (v, target, delta) => v < target ? Math.min(target, v + delta) : Math.max(target, v - delta);
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-  // Each garden throws its own debris when Nilo lands, starts running or bounces.
+  // Each garden throws its own debris when Lumen lands, starts running or bounces.
   // The type drives the renderer's particle shape, the colour its palette.
   const GROUND_DUST = {
     meadow: { type:'leaf', colors:['#c8e88a','#9ed08a','#f3d9a0'] },
@@ -6713,7 +6678,7 @@ window.LumenI18n.add([
       // La créature endormie a sa propre réaction : l'onde la lève en douceur
       // au lieu de la faire charger. Elle devient une marche, pas une menace.
       // L'apaisement a UN SEUL propriétaire : cette boucle. Elle tourne à chaque
-      // image, quelle que soit la distance à Nilo, et le minuteur générique des
+      // image, quelle que soit la distance à Lumen, et le minuteur générique des
       // créatures (`timer`) n'a plus rien à dire dessus — c'est exactement ce
       // qui faisait retomber un dormeur au sommeil au bout d'une image.
       for (const enemy of this.enemies) {
@@ -6761,7 +6726,7 @@ window.LumenI18n.add([
           continue;
         }
         if (e.type === 'swarm') {
-          // Fireflies keep a loose ring around their thicket until Nilo comes close,
+          // Fireflies keep a loose ring around their thicket until Lumen comes close,
           // then the whole cloud leans towards him without ever matching his speed.
           const dy=(p.y+20)-(e.y+e.h/2), reach=Math.hypot(distance,dy);
           e.state=reach<330?'hunt':'orbit';
@@ -6937,7 +6902,7 @@ window.LumenI18n.add([
       const full=this.level.width-1400, open=this.level.width-180;
       b.arenaLeft=approach(b.arenaLeft,full+150,55*dt);
       b.arenaRight=approach(b.arenaRight,open-110,45*dt);
-      // The walls push rather than crush: Nilo is nudged back inside, never trapped.
+      // The walls push rather than crush: Lumen is nudged back inside, never trapped.
       const p=this.player;
       if (p.x<b.arenaLeft) { p.x=b.arenaLeft; if (p.vx<0) p.vx=0; }
       if (p.x+p.w>b.arenaRight) { p.x=b.arenaRight-p.w; if (p.vx>0) p.vx=0; }
@@ -7189,7 +7154,7 @@ window.LumenI18n.add([
     }
     /** Une secousse, mise à l'échelle du réglage de confort. */
     shake(amount) { this.camera.shake = Math.max(this.camera.shake, amount * this.effectScale); }
-    /** Keeps the score's extra tension layer in step with what is actually hunting Nilo. */
+    /** Keeps the score's extra tension layer in step with what is actually hunting Lumen. */
     updateDanger(dt) {
       const p=this.player;
       let target=0;
@@ -7871,7 +7836,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     lastResult=result;
     $('complete-eyebrow').textContent=result.final?'LES JARDINS SE SOUVIENDRONT DE VOUS':'UNE LUMIÈRE DE PLUS';
     $('complete-title').textContent=result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.';
-    $('complete-subtitle').textContent=result.final?translate('Nilo a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
+    $('complete-subtitle').textContent=result.final?translate('Lumen a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
     const total=game.level.collectibles.filter(c=>c.type==='star').length;
     const medal=medals[result.medal]?result.medal:'bronze';
     const targets=game.level.medalTargets;

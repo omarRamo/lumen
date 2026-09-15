@@ -57,7 +57,7 @@ suffire à faire apparaître le premier appel volontaire dans la première
 minute de jeu. *À mesurer : le temps avant le premier appel volontaire, chez
 trois personnes qui n'ont rien lu.* (P1-3)
 
-**2. Le bouton d'action trahit l'intention quand Nilo porte `comet`.** Le même
+**2. Le bouton d'action trahit l'intention quand Lumen porte `comet`.** Le même
 appui appelle une onde et déclenche une ruée : vouloir un pont provoque une
 chute. Si c'est vrai, on devrait voir des morts jugées injustes exactement
 dans les salles à pont, et seulement chez les porteurs de `comet`. *À mesurer :
@@ -103,7 +103,7 @@ d'au moins 48 px, trois doigts simultanés, aucun doigt collé après une
 annulation. **Aucun doigt humain ne les a touchés.** Et un test à trois
 pointeurs ne démontre pas que le chemin principal se joue **à deux pouces** :
 c'est cela qu'il faut éprouver. Restent aussi à voir : la latence réelle, le
-pouce qui masque Nilo, l'encoche, la barre de geste iOS, la suspension et la
+pouce qui masque Lumen, l'encoche, la barre de geste iOS, la suspension et la
 reprise, l'audio après interruption, l'autonomie et l'échauffement.
 
 ### 1.3 La course automatique après 0,38 s
@@ -117,7 +117,7 @@ utilisateur** — mais le tester fait partie du rang 1.
 
 En portrait dans l’édition classique, le canevas se réduit à une bande centrale entourée de deux zones
 vides. C'est jouable mais laid. À trancher : étirer la scène (sans étirer
-Nilo), remonter le HUD dans la bande haute, ou assumer le paysage comme format
+Lumen), remonter le HUD dans la bande haute, ou assumer le paysage comme format
 recommandé avec une invitation claire à tourner l'appareil.
 
 ---

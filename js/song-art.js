@@ -353,13 +353,40 @@
     }
     ctx.restore();
   }
-  function nilo(ctx, player, time) {
-    ctx.save(); ctx.translate(player.x + player.w / 2, player.y + player.h); ctx.scale(1.2, 1.2);
-    const stride = player.grounded ? Math.sin(player.anim * 1.5) * Math.min(6, Math.abs(player.vx) / 55) : 3;
-    const squash = player.landTimer > 0 ? 1 - player.landTimer * .7 : 1;
-    ctx.scale(1 / squash, squash); ctx.rotate(player.dead ? -.5 : player.vx * .00009);
-    if (player.dead) ctx.globalAlpha = .6;
-    if (player.gliding && !player.grounded) {
+  function drawLumen(ctx, player, time, flight = false) {
+    const center = player.x + (player.w || 32) / 2, foot = player.y + (player.h || 46);
+    const speed = Math.abs(player.vx || 0), direction = player.facing || 1, dashing = player.dashTime > 0;
+    ctx.save();
+    if (player.invuln > 0 && Math.floor(time * 16) % 2) ctx.globalAlpha *= .4;
+    if (player.grounded) ellipse(ctx, center, foot + 2, player.slide ? 27 : 22, 4, '#1d5b5c40');
+    if (player.power && (player.powerTime === undefined || player.powerTime > 0)) {
+      const color = { bloom: '#ffc193', breeze: '#b5f3d0', comet: '#dbb2f6', echo: '#c5f5de' }[player.power];
+      const expiring = player.powerTime > 0 && player.powerTime <= 5;
+      if (color) {
+        ctx.save(); ctx.globalAlpha *= expiring ? .25 + Math.abs(Math.sin(time * 10)) * .75 : 1;
+        ctx.save(); ctx.globalAlpha *= .18;
+        ellipse(ctx, center, foot - 30, 32 + Math.sin(time * 4) * 3, 39, color); ctx.restore();
+        for (let spark = 0; spark < 3; spark++) star(ctx, center + Math.sin(time * 3 + spark * 2.1) * 32,
+          foot - 30 + Math.cos(time * 3 + spark * 2.1) * 33, 2.7, color);
+        if (expiring) {
+          ctx.strokeStyle = color + 'a0'; ctx.lineWidth = 1.3; ctx.beginPath();
+          ctx.arc(center, foot - 30, 39, -Math.PI / 2, -Math.PI / 2 + TAU * player.powerTime / 5); ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+    if (dashing) for (let trail = 0; trail < 3; trail++) {
+      stroke(ctx, [[center - direction * (27 + trail * 7), foot - 18 - trail * 12],
+        [center - direction * (58 + trail * 9), foot - 18 - trail * 12]], '#f8eccb', 3 - trail * .6);
+    }
+    ctx.translate(center, foot); ctx.scale(1.2, 1.2);
+    const stride = player.grounded ? Math.sin((player.anim || 0) * 1.5) * Math.min(6, speed / 55) : 3;
+    const jump = Math.sin(Math.min(1, Math.max(0, player.jumpTimer || 0) / .16) * Math.PI) * .13;
+    const squash = (player.landTimer > 0 ? 1 - player.landTimer * .7 : 1) + jump;
+    ctx.scale((1 / squash) * (dashing ? 1.16 : 1), squash * (player.slide ? .61 : dashing ? .86 : 1));
+    ctx.rotate(player.dead ? -.5 * direction : player.slide ? .2 * direction : dashing ? .18 * direction : (player.vx || 0) * .00009);
+    if (player.dead) ctx.globalAlpha *= .6;
+    if (flight && player.gliding && !player.grounded && !player.dead) {
       for (const side of [-1, 1]) {
         ctx.save(); ctx.scale(side, 1); ctx.rotate(Math.sin(time * 4) * .06);
         ctx.fillStyle = '#d9f8d4'; ctx.strokeStyle = '#67baa5'; ctx.lineWidth = 1.5;
@@ -375,9 +402,9 @@
         star(ctx,39,-35,4,'#f8edb7'); ctx.restore();
       }
     }
-    ctx.save(); ctx.scale(player.facing, 1);
+    ctx.save(); ctx.scale(direction, 1);
     ctx.fillStyle = '#e98c73'; ctx.beginPath(); ctx.moveTo(-4, -25);
-    ctx.bezierCurveTo(-19, -26, -32, -18 + Math.sin(time * 8) * 5, -50 - Math.abs(player.vx) * .025, -28 + Math.sin(time * 6) * 6);
+    ctx.bezierCurveTo(-19, -26, -32, -18 + Math.sin(time * 8) * 5, -50 - speed * .025, -28 + Math.sin(time * 6) * 6);
     ctx.lineTo(-41, -19 + Math.sin(time * 6) * 6); ctx.bezierCurveTo(-27, -8, -15, -16, -3, -20); ctx.fill();
     ctx.save(); ctx.clip();
     for (let thread = -57; thread < -4; thread += 3) stroke(ctx,[[thread,-40],[thread+5,-5]],'#6a40582d',.6);
@@ -394,10 +421,15 @@
     ctx.fillStyle = '#fff7dc'; ctx.beginPath(); ctx.moveTo(-17, -33);
     ctx.bezierCurveTo(-25, -48, 3, -56, 17, -42); ctx.bezierCurveTo(28, -33, 15, -21, 0, -22);
     ctx.bezierCurveTo(-9, -21, -17, -25, -17, -33); ctx.fill();
-    const blink = Math.sin(time * 1.4) > .994, facing = player.facing * 2;
-    ellipse(ctx, -6 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
-    ellipse(ctx, 5 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
-    if (!blink) { ellipse(ctx, -5.3 + facing, -36.4, .8, 1.1, '#ffffff'); ellipse(ctx, 5.7 + facing, -36.4, .8, 1.1, '#ffffff'); }
+    const blink = Math.sin(time * 1.4) > .994, facing = direction * 2;
+    if (player.dead) for (const eye of [-6 + facing, 5 + facing]) {
+      stroke(ctx, [[eye - 2, -37], [eye + 2, -33]], '#25575b', 1.6);
+      stroke(ctx, [[eye - 2, -33], [eye + 2, -37]], '#25575b', 1.6);
+    } else {
+      ellipse(ctx, -6 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
+      ellipse(ctx, 5 + facing, -35, 2.4, blink ? .7 : 4, '#25575b');
+      if (!blink) { ellipse(ctx, -5.3 + facing, -36.4, .8, 1.1, '#ffffff'); ellipse(ctx, 5.7 + facing, -36.4, .8, 1.1, '#ffffff'); }
+    }
     ellipse(ctx, -12, -30, 3, 1.7, '#edba9c'); ellipse(ctx, 12, -30, 3, 1.7, '#edba9c');
     star(ctx, 0, -47, 3.6, '#edc371');
     ctx.strokeStyle = '#ed9b77'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(0, -23, 10, 3, 0, 0, Math.PI); ctx.stroke();
@@ -536,8 +568,7 @@
         stroke(ctx, [[first.x, first.y], [second.x, second.y]], '#f7f4b4', index / trail.length * 4); ctx.restore();
       }
     }
-    if (game.player.grounded) ellipse(ctx, game.player.x + 16, game.player.y + game.player.h + 2, 22, 4, '#1d5b5c40');
-    nilo(ctx, game.player, time);
+    global.LumenSongArt.drawLumen(ctx, game.player, time, true);
     for (const wave of game.waves) {
       ctx.save(); ctx.globalAlpha = Math.max(0, 1 - wave.radius / wave.reach) * .8;
       ctx.strokeStyle = '#faffd8'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(wave.x, wave.y, wave.radius, 0, TAU); ctx.stroke();
@@ -577,5 +608,5 @@
     const pattern = ctx.createPattern(grain, 'repeat');
     if (pattern) { ctx.fillStyle = pattern; ctx.fillRect(0, 0, renderer.width, renderer.height); }
   }
-  global.LumenSongArt = { draw, THEMES, NIGHT_THEMES, paletteFor };
+  global.LumenSongArt = { draw, drawLumen, THEMES, NIGHT_THEMES, paletteFor };
 })(typeof window !== 'undefined' ? window : globalThis);

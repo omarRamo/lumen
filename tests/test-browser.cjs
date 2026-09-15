@@ -382,12 +382,12 @@ async function test(name, run) {
     }
   });
 
-  await test('Le clavier déplace Nilo, relance son saut, chante et fige la simulation en pause', async () => {
+  await test('Le clavier déplace Lumen, relance son saut, chante et fige la simulation en pause', async () => {
     const { page, context, errors } = await open('bureau', null, { song: true });
     await page.locator('#game').focus();
     const start = await page.evaluate(() => window.lumen.player.x);
     await page.keyboard.down('ArrowRight'); await page.waitForTimeout(450); await page.keyboard.up('ArrowRight');
-    assert.ok(await page.evaluate(() => window.lumen.player.x) > start + 60, 'La direction doit réellement déplacer Nilo.');
+    assert.ok(await page.evaluate(() => window.lumen.player.x) > start + 60, 'La direction doit réellement déplacer Lumen.');
     await page.keyboard.down('Space'); await page.waitForTimeout(120); await page.keyboard.up('Space');
     await page.waitForTimeout(50); await page.keyboard.down('Space'); await page.waitForTimeout(40);
     const jump = await page.evaluate(() => ({ airJumps: window.lumen.player.airJumps, vy: window.lumen.player.vy }));

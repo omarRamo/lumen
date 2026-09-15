@@ -102,8 +102,8 @@
       if (game.player) {
         if (game.mode === 'home') {
           const center = game.player.x + (game.player.w || 32) / 2, foot = game.player.y + (game.player.h || 46);
-          c.save(); c.translate(center, foot); c.scale(1.75, 1.75); c.translate(-center, -foot); this.player(c, game.player, t, p); c.restore();
-        } else this.player(c, game.player, t, p);
+          c.save(); c.translate(center, foot); c.scale(1.75, 1.75); c.translate(-center, -foot); window.LumenSongArt.drawLumen(c, game.player, t); c.restore();
+        } else window.LumenSongArt.drawLumen(c, game.player, t);
         if (game.echoTime > 0) this.echoWave(c, game.player, game.echoTime, t);
       }
       for (const w of game.waves || []) this.wave(c, w, t);
@@ -200,7 +200,7 @@
     homeGarden(c, t, p) {
       c.save();
       // The title's botanical vignette is intentionally larger than play-scale.
-      // Its tree, carved arch and hanging lamps frame Nilo's first little island.
+      // Its tree, carved arch and hanging lamps frame Lumen's first little island.
       const trunkX = 1112, floorY = 520, sway = Math.sin(t * .55) * 2;
       c.save(); c.globalAlpha = .18;
       const light = c.createRadialGradient(1055, 381, 10, 1055, 381, 230); light.addColorStop(0, '#ffffd8'); light.addColorStop(1, '#ffffd800'); c.fillStyle = light; c.fillRect(810, 140, 490, 490); c.restore();
@@ -340,7 +340,7 @@
         c.restore();
       }
     }
-    /** The echo bell's ring, expanding from Nilo and fading as the reveal runs out. */
+    /** The echo bell's ring, expanding from Lumen and fading as the reveal runs out. */
     echoWave(c, a, remaining, t) {
       const cx = a.x + (a.w || 32) / 2, cy = a.y + (a.h || 46) / 2;
       const elapsed = Math.max(0, 4 - remaining);
@@ -635,72 +635,6 @@
         }
         else { c.rotate(-.4); leaf(c, 4, 11, 22, .4, color + '66'); leaf(c, 0, 4, 16, .4, color); star(c, 0, 3, 10, '#ffecce'); }
       }
-      c.restore();
-    }
-    player(c, a, t, p) {
-      const cx = a.x + (a.w || 32) / 2, foot = a.y + (a.h || 46), grounded = !!a.grounded, speed = Math.abs(a.vx || 0), run = grounded && speed > 20, cycle = t * (9 + speed * .025), face = a.facing || 1;
-      c.save();
-      if (a.invuln > 0 && Math.floor(t * 16) % 2) c.globalAlpha = .4;
-      if (grounded) ellipse(c, cx, foot + 2, a.slide ? 23 : 18, 5, '#092b3540');
-      if (a.power && (a.powerTime === undefined || a.powerTime > 0)) {
-        const powerColor = { bloom: '#ffc193', breeze: '#b5f3d0', comet: '#dbb2f6', echo: '#c5f5de' }[a.power] || '#fff0c1';
-        const expiring = a.powerTime > 0 && a.powerTime <= 5;
-        c.save(); c.globalAlpha *= expiring ? .25 + Math.abs(Math.sin(t * 10)) * .75 : 1;
-        c.save(); c.globalAlpha *= .18; ellipse(c, cx, foot - 25, 29 + Math.sin(t * 4) * 3, 35, powerColor); c.restore();
-        for (let j = 0; j < 3; j++) star(c, cx + Math.sin(t * 3 + j * 2.1) * 28, foot - 24 + Math.cos(t * 3 + j * 2.1) * 29, 2.7, powerColor, t);
-        if (expiring) { c.strokeStyle = powerColor + 'a0'; c.lineWidth = 1.3; c.beginPath(); c.arc(cx, foot - 26, 35, -Math.PI / 2, -Math.PI / 2 + TAU * a.powerTime / 5); c.stroke(); }
-        c.restore();
-      }
-      c.translate(cx, foot);
-      if (a.dead) { c.rotate(Math.sin(t * 3) * .4 + .8 * face); c.globalAlpha *= .8; }
-      // Short impulses are applied around the feet: collision bounds stay stable.
-      const landing = Math.max(0, a.landTimer || 0), squash = Math.sin(Math.min(1, landing / .16) * Math.PI) * .22;
-      const jump = Math.sin(Math.min(1, Math.max(0, a.jumpTimer || 0) / .16) * Math.PI) * .15;
-      const start = Math.sin(Math.min(1, Math.max(0, a.runStartTimer || 0) / .15) * Math.PI) * .07;
-      c.scale(face * (1 + squash - jump - start), 1 - squash + jump + start - (a.slide ? .27 : 0));
-      const bounce = run ? Math.abs(Math.sin(cycle)) * 2.3 : grounded ? Math.sin(t * 2.4) * .6 : -1;
-      c.translate(0, -bounce); c.rotate(a.slide ? .25 : (a.vx || 0) * .0001 * face);
-      // A mint flight-scarf and petal ears keep the lunar explorer unmistakable.
-      const scarfTail = Math.min(speed * .035, 18), flutter = Math.sin(t * 12) * (run ? 3 : 1);
-      c.fillStyle = '#7ed6bc'; c.beginPath(); c.moveTo(-9, -28); c.bezierCurveTo(-18, -34, -22 - scarfTail, -21 + flutter, -30 - scarfTail, -29 + flutter); c.lineTo(-26 - scarfTail, -18 + flutter); c.bezierCurveTo(-19, -15, -16, -25, -8, -22); c.fill();
-      if (!grounded && a.power === 'breeze') {
-        c.save(); c.globalAlpha *= .65; const flap = Math.sin(t * 24) * .3;
-        ellipse(c, -15, -24, 12, 18, '#d6f5d5', -.65 + flap); ellipse(c, 14, -23, 10, 17, '#e9f9dc', .7 - flap); c.restore();
-      }
-      const stride = run ? Math.sin(cycle) * 7 : grounded ? 0 : (a.vy || 0) < 0 ? 5 : -3;
-      const backFoot = -7 + stride, frontFoot = 7 - stride;
-      line(c, [[-6, -13], [backFoot - 1, -6]], '#365f9a', 8);
-      ellipse(c, backFoot, -3 + Math.max(0, -stride) * .2, 7.5, 4.7, '#6d575d', -.12); ellipse(c, backFoot + 1, -1, 6.8, 1.6, '#c4a581');
-      // Coral tunic, cobalt dungarees, brass moon buttons: deliberate clothing,
-      // not a recolour of the old moth body or a borrowed sprite.
-      const tunic = c.createLinearGradient(-13, -25, 14, -9); tunic.addColorStop(0, '#df6d68'); tunic.addColorStop(.55, '#f1917d'); tunic.addColorStop(1, '#c85868');
-      ellipse(c, 0, -17, 13, 13, tunic);
-      const denim = c.createLinearGradient(-11, -22, 11, -7); denim.addColorStop(0, '#497bc0'); denim.addColorStop(.55, '#3b72ae'); denim.addColorStop(1, '#28517f');
-      rounded(c, -10, -21, 20, 16, 6, denim); line(c, [[-7, -25], [-6, -14]], '#477ab6', 4); line(c, [[7, -25], [6, -14]], '#6090c5', 4);
-      ellipse(c, -6, -18, 2.1, 2.2, '#f8d48a'); ellipse(c, 6, -18, 2.1, 2.2, '#ffdda0');
-      line(c, [[-3, -12], [0, -10], [4, -12]], '#91b2d666', 1); line(c, [[6, -10], [frontFoot, -5]], '#477ab5', 8);
-      ellipse(c, frontFoot + 1, -3 + Math.max(0, stride) * .2, 8, 4.8, '#816162', .06); ellipse(c, frontFoot + 2, -1, 7.1, 1.7, '#d7b48b'); ellipse(c, frontFoot + 3, -5, 3.5, 1.2, '#b98e7e');
-      const backHandY = -19 + (run ? Math.sin(cycle) * 5 : 1);
-      line(c, [[-10, -23], [-15 - (run ? stride * .3 : 0), backHandY]], '#d06a69', 5.5); ellipse(c, -15 - (run ? stride * .3 : 0), backHandY + 3, 4.4, 5, '#eee9d5', -.3);
-      // Ear petals emerge around a broad moon cap. The crescent is drawn as a
-      // true cutout, never a letter or a logo.
-      leaf(c, -12, -37, 15, -.95 + Math.sin(t * 3) * .03, '#f5edd3'); leaf(c, 12, -38, 14, .9 + Math.sin(t * 3 + 1) * .03, '#fff1d4');
-      leaf(c, -14, -40, 9, -.95, '#c4d6be'); leaf(c, 14, -41, 8, .9, '#d4dfc3');
-      ellipse(c, 0, -34, 15.8, 13.7, '#f9ebcd'); ellipse(c, 7, -30, 8.5, 7.7, '#fff3d7');
-      c.fillStyle = '#31515d'; c.beginPath(); c.moveTo(-12, -38); c.bezierCurveTo(-6, -41, -2, -36, 1, -36); c.bezierCurveTo(5, -37, 9, -41, 13, -37); c.bezierCurveTo(15, -26, 8, -24, 1, -25); c.bezierCurveTo(-7, -24, -14, -27, -12, -38); c.fill();
-      const blink = !run && grounded && Math.sin(t * 1.9) > .995;
-      if (a.dead) { for (const ex of [-5, 6]) { line(c, [[ex - 2, -35], [ex + 2, -30]], '#ffe4a2', 1.6); line(c, [[ex - 2, -30], [ex + 2, -35]], '#ffe4a2', 1.6); } }
-      else { ellipse(c, -4, -33, 2.8, blink ? .6 : 4.3, '#ffe6a0'); ellipse(c, 7, -33, 3, blink ? .6 : 4.4, '#ffe6a0'); if (!blink) { ellipse(c, -3.2, -34.7, .9, 1.3, '#fffdef'); ellipse(c, 7.8, -34.7, .9, 1.3, '#fffdef'); } }
-      ellipse(c, 3, -27, 1.8, 1, '#f4ba94');
-      const cap = c.createLinearGradient(0, -56, 0, -38); cap.addColorStop(0, '#fa9b86'); cap.addColorStop(.25, '#ee7d74'); cap.addColorStop(1, '#ca5669');
-      c.fillStyle = cap; c.beginPath(); c.moveTo(-17, -41); c.bezierCurveTo(-18, -54, -5, -61, 8, -56); c.bezierCurveTo(17, -54, 19, -45, 17, -39); c.quadraticCurveTo(0, -43, -17, -41); c.fill();
-      c.fillStyle = '#d35b68'; c.beginPath(); c.moveTo(-13, -41); c.bezierCurveTo(0, -45, 15, -44, 23, -39); c.quadraticCurveTo(24, -35, 16, -36); c.quadraticCurveTo(0, -40, -13, -38); c.fill();
-      line(c, [[-12, -48], [-7, -52], [-2, -53]], '#ffbc9a9a', 1.7);
-      ellipse(c, 4, -49, 6.2, 6.1, '#ffdfbc');
-      c.save(); c.beginPath(); c.arc(4, -49, 4.4, 0, TAU); c.clip(); c.beginPath(); c.arc(4, -49, 4.4, 0, TAU); c.arc(6, -50.5, 3.8, 0, TAU); c.fillStyle = '#cb626c'; c.fill('evenodd'); c.restore();
-      c.fillStyle = '#93dec1'; c.beginPath(); c.moveTo(-12, -26); c.quadraticCurveTo(0, -20, 12, -26); c.lineTo(11, -22); c.quadraticCurveTo(0, -17, -11, -22); c.fill(); ellipse(c, 9, -24, 3.2, 3, '#ccf2d4');
-      const airborneHand = !grounded && (a.vy || 0) < -30, handX = airborneHand ? 15 : 14 - (run ? stride * .35 : 0), handY = airborneHand ? -40 : -17 - (run ? Math.sin(cycle) * 5 : 0);
-      line(c, [[10, -23], [handX, handY]], '#e27c71', 6); ellipse(c, handX, handY - (airborneHand ? 3 : 0), 4.5, 5.2, '#fff1d9', airborneHand ? -.15 : .15); ellipse(c, handX + 2, handY - 2, 2.3, 2.8, '#fff9e8');
       c.restore();
     }
     enemy(c, e, t, p) {

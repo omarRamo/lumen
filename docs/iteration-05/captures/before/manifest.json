@@ -1,0 +1,257 @@
+{
+  "phase": "before",
+  "captures": [
+    {
+      "image": "desktop-home.png",
+      "scene": "home",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "chant-petits-matins",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "desktop-chapter-1.png",
+      "scene": "chapter-1",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "prairies-aurore",
+      "session": "campaign",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "desktop-observatory.png",
+      "scene": "observatory",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "observatoire",
+      "session": "hub",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "desktop-dream.png",
+      "scene": "dream",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "reve-0",
+      "session": "expedition",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "desktop-island-1.png",
+      "scene": "island-1",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "chant-petits-matins",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "desktop-island-2.png",
+      "scene": "island-2",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "chant-recifs-ciel",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "desktop-island-3.png",
+      "scene": "island-3",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "key": "chant-grand-chorus",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-home.png",
+      "scene": "home",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "chant-petits-matins",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-chapter-1.png",
+      "scene": "chapter-1",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "prairies-aurore",
+      "session": "campaign",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-observatory.png",
+      "scene": "observatory",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "observatoire",
+      "session": "hub",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-dream.png",
+      "scene": "dream",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "reve-0",
+      "session": "expedition",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-island-1.png",
+      "scene": "island-1",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "chant-petits-matins",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-island-2.png",
+      "scene": "island-2",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "chant-recifs-ciel",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    },
+    {
+      "image": "mobile-island-3.png",
+      "scene": "island-3",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "key": "chant-grand-chorus",
+      "session": "song",
+      "x": 180,
+      "y": 554,
+      "camera": {
+        "x": 0,
+        "y": 0
+      },
+      "time": 2
+    }
+  ]
+}

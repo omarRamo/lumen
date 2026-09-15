@@ -47,9 +47,9 @@ test('Saved language survives validation and invalid preferences return to auto'
 test('Messages interpolate named values literally and reject incomplete translations', () => {
   I18n.add([['Bonjour {name}', 'Hello {name}', 'Hola {name}', 'مرحبًا {name}', '你好，{name}']]);
   I18n.setLanguage('en');
-  assert.equal(I18n.t('Bonjour {name}', { name: '$& <Nilo>' }), 'Hello $& <Nilo>');
+  assert.equal(I18n.t('Bonjour {name}', { name: '$& <Lumen>' }), 'Hello $& <Lumen>');
   I18n.setLanguage('ar');
-  assert.equal(I18n.t('Bonjour {name}', { name: 'Nilo' }), 'مرحبًا Nilo');
+  assert.equal(I18n.t('Bonjour {name}', { name: 'Lumen' }), 'مرحبًا Lumen');
   assert.throws(() => I18n.add([['Missing', 'Only English']]), /Incomplete/);
 });
 test('Every catalog translation keeps the same named placeholders', () => {
@@ -76,5 +76,31 @@ test('Every authored level, quest, dialogue, echo and offered upgrade has five t
   for (const combo of window.LumenUpgrades.COMBOS) { sources.add(combo.name); sources.add(combo.effect); }
   for (let seed = 0; seed < 40; seed++) window.LumenExpedition.plan(seed).rooms.forEach(room => levelText(room.level));
   assert.deepEqual([...sources].filter(source => !I18n.has(source)), []);
+});
+test('Lumen is the same proper name in all five languages', () => {
+  for (const code of Object.keys(I18n.LANGUAGES)) {
+    I18n.setLanguage(code);
+    assert.equal(I18n.t('Lumen'), 'Lumen');
+    for (const [source, translations] of I18n.entries()) {
+      if (/\bLumen\b/.test(source)) assert.ok(/\bLumen\b/.test(translations[code]), code + ': ' + source);
+    }
+  }
+});
+test('The former hero name cannot return to sources, catalogs or the portable edition', () => {
+  const formerName = new RegExp('\\b' + ['Ni', 'lo'].join('') + '\\b|' +
+    String.fromCodePoint(0x646, 0x64a, 0x644, 0x648) + '|' + String.fromCodePoint(0x5c3c, 0x6d1b), 'i');
+  const offenders = [];
+  function inspect(directory) {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (['.git', 'node_modules', 'docs', 'BACKLOG.md'].includes(entry.name)) continue;
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) inspect(file);
+      else if (/\.(?:js|cjs|html|css|json|md|svg)$/.test(entry.name) && formerName.test(fs.readFileSync(file, 'utf8'))) {
+        offenders.push(path.relative(root, file));
+      }
+    }
+  }
+  inspect(root);
+  assert.deepEqual(offenders, [], 'Historical names belong only in docs/ or BACKLOG.md.');
 });
 console.log('\n' + passed + ' localization checks passed.');
