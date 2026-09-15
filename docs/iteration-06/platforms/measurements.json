@@ -1,6 +1,7 @@
 [
   {
     "theme": "meadow",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -49,6 +50,7 @@
   },
   {
     "theme": "cavern",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -97,6 +99,7 @@
   },
   {
     "theme": "tide",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -145,6 +148,7 @@
   },
   {
     "theme": "sky",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -193,6 +197,7 @@
   },
   {
     "theme": "forge",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -241,6 +246,7 @@
   },
   {
     "theme": "frost",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -289,6 +295,7 @@
   },
   {
     "theme": "secret",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -337,6 +344,7 @@
   },
   {
     "theme": "eclipse",
+    "placeKey": null,
     "appearance": "light",
     "rows": [
       {
@@ -385,6 +393,301 @@
   },
   {
     "theme": "meadow",
+    "placeKey": "dos-du-songe",
+    "appearance": "light",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 288,
+        "fingerprint": -622382901
+      },
+      {
+        "type": "solid",
+        "contrasted": 288,
+        "fingerprint": -444755641
+      },
+      {
+        "type": "moving",
+        "contrasted": 291,
+        "fingerprint": -1245287362
+      },
+      {
+        "type": "spring",
+        "contrasted": 240,
+        "fingerprint": -2122432292
+      },
+      {
+        "type": "crumble",
+        "contrasted": 305,
+        "fingerprint": -2058047596
+      },
+      {
+        "type": "echo",
+        "contrasted": 288,
+        "fingerprint": -28299853
+      },
+      {
+        "type": "vanish",
+        "contrasted": 288,
+        "fingerprint": 479181399
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 297,
+        "fingerprint": 212325215
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "secret",
+    "placeKey": "astre-a-guider",
+    "appearance": "light",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 288,
+        "fingerprint": 1753144112
+      },
+      {
+        "type": "solid",
+        "contrasted": 288,
+        "fingerprint": 716796059
+      },
+      {
+        "type": "moving",
+        "contrasted": 292,
+        "fingerprint": -468371965
+      },
+      {
+        "type": "spring",
+        "contrasted": 240,
+        "fingerprint": -2011437261
+      },
+      {
+        "type": "crumble",
+        "contrasted": 307,
+        "fingerprint": 1598453273
+      },
+      {
+        "type": "echo",
+        "contrasted": 288,
+        "fingerprint": -1922738409
+      },
+      {
+        "type": "vanish",
+        "contrasted": 288,
+        "fingerprint": 298078276
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 297,
+        "fingerprint": 1595484670
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "cavern",
+    "placeKey": "pont-des-veilleurs",
+    "appearance": "light",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 296,
+        "fingerprint": 948863732
+      },
+      {
+        "type": "solid",
+        "contrasted": 288,
+        "fingerprint": 2665467
+      },
+      {
+        "type": "moving",
+        "contrasted": 298,
+        "fingerprint": -1427164464
+      },
+      {
+        "type": "spring",
+        "contrasted": 242,
+        "fingerprint": -1760031416
+      },
+      {
+        "type": "crumble",
+        "contrasted": 302,
+        "fingerprint": -1949082023
+      },
+      {
+        "type": "echo",
+        "contrasted": 299,
+        "fingerprint": -1658888430
+      },
+      {
+        "type": "vanish",
+        "contrasted": 297,
+        "fingerprint": -272201681
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 288,
+        "fingerprint": -1725238085
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "tide",
+    "placeKey": "riviere-sans-lune",
+    "appearance": "light",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 932,
+        "fingerprint": -100100338
+      },
+      {
+        "type": "solid",
+        "contrasted": 932,
+        "fingerprint": -1892214818
+      },
+      {
+        "type": "moving",
+        "contrasted": 858,
+        "fingerprint": 1411708178
+      },
+      {
+        "type": "spring",
+        "contrasted": 478,
+        "fingerprint": -1232675403
+      },
+      {
+        "type": "crumble",
+        "contrasted": 845,
+        "fingerprint": 143709540
+      },
+      {
+        "type": "echo",
+        "contrasted": 864,
+        "fingerprint": -1480546578
+      },
+      {
+        "type": "vanish",
+        "contrasted": 864,
+        "fingerprint": 422669597
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": -1002195941
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "sky",
+    "placeKey": "colonne-des-saisons",
+    "appearance": "light",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 288,
+        "fingerprint": -727272936
+      },
+      {
+        "type": "solid",
+        "contrasted": 288,
+        "fingerprint": -1190345345
+      },
+      {
+        "type": "moving",
+        "contrasted": 290,
+        "fingerprint": -1439875535
+      },
+      {
+        "type": "spring",
+        "contrasted": 239,
+        "fingerprint": -476595155
+      },
+      {
+        "type": "crumble",
+        "contrasted": 302,
+        "fingerprint": -1262768144
+      },
+      {
+        "type": "echo",
+        "contrasted": 288,
+        "fingerprint": -897679210
+      },
+      {
+        "type": "vanish",
+        "contrasted": 288,
+        "fingerprint": -1482694980
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 292,
+        "fingerprint": -404118725
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "secret",
+    "placeKey": "pluie-de-lumiere",
+    "appearance": "light",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 288,
+        "fingerprint": 1753144112
+      },
+      {
+        "type": "solid",
+        "contrasted": 288,
+        "fingerprint": 716796059
+      },
+      {
+        "type": "moving",
+        "contrasted": 292,
+        "fingerprint": -468371965
+      },
+      {
+        "type": "spring",
+        "contrasted": 240,
+        "fingerprint": -2011437261
+      },
+      {
+        "type": "crumble",
+        "contrasted": 307,
+        "fingerprint": 1598453273
+      },
+      {
+        "type": "echo",
+        "contrasted": 288,
+        "fingerprint": -1922738409
+      },
+      {
+        "type": "vanish",
+        "contrasted": 288,
+        "fingerprint": 298078276
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 298,
+        "fingerprint": 1595484670
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "meadow",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -433,6 +736,7 @@
   },
   {
     "theme": "cavern",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -481,6 +785,7 @@
   },
   {
     "theme": "tide",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -529,6 +834,7 @@
   },
   {
     "theme": "sky",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -577,6 +883,7 @@
   },
   {
     "theme": "forge",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -625,6 +932,7 @@
   },
   {
     "theme": "frost",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -673,6 +981,7 @@
   },
   {
     "theme": "secret",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -721,6 +1030,7 @@
   },
   {
     "theme": "eclipse",
+    "placeKey": null,
     "appearance": "dark",
     "rows": [
       {
@@ -762,6 +1072,300 @@
         "type": "conveyor",
         "contrasted": 943,
         "fingerprint": -1105948682
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "meadow",
+    "placeKey": "dos-du-songe",
+    "appearance": "dark",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 932,
+        "fingerprint": 640223388
+      },
+      {
+        "type": "solid",
+        "contrasted": 504,
+        "fingerprint": 642644865
+      },
+      {
+        "type": "moving",
+        "contrasted": 858,
+        "fingerprint": 1181441565
+      },
+      {
+        "type": "spring",
+        "contrasted": 675,
+        "fingerprint": -80916770
+      },
+      {
+        "type": "crumble",
+        "contrasted": 844,
+        "fingerprint": 1204856400
+      },
+      {
+        "type": "echo",
+        "contrasted": 864,
+        "fingerprint": 1651029862
+      },
+      {
+        "type": "vanish",
+        "contrasted": 682,
+        "fingerprint": -108289711
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": 1838039105
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "secret",
+    "placeKey": "astre-a-guider",
+    "appearance": "dark",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 932,
+        "fingerprint": 1149704578
+      },
+      {
+        "type": "solid",
+        "contrasted": 932,
+        "fingerprint": -1923315003
+      },
+      {
+        "type": "moving",
+        "contrasted": 860,
+        "fingerprint": -2086286503
+      },
+      {
+        "type": "spring",
+        "contrasted": 938,
+        "fingerprint": 1240304693
+      },
+      {
+        "type": "crumble",
+        "contrasted": 844,
+        "fingerprint": -504522483
+      },
+      {
+        "type": "echo",
+        "contrasted": 864,
+        "fingerprint": 1815164092
+      },
+      {
+        "type": "vanish",
+        "contrasted": 864,
+        "fingerprint": -469197884
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": 954735332
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "cavern",
+    "placeKey": "pont-des-veilleurs",
+    "appearance": "dark",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 936,
+        "fingerprint": -111558036
+      },
+      {
+        "type": "solid",
+        "contrasted": 936,
+        "fingerprint": -1217443505
+      },
+      {
+        "type": "moving",
+        "contrasted": 860,
+        "fingerprint": -1328557724
+      },
+      {
+        "type": "spring",
+        "contrasted": 898,
+        "fingerprint": 1773777467
+      },
+      {
+        "type": "crumble",
+        "contrasted": 847,
+        "fingerprint": -1854941094
+      },
+      {
+        "type": "echo",
+        "contrasted": 865,
+        "fingerprint": 1845562657
+      },
+      {
+        "type": "vanish",
+        "contrasted": 864,
+        "fingerprint": 872912468
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": -663949003
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "tide",
+    "placeKey": "riviere-sans-lune",
+    "appearance": "dark",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 941,
+        "fingerprint": 1140121052
+      },
+      {
+        "type": "solid",
+        "contrasted": 941,
+        "fingerprint": 124294415
+      },
+      {
+        "type": "moving",
+        "contrasted": 860,
+        "fingerprint": -2113304680
+      },
+      {
+        "type": "spring",
+        "contrasted": 951,
+        "fingerprint": 12237165
+      },
+      {
+        "type": "crumble",
+        "contrasted": 848,
+        "fingerprint": -1101253880
+      },
+      {
+        "type": "echo",
+        "contrasted": 864,
+        "fingerprint": 611894805
+      },
+      {
+        "type": "vanish",
+        "contrasted": 864,
+        "fingerprint": 209414725
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": 44014116
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "sky",
+    "placeKey": "colonne-des-saisons",
+    "appearance": "dark",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 935,
+        "fingerprint": 1051221969
+      },
+      {
+        "type": "solid",
+        "contrasted": 935,
+        "fingerprint": -1467243618
+      },
+      {
+        "type": "moving",
+        "contrasted": 860,
+        "fingerprint": -1725266853
+      },
+      {
+        "type": "spring",
+        "contrasted": 947,
+        "fingerprint": -111634117
+      },
+      {
+        "type": "crumble",
+        "contrasted": 848,
+        "fingerprint": 1516440726
+      },
+      {
+        "type": "echo",
+        "contrasted": 864,
+        "fingerprint": -1523727473
+      },
+      {
+        "type": "vanish",
+        "contrasted": 864,
+        "fingerprint": 1593525659
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": -797943013
+      }
+    ],
+    "distinct": 8,
+    "untouched": true
+  },
+  {
+    "theme": "secret",
+    "placeKey": "pluie-de-lumiere",
+    "appearance": "dark",
+    "rows": [
+      {
+        "type": "ground",
+        "contrasted": 932,
+        "fingerprint": 1149704578
+      },
+      {
+        "type": "solid",
+        "contrasted": 932,
+        "fingerprint": -1923315003
+      },
+      {
+        "type": "moving",
+        "contrasted": 860,
+        "fingerprint": -2086286503
+      },
+      {
+        "type": "spring",
+        "contrasted": 938,
+        "fingerprint": 1240304693
+      },
+      {
+        "type": "crumble",
+        "contrasted": 844,
+        "fingerprint": -504522483
+      },
+      {
+        "type": "echo",
+        "contrasted": 864,
+        "fingerprint": 1815164092
+      },
+      {
+        "type": "vanish",
+        "contrasted": 864,
+        "fingerprint": -469197884
+      },
+      {
+        "type": "conveyor",
+        "contrasted": 854,
+        "fingerprint": 954735332
       }
     ],
     "distinct": 8,

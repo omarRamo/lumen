@@ -1,0 +1,57 @@
+LUMEN — preuves de parcours des six nouveaux lieux
+2026-09-16
+
+Commandes exécutées :
+  node tests/test-places-playthrough.cjs
+  node tests/playthrough.cjs
+Résultat : 6/6 nouveaux parcours réussis ; 18/18 scénarios avec l'historique.
+
+Tous les nouveaux parcours commencent au spawn défini par le niveau.
+Le pilote utilise uniquement direction, saut, course et Résonance via Input.
+Chaque pas appelle le vrai game.update à 120 Hz. Aucun déplacement forcé,
+aucune invulnérabilité ou pouvoir injecté, aucun ennemi supprimé, aucune
+sortie modifiée, aucun appel manuel à complete(). Le résultat exige aussi
+qu'un enregistrement completed existe dans SaveStore.
+
+Preuves propres à chaque lieu (en plus de la sortie atteinte) :
+
+dos-du-songe : 23,79 s ; aucune mort ; transport réel de 1 840,6 px sur
+le dos de la créature. Le pilote monte, appelle régulièrement et descend.
+
+astre-a-guider : 28,64 s ; aucune mort ; sept fleurs réveillées ; le petit
+astre atteint sa destination. Le pilote conserve une avance limitée sur lui.
+
+pont-des-veilleurs : 9,43 s ; aucune mort ; trois veilleurs réveillés ;
+552 px réellement parcourus sur le pont vivant.
+
+riviere-sans-lune : 13,62 s ; aucune mort ; trois reflets rendus à la rivière.
+Le pilote attend que les relais aient créé une surface avant de quitter la rive.
+
+colonne-des-saisons : 15,04 s ; aucune mort ; 1 602,4 px gravis ; treize sauts.
+Les tremplins sont empruntés, et le pilote attend la bonne hauteur d'une
+plateforme mobile avant de partir. La sortie est atteinte à l'étage supérieur.
+
+pluie-de-lumiere : 20,62 s ; aucune mort ; huit pas poussés et huit réceptions
+sur ces surfaces. Le pilote regarde dans le sens du prochain pas, appelle,
+puis attend sa croissance avant de sauter.
+
+Ces durées sont celles d'un automate connaissant le chemin, pas des durées
+annoncées pour une première partie humaine. Les routes facultatives ne sont
+pas toutes parcourues : cette suite prouve que le chemin principal et chaque
+idée fonctionnent, pas que chaque secret est plaisant à découvrir.
+
+Les assertions refusent une simple arrivée au portail sans usage de l'idée :
+transport >= 800 px ; escorte arrivée et >= 3 fleurs ; >= 3 veilleurs et
+>= 300 px de pont ; 3 reflets et rivière restaurée ; ascension >= 800 px ;
+>= 3 pas poussés et >= 2 réceptions sur ces pas.
+
+Une anomalie des entrées a été trouvée pendant cette validation : relâcher
+une entrée virtuelle déjà relâchée recréait un front de relâchement à chaque
+image. Cela coupait les rebonds automatiques des tremplins, même avec une
+manette inactive. Le moteur émet désormais ce front uniquement quand une
+entrée effectivement tenue disparaît. Le contrôle dédié est dans
+tests/test-places.cjs. La trajectoire artificiellement tronquée n'a pas été
+conservée pour satisfaire les anciens pilotes.
+
+Aucun test sur matériel mobile/manette physique, aucune mesure de cadence
+sur ces appareils et aucune observation humaine ne sont revendiqués ici.

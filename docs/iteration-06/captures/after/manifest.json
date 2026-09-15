@@ -1,21 +1,27 @@
 {
   "phase": "after",
   "revision": "working-tree-iteration-06",
-  "sourceDigest": "0ce62a9c38fe68e96e2de10812e2a2d4c4c710d4324ceb511998d3000f182b38",
+  "sourceDigest": "b224a1741ba01a92deca1bed3243a940214ea8188ffad88abe64dfe6cf178ab4",
   "method": "Forced saved-profile fixtures. Identical profile hashes and capture conditions are compared. Not evidence of actual progression, hardware testing, or human usability.",
   "fullFixtureMeaning": "Every campaign stage and island from the BEFORE revision is complete. Supplemental all-current images, when present, additionally complete new stages.",
   "content": {
     "campaign": [
       "prairies-aurore",
       "cathedrale-racines",
+      "dos-du-songe",
+      "astre-a-guider",
       "lagon-lucioles",
       "archipels-zephyr",
       "forge-petales",
+      "pont-des-veilleurs",
+      "riviere-sans-lune",
       "palais-givre",
       "jardin-heures-bleues",
       "vergers-vent",
       "galerie-echos",
       "verger-qui-reve",
+      "colonne-des-saisons",
+      "pluie-de-lumiere",
       "coeur-eclipse"
     ],
     "islands": [
@@ -33,6 +39,14 @@
       "chant-sol",
       "chant-neve",
       "chant-orion"
+    ],
+    "authoredPlaces": [
+      "dos-du-songe",
+      "astre-a-guider",
+      "pont-des-veilleurs",
+      "riviere-sans-lune",
+      "colonne-des-saisons",
+      "pluie-de-lumiere"
     ]
   },
   "profiles": {
@@ -364,9 +378,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -394,9 +408,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -424,9 +438,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1504,
+        "scrollHeight": 1584,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -454,9 +468,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1505,
+        "scrollHeight": 1585,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -484,9 +498,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -514,9 +528,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -544,9 +558,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1504,
+        "scrollHeight": 1584,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -574,9 +588,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1505,
+        "scrollHeight": 1585,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -604,9 +618,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -634,9 +648,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -664,9 +678,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1560,
+        "scrollHeight": 1640,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -694,9 +708,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1561,
+        "scrollHeight": 1641,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -724,9 +738,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -754,9 +768,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -784,9 +798,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1560,
+        "scrollHeight": 1640,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -814,9 +828,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1561,
+        "scrollHeight": 1641,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -844,9 +858,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -874,9 +888,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -904,9 +918,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1560,
+        "scrollHeight": 1640,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -934,9 +948,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1561,
+        "scrollHeight": 1641,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -964,9 +978,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -994,9 +1008,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 923,
+        "scrollHeight": 1025,
         "clientHeight": 900,
         "title": "Votre ciel prend vie."
       }
@@ -1024,9 +1038,9 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1560,
+        "scrollHeight": 1640,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
@@ -1054,12 +1068,504 @@
         "renderedSurface": "screen map-screen journey-map active",
         "oldIslandCards": 0,
         "oldChapterCards": 0,
-        "journeyNodes": 16,
+        "journeyNodes": 22,
         "horizontalOverflow": false,
-        "scrollHeight": 1561,
+        "scrollHeight": 1641,
         "clientHeight": 844,
         "title": "Votre ciel prend vie."
       }
+    },
+    {
+      "image": "all-current-light-desktop-archipelago.png",
+      "fixture": "all-current",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "dd2a36e61bebb48fded6d52738726e6a87e154a410807c3792a1dfc06ee92bfb",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": true,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 22,
+        "horizontalOverflow": false,
+        "scrollHeight": 1025,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "all-current-light-mobile-archipelago.png",
+      "fixture": "all-current",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "dd2a36e61bebb48fded6d52738726e6a87e154a410807c3792a1dfc06ee92bfb",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": true,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 22,
+        "horizontalOverflow": false,
+        "scrollHeight": 1640,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "all-current-dark-desktop-archipelago.png",
+      "fixture": "all-current",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "dd2a36e61bebb48fded6d52738726e6a87e154a410807c3792a1dfc06ee92bfb",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": true,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 22,
+        "horizontalOverflow": false,
+        "scrollHeight": 1025,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "all-current-dark-mobile-archipelago.png",
+      "fixture": "all-current",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "dd2a36e61bebb48fded6d52738726e6a87e154a410807c3792a1dfc06ee92bfb",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": true,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 22,
+        "horizontalOverflow": false,
+        "scrollHeight": 1640,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    }
+  ],
+  "stageCaptures": [
+    {
+      "image": "place-dos-du-songe-light-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "dos-du-songe",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 6.075,
+      "camera": {
+        "x": 542.852,
+        "y": 0
+      },
+      "player": {
+        "x": 1016.499,
+        "y": 539
+      },
+      "metrics": {
+        "carriedDistance": 420.3749999999808
+      },
+      "expectedTitle": "Sur le dos d’un songe",
+      "hudTitle": "Sur le dos d’un songe"
+    },
+    {
+      "image": "place-dos-du-songe-dark-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "dos-du-songe",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 6.075,
+      "camera": {
+        "x": 542.852,
+        "y": 0
+      },
+      "player": {
+        "x": 1016.499,
+        "y": 539
+      },
+      "metrics": {
+        "carriedDistance": 420.3749999999808
+      },
+      "expectedTitle": "Sur le dos d’un songe",
+      "hudTitle": "Sur le dos d’un songe"
+    },
+    {
+      "image": "place-astre-a-guider-light-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "astre-a-guider",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 11,
+      "camera": {
+        "x": 814.771,
+        "y": 0
+      },
+      "player": {
+        "x": 1273.264,
+        "y": 554
+      },
+      "metrics": {
+        "flowersWoken": 3,
+        "escortArrived": false
+      },
+      "expectedTitle": "Le petit astre égaré",
+      "hudTitle": "Le petit astre égaré"
+    },
+    {
+      "image": "place-astre-a-guider-dark-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "astre-a-guider",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 11,
+      "camera": {
+        "x": 814.771,
+        "y": 0
+      },
+      "player": {
+        "x": 1273.264,
+        "y": 554
+      },
+      "metrics": {
+        "flowersWoken": 3,
+        "escortArrived": false
+      },
+      "expectedTitle": "Le petit astre égaré",
+      "hudTitle": "Le petit astre égaré"
+    },
+    {
+      "image": "place-pont-des-veilleurs-light-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "pont-des-veilleurs",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 3.7583,
+      "camera": {
+        "x": 579.992,
+        "y": 0
+      },
+      "player": {
+        "x": 1046.497,
+        "y": 554
+      },
+      "metrics": {
+        "chainWakes": 3,
+        "bridgeDistance": 202.6666666666665
+      },
+      "expectedTitle": "Le pont des veilleurs",
+      "hudTitle": "Le pont des veilleurs"
+    },
+    {
+      "image": "place-pont-des-veilleurs-dark-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "pont-des-veilleurs",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 3.7583,
+      "camera": {
+        "x": 579.992,
+        "y": 0
+      },
+      "player": {
+        "x": 1046.497,
+        "y": 554
+      },
+      "metrics": {
+        "chainWakes": 3,
+        "bridgeDistance": 202.6666666666665
+      },
+      "expectedTitle": "Le pont des veilleurs",
+      "hudTitle": "Le pont des veilleurs"
+    },
+    {
+      "image": "place-riviere-sans-lune-light-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "riviere-sans-lune",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 12.3083,
+      "camera": {
+        "x": 2735.116,
+        "y": 0
+      },
+      "player": {
+        "x": 3397.899,
+        "y": 554
+      },
+      "metrics": {
+        "beaconsLit": 3,
+        "riverRestored": true
+      },
+      "expectedTitle": "La rivière sans lune",
+      "hudTitle": "La rivière sans lune"
+    },
+    {
+      "image": "place-riviere-sans-lune-dark-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "riviere-sans-lune",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 12.3083,
+      "camera": {
+        "x": 2735.116,
+        "y": 0
+      },
+      "player": {
+        "x": 3397.899,
+        "y": 554
+      },
+      "metrics": {
+        "beaconsLit": 3,
+        "riverRestored": true
+      },
+      "expectedTitle": "La rivière sans lune",
+      "hudTitle": "La rivière sans lune"
+    },
+    {
+      "image": "place-colonne-des-saisons-light-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "colonne-des-saisons",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 4.55,
+      "camera": {
+        "x": 735.939,
+        "y": 657.477
+      },
+      "player": {
+        "x": 1432.392,
+        "y": 973.132
+      },
+      "metrics": {
+        "climbed": 780.8680555555555,
+        "peakY": 973.1319444444445
+      },
+      "expectedTitle": "La colonne des saisons",
+      "hudTitle": "La colonne des saisons"
+    },
+    {
+      "image": "place-colonne-des-saisons-dark-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "colonne-des-saisons",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 4.55,
+      "camera": {
+        "x": 735.939,
+        "y": 657.477
+      },
+      "player": {
+        "x": 1432.392,
+        "y": 973.132
+      },
+      "metrics": {
+        "climbed": 780.8680555555555,
+        "peakY": 973.1319444444445
+      },
+      "expectedTitle": "La colonne des saisons",
+      "hudTitle": "La colonne des saisons"
+    },
+    {
+      "image": "place-pluie-de-lumiere-light-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "pluie-de-lumiere",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 7.9417,
+      "camera": {
+        "x": 638.522,
+        "y": 0
+      },
+      "player": {
+        "x": 1101.676,
+        "y": 539
+      },
+      "metrics": {
+        "rainGrown": 3,
+        "rainLandings": 3
+      },
+      "expectedTitle": "Là où pleut la lumière",
+      "hudTitle": "Là où pleut la lumière"
+    },
+    {
+      "image": "place-pluie-de-lumiere-dark-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "cosmeticSeed": 6006,
+      "bootstrapFrames": 2,
+      "fixedStep": 0.008333333333333333,
+      "key": "pluie-de-lumiere",
+      "initialSimulationTime": 0.016666666666666666,
+      "captureMethod": "input-only replay from authored spawn; completed profile only grants access",
+      "mode": "playing",
+      "elapsed": 7.9417,
+      "camera": {
+        "x": 638.522,
+        "y": 0
+      },
+      "player": {
+        "x": 1101.676,
+        "y": 539
+      },
+      "metrics": {
+        "rainGrown": 3,
+        "rainLandings": 3
+      },
+      "expectedTitle": "Là où pleut la lumière",
+      "hudTitle": "Là où pleut la lumière"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "passed": 5,
+  "passed": 6,
   "failed": 0,
   "checks": [
     {
@@ -12,6 +12,10 @@
     },
     {
       "name": "Un chapitre réellement joué allume la carte, annonce son succès et survit au rechargement",
+      "passed": true
+    },
+    {
+      "name": "[état forcé] Plusieurs succès en attente ouvrent la constellation du lieu tout juste quitté",
       "passed": true
     },
     {

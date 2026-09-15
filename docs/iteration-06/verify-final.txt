@@ -1,0 +1,1270 @@
+
+> lumen-les-jardins-de-la-lune@5.3.0 verify
+> npm run build && npm test && npm run test:browser
+
+
+> lumen-les-jardins-de-la-lune@5.3.0 build
+> node tools/build.cjs
+
+Portable edition built: LUMEN.html (766 KiB).
+
+> lumen-les-jardins-de-la-lune@5.3.0 test
+> node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs
+
+PASS  Appearance follows the system by default and falls back to light without matchMedia
+PASS  Live system changes apply only when the player has not overridden the system
+PASS  Appearance notifications are removable and invalid preferences select the system
+PASS  Old saves default to system appearance and valid overrides survive reloading
+
+4 appearance checks passed.
+PASS  Three original scores are distinct, finite and share a playable pentatonic vocabulary
+PASS  A full phrase uses pitched instruments, percussion and the ambient answering voice
+PASS  Night changes orchestration but keeps the musical clock and progression intact
+PASS  Sound events use distinct gestures and respect mute, pause and repeat limits
+PASS  Mixer values clamp safely without needing browser audio, and scene transitions clear flight
+
+5 audio composition checks passed.
+PASS  Regional system locales resolve to the five supported languages
+PASS  System preferences are ordered and unsupported or missing languages fall back to English
+PASS  An explicit preference wins, while auto follows a changed system language
+PASS  Saved language survives validation and invalid preferences return to auto
+PASS  Messages interpolate named values literally and reject incomplete translations
+PASS  Every catalog translation keeps the same named placeholders
+PASS  Every authored level, quest, dialogue, echo and offered upgrade has five translations
+PASS  Lumen is the same proper name in all five languages
+PASS  The common map has complete translations for every literal translated message
+PASS  Place-specific completion messages have five translations
+PASS  The former hero name cannot return to sources, catalogs or the portable edition
+
+11 localization checks passed.
+PASS  Deux alternatives proposées produisent deux salles réellement différentes
+PASS  La nature annoncée sur la carte est la nature réellement jouée
+PASS  Une alternative proposée est toujours réalisable : la carte ne propose pas l’impossible
+PASS  L’intention de rythme reste une contrainte distincte du type choisi
+PASS  Un choix ne modifie jamais une salle déjà traversée
+PASS  Un dormeur apaisé le reste huit secondes, quel que soit son minuteur interne
+PASS  Une nouvelle onde prolonge l’apaisement au lieu de le redémarrer à zéro
+PASS  Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Lumen
+PASS  Un dormeur apaisé porte Lumen : on peut se tenir sur son dos
+PASS  La fin de l’apaisement est annoncée, puis rendue sans attaque instantanée
+PASS  Un retour au checkpoint remet le dormeur dans un état cohérent
+PASS  Une quête terminée rouvre la porte au simple retour dans le lieu
+PASS  Une quête terminée survit à un rechargement complet de la page
+PASS  Les dialogues suivent l’état relu de la quête, pas un compteur de session
+PASS  Une seule règle décide de l’accès aux Rêves : le menu ne la contourne pas
+PASS  La session de jeu est un état nommé, pas une déduction sur this.run
+PASS  Terminer un chapitre après une nuit n’appelle jamais completeRoom()
+PASS  Mourir dans un chapitre ne met pas fin à une nuit
+PASS  Un réessai après une nuit perdue ne tente pas de charger le chapitre −1
+PASS  Une nuit perdue se recommence avec la même graine, ou avec une autre
+PASS  Reprendre une nuit sauvegardée ne compte pas une nouvelle tentative
+PASS  Quitter une nuit pour la campagne n’y laisse aucun souvenir de rêve
+PASS  Une donnée corrompue n’écrase pas la copie de secours valide
+PASS  Un profil écrit par une version future n’est pas réinterprété ni écrasé
+PASS  Un indice de salle hors du plan ne conclut pas une nuit toute seule
+PASS  Le nombre d’emplacements de souvenirs est respecté après chargement
+PASS  Une récompense déjà encaissée ne l’est pas deux fois après une reprise
+PASS  Un stockage refusé est signalé une fois l’interface prête, pas avant
+
+28/28 promesses du jalon A vérifiées.
+PASS  Every authored stage loads with independent objects, a stable key and a stable spawn
+PASS  New chapters have long authored routes, safe lanterns, echo detours and distinct creatures
+PASS  Jump height varies with release and lands without sinking
+PASS  Song flight is permanent, limited to one air jump and isolated from classic chapters
+PASS  Song glide slows descent only while jump is held and never changes classic gravity
+PASS  The three song islands are independent and progression cannot skip an island
+PASS  Only actual resonance rescues echoes, opens the portal and survives a fall
+PASS  Airborne notes recharge flight once, form a bounded combo and expire on pause-safe simulation time
+PASS  Wind lifts a held glide, while release restores gravity
+PASS  Island two lets each player call reverse one current once, with real lateral flight in both styles
+PASS  Island three moves one echo along existing ledges, pauses it and rescues it through a real call
+PASS  Island ideas do not add notes, distance, platforms or another mechanic to the first island
+PASS  Balade returns near the fall, Elan returns to a lantern, and neither loses rescued echoes
+PASS  Song records persist separately; the next resting island still requires its preceding act
+PASS  Coyote jump succeeds after walking off a real ledge, then expires
+PASS  Buffered jump fires on landing, including a jump pressed in the air
+PASS  A buffered tap released before landing produces a short jump
+PASS  Horizontal and vertical moving platforms carry a standing player
+PASS  Crumble/reform, vanish cycle, spring boost and conveyor transport work
+PASS  Checkpoint heals, death costs exactly one life, respawn restores a safe state
+PASS  Damage grace period prevents repeated hits; falling and lava are lethal
+PASS  A lethal enemy contact stops the frame before the corpse can collect items
+PASS  Coins/stars/heart collect once; forty coins award exactly one extra life
+PASS  Breeze allows exactly one double jump and replenishes after landing
+PASS  Bloom projectile kills a patrol and action respects its cooldown
+PASS  Comet produces a brief dash and invulnerability; powers expire cleanly
+PASS  All four enemy behaviours run: patrol turn, hopper leap, turret shot, pursuing wisp
+PASS  Completion persists records, opens the next stage and restores from localStorage
+PASS  A secret opens the bonus early without unlocking late story levels
+PASS  Inserting a chapter before the finale preserves dynamic progression flags
+PASS  Denied storage and malformed save data do not prevent play
+PASS  Boss wakes, alternates telegraph/leap/volley/recovery, and enters phase two
+PASS  Boss armour rejects damage; a real falling stomp damages its lowered crown
+PASS  Boss death/respawn retains earned damage and reopens with a clear warning
+PASS  Lagoon allows sustained swimming and a physical exit onto its higher shore
+PASS  Historical dry routes retain their physical walking-jump solutions after stage insertion
+PASS  Every authored checkpoint respawns above stable ground without immediate damage
+PASS  Pause freezes simulation and resume clears held input
+PASS  The sleeper only wakes when Lumen lingers, then charges and settles back
+PASS  A stomped swarm scatters harmlessly before it disappears
+PASS  A hunting swarm leans towards Lumen without ever leaving its thicket
+PASS  The echo bell reveals hidden ledges for four seconds, then hides them again
+PASS  Every power announces its own expiry and leaves a distinct sound
+PASS  Each garden throws its own debris when Lumen lands
+PASS  Medals weigh fragments, damage and time, and a weaker run never demotes one
+PASS  Timed runs record a personal best; exploration never overwrites the clock
+PASS  Each third of the boss taken announces itself and drives the music
+PASS  Phase two adds a third attack pattern and narrows the arena around Lumen
+PASS  Danger drives the extra music layer and clears when the threat is gone
+PASS  Losing a heart reports the damage for the interface and counts towards the medal
+PASS  La Résonance est toujours disponible, sans dépendre d’aucun pouvoir
+PASS  Chaque pouvoir amplifie la Résonance sans jamais la remplacer
+PASS  Un élément se réveille, dure, prévient, puis se rendort
+PASS  Ré-émettre prolonge au lieu de ne rien faire : le joueur ne peut pas être piégé
+PASS  Le carillon relaie l’onde une seule fois et la chaîne reste finie
+PASS  Le grand pont porte réellement Lumen au-dessus du gouffre, avec la vraie physique
+PASS  Sans le carillon, le gouffre reste infranchissable — l’énigme existe vraiment
+PASS  La créature réveillée en douceur devient une marche, et cesse d’être une menace
+PASS  Le retour à la lanterne rendort tout le jardin, sans état à moitié
+PASS  Les six temps du chapitre de la Résonance sont réellement présents
+
+60/60 integration checks passed.
+PASS  Every chapter draws from spawn without a missing routine
+PASS  The title garden, the atlas pose and the portrait viewport all draw
+PASS  All six creatures draw in every state they can reach
+PASS  Every platform type, hazard and collectible has artwork
+PASS  The eight platform types share terrain and retain contrast in every day and night theme
+PASS  Every particle shape and both projectile kinds draw
+PASS  The Veilleur draws through every stage, pattern and the closing arena
+PASS  The echo bell ring and the revealed ledges draw over their whole lifetime
+PASS  Tout ce qui dort se dessine endormi, réveillé et clignotant
+PASS  Lumen draws in every posture: running, airborne, sliding, hurt and defeated
+PASS  One Lumen drawing serves both modes, with powers, postures and song-only wings
+PASS  Every song island draws all routes, flight and awakened states without mutating the simulation
+PASS  Day and night artwork use distinct caches while preserving geometry and collected objects
+
+13/13 drawing checks passed.
+PASS  Les modules sont annotés complètement : rien n’est laissé au hasard
+PASS  Chaque module pose une surface sur ses deux bords, quelle que soit sa variante
+PASS  Corpus de 1000 graines : aucune salle infranchissable, aucun raccord rompu
+PASS  Aucun module n’exige jamais une capacité que le joueur n’a pas encore
+PASS  Même graine, même version, mêmes choix : exactement le même gameplay
+PASS  L’aléatoire cosmétique ne peut pas déplacer une plateforme
+PASS  Une graine se dit, se retape, et retombe sur la même nuit
+PASS  Le repli existe, il est valide, et il n’est jamais choisi sans raison
+PASS  Le directeur de rythme alterne réellement, il ne tire pas au hasard
+PASS  Le plafond du plus grand trou correspond à la physique réelle du moteur
+PASS  Des salles représentatives se traversent avec la vraie physique et de vraies entrées
+PASS  Les souvenirs ont des emplacements, des plafonds et une vraie combinaison
+PASS  [état forcé] La corolle ne peut pas se multiplier : une fleur vivante, et pas de boucle
+PASS  Une nuit sauvegardée au refuge se reprend à l’identique, sans payer deux fois
+PASS  L’échec met fin à la nuit, jamais aux découvertes déjà acquises
+
+15/15 invariants d’expédition vérifiés.
+PASS  Every island, stage, hub and dream entrance appears exactly once, with data-driven totals
+PASS  A fresh map cannot open locked campaign stages, islands or dreams
+PASS  State fixture: act completion opens the following rest island; collecting fragments is optional
+PASS  State fixture: a completed second island and five historical open chapters survive reload
+PASS  State fixture: a legacy campaign frontier opens intervening islands without rewriting stable keys
+PASS  The real first-stage playthrough adds map light, queues its birth, and retains it after a full reload
+PASS  Secret discovery (positioned inside its authored zone) persists even when the stage is left unfinished
+PASS  State fixture: weak replays never extinguish lights and unreadable secret data does not lose the chapter
+PASS  The hub quest completed by real resonance actions opens the same dream node after reload
+PASS  Map controller input emits separate navigation/actions once per press and never moves the hero
+PASS  State fixture: an improved personal time lights its clock again without increasing saved point count
+PASS  State fixture: a fully populated journey remains bounded far below localStorage limits
+
+12/12 journey checks passed.
+PASS  Six stable places add exactly two different decisions per act, each with fragments and safe lanterns
+PASS  Position fixture: the sleeper only travels when calmed, physically carries its rider, then waits
+PASS  Position fixture: an autonomous star advances in awakened flowers and waits when their light ends
+PASS  Position fixture: the bridge needs every creature, relays once, expires and can always be recalled
+PASS  Position fixture: all three river beacons require resonance and their transformation survives a fall
+PASS  The tall garden starts alive below the old fixed screen and its camera follows world altitude
+PASS  An idle controller never releases an unheld jump or cuts an automatic spring bounce
+PASS  Position fixture: rain grows only where sent, warns, expires and can grow the same foothold again
+PASS  Entering a new place after a lost expedition makes Retry restart that place, not the old night
+
+9/9 place mechanics checks passed.
+[
+  {
+    "test": "stage 0 spawn to exit, actual enemies and pickups",
+    "mode": "complete",
+    "seconds": 7.49,
+    "deaths": 0,
+    "lives": 6,
+    "hp": 3,
+    "coins": 41,
+    "maxX": 3720.5,
+    "trace": [
+      {
+        "event": "jump",
+        "x": 478.3,
+        "y": 554,
+        "edge": 950,
+        "time": 0.87
+      },
+      {
+        "event": "jump",
+        "x": 858.1,
+        "y": 554,
+        "edge": 950,
+        "time": 1.65
+      },
+      {
+        "event": "jump",
+        "x": 1393,
+        "y": 554,
+        "edge": 1840,
+        "time": 2.74
+      },
+      {
+        "event": "jump",
+        "x": 1748.2,
+        "y": 509.8,
+        "edge": 1840,
+        "time": 3.47
+      },
+      {
+        "event": "jump",
+        "x": 2128,
+        "y": 464,
+        "edge": 2820,
+        "time": 4.24
+      },
+      {
+        "event": "jump",
+        "x": 3063.1,
+        "y": 554,
+        "edge": 3900,
+        "time": 6.15
+      }
+    ]
+  },
+  {
+    "test": "chapter 12 (Les vergers du vent) exercised by a naive bot",
+    "mode": "complete",
+    "seconds": 17.92,
+    "deaths": 0,
+    "lives": 6,
+    "maxX": 5580.6,
+    "width": 5760,
+    "lanternsLit": 1,
+    "coins": 50,
+    "enemiesDefeated": 0,
+    "damageTaken": 2,
+    "sleepersWoken": 0,
+    "swarmsHunting": 2,
+    "swarmsScattered": 0,
+    "ok": true
+  },
+  {
+    "test": "chapter 13 (La galerie des échos) exercised by a naive bot",
+    "mode": "complete",
+    "seconds": 19.04,
+    "deaths": 0,
+    "lives": 6,
+    "maxX": 5820.4,
+    "width": 6000,
+    "lanternsLit": 1,
+    "coins": 43,
+    "enemiesDefeated": 2,
+    "damageTaken": 3,
+    "sleepersWoken": 1,
+    "swarmsHunting": 2,
+    "swarmsScattered": 2,
+    "ok": true
+  },
+  {
+    "test": "chapitre « Le verger qui rêve » terminé au clavier, Résonance comprise",
+    "mode": "complete",
+    "seconds": 17.57,
+    "deaths": 2,
+    "lives": 3,
+    "maxX": 4319.7,
+    "width": 4500,
+    "coins": 22,
+    "stars": 1,
+    "wakeablesUsed": 11,
+    "wakeablesTotal": 11,
+    "chimeRelays": 1,
+    "creaturesCalmed": 1,
+    "ok": true
+  },
+  {
+    "test": "arena checkpoint to boss victory and final exit, unpowered inputs only",
+    "mode": "ending",
+    "seconds": 13.52,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "bossHp": 0,
+    "playerX": 4618.7,
+    "changes": [
+      {
+        "time": 0,
+        "state": "sleep",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 0.01,
+        "state": "wake",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 1.71,
+        "state": "telegraph",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 2.87,
+        "state": "leap",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 3.89,
+        "state": "recover",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 7.3,
+        "state": "telegraph",
+        "bossHp": 2,
+        "playerHp": 3
+      },
+      {
+        "time": 8.11,
+        "state": "rain",
+        "bossHp": 2,
+        "playerHp": 3
+      },
+      {
+        "time": 10.62,
+        "state": "recover",
+        "bossHp": 2,
+        "playerHp": 3
+      },
+      {
+        "time": 11.45,
+        "state": "defeated",
+        "bossHp": 0,
+        "playerHp": 3
+      }
+    ]
+  },
+  {
+    "test": "timed race of chapter 1 records a medal and a personal best",
+    "mode": "complete",
+    "runMode": "timed",
+    "seconds": 7.49,
+    "deaths": 0,
+    "medal": "bronze",
+    "timed": true,
+    "newRecord": true,
+    "bestTimedTime": 7.49,
+    "goldTarget": 70,
+    "ok": true
+  },
+  {
+    "test": "song island 1 (gentle) from spawn to exit, real inputs only",
+    "island": 1,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 14.1,
+    "notes": 49,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 49,
+    "waypoint": 20,
+    "target": [
+      4060,
+      600
+    ],
+    "player": {
+      "x": 3985,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 2 (gentle) from spawn to exit, real inputs only",
+    "island": 2,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 16,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 36,
+    "waypoint": 17,
+    "target": [
+      4590,
+      600
+    ],
+    "player": {
+      "x": 4573,
+      "y": 426
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 3 (gentle) from spawn to exit, real inputs only",
+    "island": 3,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 16.5,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 36,
+    "waypoint": 19,
+    "target": [
+      4980,
+      600
+    ],
+    "player": {
+      "x": 4885,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 1 (flow) from spawn to exit, real inputs only",
+    "island": 1,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 14.1,
+    "notes": 49,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 49,
+    "waypoint": 20,
+    "target": [
+      4060,
+      600
+    ],
+    "player": {
+      "x": 3985,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 2 (flow) from spawn to exit, real inputs only",
+    "island": 2,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 16.1,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 31,
+    "waypoint": 17,
+    "target": [
+      4590,
+      600
+    ],
+    "player": {
+      "x": 4565,
+      "y": 426
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 3 (flow) from spawn to exit, real inputs only",
+    "island": 3,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 16.8,
+    "notes": 38,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 27,
+    "waypoint": 19,
+    "target": [
+      4980,
+      600
+    ],
+    "player": {
+      "x": 4883,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "authored place dos-du-songe from spawn to saved completion, real inputs only",
+    "key": "dos-du-songe",
+    "kind": "ride",
+    "mode": "complete",
+    "seconds": 23.79,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "coins": 13,
+    "stars": 1,
+    "calls": 29,
+    "jumps": 5,
+    "waypoint": 2,
+    "waypoints": 3,
+    "maxX": 3052,
+    "minY": 222,
+    "metrics": {
+      "carriedDistance": 1840.6250000000177
+    },
+    "player": {
+      "x": 3019,
+      "y": 554
+    },
+    "checkpoint": {
+      "x": 2544,
+      "y": 552
+    },
+    "trace": [
+      {
+        "t": 0,
+        "x": 100,
+        "y": 554,
+        "waypoint": 0,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 2,
+        "x": 630,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 4,
+        "x": 821,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 6,
+        "x": 1011,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 8,
+        "x": 1201,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 10,
+        "x": 1392,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 1583,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 1773,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 1964,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 2155,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 2346,
+        "y": 539,
+        "waypoint": 0,
+        "standing": 2,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 2712,
+        "y": 417,
+        "waypoint": 2,
+        "standing": null,
+        "state": null
+      }
+    ],
+    "initial": {
+      "x": 100,
+      "y": 554,
+      "power": null
+    },
+    "savedCompletion": true,
+    "ideaExercised": true,
+    "ok": true
+  },
+  {
+    "test": "authored place astre-a-guider from spawn to saved completion, real inputs only",
+    "key": "astre-a-guider",
+    "kind": "escort",
+    "mode": "complete",
+    "seconds": 28.64,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "coins": 5,
+    "stars": 0,
+    "calls": 39,
+    "jumps": 0,
+    "waypoint": 0,
+    "waypoints": 2,
+    "maxX": 2948,
+    "minY": 554,
+    "metrics": {
+      "flowersWoken": 7,
+      "escortArrived": true
+    },
+    "player": {
+      "x": 2949,
+      "y": 554
+    },
+    "checkpoint": {
+      "x": 2174,
+      "y": 552
+    },
+    "trace": [
+      {
+        "t": 0,
+        "x": 100,
+        "y": 554,
+        "waypoint": 0,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 2,
+        "x": 419,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 4,
+        "x": 610,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 6,
+        "x": 799,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 8,
+        "x": 990,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 10,
+        "x": 1180,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 1371,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 1562,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 1752,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 1944,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 2134,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 2325,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 2516,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 2706,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 28.1,
+        "x": 2898,
+        "y": 554,
+        "waypoint": 0,
+        "standing": "ground",
+        "state": null
+      }
+    ],
+    "initial": {
+      "x": 100,
+      "y": 554,
+      "power": null
+    },
+    "savedCompletion": true,
+    "ideaExercised": true,
+    "ok": true
+  },
+  {
+    "test": "authored place pont-des-veilleurs from spawn to saved completion, real inputs only",
+    "key": "pont-des-veilleurs",
+    "kind": "chain",
+    "mode": "complete",
+    "seconds": 9.43,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "coins": 14,
+    "stars": 1,
+    "calls": 13,
+    "jumps": 5,
+    "waypoint": 3,
+    "waypoints": 4,
+    "maxX": 2817,
+    "minY": 212,
+    "metrics": {
+      "chainWakes": 3,
+      "bridgeDistance": 552.0000000000008
+    },
+    "player": {
+      "x": 2819,
+      "y": 554
+    },
+    "checkpoint": {
+      "x": 384,
+      "y": 552
+    },
+    "trace": [
+      {
+        "t": 0,
+        "x": 100,
+        "y": 554,
+        "waypoint": 0,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 2,
+        "x": 606,
+        "y": 554,
+        "waypoint": 1,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 4,
+        "x": 1129,
+        "y": 554,
+        "waypoint": 1,
+        "standing": 3,
+        "state": null
+      },
+      {
+        "t": 6,
+        "x": 1758,
+        "y": 224,
+        "waypoint": 2,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 8,
+        "x": 2366,
+        "y": 554,
+        "waypoint": 3,
+        "standing": 2,
+        "state": null
+      }
+    ],
+    "initial": {
+      "x": 100,
+      "y": 554,
+      "power": null
+    },
+    "savedCompletion": true,
+    "ideaExercised": true,
+    "ok": true
+  },
+  {
+    "test": "authored place riviere-sans-lune from spawn to saved completion, real inputs only",
+    "key": "riviere-sans-lune",
+    "kind": "river",
+    "mode": "complete",
+    "seconds": 13.62,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "coins": 10,
+    "stars": 0,
+    "calls": 18,
+    "jumps": 4,
+    "waypoint": 7,
+    "waypoints": 8,
+    "maxX": 3817,
+    "minY": 432,
+    "metrics": {
+      "beaconsLit": 3,
+      "riverRestored": true
+    },
+    "player": {
+      "x": 3819,
+      "y": 554
+    },
+    "checkpoint": {
+      "x": 3154,
+      "y": 552
+    },
+    "trace": [
+      {
+        "t": 0,
+        "x": 100,
+        "y": 554,
+        "waypoint": 0,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 2,
+        "x": 721,
+        "y": 554,
+        "waypoint": 2,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 4,
+        "x": 1052,
+        "y": 554,
+        "waypoint": 2,
+        "standing": 11,
+        "state": null
+      },
+      {
+        "t": 6,
+        "x": 1680,
+        "y": 554,
+        "waypoint": 3,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 8,
+        "x": 2265,
+        "y": 554,
+        "waypoint": 5,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 10,
+        "x": 2698,
+        "y": 554,
+        "waypoint": 5,
+        "standing": 13,
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 3310,
+        "y": 554,
+        "waypoint": 7,
+        "standing": 2,
+        "state": null
+      }
+    ],
+    "initial": {
+      "x": 100,
+      "y": 554,
+      "power": null
+    },
+    "savedCompletion": true,
+    "ideaExercised": true,
+    "ok": true
+  },
+  {
+    "test": "authored place colonne-des-saisons from spawn to saved completion, real inputs only",
+    "key": "colonne-des-saisons",
+    "kind": "ascent",
+    "mode": "complete",
+    "seconds": 15.04,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "coins": 20,
+    "stars": 2,
+    "calls": 20,
+    "jumps": 13,
+    "waypoint": 12,
+    "waypoints": 13,
+    "maxX": 1467,
+    "minY": 152,
+    "metrics": {
+      "climbed": 1602.4305555555554,
+      "peakY": 151.5694444444445
+    },
+    "player": {
+      "x": 669,
+      "y": 164
+    },
+    "checkpoint": {
+      "x": 244,
+      "y": 1752
+    },
+    "trace": [
+      {
+        "t": 0,
+        "x": 150,
+        "y": 1754,
+        "waypoint": 0,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 2,
+        "x": 771,
+        "y": 1318,
+        "waypoint": 2,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 4,
+        "x": 1385,
+        "y": 1074,
+        "waypoint": 4,
+        "standing": 5,
+        "state": null
+      },
+      {
+        "t": 6,
+        "x": 928,
+        "y": 760,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 8,
+        "x": 510,
+        "y": 499,
+        "waypoint": 9,
+        "standing": 9,
+        "state": null
+      },
+      {
+        "t": 10,
+        "x": 466,
+        "y": 392,
+        "waypoint": 9,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 319,
+        "y": 396,
+        "waypoint": 9,
+        "standing": 10,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 349,
+        "y": 164,
+        "waypoint": 11,
+        "standing": 12,
+        "state": null
+      }
+    ],
+    "initial": {
+      "x": 150,
+      "y": 1754,
+      "power": null
+    },
+    "savedCompletion": true,
+    "ideaExercised": true,
+    "ok": true
+  },
+  {
+    "test": "authored place pluie-de-lumiere from spawn to saved completion, real inputs only",
+    "key": "pluie-de-lumiere",
+    "kind": "rain",
+    "mode": "complete",
+    "seconds": 20.62,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 3,
+    "coins": 12,
+    "stars": 1,
+    "calls": 27,
+    "jumps": 11,
+    "waypoint": 12,
+    "waypoints": 13,
+    "maxX": 2967,
+    "minY": 322,
+    "metrics": {
+      "rainGrown": 8,
+      "rainLandings": 8
+    },
+    "player": {
+      "x": 2969,
+      "y": 554
+    },
+    "checkpoint": {
+      "x": 1614,
+      "y": 552
+    },
+    "trace": [
+      {
+        "t": 0,
+        "x": 100,
+        "y": 554,
+        "waypoint": 0,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 2,
+        "x": 438,
+        "y": 554,
+        "waypoint": 1,
+        "standing": "ground",
+        "state": null
+      },
+      {
+        "t": 4,
+        "x": 664,
+        "y": 539,
+        "waypoint": 2,
+        "standing": 3,
+        "state": null
+      },
+      {
+        "t": 6,
+        "x": 873,
+        "y": 495,
+        "waypoint": 2,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 8,
+        "x": 1104,
+        "y": 539,
+        "waypoint": 4,
+        "standing": 5,
+        "state": null
+      },
+      {
+        "t": 10,
+        "x": 1373,
+        "y": 476,
+        "waypoint": 5,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 1601,
+        "y": 554,
+        "waypoint": 6,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 1932,
+        "y": 536,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 2149,
+        "y": 539,
+        "waypoint": 9,
+        "standing": 8,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 2409,
+        "y": 443,
+        "waypoint": 10,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 2794,
+        "y": 554,
+        "waypoint": 12,
+        "standing": 2,
+        "state": null
+      }
+    ],
+    "initial": {
+      "x": 100,
+      "y": 554,
+      "power": null
+    },
+    "savedCompletion": true,
+    "ideaExercised": true,
+    "ok": true
+  }
+]
+
+> lumen-les-jardins-de-la-lune@5.3.0 test:browser
+> node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs
+
+Portable edition built: LUMEN.html (766 KiB).
+PASS  Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions
+PASS  Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau
+PASS  Les huit plateformes ont des pixels contrastés et des formes distinctes en jour et en nuit
+      audio mesuré : île 1 RMS 0.0063 crête 0.060 · île 2 RMS 0.0065 crête 0.063 · île 3 RMS 0.0065 crête 0.060 · île 1 nuit RMS 0.0066 crête 0.065
+PASS  Le vrai rendu Web Audio produit trois thèmes distincts, sans saturation et avec silence intégral
+PASS  Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient
+PASS  Les réglages de thème et de son restent disponibles dans l’aventure classique
+PASS  Les cinq langues système traduisent les éditions source et portable sans réseau
+PASS  La priorité système, le repli anglais et le choix sauvegardé sont respectés
+PASS  Changer de langue conserve la partie et le focus, et le choix survit au rechargement
+PASS  Les traductions arabe et chinoise restent cadrées sans inverser les commandes
+PASS  L’édition classique, les dialogues et le changement de langue sont traduits
+PASS  Les textes statiques du document possèdent une traduction sans modifier les graines
+PASS  Le Chant démarre directement, avec ses ressources locales et un canvas animé
+PASS  Le clavier déplace Lumen, relance son saut, chante et fige la simulation en pause
+PASS  La carte commune, les réglages persistants et le rythme fonctionnent
+      parcours source : 6 sauts, 39 notes, 0 chute(s), aucune position ni invulnérabilité injectée
+      parcours portable : 6 sauts, 39 notes, 0 chute(s), aucune position ni invulnérabilité injectée
+PASS  Le parcours île, atlas, chapitre joué et retour conserve la progression sans triche
+      îles jouées sans téléportation : 1 (14.1 s), 2 (16 s), 3 (16.5 s)
+PASS  Les trois îles se jouent réellement avec une fixture d’accès historique et conduisent aux actes
+PASS  Le Chant reste cadré et ses commandes ne se chevauchent pas sur cinq formats
+PASS  Le Chant répond à deux pointeurs et annule les entrées lors d’une interruption
+PASS  L’édition portable démarre seule en file://, sans aucune requête externe
+PASS  La Résonance se joue au clavier : appeler ouvre un chemin qui n’existait pas
+PASS  L’observatoire : la porte reste fermée tant que la coupole se tait
+PASS  Le menu ne contourne pas la porte des rêves : une seule règle décide
+PASS  Une nuit entière se joue par l’interface, et la graine la rejoue à l’identique
+PASS  Quitter une nuit pour la campagne, par les menus, ne contamine rien
+PASS  Le tactile tient plusieurs doigts, ne colle jamais, et respecte 48 px
+PASS  Les réglages de confort changent réellement le jeu, et survivent au rechargement
+PASS  Une sauvegarde ancienne est migrée sans être écrasée, et la progression suit
+PASS  Aucun défilement horizontal et des particules bornées sur cinq formats
+
+29/29 contrôles navigateur réussis.
+PASS  Une carte dynamique sans doublon remplace les deux accès dans source et portable
+PASS  Profil neuf : les Rêves expliquent leur verrou et la manette mène à la coupole
+PASS  Un chapitre réellement joué allume la carte, annonce son succès et survit au rechargement
+PASS  [état forcé] Plusieurs succès en attente ouvrent la constellation du lieu tout juste quitté
+      desktop: 22 lieux lancés par Gamepad API simulée
+      portrait: 22 lieux lancés par Gamepad API simulée
+PASS  [état forcé] La manette atteint et lance chaque lieu, chaque acte et les actions de carte
+PASS  [état forcé] Cibles 48 px, aucun chevauchement et états distincts en gris sur mobile et arabe
+
+6/6 journey browser contracts passed.
