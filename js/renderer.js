@@ -61,7 +61,9 @@
       c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); c.globalAlpha = 1; c.fillStyle = p.sky[0]; c.fillRect(0, 0, this.width, this.height);
       const cam = game.camera || { x: 0, y: 0 }, cameraX = cam.x || 0, cameraY = cam.y || 0;
       this.cameraX = cameraX; this.cameraY = cameraY;
-      this.background(c, theme, p, t, cameraX, game.mode);
+      const placeArt = window.LumenPlaceArt;
+      const placeBackground = !!placeArt?.background(this, game, p, t);
+      if (!placeBackground) this.background(c, theme, p, t, cameraX, game.mode);
       c.save(); c.translate(this.offsetX, this.offsetY); c.scale(this.scale, this.scale);
       const shake = cam.shake || 0;
       c.save(); c.translate(-cameraX + Math.sin(t * 129) * shake, -cameraY + Math.cos(t * 113) * shake * .6);
@@ -71,17 +73,19 @@
         this.observatory(c, t, p, lit);
       }
       if (game.boss) this.arena(c, game.boss, t, p);
+      placeArt?.beforePlatforms(c, game, p, t, this);
       for (const s of game.secrets || []) if (!s.found && this.visible(s)) this.secret(c, s, t, p);
       // Ce qui dort est dessiné SOUS les plateformes : sa silhouette reste
       // visible en permanence, sans jamais masquer une surface jouable.
       for (const w of game.wakeables || []) if (this.visible({ x: w.x - (w.span || 0) / 2 - 40, y: w.y - 40, w: (w.span || 0) + 80, h: 80 }, 60)) this.wakeable(c, w, t, p);
-      for (const platform of game.platforms || []) if (this.visible(platform, 100)) this.platform(c, platform, t, p);
+      for (const platform of game.platforms || []) if (this.visible(platform, 100) && !placeArt?.platform(c, platform, p, t, game, this)) this.platform(c, platform, t, p);
       for (const h of game.hazards || []) if (this.visible(h)) this.hazard(c, h, t, p);
       for (const cp of game.checkpoints || []) if (this.visible(cp, 120)) this.checkpoint(c, cp, t, p);
       if (game.exit && this.visible(game.exit, 200)) this.portal(c, game.exit, t, p);
+      placeArt?.afterPlatforms(c, game, p, t, this);
       for (const item of game.collectibles || []) if (!item.taken && this.visible(item, 60)) this.collectible(c, item, t, p);
       for (const character of game.characters || []) if (this.visible({ x: character.x - 40, y: character.y - 100, w: 80, h: 100 }, 60)) this.character(c, character, t, p);
-      for (const enemy of game.enemies || []) if (enemy.alive !== false && this.visible(enemy, 70)) this.enemy(c, enemy, t, p);
+      for (const enemy of game.enemies || []) if (enemy.alive !== false && this.visible(enemy, 70) && !(enemy.mount && placeArt && level.place?.kind === 'ride')) this.enemy(c, enemy, t, p);
       if (game.boss && this.visible(game.boss, 180)) this.boss(c, game.boss, t, p);
       for (const shot of game.projectiles || []) if (this.visible(shot, 60)) this.projectile(c, shot, t);
       if (game.player) {
@@ -98,7 +102,7 @@
       }
       if (level.water) this.water(c, level.water, cameraX, t, p);
       c.restore();
-      this.foreground(c, t, cameraX, p, theme);
+      if (!placeBackground) this.foreground(c, t, cameraX, p, theme);
       if (game.flash && game.flash.life > 0) {
         c.save(); c.globalAlpha = Math.min(.24, (game.flash.life / (game.flash.maxLife || .35)) * .24);
         c.fillStyle = game.flash.color || '#fff2c9'; c.fillRect(0, 0, this.worldWidth, 720); c.restore();

@@ -125,10 +125,11 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
           for (let frame = 0; frame < 120 * 90 && ['playing', 'dead'].includes(game.mode); frame++) {
             if (game.mode === 'playing') {
               game.input.virtual('right', true, 'journey-pilot');
+              game.input.virtual('run', true, 'journey-pilot');
               const p = game.player;
               const floor = game.platforms.filter(s => s.type === 'ground' && s.x <= p.x + 16 && s.x + s.w >= p.x + 16).sort((a, b) => b.x - a.x)[0];
               const enemy = game.enemies.some(e => e.alive && e.x > p.x && e.x - p.x < 125 && Math.abs(e.y - p.y) < 110);
-              if (p.grounded && game.elapsed - lastJump > .12 && ((floor ? floor.x + floor.w : Infinity) - p.x < 80 || enemy)) {
+              if (p.grounded && game.elapsed - lastJump > .12 && ((floor ? floor.x + floor.w : Infinity) - p.x < 95 || enemy)) {
                 game.input.virtual('jump', true, 'journey-pilot'); jumpUntil = game.elapsed + .45; lastJump = game.elapsed; jumps++;
               } else if (game.elapsed > jumpUntil) game.input.virtual('jump', false, 'journey-pilot');
             }

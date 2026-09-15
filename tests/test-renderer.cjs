@@ -50,7 +50,7 @@ function environment() {
   };
   const sandbox = { window, document, localStorage: { getItem: () => null, setItem() {} }, requestAnimationFrame() {}, console };
   const ctx = vm.createContext(sandbox);
-  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'world-art.js', 'renderer.js', 'levels.js', 'song.js', 'song-art.js', 'journey.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
+  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'world-art.js', 'place-art.js', 'renderer.js', 'places.js', 'levels.js', 'song.js', 'song-art.js', 'journey.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
   window.canvas = canvas;
   const game = new window.LumenGame(canvas);
   return { game, window, calls };
@@ -188,7 +188,7 @@ test('The Veilleur draws through every stage, pattern and the closing arena', ()
 
 test('The echo bell ring and the revealed ledges draw over their whole lifetime', () => {
   const { game } = environment();
-  game.loadLevel(8);
+  game.loadLevel(game.indexOfKey('galerie-echos'));
   game.player.power = 'echo'; game.player.powerTime = 6; game.player.powerDuration = 40;
   for (const remaining of [4, 3.2, 2, .9, .2]) {
     game.echoTime = remaining; game.updatePlatforms(1 / 120);

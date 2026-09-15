@@ -61,7 +61,7 @@
     virtual(action, down, pointer = '') {
       const key = 'touch:' + action + pointer;
       if (down && !this.keys.has(key)) { this.keys.set(key, action); this.pressed.add(action); }
-      else if (!down) { this.keys.delete(key); if (!this.down(action)) this.released.add(action); }
+      else if (!down && this.keys.delete(key)) { if (!this.down(action)) this.released.add(action); }
     }
     clearFrame() { this.pressed.clear(); this.released.clear(); }
     reset() { this.keys.clear(); this.clearFrame(); }
@@ -217,6 +217,7 @@
       // une expédition ouverte continuait de gouverner la mort, le réessai,
       // la sortie de niveau et les souvenirs portés.
       this.leaveExpedition();
+      this.lastRun = null;
       this.session = window.LUMEN_LEVELS[index].hub ? 'hub' : 'campaign';
       if (this.lives <= 0) this.lives = 5;
       this.runMode=options.timed?'timed':'explore';
@@ -285,6 +286,8 @@
         vulnerable:false, hitFlash:0, facing:-1, state:'sleep', vx:0, vy:0, attack:0, activated:false, homeX:data.width - 650,
         stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
       this.camera = { x:clamp(data.spawn.x - 300, 0, Math.max(0, data.width - WIDTH)), y:0, shake:0 };
+      if (data.place?.kind === 'ascent') this.camera.y = clamp(data.spawn.y - HEIGHT * .52, 0, Math.max(0, data.height - HEIGHT));
+      this.place = window.LumenPlaces?.create(this) || null;
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
       this.audio.setScene?.(data.song?.index ?? -1);
       if (active) { this.mode = 'playing'; this.emit('level', data); this.emit('mode', this.mode); }
@@ -583,8 +586,9 @@
       this.echoTime=Math.max(0,this.echoTime-dt);
       this.updateResonance(dt);
       if (this.mode !== 'playing') return;
-      this.updatePlatforms(dt); this.updatePlayer(dt);
+      this.updatePlatforms(dt); window.LumenPlaces?.beforePhysics(this, dt); this.updatePlayer(dt);
       if (this.mode !== 'playing') return;
+      window.LumenPlaces?.afterPhysics(this, dt);
       if (this.song) this.song.update(this, dt);
       this.updateEnemies(dt);
       if (this.mode !== 'playing') return;
@@ -605,7 +609,10 @@
       const visibleWidth = this.renderer.worldWidth || WIDTH;
       const target = clamp(this.player.x - visibleWidth * .36 + this.player.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
       this.camera.x += (target - this.camera.x) * (1 - Math.exp(-5 * dt));
-      this.camera.y = 0;
+      if (this.level.place?.kind === 'ascent') {
+        const vertical = clamp(this.player.y - HEIGHT * .52, 0, Math.max(0, this.level.height - HEIGHT));
+        this.camera.y += (vertical - this.camera.y) * (1 - Math.exp(-5 * dt));
+      } else this.camera.y = 0;
     }
     updatePlatforms(dt) {
       for (const p of this.platforms) {
@@ -744,7 +751,7 @@
       }
       // Un dormeur calmé devient une surface : on peut se poser sur son dos.
       if (p.vy >= 0) for (const e of this.enemies) {
-        if (!e.alive || e.type !== 'sleeper' || e.state !== 'calm') continue;
+        if (!e.alive || e.mount || e.type !== 'sleeper' || e.state !== 'calm') continue;
         if (p.x + p.w <= e.x + 4 || p.x >= e.x + e.w - 4) continue;
         if (oldBottom <= e.y + 8 && p.y + p.h >= e.y && (!p.standingPlatform || e.y < p.standingPlatform.y)) {
           p.y = e.y - p.h; p.vy = 0; p.grounded = true; p.standingPlatform = null;
@@ -759,7 +766,7 @@
           this.hurt(1, h.x + h.w/2); p.vy = Math.min(p.vy,-410);
         }
       }
-      if (p.y > 830) this.die();
+      if (p.y > (this.level.height || 900) - 70) this.die();
     }
     jump(double) {
       const p = this.player;
@@ -896,6 +903,7 @@
     updateEnemies(dt) {
       const p = this.player;
       for (const e of this.enemies) {
+        if (e.mount) continue; // The moving sleeper's deck owns its collision.
         if (!e.alive || Math.abs(e.x - p.x) > 1250) continue;
         e.phase += dt; e.timer -= dt; e.hitFlash = Math.max(0,(e.hitFlash || 0)-dt);
         const distance = p.x-e.x;
@@ -945,7 +953,7 @@
             if (!ground.active || e.x+e.w<=ground.x || e.x>=ground.x+ground.w) continue;
             if (e.vy>=0 && oldBottom<=ground.y+7 && e.y+e.h>=ground.y) { e.y=ground.y-e.h; e.vy=0; e.grounded=true; }
           }
-          if (e.y>830) { e.alive=false; continue; }
+          if (e.y>(this.level.height||900)-70) { e.alive=false; continue; }
         } else if (e.type === 'chaser') {
           e.vx = approach(e.vx, Math.abs(distance)<570 ? Math.sign(distance)*125 : Math.sign(e.spawnX-e.x)*60,dt*140);
           e.vy = approach(e.vy, Math.abs(distance)<570 ? clamp((p.y-35-e.y)*1.5,-110,110) : Math.sin(e.phase*2)*25,dt*120);
@@ -969,7 +977,7 @@
             if (!ground.active || e.x+e.w<=ground.x || e.x>=ground.x+ground.w) continue;
             if (e.vy>=0 && oldBottom<=ground.y+7 && e.y+e.h>=ground.y) { e.y=ground.y-e.h; e.vy=0; e.grounded=true; }
           }
-          if (e.y>830) {e.alive=false; continue;}
+          if (e.y>(this.level.height||900)-70) {e.alive=false; continue;}
         }
         if (overlap(p,{x:e.x+3,y:e.y+3,w:e.w-6,h:e.h-3})) {
           if (p.dashTime>0) this.killEnemy(e);
@@ -1254,11 +1262,13 @@
       this.waves=[];
       for (const wakeable of this.wakeables) {wakeable.state='asleep';wakeable.remaining=0;wakeable.relayed=false;}
       for (const enemy of this.enemies) if (enemy.type==='sleeper') {enemy.calmTime=0;enemy.rousing=false;enemy.rouseGrace=0;enemy.state='sleep';enemy.chargeProgress=0;}
+      window.LumenPlaces?.respawn(this);
       if (this.boss&&this.boss.activated&&this.boss.hp>0) {
         const b=this.boss;Object.assign(b,{x:b.homeX,y:470,state:'wake',timer:2,vx:0,vy:0,vulnerable:false});
       }
       const visibleWidth=this.renderer.worldWidth||WIDTH;
       this.camera.x=clamp(p.x-visibleWidth*.36,0,Math.max(0,this.level.width-visibleWidth));
+      if (this.level.place?.kind === 'ascent') this.camera.y=clamp(p.y-HEIGHT*.52,0,Math.max(0,this.level.height-HEIGHT));
       this.mode='playing';this.input.reset();this.burst(p.x+16,p.y+23,26,'#d7e8b9',150,'spark');this.emit('mode',this.mode);
     }
     complete() {

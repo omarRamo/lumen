@@ -1,5 +1,6 @@
 # Captures de vérification régénérées par work/verify-browser.cjs
 work/shots/
+work/journey/
 work/*.png
 work/*.log
 

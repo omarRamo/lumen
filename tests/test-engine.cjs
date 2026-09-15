@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js', 'journey.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
+const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'places.js', 'levels.js', 'song.js', 'journey.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
 const DT = 1 / 120;
 const checks = [];
 let failed = 0;
@@ -46,10 +46,11 @@ function environment(storage = new Map(), rejectStorage = false) {
 const DEFINITIONS = environment().window.LUMEN_LEVELS;
 const STAGE_COUNT = DEFINITIONS.length;
 const FINAL_INDEX = DEFINITIONS.findIndex(level => level.final);
+const stageOf = key => DEFINITIONS.findIndex(level => level.key === key);
 
 function fresh(index = 0) {
   const result = environment();
-  result.game.loadLevel(index);
+  result.game.loadLevel(typeof index === 'string' ? stageOf(index) : index);
   return result.game;
 }
 function tick(game, seconds, isolated = false) {
@@ -84,7 +85,7 @@ function test(name, run) {
 
 test('Every authored stage loads with independent objects, a stable key and a stable spawn', () => {
   const { game, window } = environment();
-  assert.equal(window.LUMEN_LEVELS.length, 12);
+  assert.equal(window.LUMEN_LEVELS.filter(level => !level.hub).length, 17);
   // Les clés sont le contrat des sauvegardes : uniques, et jamais recyclées.
   const keys = window.LUMEN_LEVELS.map(level => level.key);
   assert.equal(new Set(keys).size, keys.length, 'Deux chapitres partagent une clé : ' + keys.join(', '));
@@ -99,10 +100,10 @@ test('Every authored stage loads with independent objects, a stable key and a st
     assert.equal(game.collectibles.filter(c => c.type === 'star').length, 3);
     assert.ok(game.checkpoints.length >= 2);
     assert.ok(game.secrets.length >= 1);
-    assert.equal(game.level.id, index);
+    assert.equal(game.level.id, DEFINITIONS[index].id, 'Insertion must preserve the authored identity.');
     assert.ok(game.level.medalTargets.gold > 0);
     assert.ok(game.level.medalTargets.silver > game.level.medalTargets.gold);
-    for (const type of ['breeze', 'bloom', 'comet']) assert.ok(game.collectibles.some(c => c.type === type));
+    if (!game.level.place) for (const type of ['breeze', 'bloom', 'comet']) assert.ok(game.collectibles.some(c => c.type === type));
     tick(game, .15);
     assert.equal(game.mode, 'playing');
     assert.ok(game.player.grounded);
@@ -116,7 +117,7 @@ test('Every authored stage loads with independent objects, a stable key and a st
 
 test('New chapters have long authored routes, safe lanterns, echo detours and distinct creatures', () => {
   const { window } = environment();
-  for (const stage of [7, 8]) {
+  for (const stage of ['vergers-vent', 'galerie-echos'].map(stageOf)) {
     const level = window.LUMEN_LEVELS[stage];
     assert.ok(level.width >= 5600);
     assert.ok(level.checkpoints.length >= 3);
@@ -447,7 +448,7 @@ test('Damage grace period prevents repeated hits; falling and lava are lethal', 
   game.hurt(1, 200); game.hurt(1, 200); assert.equal(game.player.hp, 2);
   tick(game, 1.6); game.hurt(1, 200); assert.equal(game.player.hp, 1);
   place(game, 100, 900); tick(game, DT); assert.equal(game.mode, 'dead');
-  game.loadLevel(4); game.enemies = []; place(game, 850, 690);
+  game.loadLevel(stageOf('forge-petales')); game.enemies = []; place(game, 850, 690);
   tick(game, DT); assert.equal(game.mode, 'dead');
 });
 
@@ -529,8 +530,11 @@ test('A secret opens the bonus early without unlocking late story levels', () =>
   const area = game.secrets[0]; place(game, area.x + 10, area.y + 80);
   game.updateSecrets(); game.updateSecrets();
   assert.equal(game.secretCount, 1); assert.equal(game.levelScore, 750);
-  assert.equal(game.progress.bonusUnlocked, true); assert.ok(game.isUnlocked(6)); assert.ok(!game.isUnlocked(7));
-  game.start(6); game.complete(); assert.ok(!game.isUnlocked(7), 'Le bonus ne doit pas ouvrir la suite de la campagne.');
+  assert.equal(game.progress.bonusUnlocked, true);
+  assert.ok(game.isUnlocked(stageOf('jardin-heures-bleues')));
+  assert.ok(!game.isUnlocked(stageOf('vergers-vent')));
+  game.start(stageOf('jardin-heures-bleues')); game.complete();
+  assert.ok(!game.isUnlocked(stageOf('vergers-vent')), 'Le bonus ne doit pas ouvrir la suite de la campagne.');
   assert.equal(environment(storage).game.progress.bonusUnlocked, true);
 });
 
@@ -589,7 +593,7 @@ test('Boss death/respawn retains earned damage and reopens with a clear warning'
 });
 
 test('Lagoon allows sustained swimming and a physical exit onto its higher shore', () => {
-  const game = fresh(2); game.enemies = []; game.hazards = []; game.collectibles = [];
+  const game = fresh('lagon-lucioles'); game.enemies = []; game.hazards = []; game.collectibles = [];
   place(game, 3760, 740); hold(game, 'jump'); hold(game, 'right');
   let landed = false;
   for (let i = 0; i < 600; i++) {
@@ -601,26 +605,26 @@ test('Lagoon allows sustained swimming and a physical exit onto its higher shore
   assert.equal(game.mode, 'playing'); assert.equal(game.player.hp, 3);
 });
 
-test('All mandatory dry gaps have physical walking-jump solutions without powers', () => {
+test('Historical dry routes retain their physical walking-jump solutions after stage insertion', () => {
   // A segment rig uses the authored geometry and real updatePlayer/updatePlatforms.
   // Enemies are excluded here to isolate reachability from combat randomness.
   const paths = {
-    0: [0, 1, 2, 3], 1: [0, 7, 1, 11, 12, 2, 16, 3],
-    3: [0, 5, 6, 1, 7, 8, 2, 9, 10, 3, 11, 12, 4],
-    4: [0, 1, 2, 3, 4], 5: [0, 1, 2, 3], 6: [0, 1, 2, 3, 4],
-    7: [0, 1, 2, 3, 4, 5], 8: [0, 1, 2, 3, 4, 5],
+    'prairies-aurore': [0, 1, 2, 3], 'cathedrale-racines': [0, 7, 1, 11, 12, 2, 16, 3],
+    'archipels-zephyr': [0, 5, 6, 1, 7, 8, 2, 9, 10, 3, 11, 12, 4],
+    'forge-petales': [0, 1, 2, 3, 4], 'palais-givre': [0, 1, 2, 3], 'jardin-heures-bleues': [0, 1, 2, 3, 4],
+    'vergers-vent': [0, 1, 2, 3, 4, 5], 'galerie-echos': [0, 1, 2, 3, 4, 5],
     // Le verger de la Résonance : seuls les tronçons qui doivent rester
     // franchissables à pied figurent ici. Le gouffre et le passage du dormeur
     // sont commandés par la Résonance — un verbe permanent, jamais expirable —
     // et ont leurs propres contrôles de franchissabilité plus haut.
-    9: [0, 2], [FINAL_INDEX]: [0, 1, 2, 3]
+    'verger-qui-reve': [0, 2], 'coeur-eclipse': [0, 1, 2, 3]
   };
   const failures = [];
   for (const [stage, route] of Object.entries(paths)) {
     for (let n = 0; n < route.length - 1; n++) {
       let success = false;
       for (const launchMargin of [70, 45, 90, 110, 25]) {
-        const game = fresh(Number(stage)); game.enemies = []; game.collectibles = []; game.checkpoints = []; game.secrets = []; game.boss = null; game.exit.open = false;
+        const game = fresh(stage); game.enemies = []; game.collectibles = []; game.checkpoints = []; game.secrets = []; game.boss = null; game.exit.open = false;
         game.time = 0; game.updatePlatforms(0);
         const source = game.platforms[route[n]], target = game.platforms[route[n + 1]];
         place(game, source.x + source.w - launchMargin, source.y);
@@ -731,7 +735,7 @@ test('A hunting swarm leans towards Lumen without ever leaving its thicket', () 
 });
 
 test('The echo bell reveals hidden ledges for four seconds, then hides them again', () => {
-  const game = fresh(8); game.enemies = []; game.hazards = []; game.projectiles = [];
+  const game = fresh('galerie-echos'); game.enemies = []; game.hazards = []; game.projectiles = [];
   const echoes = game.platforms.filter(p => p.type === 'echo');
   assert.ok(echoes.length >= 2, 'Chapter 9 must contain an echo detour.');
   assert.ok(echoes.every(p => !p.active), 'Echo ledges start intangible.');
@@ -770,7 +774,7 @@ test('Every power announces its own expiry and leaves a distinct sound', () => {
 });
 
 test('Each garden throws its own debris when Lumen lands', () => {
-  for (const [stage, type] of [[0, 'leaf'], [2, 'bubble'], [4, 'ember'], [5, 'flake']]) {
+  for (const [stage, type] of [['prairies-aurore', 'leaf'], ['lagon-lucioles', 'bubble'], ['forge-petales', 'ember'], ['palais-givre', 'flake']]) {
     const game = fresh(stage); game.particles = [];
     game.groundBurst(200, 600, 8, 90);
     assert.ok(game.particles.length > 0, 'No debris in stage ' + stage);

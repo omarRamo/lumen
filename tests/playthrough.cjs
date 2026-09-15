@@ -7,7 +7,7 @@ function create(stage,options){
     LumenAudio:class{setMuted(){}setTheme(){}setDanger(v){this.danger=v}setBossPhase(v){this.bossPhase=v}unlock(){}resume(){}pause(){}sfx(){}}};
   const document={addEventListener(){},body:{classList:{contains:()=>true}}};
   const context=vm.createContext({window,document,localStorage:{getItem(){return null},setItem(){}},requestAnimationFrame(){},console,Math});
-  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','levels.js','song.js','journey.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
+  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','places.js','levels.js','song.js','journey.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
   const game=new window.LumenGame({});
   if(options)game.start(stage,options);else game.loadLevel(stage);
   game.levels=window.LUMEN_LEVELS;return game;
@@ -26,12 +26,12 @@ const results=[];
   g.on('mode',mode=>{if(mode==='dead')trace.push({event:'death',x:+g.player.x.toFixed(1),y:+g.player.y.toFixed(1),time:+g.elapsed.toFixed(2)});});
   for(let frame=0;frame<120*120&&g.mode!=='complete'&&g.mode!=='gameover';frame++){
     if(g.mode==='playing'){
-      key(g,'right',true);
+      key(g,'right',true);key(g,'run',true);
       const p=g.player;
       const source=g.platforms.filter(s=>s.type==='ground'&&s.x<=p.x+16&&s.x+s.w>=p.x+16).sort((a,b)=>b.x-a.x)[0];
       const edge=source?source.x+source.w:Infinity;
-      const upcoming=g.enemies.some(e=>e.alive&&e.x>p.x&&e.x-p.x<125&&Math.abs(e.y-p.y)<110);
-      if(p.grounded&&g.elapsed-lastJump>.12&&(edge-p.x<80||upcoming)){
+      const upcoming=g.enemies.some(e=>e.alive&&e.x>p.x&&e.x-p.x<135&&Math.abs(e.y-p.y)<115);
+      if(p.grounded&&g.elapsed-lastJump>.12&&(edge-p.x<95||upcoming)){
         trace.push({event:'jump',x:+p.x.toFixed(1),y:+p.y.toFixed(1),edge,time:+g.elapsed.toFixed(2)});
         key(g,'jump',true);jumpUntil=g.elapsed+.45;lastJump=g.elapsed;
       }else if(g.elapsed>jumpUntil)key(g,'jump',false);
@@ -43,7 +43,8 @@ const results=[];
 // The two new chapters are driven by the same naive bot, purely to prove that the
 // added creatures actually run inside the authored geometry and that the route
 // stays survivable well past its first lantern.
-for(const stage of [7,8]){
+for(const stableKey of ['vergers-vent','galerie-echos']){
+  const stage=create(0).levels.findIndex(level=>level.key===stableKey);
   const g=create(stage);const level=g.levels[stage];
   let jumpUntil=0,lastJump=-10,maxX=g.player.x;const awakened=new Set(),hunted=new Set(),scattered=new Set();
   for(let frame=0;frame<120*100&&g.mode!=='complete'&&g.mode!=='gameover';frame++){
@@ -189,6 +190,10 @@ for (const style of ['gentle', 'flow']) {
     if (!['complete', 'ending'].includes(game.mode)) break;
   }
 }
+// Every iteration-06 place uses its authored spawn, real input and mechanics.
+// Completion alone is insufficient: each result also proves its specific idea.
+const placesPlaythrough = require('./test-places-playthrough.cjs');
+results.push(...placesPlaythrough.runAll().map(result => ({ test: 'authored place ' + result.key + ' from spawn to saved completion, real inputs only', ...result })));
 console.log(JSON.stringify(results,null,2));
 fs.writeFileSync(path.join(__dirname,'playthrough-results.json'),JSON.stringify(results,null,2));
 process.exitCode=results.some(r=>r.ok===false||(r.ok===undefined&&!['complete','ending'].includes(r.mode)))?1:0;

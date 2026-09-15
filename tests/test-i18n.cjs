@@ -8,7 +8,7 @@ const window = { navigator: { languages: ['es-MX', 'en-US'], language: 'es-MX' }
 const context = vm.createContext({ window, console });
 for (const file of ['i18n.js', 'save.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context);
 context.LumenI18n = window.LumenI18n;
-for (const file of ['locales-ui.js', 'locales-classic.js', 'locales-world.js', 'locales-journey.js', 'rng.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context);
+for (const file of ['locales-ui.js', 'locales-classic.js', 'locales-world.js', 'locales-journey.js', 'rng.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'places.js', 'levels.js', 'song.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context);
 const I18n = window.LumenI18n;
 let passed = 0;
 function test(name, check) { check(); passed++; console.log('PASS  ' + name); }
@@ -92,6 +92,12 @@ test('The common map has complete translations for every literal translated mess
   const messages = [...source.matchAll(/\b(?:text|t)\(\s*'([^']+)'/g)].map(match => match[1]);
   assert.ok(messages.length >= 15);
   assert.deepEqual([...new Set(messages)].filter(message => !I18n.has(message)), []);
+});
+test('Place-specific completion messages have five translations', () => {
+  const source = fs.readFileSync(path.join(root, 'js', 'places.js'), 'utf8');
+  const messages = [...source.matchAll(/emit\('toast',\s*'([^']+)'/g)].map(match => match[1]);
+  assert.ok(messages.length >= 2);
+  assert.deepEqual(messages.filter(message => !I18n.has(message)), []);
 });
 test('The former hero name cannot return to sources, catalogs or the portable edition', () => {
   const formerName = new RegExp('\\b' + ['Ni', 'lo'].join('') + '\\b|' +

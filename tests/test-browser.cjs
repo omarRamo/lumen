@@ -153,8 +153,12 @@ async function test(name, run) {
     const gallery = path.join(root, 'docs', 'iteration-06', 'platforms');
     fs.mkdirSync(gallery, { recursive: true });
     const measurements = [];
-    for (const appearance of ['light', 'dark']) for (const theme of ['meadow', 'cavern', 'tide', 'sky', 'forge', 'frost', 'secret', 'eclipse']) {
-      const result = await page.evaluate(({ appearance, theme }) => {
+    const scenes = await page.evaluate(() => [
+      ...['meadow', 'cavern', 'tide', 'sky', 'forge', 'frost', 'secret', 'eclipse'].map(theme => ({theme, id:theme})),
+      ...window.LUMEN_LEVELS.filter(level => level.place).map(level => ({theme:level.theme, id:level.key, placeKey:level.key}))
+    ]);
+    for (const appearance of ['light', 'dark']) for (const scene of scenes) {
+      const result = await page.evaluate(({ appearance, theme, placeKey }) => {
         document.getElementById('platform-gallery')?.remove();
         const canvas = document.createElement('canvas'); canvas.id = 'platform-gallery';
         canvas.style.cssText = 'position:fixed;inset:0;z-index:100;width:1440px;height:380px';
@@ -162,7 +166,12 @@ async function test(name, run) {
         const renderer = new window.LumenRenderer(canvas); renderer.resize(1440, 380);
         const ctx = renderer.ctx, Art = window.LumenArt, palette = Art.campaignPalette(theme, appearance);
         const types = Object.keys(Art.PLATFORM_MARKS), rows = [], shapes = [];
-        Art.horizon(renderer, palette, 2, 0, 1440, 380);
+        if (placeKey) {
+          window.lumen.loadLevel(window.lumen.indexOfKey(placeKey), false);
+          if (window.LumenPlaceArt.background(renderer, window.lumen, palette, 2) !== true) {
+            throw new Error(placeKey + ': missing authored place background');
+          }
+        } else Art.horizon(renderer, palette, 2, 0, 1440, 380);
         const luminance = (red, green, blue) => {
           const channels = [red, green, blue].map(value => value / 255)
             .map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
@@ -197,14 +206,14 @@ async function test(name, run) {
           ctx.font = '500 14px Outfit'; ctx.fillStyle = palette.night ? palette.rim : palette.shade;
           ctx.fillText(type, platform.x + 8, 125);
         }
-        return { theme, appearance, rows, distinct: new Set(shapes).size,
+        return { theme, placeKey: placeKey || null, appearance, rows, distinct: new Set(shapes).size,
           untouched: appearanceState === JSON.stringify(window.lumen.progress.settings) };
-      }, { appearance, theme });
+      }, { appearance, ...scene });
       assert.ok(result.untouched);
       for (const row of result.rows) assert.ok(row.contrasted >= 144,
-        `${appearance}/${theme}/${row.type}: ${row.contrasted} reception pixels at 3:1`);
-      assert.equal(result.distinct, 8, appearance + '/' + theme + ': identical platform shapes');
-      await page.locator('#platform-gallery').screenshot({ path: path.join(gallery, appearance + '-' + theme + '.png') });
+        `${appearance}/${scene.id}/${row.type}: ${row.contrasted} reception pixels at 3:1`);
+      assert.equal(result.distinct, 8, appearance + '/' + scene.id + ': identical platform shapes');
+      await page.locator('#platform-gallery').screenshot({ path: path.join(gallery, appearance + '-' + scene.id + '.png') });
       measurements.push(result);
     }
     fs.writeFileSync(path.join(gallery, 'measurements.json'), JSON.stringify(measurements, null, 2) + '\n');
@@ -547,6 +556,7 @@ async function test(name, run) {
         for (let frame = 0; frame < 120 * 90 && ['playing', 'dead'].includes(game.mode); frame++) {
           if (game.mode === 'playing') {
             game.input.virtual('right', true, 'identity-pilot');
+            game.input.virtual('run', true, 'identity-pilot');
             const player = game.player;
             const ground = game.platforms.filter(platform => platform.type === 'ground' &&
               platform.x <= player.x + 16 && platform.x + platform.w >= player.x + 16)
@@ -554,7 +564,7 @@ async function test(name, run) {
             const edge = ground ? ground.x + ground.w : Infinity;
             const creature = game.enemies.some(enemy => enemy.alive && enemy.x > player.x &&
               enemy.x - player.x < 125 && Math.abs(enemy.y - player.y) < 110);
-            if (player.grounded && game.elapsed - lastJump > .12 && (edge - player.x < 80 || creature)) {
+            if (player.grounded && game.elapsed - lastJump > .12 && (edge - player.x < 95 || creature)) {
               game.input.virtual('jump', true, 'identity-pilot');
               jumpUntil = game.elapsed + .45; lastJump = game.elapsed; jumps++;
             } else if (game.elapsed > jumpUntil) game.input.virtual('jump', false, 'identity-pilot');

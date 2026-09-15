@@ -710,6 +710,152 @@
     }
   ];
 
+  // Every added place declares its act explicitly. Insertion never renames an
+  // old key: older profiles keep their frontier through game.isUnlocked().
+  const newPlaces = [
+    {
+      id: 12, key: 'dos-du-songe', journeyAct: 1, name: 'Sur le dos d’un songe',
+      subtitle: 'Le jardin voyage pendant que tu marches.', theme: 'meadow', width: 3100, height: 900,
+      medalTargets: { gold: 75, silver: 120 }, spawn: { x: 100, y: 554 }, exit: exit(3100),
+      goal: 'Appelle le grand dormeur et laisse-le porter le jardin.',
+      place: { kind: 'ride', fromX: 500, toX: 2410, speed: 95,
+        pilot: [{ x: 610, surfaceY: 585, ride: true }, { x: 2640, surfaceY: 600 }, { x: 2960, surfaceY: 600 }],
+        captureMetric: { name: 'carriedDistance', min: 420 } },
+      platforms: [ground(0, 760), ground(2460, 640),
+        ledge(500, 585, 240, 'solid', { placeRole: 'mount' }),
+        ledge(1070, 490, 230), ledge(1280, 390, 240), ledge(1490, 490, 310),
+        ledge(2660, 485, 220), ledge(2850, 390, 180)],
+      enemies: [{ ...enemy('sleeper', 500, 660, 500, 2410), x: 500, y: 588, w: 240, h: 78, mount: true }],
+      collectibles: [...coins(235, 552, 6), ...arc(620, 525, 5), ...coins(1310, 345, 5), ...coins(2680, 443, 5),
+        item('star', 1140, 442), item('star', 1400, 340), item('star', 2930, 340), item('heart', 2500, 550)],
+      checkpoints: [checkpoint(350), checkpoint(2560)], hazards: [],
+      secrets: [secret(1290, 280, 210, 105)], wakeables: [],
+      hints: [{ x: 160, text: 'Le grand dormeur porte un jardin. Monte sur son dos, puis appelle avec X.' },
+        { x: 650, text: 'Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.' }]
+    },
+    {
+      id: 13, key: 'astre-a-guider', journeyAct: 1, name: 'Le petit astre égaré',
+      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'secret', width: 3100, height: 900,
+      medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 554 }, exit: { ...exit(3100), open: false },
+      goal: 'Éclaire le chemin du petit astre jusqu’à sa maison.',
+      place: { kind: 'escort', startX: 250, starY: 550, endX: 2880, speed: 95, reach: 355,
+        flowers: ['astre-fleur-1','astre-fleur-2','astre-fleur-3','astre-fleur-4','astre-fleur-5','astre-fleur-6','astre-fleur-7'],
+        pilot: [{ x: 440, surfaceY: 600, escort: true }, { x: 2950, surfaceY: 600 }],
+        captureAfter: 11 },
+      platforms: [ground(0, 3100), ledge(600, 480, 230), ledge(1070, 400, 230), ledge(1600, 480, 240),
+        ledge(2030, 375, 220, 'echo'), ledge(2480, 470, 220)],
+      enemies: [], hazards: [],
+      wakeables: [440,850,1260,1670,2080,2490,2840].map((x, i) => wake('bloom', x, 575, { id: 'astre-fleur-' + (i + 1) })),
+      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5), ...coins(1700, 438, 4),
+        ...coins(2070, 333, 4), ...coins(2520, 428, 4), item('star', 1170, 352), item('star', 2140, 323), item('star', 2610, 417), item('echo', 1900, 550)],
+      checkpoints: [checkpoint(950), checkpoint(2190)], secrets: [secret(2035, 250, 210, 130)],
+      hints: [{ x: 180, text: 'Réveille les fleurs avec X. Le petit astre avance seulement dans leur lumière.' },
+        { x: 980, text: 'Partir devant ouvre le chemin. Revenir près de l’astre lui évite d’attendre dans le noir.' }]
+    }
+  ];
+  newPlaces.push(
+    {
+      id: 14, key: 'pont-des-veilleurs', journeyAct: 2, name: 'Le pont des veilleurs',
+      subtitle: 'Trois voix font tenir un seul chemin.', theme: 'cavern', width: 3000, height: 900,
+      medalTargets: { gold: 70, silver: 115 }, spawn: { x: 100, y: 554 }, exit: exit(3000),
+      goal: 'Réveille une chaîne vivante, puis choisis quand traverser.',
+      place: { kind: 'chain', wakeTime: 9, keepers: [{ x: 760, y: 550 }, { x: 1400, y: 550 }, { x: 2120, y: 550 }],
+        pilot: [{ x: 620, surfaceY: 600, call: true }, { x: 1350, surfaceY: 600, call: true }, { x: 2330, surfaceY: 600 }, { x: 2870, surfaceY: 600 }],
+        captureMetric: { name: 'bridgeDistance', min: 200 } },
+      platforms: [ground(0, 720), ground(1270, 310), ground(2180, 820),
+        ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge' }), ledge(1550, 600, 660, 'solid', { placeRole: 'living-bridge' }),
+        ledge(390, 490, 210), ledge(1320, 485, 200), ledge(1480, 380, 230), ledge(2340, 480, 220), ledge(2590, 380, 230, 'vanish')],
+      enemies: [], hazards: [], wakeables: [], checkpoints: [checkpoint(400), checkpoint(1430)],
+      collectibles: [...coins(270, 547, 5), ...arc(890, 548, 6), ...coins(1360, 442, 4), ...arc(1760, 548, 6), ...coins(2390, 438, 4),
+        item('star', 480, 440), item('star', 1600, 333), item('star', 2700, 330)],
+      secrets: [secret(1490, 275, 210, 108)],
+      hints: [{ x: 180, text: 'Appelle un veilleur. Sa voix traverse toute la chaîne et le pont prend forme.' },
+        { x: 1350, text: 'Le pont tient tant que tous les veilleurs chantent. Rafraîchis leur chant avant de repartir.' }]
+    },
+    {
+      id: 15, key: 'riviere-sans-lune', journeyAct: 2, name: 'La rivière sans lune',
+      subtitle: 'L’eau a oublié ce qu’elle reflétait.', theme: 'tide', width: 4000, height: 900,
+      medalTargets: { gold: 110, silver: 170 }, spawn: { x: 100, y: 554 }, exit: { ...exit(4000), open: false },
+      goal: 'Rends trois reflets à la rivière.',
+      place: { kind: 'river', beacons: ['riviere-source','riviere-reflet','riviere-lune'],
+        pilot: [{ x: 585, surfaceY: 600, call: true }, { x: 770, surfaceY: 600, call: true }, { x: 1660, surfaceY: 600 },
+          { x: 1940, surfaceY: 600, call: true }, { x: 2240, surfaceY: 600, call: true }, { x: 3170, surfaceY: 600 },
+          { x: 3350, surfaceY: 600, call: true }, { x: 3870, surfaceY: 600 }],
+        captureMetric: { name: 'beaconsLit', min: 3 } },
+      platforms: [ground(0, 900), ground(1500, 880), ground(3040, 960),
+        ledge(440, 480, 250), ledge(630, 375, 230), ledge(1690, 485, 240), ledge(1870, 375, 240, 'crumble'),
+        ledge(2090, 285, 230), ledge(3160, 475, 240), ledge(3440, 380, 250)],
+      wakeables: [wake('bloom', 600, 575, { id: 'riviere-source' }),
+        wake('chime', 820, 545, { id: 'riviere-relais-1' }), wake('chime', 980, 545, { id: 'riviere-relais-2' }),
+        wake('chime', 1130, 545, { id: 'riviere-relais-3' }), wake('bridge', 1200, 600, { id: 'riviere-pont-1', span: 640 }),
+        wake('bloom', 2000, 575, { id: 'riviere-reflet' }), wake('chime', 2230, 545, { id: 'riviere-relais-4' }),
+        wake('chime', 2390, 545, { id: 'riviere-relais-5' }), wake('chime', 2540, 545, { id: 'riviere-relais-6' }),
+        wake('chime', 2680, 545, { id: 'riviere-relais-7' }), wake('bridge', 2700, 600, { id: 'riviere-pont-2', span: 700 }),
+        wake('bloom', 3420, 575, { id: 'riviere-lune' })],
+      enemies: [enemy('sleeper', 1830, 600, 1720, 1930)], hazards: [],
+      collectibles: [...coins(240, 550, 5), ...coins(660, 333, 4), ...arc(1050, 548, 6), ...coins(1920, 333, 4),
+        ...arc(2490, 548, 6), ...coins(3480, 338, 5), item('star', 730, 325), item('star', 2200, 235), item('star', 3580, 330)],
+      checkpoints: [checkpoint(1630), checkpoint(3170)],
+      secrets: [secret(645, 270, 205, 108), secret(2100, 180, 215, 108), secret(3450, 275, 230, 108)],
+      hints: [{ x: 170, text: 'Trois grandes corolles gardent les reflets perdus. Appelle-les pour rendre sa lune à la rivière.' },
+        { x: 745, text: 'Le carillon relaie ton appel au-dessus de l’eau. Un chemin bas se dessine ; les reflets secrets sont plus haut.' },
+        { x: 1680, text: 'Le dormeur écoute lui aussi. Un appel suffit à en faire une marche tranquille.' }]
+    }
+  );
+  newPlaces.push(
+    {
+      id: 16, key: 'colonne-des-saisons', journeyAct: 3, name: 'La colonne des saisons',
+      subtitle: 'Le ciel se rejoint un palier à la fois.', theme: 'sky', width: 2000, height: 2100,
+      medalTargets: { gold: 105, silver: 170 }, spawn: { x: 150, y: 1754 },
+      exit: { x: 700, y: 110, w: 70, h: 100, open: true },
+      goal: 'Remonte le jardin suspendu jusqu’à sa couronne.',
+      place: { kind: 'ascent',
+        pilot: [{ x: 505, surfaceY: 1685 }, { x: 740, surfaceY: 1575 }, { x: 1000, surfaceY: 1345 },
+          { x: 1240, surfaceY: 1230 }, { x: 1500, surfaceY: 1120 }, { x: 1240, surfaceY: 1000 },
+          { x: 1030, surfaceY: 890 }, { x: 765, surfaceY: 780 }, { x: 510, surfaceY: 545 },
+          { x: 285, surfaceY: 430 }, { x: 145, surfaceY: 320 }, { x: 415, surfaceY: 210 }, { x: 735, surfaceY: 210 }],
+        captureMetric: { name: 'climbed', min: 780 } },
+      platforms: [{ ...ground(0, 680, 1800), h: 40 }, ledge(390, 1685, 250), ledge(650, 1575, 220, 'spring'),
+        ledge(910, 1345, 250), ledge(1170, 1230, 220, 'moving', { axis: 'y', range: 20, speed: .65 }),
+        { ...ground(1390, 610, 1120), h: 40 }, ledge(1150, 1000, 250),
+        ledge(910, 890, 260, 'conveyor', { direction: -1 }), ledge(650, 780, 230, 'spring'),
+        ledge(390, 545, 240), ledge(180, 430, 240, 'moving', { axis: 'y', range: 15, speed: .6 }),
+        ledge(0, 320, 250, 'conveyor', { direction: 1 }), { ...ground(310, 500, 210), h: 38 },
+        ledge(1700, 1010, 190, 'crumble'), ledge(1720, 900, 170)],
+      enemies: [], hazards: [], wakeables: [],
+      collectibles: [...coins(420, 1638, 4), ...arc(910, 1295, 5), ...coins(1460, 1073, 6), ...coins(960, 843, 4),
+        ...arc(420, 493, 5), ...coins(410, 164, 4), item('star', 555, 1635), item('star', 1800, 850), item('star', 570, 160)],
+      checkpoints: [checkpoint(260, 1800), checkpoint(1600, 1120)], secrets: [secret(1710, 795, 190, 110)],
+      hints: [{ x: 180, text: 'Ici, le voyage monte. Regarde le palier suivant avant de quitter celui qui te porte.' },
+        { x: 720, text: 'Les tremplins montent plus haut. Les tapis et les plateformes mobiles demandent de choisir son départ.' }]
+    },
+    {
+      id: 17, key: 'pluie-de-lumiere', journeyAct: 3, name: 'Là où pleut la lumière',
+      subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'secret', width: 3150, height: 900,
+      medalTargets: { gold: 105, silver: 170 }, spawn: { x: 100, y: 554 }, exit: exit(3150),
+      goal: 'Guide la pluie devant toi pour faire pousser des pas temporaires.',
+      place: { kind: 'rain', startX: 450, life: 8,
+        pilot: [{ x: 470, surfaceY: 600, call: true }, { x: 675, surfaceY: 585 }, { x: 895, surfaceY: 585 },
+          { x: 1115, surfaceY: 585 }, { x: 1335, surfaceY: 585 }, { x: 1610, surfaceY: 600 },
+          { x: 1790, surfaceY: 600, call: true }, { x: 1950, surfaceY: 585 }, { x: 2170, surfaceY: 585 },
+          { x: 2390, surfaceY: 585 }, { x: 2610, surfaceY: 585 }, { x: 2840, surfaceY: 600 }, { x: 3010, surfaceY: 600 }],
+        captureMetric: { name: 'rainLandings', min: 3 } },
+      platforms: [ground(0, 560), ground(1430, 420), ground(2670, 480),
+        ...[600,820,1040,1260,1860,2080,2300,2520].map(x => ledge(x, 585, 180, 'solid', { placeRole: 'rain-step' })),
+        ledge(250, 490, 210), ledge(1510, 490, 230), ledge(2790, 490, 250)],
+      enemies: [], hazards: [], wakeables: [], checkpoints: [checkpoint(300), checkpoint(1630)],
+      collectibles: [...coins(290, 446, 4), ...arc(830, 525, 5), ...coins(1540, 445, 4), ...arc(2120, 525, 5),
+        ...coins(2820, 446, 4), item('star', 355, 440), item('star', 1620, 440), item('star', 2920, 440)],
+      secrets: [secret(1515, 385, 220, 110)],
+      hints: [{ x: 160, text: 'Appelle avec X : le nuage vient pleuvoir devant toi. Attends que le prochain pas ait poussé.' },
+        { x: 1480, text: 'Les pas s’effacent sans pluie. Tu peux te retourner et rappeler le nuage pour revenir.' }]
+    }
+  );
+  for (const definition of newPlaces) {
+    const end = ['lagon-lucioles', 'palais-givre', 'coeur-eclipse'][definition.journeyAct - 1];
+    levels.splice(levels.findIndex(level => level.key === end), 0, definition);
+  }
+
   // Static definitions are never mutated by the simulation. Creating a stage
   // restores collected objects, crumbling platforms and enemy state cleanly.
   window.LUMEN_LEVELS = levels;

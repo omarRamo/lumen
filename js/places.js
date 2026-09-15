@@ -1,0 +1,168 @@
+/* Six places, six physical decisions. Their state belongs to one visit, never
+ * to the renderer. Platforms remain ordinary collision surfaces for the engine. */
+(function (global) {
+  'use strict';
+  const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
+  const approach = (value, target, step) => value < target ? Math.min(target, value + step) : Math.max(target, value - step);
+  const touched = (game, object, id) => game.waves.some(wave => {
+    const key = 'place:' + id;
+    if (wave.touched.has(key) || Math.hypot(wave.x - object.x, wave.y - object.y) > wave.radius) return false;
+    wave.touched.add(key); return true;
+  });
+  function create(game) {
+    const config = game.level.place;
+    if (!config) return null;
+    const state = { kind: config.kind, metrics: {}, elapsed: 0 };
+    if (config.kind === 'ride') {
+      state.mount = game.enemies.find(enemy => enemy.mount);
+      state.deck = game.platforms.find(platform => platform.placeRole === 'mount');
+      state.direction = 1; state.metrics.carriedDistance = 0;
+    }
+    if (config.kind === 'escort') {
+      state.astre = { x: config.startX, y: config.starY, arrived: false, moving: false };
+      state.metrics.flowersWoken = 0; state.metrics.escortArrived = false;
+      state.flowers = game.wakeables.filter(wakeable => config.flowers.includes(wakeable.id));
+      state.seenFlowers = new Set(); game.exit.open = false;
+    }
+    if (config.kind === 'chain') {
+      state.keepers = config.keepers.map(keeper => ({ ...keeper, remaining: 0, pulse: 0 }));
+      state.propagation = []; state.metrics.chainWakes = 0; state.metrics.bridgeDistance = 0;
+      for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) platform.active = false;
+    }
+    if (config.kind === 'river') {
+      state.light = 0; state.restored = false;
+      state.metrics.beaconsLit = 0; state.metrics.riverRestored = false; game.exit.open = false;
+    }
+    if (config.kind === 'ascent') {
+      state.peakY = game.player.y; state.metrics.climbed = 0; state.metrics.peakY = state.peakY;
+    }
+    if (config.kind === 'rain') {
+      state.cloud = { x: config.startX, y: 220, targetX: config.startX };
+      state.metrics.rainGrown = 0; state.metrics.rainLandings = 0; state.lastLanding = null;
+      for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) {
+        platform.active = false; platform.rainLife = 0; platform.charge = 0;
+      }
+    }
+    return state;
+  }
+  function wakeKeeper(game, state, index, propagate) {
+    const keeper = state.keepers[index];
+    if (!keeper) return;
+    if (keeper.remaining <= 0) state.metrics.chainWakes++;
+    keeper.remaining = game.level.place.wakeTime || 9;
+    keeper.pulse = .4;
+    if (propagate) {
+      // Each neighbour sings in turn. Refreshing any member renews the whole
+      // chain once, rather than an exponentially repeating resonance loop.
+      state.propagation = state.keepers.map((_, next) => ({ index: next, delay: Math.abs(next - index) * .24 })).filter(item => item.index !== index);
+    }
+    game.audio.sfx('wakeBridge');
+  }
+  function beforePhysics(game, dt) {
+    const state = game.place, config = game.level.place;
+    if (!state || !config) return;
+    state.elapsed += dt;
+    if (state.kind === 'ride') {
+      const mount = state.mount, deck = state.deck;
+      const old = deck.x;
+      if (mount.calmTime > 0) {
+        deck.x += state.direction * config.speed * dt;
+        if (deck.x >= config.toX) { deck.x = config.toX; state.direction = -1; }
+        if (deck.x <= config.fromX) { deck.x = config.fromX; state.direction = 1; }
+      }
+      deck.dx = deck.x - old; deck.dy = 0;
+      mount.x = deck.x; mount.y = deck.y + 3; mount.facing = state.direction;
+      if (game.player.standingPlatform === deck) state.metrics.carriedDistance += Math.abs(deck.dx);
+    }
+    if (state.kind === 'chain') {
+      for (let index = 0; index < state.keepers.length; index++) {
+        const keeper = state.keepers[index];
+        keeper.remaining = Math.max(0, keeper.remaining - dt); keeper.pulse = Math.max(0, keeper.pulse - dt);
+        if (touched(game, keeper, 'keeper-' + index)) wakeKeeper(game, state, index, true);
+      }
+      for (const event of state.propagation) { event.delay -= dt; if (event.delay <= 0) wakeKeeper(game, state, event.index, false); }
+      state.propagation = state.propagation.filter(event => event.delay > 0);
+      const awake = state.keepers.every(keeper => keeper.remaining > 0);
+      for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) {
+        platform.active = awake;
+        platform.warning = awake && state.keepers.some(keeper => keeper.remaining < 1.5);
+        if (game.player.standingPlatform === platform) state.metrics.bridgeDistance += Math.abs(game.player.vx) * dt;
+      }
+    }
+    if (state.kind === 'rain') {
+      const cloud = state.cloud;
+      // The facing direction is an explicit choice: an action sends the rain
+      // towards the next bed, or back towards a foothold being revisited.
+      for (const wave of game.waves) if (wave.source === 'player' && !wave.placeRain) {
+        wave.placeRain = true;
+        cloud.targetX = clamp(wave.x + game.player.facing * 180, 0, game.level.width);
+      }
+      cloud.x = approach(cloud.x, cloud.targetX, 340 * dt);
+      for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) {
+        platform.rainLife = Math.max(0, platform.rainLife - dt);
+        const raining = Math.abs(platform.x + platform.w / 2 - cloud.x) < 112;
+        platform.charge = clamp(platform.charge + dt * (raining ? 1 : -.5), 0, .55);
+        if (platform.charge >= .55 && raining) {
+          if (!platform.active) { state.metrics.rainGrown++; game.audio.sfx('wakeBloom'); }
+          platform.rainLife = config.life || 8;
+        }
+        platform.active = platform.rainLife > 0;
+        platform.warning = platform.active && platform.rainLife < 1.5;
+      }
+    }
+  }
+  function afterPhysics(game, dt) {
+    const state = game.place, config = game.level.place;
+    if (!state || !config) return;
+    if (state.kind === 'escort') {
+      const astre = state.astre;
+      for (const flower of state.flowers) if (flower.state === 'awake') state.seenFlowers.add(flower.id);
+      state.metrics.flowersWoken = state.seenFlowers.size;
+      astre.moving = !astre.arrived && state.flowers.some(flower => flower.state === 'awake' && Math.abs(flower.x - astre.x) < config.reach);
+      if (astre.moving) astre.x = Math.min(config.endX, astre.x + config.speed * dt);
+      astre.arrived = astre.x >= config.endX;
+      if (astre.arrived && !state.metrics.escortArrived) { game.audio.sfx('victory'); game.emit('toast', 'Le petit astre a retrouvé sa maison.'); }
+      state.metrics.escortArrived = astre.arrived; game.exit.open = astre.arrived;
+    }
+    if (state.kind === 'river') {
+      state.metrics.beaconsLit = config.beacons.filter(id => game.wokenOnce.has(id)).length;
+      state.light = state.metrics.beaconsLit / config.beacons.length;
+      if (state.light >= 1 && !state.restored) {
+        state.restored = true; state.metrics.riverRestored = true;
+        game.audio.sfx('victory'); game.emit('toast', 'La rivière se souvient de la lune.');
+      }
+      game.exit.open = state.restored;
+    }
+    if (state.kind === 'ascent') {
+      state.peakY = Math.min(state.peakY, game.player.y);
+      state.metrics.peakY = state.peakY;
+      state.metrics.climbed = game.level.spawn.y - state.peakY;
+    }
+    if (state.kind === 'rain') {
+      const landing = game.player.standingPlatform;
+      if (landing?.placeRole === 'rain-step' && landing !== state.lastLanding) state.metrics.rainLandings++;
+      state.lastLanding = landing;
+    }
+  }
+  function respawn(game) {
+    const state = game.place;
+    if (!state) return;
+    if (state.kind === 'ride') {
+      const config = game.level.place;
+      const x = game.checkpoint.x > config.toX ? config.toX : config.fromX;
+      state.deck.x = state.mount.x = x; state.deck.dx = 0; state.direction = x === config.fromX ? 1 : -1;
+    }
+    if (state.kind === 'chain') {
+      state.propagation = []; for (const keeper of state.keepers) keeper.remaining = 0;
+      for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) platform.active = false;
+    }
+    if (state.kind === 'rain') {
+      state.cloud.x = state.cloud.targetX = game.checkpoint.x + 180;
+      for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) { platform.active = false; platform.rainLife = 0; platform.charge = 0; }
+      state.lastLanding = null;
+    }
+    // The escort waits where it is, and the river remembers its lit beacons:
+    // a fall loses the traversal, never the work already done in this visit.
+  }
+  global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn };
+})(typeof window !== 'undefined' ? window : globalThis);

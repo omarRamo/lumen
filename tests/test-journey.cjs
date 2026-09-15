@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const files = ['rng', 'save', 'resonance', 'modules', 'expedition', 'upgrades', 'levels', 'song', 'journey', 'engine'];
+const files = ['rng', 'save', 'resonance', 'modules', 'expedition', 'upgrades', 'places', 'levels', 'song', 'journey', 'engine'];
 const sources = files.map(file => fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'));
 const DT = 1 / 120;
 let failed = 0, passed = 0;
@@ -108,12 +108,12 @@ test('The real first-stage playthrough adds map light, queues its birth, and ret
   let jumpUntil = 0, lastJump = -10;
   for (let frame = 0; frame < 120 * 120 && game.mode !== 'complete' && game.mode !== 'gameover'; frame++) {
     if (game.mode === 'playing') {
-      set(game, 'right', true);
+      set(game, 'right', true); set(game, 'run', true);
       const p = game.player;
       const source = game.platforms.filter(s => s.type === 'ground' && s.x <= p.x + 16 && s.x + s.w >= p.x + 16).sort((a, b) => b.x - a.x)[0];
       const edge = source ? source.x + source.w : Infinity;
       const upcoming = game.enemies.some(e => e.alive && e.x > p.x && e.x - p.x < 125 && Math.abs(e.y - p.y) < 110);
-      if (p.grounded && game.elapsed - lastJump > .12 && (edge - p.x < 80 || upcoming)) {
+      if (p.grounded && game.elapsed - lastJump > .12 && (edge - p.x < 95 || upcoming)) {
         set(game, 'jump', true); jumpUntil = game.elapsed + .45; lastJump = game.elapsed;
       } else if (game.elapsed > jumpUntil) set(game, 'jump', false);
     }
