@@ -99,6 +99,10 @@
     const x = found ? echo.followX : echo.x, y = (found ? echo.followY : echo.y) + Math.sin(time * 2.2 + echo.voice) * 5;
     const size = found ? .72 : 1;
     ctx.save(); ctx.translate(x, y); ctx.scale(size, size);
+    if (!found && echo.roam) for (let trail = 1; trail <= 3; trail++) {
+      ctx.save(); ctx.globalAlpha = .65 - trail * .14;
+      star(ctx, -echo.drift * (22 + trail * 13), trail * 2, 4 - trail * .5, echo.color); ctx.restore();
+    }
     if (!found) {
       ctx.strokeStyle = echo.color + '75'; ctx.lineWidth = 1.5; ctx.setLineDash([2, 7]);
       ctx.beginPath(); ctx.arc(0, 0, 32 + Math.sin(time * 2) * 2, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -250,15 +254,17 @@
     ctx.save(); ctx.translate(0, renderer.offsetY); ctx.scale(scale, scale);
     ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, 0);
     const visible = (x, width = 0, margin = 150) => x + width > game.camera.x - margin && x < game.camera.x + renderer.worldWidth + margin;
-    for (const current of data.wind) {
+    for (const current of game.song.wind) {
       if (!visible(current.x, current.w)) continue;
       ctx.save(); ctx.beginPath(); ctx.rect(current.x, current.y, current.w, current.h); ctx.clip();
       for (let index = 0; index < 18; index++) {
-        const x = current.x + 15 + random(index + 122) * (current.w - 30);
+        const drift = current.drift || 0, lean = Math.sign(drift) * 22;
+        const x = current.x + 15 + ((random(index + 122) * (current.w - 30) + time * drift * .45) % (current.w - 30) + current.w - 30) % (current.w - 30);
         const y = current.y + current.h - ((time * (72 + index % 4 * 20) + index * 49) % current.h);
         ctx.strokeStyle = '#f5ffdc90'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x, y + 25);
-        ctx.quadraticCurveTo(x + 11, y + 13, x + 2, y - 12); ctx.stroke();
-        if (index % 3 === 0) leaf(ctx, x, y, 7, -.3, '#e7f9c9');
+        ctx.quadraticCurveTo(x + 11 + lean * .5, y + 13, x + 2 + lean, y - 12); ctx.stroke();
+        if (drift) stroke(ctx, [[x + lean - 5, y - 8], [x + lean + 2, y - 12], [x + lean + 6, y - 5]], '#f5ffdc', 1.5);
+        if (index % 3 === 0) leaf(ctx, x, y, 7, drift ? Math.sign(drift) * .85 : -.3, '#e7f9c9');
       }
       ctx.restore();
     }

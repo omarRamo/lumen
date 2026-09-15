@@ -59,7 +59,9 @@
         { type: 'star', x: 1810, y: 184 }, { type: 'star', x: 2830, y: 221 }, { type: 'star', x: 3830, y: 282 }
       ],
       lights: [light('aya', 'Aya', 704, 350, '#ffb861', 1), light('lou', 'Lou', 2160, 265, '#88dbed', 3), light('tika', 'Tika', 3790, 335, '#efa4c7', 5)],
-      wind: [{ x: 835, y: 180, w: 230, h: 540 }, { x: 1930, y: 130, w: 335, h: 570 }, { x: 3010, y: 230, w: 330, h: 470 }],
+      wind: [{ x: 835, y: 180, w: 230, h: 540 },
+        { x: 1930, y: 130, w: 335, h: 570, id: 'recifs-courant', respondsToCall: true, drift: -150 },
+        { x: 3010, y: 230, w: 330, h: 470 }],
       wakeables: [{ type: 'bloom', x: 1380, y: 545, id: 'recifs-fleur' }, { type: 'chime', x: 2900, y: 420, id: 'recifs-cloche' }],
       checkpoints: [{ x: 1220, y: 560 }, { x: 2440, y: 530 }, { x: 3460, y: 590 }, { x: 4250, y: 600 }],
       scenery: [
@@ -87,7 +89,9 @@
         ...notes(4470, 433, 4), ...notes(4730, 548, 6, 42),
         { type: 'star', x: 1790, y: 181 }, { type: 'star', x: 3030, y: 192 }, { type: 'star', x: 3900, y: 240 }
       ],
-      lights: [light('sol', 'Sol', 740, 350, '#f3bd64', 0), light('neve', 'Nève', 2280, 252, '#aff0df', 3), light('orion', 'Orion', 3860, 293, '#ffb1b1', 6)],
+      lights: [light('sol', 'Sol', 740, 350, '#f3bd64', 0),
+        { ...light('neve', 'Nève', 2280, 252, '#aff0df', 3), roam: { x: 1990, y: 294, speed: 90 } },
+        light('orion', 'Orion', 3860, 293, '#ffb1b1', 6)],
       wind: [{ x: 1920, y: 175, w: 400, h: 525 }, { x: 3150, y: 180, w: 270, h: 520 }, { x: 4100, y: 260, w: 180, h: 450 }],
       wakeables: [
         { type: 'chime', x: 1820, y: 360, id: 'choeur-cloche-a' },
@@ -118,7 +122,9 @@
   class Journey {
     constructor(data) {
       this.index = data.index; this.style = data.style;
-      this.lights = data.lights.map(entry => ({ ...entry, found: false, followX: entry.x, followY: entry.y }));
+      this.lights = data.lights.map(entry => ({ ...entry, found: false, followX: entry.x, followY: entry.y,
+        originX: entry.x, originY: entry.y, motion: 0, drift: 0 }));
+      this.wind = data.wind.map(current => ({ ...current }));
       this.count = 0; this.combo = 0; this.comboTime = 0; this.bestCombo = 0;
       this.bloom = 0; this.celebration = 0; this.safe = null; this.returnPoint = null;
       this.trail = []; this.trailTime = 0; this.airNotes = 0;
@@ -139,12 +145,32 @@
       this.celebration = Math.max(0, this.celebration - dt);
       this.bloom += (this.count / this.lights.length - this.bloom) * (1 - Math.exp(-dt * 1.8));
       const player = game.player, standing = player.standingPlatform;
+      for (const current of this.wind) {
+        if (!current.respondsToCall) continue;
+        const key = 'wind:' + current.id;
+        for (const wave of game.waves) {
+          if (wave.source !== 'player' || wave.touched.has(key)) continue;
+          const nearestX = Math.max(current.x, Math.min(wave.x, current.x + current.w));
+          const nearestY = Math.max(current.y, Math.min(wave.y, current.y + current.h));
+          if (Math.hypot(nearestX - wave.x, nearestY - wave.y) > wave.radius) continue;
+          current.drift *= -1; wave.touched.add(key);
+          game.burst(nearestX, nearestY, 12, '#e5f5c5', 80, 'leaf');
+        }
+      }
       if (player.grounded && standing && standing.type === 'ground' &&
           player.x > standing.x + 20 && player.x + player.w < standing.x + standing.w - 20) {
         this.safe = { x: player.x, y: standing.y - 48 };
       }
       for (const echo of this.lights) {
         if (echo.found) continue;
+        if (echo.roam) {
+          const spanX = echo.roam.x - echo.originX, spanY = echo.roam.y - echo.originY;
+          const distance = Math.hypot(spanX, spanY);
+          echo.motion = (echo.motion + dt * echo.roam.speed / distance) % 2;
+          const fraction = echo.motion <= 1 ? echo.motion : 2 - echo.motion;
+          echo.x = echo.originX + spanX * fraction; echo.y = echo.originY + spanY * fraction;
+          echo.drift = (echo.motion < 1 ? 1 : -1) * spanX / distance;
+        }
         if (!game.waves.some(wave => Math.hypot(echo.x - wave.x, echo.y - wave.y) <= wave.radius)) continue;
         echo.found = true; this.count++; this.celebration = 2.5;
         game.addScore(750); game.burst(echo.x, echo.y, 38, echo.color, 170, 'petal');

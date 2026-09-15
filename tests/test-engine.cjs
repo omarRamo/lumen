@@ -258,6 +258,72 @@ test('Wind lifts a held glide, while release restores gravity', () => {
   assert.ok(game.player.vy > 0);
 });
 
+test('Island two lets each player call reverse one current once, with real lateral flight in both styles', () => {
+  for (const style of ['gentle', 'flow']) {
+    const { game, window } = environment();
+    const authored = JSON.stringify(window.LumenSong.ISLANDS);
+    game.applyLevel(window.LumenSong.create(1, style), -1);
+    const current = game.song.wind.find(wind => wind.respondsToCall);
+    assert.equal(game.song.wind.filter(wind => wind.respondsToCall).length, 1);
+    place(game, 2000, 270);
+    Object.assign(game.player, { grounded: false, coyote: 0, airJumps: 1, vy: 100 });
+    hold(game, 'jump'); tick(game, .2);
+    assert.ok(game.player.x < 1980, 'The initial current must carry a glide left.');
+    hold(game, 'action'); tick(game, .05); hold(game, 'action', false);
+    assert.equal(current.drift, 150);
+    const turningPoint = game.player.x;
+    tick(game, .3);
+    assert.ok(game.player.x > turningPoint + 25, 'The same glide must now go right.');
+    assert.equal(current.drift, 150, 'One expanding wave must not flip a current every frame.');
+    game.emitResonance(2010, 210, 180, 'chime'); tick(game, .2);
+    assert.equal(current.drift, 150, 'Relays must not undo the player decision.');
+    game.pause(); tick(game, 4); assert.equal(current.drift, 150); game.resume();
+    place(game, 2000, 270); game.usePower(); tick(game, .1);
+    assert.equal(current.drift, -150, 'A new player call reverses it again.');
+    assert.equal(JSON.stringify(window.LumenSong.ISLANDS), authored);
+    game.applyLevel(window.LumenSong.create(1, style), -1);
+    assert.equal(game.song.wind.find(wind => wind.respondsToCall).drift, -150);
+    game.start(0); assert.equal(game.song, null);
+  }
+});
+
+test('Island three moves one echo along existing ledges, pauses it and rescues it through a real call', () => {
+  for (const style of ['gentle', 'flow']) {
+    const { game, window } = environment();
+    const authored = JSON.stringify(window.LumenSong.ISLANDS);
+    game.applyLevel(window.LumenSong.create(2, style), -1);
+    const echo = game.song.lights.find(entry => entry.roam);
+    assert.equal(game.song.lights.filter(entry => entry.roam).length, 1);
+    assert.ok(echo.roam.speed < 320, 'The echo can be caught without waiting for a cycle.');
+    const origin = { x: echo.x, y: echo.y };
+    game.pause(); tick(game, 3); assert.deepEqual({ x: echo.x, y: echo.y }, origin);
+    game.resume(); tick(game, 2);
+    assert.ok(echo.x < origin.x - 150 && echo.y > origin.y);
+    assert.equal(echo.found, false);
+    tick(game, 2);
+    assert.ok(echo.x >= echo.roam.x && echo.x <= echo.originX);
+    assert.ok(echo.y >= echo.originY && echo.y <= echo.roam.y);
+    place(game, echo.x - 16, echo.y + 24);
+    hold(game, 'action'); tick(game, .15); hold(game, 'action', false);
+    assert.equal(echo.found, true);
+    assert.equal(game.song.count, 1);
+    const rescued = { x: echo.x, y: echo.y };
+    tick(game, .6); assert.deepEqual({ x: echo.x, y: echo.y }, rescued);
+    assert.equal(JSON.stringify(window.LumenSong.ISLANDS), authored);
+  }
+});
+
+test('Island ideas do not add notes, distance, platforms or another mechanic to the first island', () => {
+  const { window } = environment();
+  const islands = window.LumenSong.ISLANDS;
+  assert.deepEqual(Array.from(islands, island => island.width), [4200, 4700, 5100]);
+  assert.deepEqual(Array.from(islands, island => island.collectibles.filter(item => item.type === 'coin').length), [73, 82, 90]);
+  assert.deepEqual(Array.from(islands, island => island.platforms.filter(platform => platform.type === 'ground').length), [4, 5, 5]);
+  assert.deepEqual(Array.from(islands, island => island.platforms.filter(platform => platform.type !== 'ground').length), [9, 12, 13]);
+  assert.deepEqual(Array.from(islands, island => island.wind.filter(current => current.respondsToCall).length), [0, 1, 0]);
+  assert.deepEqual(Array.from(islands, island => island.lights.filter(echo => echo.roam).length), [0, 0, 1]);
+});
+
 test('Balade returns near the fall, Elan returns to a lantern, and neither loses rescued echoes', () => {
   for (const style of ['gentle', 'flow']) {
     const { game } = environment(); game.startSong(0, { style });

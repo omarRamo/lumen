@@ -591,6 +591,7 @@
         if (p.coyote > 0) this.jump(false);
         else if ((p.power === 'breeze' || this.level.song) && p.airJumps < 1) this.jump(true);
       }
+      let windDrift = 0;
       if (p.wet) {
         p.vy += 500 * dt;
         if (input.down('jump')) { p.vy -= 1120 * dt; p.vy = Math.max(p.vy, -310); p.grounded = false; }
@@ -606,8 +607,8 @@
           p.vy = Math.min(140, p.vy);
         }
         if (this.level.song && input.down('jump') && !input.down('down')) {
-          const wind = (this.level.song.wind || []).find(current => overlap(p, current));
-          if (wind) { p.vy = approach(p.vy, -310, 4000 * dt); p.gliding = true; }
+          const wind = (this.song?.wind || this.level.song.wind || []).find(current => overlap(p, current));
+          if (wind) { p.vy = approach(p.vy, -310, 4000 * dt); p.gliding = true; windDrift = wind.drift || 0; }
         }
       }
       if (p.dashTime > 0) {
@@ -636,11 +637,12 @@
         }
       }
       const oldY = p.y, oldBottom = p.y + p.h, wasGrounded = p.grounded;
-      p.x += p.vx * dt;
+      const horizontalSpeed = p.vx + windDrift;
+      p.x += horizontalSpeed * dt;
       for (const ground of this.platforms) {
         if (!ground.active || ground.type !== 'ground' || !overlap(p,ground)) continue;
         if (oldBottom <= ground.y + 5 || p.y >= ground.y + ground.h - 3) continue;
-        if (p.vx > 0) p.x = ground.x - p.w; else if (p.vx < 0) p.x = ground.x + ground.w;
+        if (horizontalSpeed > 0) p.x = ground.x - p.w; else if (horizontalSpeed < 0) p.x = ground.x + ground.w;
         p.vx = 0;
       }
       p.x = clamp(p.x, 0, this.level.width - p.w); p.y += p.vy * dt;

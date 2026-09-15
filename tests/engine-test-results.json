@@ -1,5 +1,5 @@
 {
-  "passed": 57,
+  "passed": 60,
   "failed": 0,
   "checks": [
     {
@@ -36,6 +36,18 @@
     },
     {
       "name": "Wind lifts a held glide, while release restores gravity",
+      "passed": true
+    },
+    {
+      "name": "Island two lets each player call reverse one current once, with real lateral flight in both styles",
+      "passed": true
+    },
+    {
+      "name": "Island three moves one echo along existing ledges, pauses it and rescues it through a real call",
+      "passed": true
+    },
+    {
+      "name": "Island ideas do not add notes, distance, platforms or another mechanic to the first island",
       "passed": true
     },
     {
