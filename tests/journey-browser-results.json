@@ -1,0 +1,27 @@
+{
+  "passed": 5,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Une carte dynamique sans doublon remplace les deux accès dans source et portable",
+      "passed": true
+    },
+    {
+      "name": "Profil neuf : les Rêves expliquent leur verrou et la manette mène à la coupole",
+      "passed": true
+    },
+    {
+      "name": "Un chapitre réellement joué allume la carte, annonce son succès et survit au rechargement",
+      "passed": true
+    },
+    {
+      "name": "[état forcé] La manette atteint et lance chaque lieu, chaque acte et les actions de carte",
+      "passed": true
+    },
+    {
+      "name": "[état forcé] Cibles 48 px, aucun chevauchement et états distincts en gris sur mobile et arabe",
+      "passed": true
+    }
+  ],
+  "scope": "Desktop Chromium; simulated touch and Gamepad API. Forced fixtures labelled. Real chapter completion separate. No physical mobile/controller or human usability test."
+}

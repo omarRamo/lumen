@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
+const scripts = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js', 'journey.js', 'engine.js'].map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
 const DT = 1 / 120;
 const checks = [];
 let failed = 0;
@@ -337,7 +337,7 @@ test('Balade returns near the fall, Elan returns to a lantern, and neither loses
   }
 });
 
-test('Song records persist separately, open the next island and never unlock classic chapters', () => {
+test('Song records persist separately; the next resting island still requires its preceding act', () => {
   const { game, storage } = environment(); game.startSong(0, { style: 'flow' });
   for (const echo of game.song.lights) { game.emitResonance(echo.x, echo.y, 180); tick(game, .3); }
   game.elapsed = 80; game.levelStars = 3;
@@ -348,8 +348,8 @@ test('Song records persist separately, open the next island and never unlock cla
   assert.deepEqual([...game.progress.unlocked], unlocked);
   assert.equal(game.store.chapter('prairies-aurore'), null);
   const restored = environment(storage).game;
-  assert.equal(restored.nextSongIndex(), 1);
-  assert.equal(restored.startSong(1), true);
+  assert.equal(restored.nextSongIndex(), 0, 'The next island cannot be proposed before its act.');
+  assert.equal(restored.startSong(1), false);
   restored.start(0);
   assert.equal(restored.song, null);
   assert.equal(restored.session, 'campaign');

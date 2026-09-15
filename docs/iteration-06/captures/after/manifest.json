@@ -1,0 +1,1065 @@
+{
+  "phase": "after",
+  "revision": "working-tree-iteration-06",
+  "sourceDigest": "0ce62a9c38fe68e96e2de10812e2a2d4c4c710d4324ceb511998d3000f182b38",
+  "method": "Forced saved-profile fixtures. Identical profile hashes and capture conditions are compared. Not evidence of actual progression, hardware testing, or human usability.",
+  "fullFixtureMeaning": "Every campaign stage and island from the BEFORE revision is complete. Supplemental all-current images, when present, additionally complete new stages.",
+  "content": {
+    "campaign": [
+      "prairies-aurore",
+      "cathedrale-racines",
+      "lagon-lucioles",
+      "archipels-zephyr",
+      "forge-petales",
+      "palais-givre",
+      "jardin-heures-bleues",
+      "vergers-vent",
+      "galerie-echos",
+      "verger-qui-reve",
+      "coeur-eclipse"
+    ],
+    "islands": [
+      "chant-petits-matins",
+      "chant-recifs-ciel",
+      "chant-grand-chorus"
+    ],
+    "voices": [
+      "chant-pip",
+      "chant-sao",
+      "chant-milo",
+      "chant-aya",
+      "chant-lou",
+      "chant-tika",
+      "chant-sol",
+      "chant-neve",
+      "chant-orion"
+    ]
+  },
+  "profiles": {
+    "fresh": {
+      "schema": 3,
+      "unlocked": [
+        "prairies-aurore"
+      ],
+      "chapters": {},
+      "bonusUnlocked": false,
+      "finished": false,
+      "settings": {
+        "language": "fr",
+        "appearance": "system",
+        "muted": true
+      },
+      "hub": {
+        "quests": {},
+        "transformations": []
+      },
+      "codex": {
+        "creatures": [],
+        "phenomena": []
+      },
+      "expeditions": {
+        "runs": 0,
+        "completed": 0,
+        "bestRooms": 0
+      }
+    },
+    "mid": {
+      "schema": 3,
+      "unlocked": [
+        "prairies-aurore",
+        "cathedrale-racines",
+        "lagon-lucioles",
+        "archipels-zephyr",
+        "forge-petales"
+      ],
+      "chapters": {
+        "prairies-aurore": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 65,
+          "medal": "gold",
+          "bestTimedTime": 60
+        },
+        "cathedrale-racines": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 66,
+          "medal": "silver",
+          "bestTimedTime": 61
+        },
+        "lagon-lucioles": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 67,
+          "medal": "gold",
+          "bestTimedTime": 62
+        },
+        "archipels-zephyr": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 68,
+          "medal": "silver",
+          "bestTimedTime": 63
+        },
+        "chant-petits-matins": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 69,
+          "medal": "gold",
+          "bestTimedTime": 64
+        },
+        "chant-recifs-ciel": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 70,
+          "medal": "silver",
+          "bestTimedTime": 65
+        }
+      },
+      "bonusUnlocked": false,
+      "finished": false,
+      "settings": {
+        "language": "fr",
+        "appearance": "system",
+        "muted": true
+      },
+      "hub": {
+        "quests": {
+          "premier-souffle": "done"
+        },
+        "transformations": [
+          "coupole-allumee"
+        ]
+      },
+      "codex": {
+        "creatures": [
+          "chant-pip",
+          "chant-sao",
+          "chant-milo",
+          "chant-aya",
+          "chant-lou",
+          "chant-tika"
+        ],
+        "phenomena": []
+      },
+      "expeditions": {
+        "runs": 3,
+        "completed": 1,
+        "bestRooms": 5
+      }
+    },
+    "full": {
+      "schema": 3,
+      "unlocked": [
+        "prairies-aurore",
+        "cathedrale-racines",
+        "lagon-lucioles",
+        "archipels-zephyr",
+        "forge-petales",
+        "palais-givre",
+        "jardin-heures-bleues",
+        "vergers-vent",
+        "galerie-echos",
+        "verger-qui-reve",
+        "coeur-eclipse"
+      ],
+      "chapters": {
+        "prairies-aurore": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 65,
+          "medal": "gold",
+          "bestTimedTime": 60
+        },
+        "cathedrale-racines": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 66,
+          "medal": "silver",
+          "bestTimedTime": 61
+        },
+        "lagon-lucioles": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 67,
+          "medal": "gold",
+          "bestTimedTime": 62
+        },
+        "archipels-zephyr": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 68,
+          "medal": "silver",
+          "bestTimedTime": 63
+        },
+        "chant-petits-matins": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 76,
+          "medal": "silver",
+          "bestTimedTime": 71
+        },
+        "chant-recifs-ciel": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 77,
+          "medal": "gold",
+          "bestTimedTime": 72
+        },
+        "forge-petales": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 69,
+          "medal": "gold",
+          "bestTimedTime": 64
+        },
+        "palais-givre": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 70,
+          "medal": "silver",
+          "bestTimedTime": 65
+        },
+        "jardin-heures-bleues": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 71,
+          "medal": "gold",
+          "bestTimedTime": 66
+        },
+        "vergers-vent": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 72,
+          "medal": "silver",
+          "bestTimedTime": 67
+        },
+        "galerie-echos": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 73,
+          "medal": "gold",
+          "bestTimedTime": 68
+        },
+        "verger-qui-reve": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 74,
+          "medal": "silver",
+          "bestTimedTime": 69
+        },
+        "coeur-eclipse": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 75,
+          "medal": "gold",
+          "bestTimedTime": 70
+        },
+        "chant-grand-chorus": {
+          "completed": true,
+          "stars": 3,
+          "coins": 42,
+          "score": 2400,
+          "time": 78,
+          "medal": "silver",
+          "bestTimedTime": 73
+        }
+      },
+      "bonusUnlocked": true,
+      "finished": true,
+      "settings": {
+        "language": "fr",
+        "appearance": "system",
+        "muted": true
+      },
+      "hub": {
+        "quests": {
+          "premier-souffle": "done"
+        },
+        "transformations": [
+          "coupole-allumee"
+        ]
+      },
+      "codex": {
+        "creatures": [
+          "chant-pip",
+          "chant-sao",
+          "chant-milo",
+          "chant-aya",
+          "chant-lou",
+          "chant-tika",
+          "chant-sol",
+          "chant-neve",
+          "chant-orion"
+        ],
+        "phenomena": []
+      },
+      "expeditions": {
+        "runs": 8,
+        "completed": 5,
+        "bestRooms": 5
+      }
+    }
+  },
+  "comparedWithBefore": true,
+  "captures": [
+    {
+      "image": "fresh-light-desktop-archipelago.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-light-desktop-campaign.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "campaign",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-light-mobile-archipelago.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1504,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-light-mobile-campaign.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "campaign",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1505,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-dark-desktop-archipelago.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-dark-desktop-campaign.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "campaign",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-dark-mobile-archipelago.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1504,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "fresh-dark-mobile-campaign.png",
+      "fixture": "fresh",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "ac18d33d4775550d91f0347da95a82a4476eb78fc1980a954848d8321fb06abe",
+      "entry": "campaign",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1505,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-light-desktop-archipelago.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-light-desktop-campaign.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "campaign",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-light-mobile-archipelago.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1560,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-light-mobile-campaign.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "campaign",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1561,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-dark-desktop-archipelago.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-dark-desktop-campaign.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "campaign",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-dark-mobile-archipelago.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1560,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "mid-dark-mobile-campaign.png",
+      "fixture": "mid",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "916ad1341a6685d1d5a85aa2f063b54ac195e7e4c3a2b6ce731703df78504612",
+      "entry": "campaign",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1561,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-light-desktop-archipelago.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-light-desktop-campaign.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "campaign",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-light-mobile-archipelago.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1560,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-light-mobile-campaign.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "campaign",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "light",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1561,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-dark-desktop-archipelago.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "archipelago",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-dark-desktop-campaign.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "campaign",
+      "view": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 923,
+        "clientHeight": 900,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-dark-mobile-archipelago.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "archipelago",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1560,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    },
+    {
+      "image": "full-dark-mobile-campaign.png",
+      "fixture": "full",
+      "fixtureKind": "forced-saved-profile",
+      "profileHash": "e4cec796b43cc7a4e3cc876f8f413aa6bd167d503ff64b5a8f89a9ee4cb5cda0",
+      "entry": "campaign",
+      "view": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "appearance": "dark",
+      "locale": "fr-FR",
+      "deviceScaleFactor": 1,
+      "cosmeticSeed": 6006,
+      "frozenTime": 2,
+      "scrollPosition": "top-left",
+      "supplemental": false,
+      "surface": {
+        "mode": "map",
+        "renderedSurface": "screen map-screen journey-map active",
+        "oldIslandCards": 0,
+        "oldChapterCards": 0,
+        "journeyNodes": 16,
+        "horizontalOverflow": false,
+        "scrollHeight": 1561,
+        "clientHeight": 844,
+        "title": "Votre ciel prend vie."
+      }
+    }
+  ]
+}

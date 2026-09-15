@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/playthrough.cjs",
+    "test": "node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/playthrough.cjs",
     "test:appearance": "node tests/test-appearance.cjs",
     "test:audio": "node tests/test-audio.cjs",
     "test:i18n": "node tests/test-i18n.cjs",
@@ -15,7 +15,9 @@
     "test:renderer": "node tests/test-renderer.cjs",
     "test:expedition": "node tests/test-expedition.cjs",
     "test:playthrough": "node tests/playthrough.cjs",
-    "test:browser": "node tools/build.cjs && node tests/test-browser.cjs",
+    "test:journey": "node tests/test-journey.cjs",
+    "test:journey-browser": "node tests/test-journey-browser.cjs",
+    "test:browser": "node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs",
     "verify": "npm run build && npm test && npm run test:browser"
   },
   "devDependencies": {

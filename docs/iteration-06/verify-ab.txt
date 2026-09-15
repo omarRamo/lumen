@@ -1,0 +1,587 @@
+
+> lumen-les-jardins-de-la-lune@5.2.0 verify
+> npm run build && npm test && npm run test:browser
+
+
+> lumen-les-jardins-de-la-lune@5.2.0 build
+> node tools/build.cjs
+
+Portable edition built: LUMEN.html (718 KiB).
+
+> lumen-les-jardins-de-la-lune@5.2.0 test
+> node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/playthrough.cjs
+
+PASS  Appearance follows the system by default and falls back to light without matchMedia
+PASS  Live system changes apply only when the player has not overridden the system
+PASS  Appearance notifications are removable and invalid preferences select the system
+PASS  Old saves default to system appearance and valid overrides survive reloading
+
+4 appearance checks passed.
+PASS  Three original scores are distinct, finite and share a playable pentatonic vocabulary
+PASS  A full phrase uses pitched instruments, percussion and the ambient answering voice
+PASS  Night changes orchestration but keeps the musical clock and progression intact
+PASS  Sound events use distinct gestures and respect mute, pause and repeat limits
+PASS  Mixer values clamp safely without needing browser audio, and scene transitions clear flight
+
+5 audio composition checks passed.
+PASS  Regional system locales resolve to the five supported languages
+PASS  System preferences are ordered and unsupported or missing languages fall back to English
+PASS  An explicit preference wins, while auto follows a changed system language
+PASS  Saved language survives validation and invalid preferences return to auto
+PASS  Messages interpolate named values literally and reject incomplete translations
+PASS  Every catalog translation keeps the same named placeholders
+PASS  Every authored level, quest, dialogue, echo and offered upgrade has five translations
+PASS  Lumen is the same proper name in all five languages
+PASS  The common map has complete translations for every literal translated message
+PASS  The former hero name cannot return to sources, catalogs or the portable edition
+
+10 localization checks passed.
+PASS  Deux alternatives proposées produisent deux salles réellement différentes
+PASS  La nature annoncée sur la carte est la nature réellement jouée
+PASS  Une alternative proposée est toujours réalisable : la carte ne propose pas l’impossible
+PASS  L’intention de rythme reste une contrainte distincte du type choisi
+PASS  Un choix ne modifie jamais une salle déjà traversée
+PASS  Un dormeur apaisé le reste huit secondes, quel que soit son minuteur interne
+PASS  Une nouvelle onde prolonge l’apaisement au lieu de le redémarrer à zéro
+PASS  Un dormeur apaisé ne charge pas et ne blesse pas, même collé à Lumen
+PASS  Un dormeur apaisé porte Lumen : on peut se tenir sur son dos
+PASS  La fin de l’apaisement est annoncée, puis rendue sans attaque instantanée
+PASS  Un retour au checkpoint remet le dormeur dans un état cohérent
+PASS  Une quête terminée rouvre la porte au simple retour dans le lieu
+PASS  Une quête terminée survit à un rechargement complet de la page
+PASS  Les dialogues suivent l’état relu de la quête, pas un compteur de session
+PASS  Une seule règle décide de l’accès aux Rêves : le menu ne la contourne pas
+PASS  La session de jeu est un état nommé, pas une déduction sur this.run
+PASS  Terminer un chapitre après une nuit n’appelle jamais completeRoom()
+PASS  Mourir dans un chapitre ne met pas fin à une nuit
+PASS  Un réessai après une nuit perdue ne tente pas de charger le chapitre −1
+PASS  Une nuit perdue se recommence avec la même graine, ou avec une autre
+PASS  Reprendre une nuit sauvegardée ne compte pas une nouvelle tentative
+PASS  Quitter une nuit pour la campagne n’y laisse aucun souvenir de rêve
+PASS  Une donnée corrompue n’écrase pas la copie de secours valide
+PASS  Un profil écrit par une version future n’est pas réinterprété ni écrasé
+PASS  Un indice de salle hors du plan ne conclut pas une nuit toute seule
+PASS  Le nombre d’emplacements de souvenirs est respecté après chargement
+PASS  Une récompense déjà encaissée ne l’est pas deux fois après une reprise
+PASS  Un stockage refusé est signalé une fois l’interface prête, pas avant
+
+28/28 promesses du jalon A vérifiées.
+PASS  Every authored stage loads with independent objects, a stable key and a stable spawn
+PASS  New chapters have long authored routes, safe lanterns, echo detours and distinct creatures
+PASS  Jump height varies with release and lands without sinking
+PASS  Song flight is permanent, limited to one air jump and isolated from classic chapters
+PASS  Song glide slows descent only while jump is held and never changes classic gravity
+PASS  The three song islands are independent and progression cannot skip an island
+PASS  Only actual resonance rescues echoes, opens the portal and survives a fall
+PASS  Airborne notes recharge flight once, form a bounded combo and expire on pause-safe simulation time
+PASS  Wind lifts a held glide, while release restores gravity
+PASS  Island two lets each player call reverse one current once, with real lateral flight in both styles
+PASS  Island three moves one echo along existing ledges, pauses it and rescues it through a real call
+PASS  Island ideas do not add notes, distance, platforms or another mechanic to the first island
+PASS  Balade returns near the fall, Elan returns to a lantern, and neither loses rescued echoes
+PASS  Song records persist separately; the next resting island still requires its preceding act
+PASS  Coyote jump succeeds after walking off a real ledge, then expires
+PASS  Buffered jump fires on landing, including a jump pressed in the air
+PASS  A buffered tap released before landing produces a short jump
+PASS  Horizontal and vertical moving platforms carry a standing player
+PASS  Crumble/reform, vanish cycle, spring boost and conveyor transport work
+PASS  Checkpoint heals, death costs exactly one life, respawn restores a safe state
+PASS  Damage grace period prevents repeated hits; falling and lava are lethal
+PASS  A lethal enemy contact stops the frame before the corpse can collect items
+PASS  Coins/stars/heart collect once; forty coins award exactly one extra life
+PASS  Breeze allows exactly one double jump and replenishes after landing
+PASS  Bloom projectile kills a patrol and action respects its cooldown
+PASS  Comet produces a brief dash and invulnerability; powers expire cleanly
+PASS  All four enemy behaviours run: patrol turn, hopper leap, turret shot, pursuing wisp
+PASS  Completion persists records, opens the next stage and restores from localStorage
+PASS  A secret opens the bonus early without unlocking late story levels
+PASS  Inserting a chapter before the finale preserves dynamic progression flags
+PASS  Denied storage and malformed save data do not prevent play
+PASS  Boss wakes, alternates telegraph/leap/volley/recovery, and enters phase two
+PASS  Boss armour rejects damage; a real falling stomp damages its lowered crown
+PASS  Boss death/respawn retains earned damage and reopens with a clear warning
+PASS  Lagoon allows sustained swimming and a physical exit onto its higher shore
+PASS  All mandatory dry gaps have physical walking-jump solutions without powers
+PASS  Every authored checkpoint respawns above stable ground without immediate damage
+PASS  Pause freezes simulation and resume clears held input
+PASS  The sleeper only wakes when Lumen lingers, then charges and settles back
+PASS  A stomped swarm scatters harmlessly before it disappears
+PASS  A hunting swarm leans towards Lumen without ever leaving its thicket
+PASS  The echo bell reveals hidden ledges for four seconds, then hides them again
+PASS  Every power announces its own expiry and leaves a distinct sound
+PASS  Each garden throws its own debris when Lumen lands
+PASS  Medals weigh fragments, damage and time, and a weaker run never demotes one
+PASS  Timed runs record a personal best; exploration never overwrites the clock
+PASS  Each third of the boss taken announces itself and drives the music
+PASS  Phase two adds a third attack pattern and narrows the arena around Lumen
+PASS  Danger drives the extra music layer and clears when the threat is gone
+PASS  Losing a heart reports the damage for the interface and counts towards the medal
+PASS  La Résonance est toujours disponible, sans dépendre d’aucun pouvoir
+PASS  Chaque pouvoir amplifie la Résonance sans jamais la remplacer
+PASS  Un élément se réveille, dure, prévient, puis se rendort
+PASS  Ré-émettre prolonge au lieu de ne rien faire : le joueur ne peut pas être piégé
+PASS  Le carillon relaie l’onde une seule fois et la chaîne reste finie
+PASS  Le grand pont porte réellement Lumen au-dessus du gouffre, avec la vraie physique
+PASS  Sans le carillon, le gouffre reste infranchissable — l’énigme existe vraiment
+PASS  La créature réveillée en douceur devient une marche, et cesse d’être une menace
+PASS  Le retour à la lanterne rendort tout le jardin, sans état à moitié
+PASS  Les six temps du chapitre de la Résonance sont réellement présents
+
+60/60 integration checks passed.
+PASS  Every chapter draws from spawn without a missing routine
+PASS  The title garden, the atlas pose and the portrait viewport all draw
+PASS  All six creatures draw in every state they can reach
+PASS  Every platform type, hazard and collectible has artwork
+PASS  The eight platform types share terrain and retain contrast in every day and night theme
+PASS  Every particle shape and both projectile kinds draw
+PASS  The Veilleur draws through every stage, pattern and the closing arena
+PASS  The echo bell ring and the revealed ledges draw over their whole lifetime
+PASS  Tout ce qui dort se dessine endormi, réveillé et clignotant
+PASS  Lumen draws in every posture: running, airborne, sliding, hurt and defeated
+PASS  One Lumen drawing serves both modes, with powers, postures and song-only wings
+PASS  Every song island draws all routes, flight and awakened states without mutating the simulation
+PASS  Day and night artwork use distinct caches while preserving geometry and collected objects
+
+13/13 drawing checks passed.
+PASS  Les modules sont annotés complètement : rien n’est laissé au hasard
+PASS  Chaque module pose une surface sur ses deux bords, quelle que soit sa variante
+PASS  Corpus de 1000 graines : aucune salle infranchissable, aucun raccord rompu
+PASS  Aucun module n’exige jamais une capacité que le joueur n’a pas encore
+PASS  Même graine, même version, mêmes choix : exactement le même gameplay
+PASS  L’aléatoire cosmétique ne peut pas déplacer une plateforme
+PASS  Une graine se dit, se retape, et retombe sur la même nuit
+PASS  Le repli existe, il est valide, et il n’est jamais choisi sans raison
+PASS  Le directeur de rythme alterne réellement, il ne tire pas au hasard
+PASS  Le plafond du plus grand trou correspond à la physique réelle du moteur
+PASS  Des salles représentatives se traversent avec la vraie physique et de vraies entrées
+PASS  Les souvenirs ont des emplacements, des plafonds et une vraie combinaison
+PASS  [état forcé] La corolle ne peut pas se multiplier : une fleur vivante, et pas de boucle
+PASS  Une nuit sauvegardée au refuge se reprend à l’identique, sans payer deux fois
+PASS  L’échec met fin à la nuit, jamais aux découvertes déjà acquises
+
+15/15 invariants d’expédition vérifiés.
+PASS  Every island, stage, hub and dream entrance appears exactly once, with data-driven totals
+PASS  A fresh map cannot open locked campaign stages, islands or dreams
+PASS  State fixture: act completion opens the following rest island; collecting fragments is optional
+PASS  State fixture: a completed second island and five historical open chapters survive reload
+PASS  State fixture: a legacy campaign frontier opens intervening islands without rewriting stable keys
+PASS  The real first-stage playthrough adds map light, queues its birth, and retains it after a full reload
+PASS  Secret discovery (positioned inside its authored zone) persists even when the stage is left unfinished
+PASS  State fixture: weak replays never extinguish lights and unreadable secret data does not lose the chapter
+PASS  The hub quest completed by real resonance actions opens the same dream node after reload
+PASS  Map controller input emits separate navigation/actions once per press and never moves the hero
+PASS  State fixture: an improved personal time lights its clock again without increasing saved point count
+PASS  State fixture: a fully populated journey remains bounded far below localStorage limits
+
+12/12 journey checks passed.
+[
+  {
+    "test": "stage 0 spawn to exit, actual enemies and pickups",
+    "mode": "complete",
+    "seconds": 17.15,
+    "deaths": 2,
+    "lives": 4,
+    "hp": 3,
+    "coins": 45,
+    "maxX": 3718.1,
+    "trace": [
+      {
+        "event": "jump",
+        "x": 513.3,
+        "y": 554,
+        "edge": 950,
+        "time": 1.36
+      },
+      {
+        "event": "jump",
+        "x": 870.6,
+        "y": 554,
+        "edge": 950,
+        "time": 2.47
+      },
+      {
+        "event": "jump",
+        "x": 1508,
+        "y": 554,
+        "edge": 1840,
+        "time": 4.47
+      },
+      {
+        "event": "death",
+        "x": 1928,
+        "y": 830.2,
+        "time": 5.86
+      },
+      {
+        "event": "jump",
+        "x": 1568.8,
+        "y": 554,
+        "edge": 1840,
+        "time": 7.56
+      },
+      {
+        "event": "death",
+        "x": 1928,
+        "y": 832.4,
+        "time": 8.73
+      },
+      {
+        "event": "jump",
+        "x": 1462.1,
+        "y": 554,
+        "edge": 1840,
+        "time": 10.1
+      },
+      {
+        "event": "jump",
+        "x": 1803.5,
+        "y": 554,
+        "edge": 1840,
+        "time": 11.17
+      },
+      {
+        "event": "jump",
+        "x": 2331.5,
+        "y": 554,
+        "edge": 2820,
+        "time": 12.82
+      },
+      {
+        "event": "jump",
+        "x": 2742.1,
+        "y": 554,
+        "edge": 2820,
+        "time": 14.1
+      },
+      {
+        "event": "jump",
+        "x": 3206.1,
+        "y": 554,
+        "edge": 3900,
+        "time": 15.55
+      }
+    ]
+  },
+  {
+    "test": "chapter 8 (Les vergers du vent) exercised by a naive bot",
+    "mode": "complete",
+    "seconds": 17.88,
+    "deaths": 0,
+    "lives": 6,
+    "maxX": 5579.9,
+    "width": 5760,
+    "lanternsLit": 1,
+    "coins": 50,
+    "enemiesDefeated": 0,
+    "damageTaken": 2,
+    "sleepersWoken": 0,
+    "swarmsHunting": 2,
+    "swarmsScattered": 0,
+    "ok": true
+  },
+  {
+    "test": "chapter 9 (La galerie des échos) exercised by a naive bot",
+    "mode": "complete",
+    "seconds": 19,
+    "deaths": 0,
+    "lives": 6,
+    "maxX": 5819.7,
+    "width": 6000,
+    "lanternsLit": 1,
+    "coins": 50,
+    "enemiesDefeated": 2,
+    "damageTaken": 3,
+    "sleepersWoken": 1,
+    "swarmsHunting": 2,
+    "swarmsScattered": 2,
+    "ok": true
+  },
+  {
+    "test": "chapitre « Le verger qui rêve » terminé au clavier, Résonance comprise",
+    "mode": "complete",
+    "seconds": 13.42,
+    "deaths": 1,
+    "lives": 4,
+    "maxX": 4319,
+    "width": 4500,
+    "coins": 15,
+    "stars": 0,
+    "wakeablesUsed": 11,
+    "wakeablesTotal": 11,
+    "chimeRelays": 1,
+    "creaturesCalmed": 1,
+    "ok": true
+  },
+  {
+    "test": "arena checkpoint to boss victory and final exit, unpowered inputs only",
+    "mode": "ending",
+    "seconds": 14.24,
+    "deaths": 0,
+    "lives": 5,
+    "hp": 2,
+    "bossHp": 0,
+    "playerX": 4619.8,
+    "changes": [
+      {
+        "time": 0,
+        "state": "sleep",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 0.01,
+        "state": "wake",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 1.71,
+        "state": "telegraph",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 2.87,
+        "state": "leap",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 3.89,
+        "state": "recover",
+        "bossHp": 12,
+        "playerHp": 3
+      },
+      {
+        "time": 7.3,
+        "state": "telegraph",
+        "bossHp": 4,
+        "playerHp": 3
+      },
+      {
+        "time": 8.11,
+        "state": "rain",
+        "bossHp": 4,
+        "playerHp": 2
+      },
+      {
+        "time": 10.62,
+        "state": "recover",
+        "bossHp": 4,
+        "playerHp": 2
+      },
+      {
+        "time": 12.14,
+        "state": "defeated",
+        "bossHp": 0,
+        "playerHp": 2
+      }
+    ]
+  },
+  {
+    "test": "timed race of chapter 1 records a medal and a personal best",
+    "mode": "complete",
+    "runMode": "timed",
+    "seconds": 7.49,
+    "deaths": 0,
+    "medal": "bronze",
+    "timed": true,
+    "newRecord": true,
+    "bestTimedTime": 7.49,
+    "goldTarget": 70,
+    "ok": true
+  },
+  {
+    "test": "song island 1 (gentle) from spawn to exit, real inputs only",
+    "island": 1,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 14.1,
+    "notes": 49,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 49,
+    "waypoint": 20,
+    "target": [
+      4060,
+      600
+    ],
+    "player": {
+      "x": 3985,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 2 (gentle) from spawn to exit, real inputs only",
+    "island": 2,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 16,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 36,
+    "waypoint": 17,
+    "target": [
+      4590,
+      600
+    ],
+    "player": {
+      "x": 4573,
+      "y": 426
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 3 (gentle) from spawn to exit, real inputs only",
+    "island": 3,
+    "style": "gentle",
+    "mode": "complete",
+    "seconds": 16.5,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 36,
+    "waypoint": 19,
+    "target": [
+      4980,
+      600
+    ],
+    "player": {
+      "x": 4885,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 1 (flow) from spawn to exit, real inputs only",
+    "island": 1,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 14.1,
+    "notes": 49,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 49,
+    "waypoint": 20,
+    "target": [
+      4060,
+      600
+    ],
+    "player": {
+      "x": 3985,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 2 (flow) from spawn to exit, real inputs only",
+    "island": 2,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 16.1,
+    "notes": 36,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 31,
+    "waypoint": 17,
+    "target": [
+      4590,
+      600
+    ],
+    "player": {
+      "x": 4565,
+      "y": 426
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  },
+  {
+    "test": "song island 3 (flow) from spawn to exit, real inputs only",
+    "island": 3,
+    "style": "flow",
+    "mode": "complete",
+    "seconds": 16.8,
+    "notes": 38,
+    "stars": 3,
+    "echoes": 3,
+    "falls": 0,
+    "bestCombo": 27,
+    "waypoint": 19,
+    "target": [
+      4980,
+      600
+    ],
+    "player": {
+      "x": 4883,
+      "y": 554
+    },
+    "calls": 3,
+    "maxInputs": 2,
+    "ok": true
+  }
+]
+
+> lumen-les-jardins-de-la-lune@5.2.0 test:browser
+> node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs
+
+Portable edition built: LUMEN.html (718 KiB).
+PASS  Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions
+PASS  Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau
+PASS  Les huit plateformes ont des pixels contrastés et des formes distinctes en jour et en nuit
+      audio mesuré : île 1 RMS 0.0063 crête 0.060 · île 2 RMS 0.0065 crête 0.063 · île 3 RMS 0.0065 crête 0.060 · île 1 nuit RMS 0.0066 crête 0.065
+PASS  Le vrai rendu Web Audio produit trois thèmes distincts, sans saturation et avec silence intégral
+PASS  Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient
+PASS  Les réglages de thème et de son restent disponibles dans l’aventure classique
+PASS  Les cinq langues système traduisent les éditions source et portable sans réseau
+PASS  La priorité système, le repli anglais et le choix sauvegardé sont respectés
+PASS  Changer de langue conserve la partie et le focus, et le choix survit au rechargement
+PASS  Les traductions arabe et chinoise restent cadrées sans inverser les commandes
+PASS  L’édition classique, les dialogues et le changement de langue sont traduits
+PASS  Les textes statiques du document possèdent une traduction sans modifier les graines
+PASS  Le Chant démarre directement, avec ses ressources locales et un canvas animé
+PASS  Le clavier déplace Lumen, relance son saut, chante et fige la simulation en pause
+PASS  La carte commune, les réglages persistants et le rythme fonctionnent
+      parcours source : 8 sauts, 46 notes, 1 chute(s), aucune position ni invulnérabilité injectée
+      parcours portable : 8 sauts, 46 notes, 1 chute(s), aucune position ni invulnérabilité injectée
+PASS  Le parcours île, atlas, chapitre joué et retour conserve la progression sans triche
+      îles jouées sans téléportation : 1 (14.1 s), 2 (16 s), 3 (16.5 s)
+PASS  Les trois îles se jouent réellement avec une fixture d’accès historique et conduisent aux actes
+PASS  Le Chant reste cadré et ses commandes ne se chevauchent pas sur cinq formats
+PASS  Le Chant répond à deux pointeurs et annule les entrées lors d’une interruption
+PASS  L’édition portable démarre seule en file://, sans aucune requête externe
+PASS  La Résonance se joue au clavier : appeler ouvre un chemin qui n’existait pas
+PASS  L’observatoire : la porte reste fermée tant que la coupole se tait
+PASS  Le menu ne contourne pas la porte des rêves : une seule règle décide
+PASS  Une nuit entière se joue par l’interface, et la graine la rejoue à l’identique
+PASS  Quitter une nuit pour la campagne, par les menus, ne contamine rien
+PASS  Le tactile tient plusieurs doigts, ne colle jamais, et respecte 48 px
+PASS  Les réglages de confort changent réellement le jeu, et survivent au rechargement
+PASS  Une sauvegarde ancienne est migrée sans être écrasée, et la progression suit
+PASS  Aucun défilement horizontal et des particules bornées sur cinq formats
+
+29/29 contrôles navigateur réussis.
+PASS  Une carte dynamique sans doublon remplace les deux accès dans source et portable
+PASS  Profil neuf : les Rêves expliquent leur verrou et la manette mène à la coupole
+PASS  Un chapitre réellement joué allume la carte, annonce son succès et survit au rechargement
+      desktop: 16 lieux lancés par Gamepad API simulée
+      portrait: 16 lieux lancés par Gamepad API simulée
+PASS  [état forcé] La manette atteint et lance chaque lieu, chaque acte et les actions de carte
+PASS  [état forcé] Cibles 48 px, aucun chevauchement et états distincts en gris sur mobile et arabe
+
+5/5 journey browser contracts passed.

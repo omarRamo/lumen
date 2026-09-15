@@ -1,0 +1,53 @@
+LUMEN — Itération 06 : référence avant modification
+Date : 2026-09-15
+Révision : 0806ceb (worktree détaché, sources non modifiées).
+
+Commande : npm run verify
+Résultat final : code de sortie 0.
+
+Suites :
+- Apparence : 4/4.
+- Composition audio : 5/5.
+- Internationalisation : 9/9.
+- Promesses du jalon A : 28/28.
+- Moteur : 60/60.
+- Rendu : 13/13.
+- Expéditions : 15/15, dont corpus de 1 000 graines.
+- Parcours : 12 scénarios réussis (campagne, boss, chrono et six parcours d'îles).
+- Navigateur Chromium : 29/29.
+- Construction portable : LUMEN.html, 675 KiB, réussie.
+
+Préparation de l'environnement : les dépendances de test n'étaient pas
+installées. npm ci ne s'applique pas : ce dépôt n'a pas de package-lock.json.
+npm install --no-package-lock --ignore-scripts --no-audit --no-fund a installé
+les cinq dépendances sans modifier les fichiers suivis. Le worktree de
+référence utilise le même node_modules, par une jonction locale non suivie.
+La première tentative échouait uniquement sur l'absence de Playwright ; la
+suite entière a ensuite été relancée avec succès.
+
+Captures avant : 24 PNG obtenus en file:// avec tests/journey-captures.cjs.
+Le manifeste captures/before/manifest.json contient les profils exacts et
+leurs empreintes, les conditions et les dimensions de chaque capture.
+
+Matrice : profils neuf / intermédiaire / complet ; jour / nuit ;
+bureau 1440 × 900 / mobile simulé 390 × 844 ; ancien atlas du Chant /
+ancienne grille de chapitres. Les vues mobiles montrent le haut de l'écran,
+sans faire passer un contenu situé plus bas pour absent du document.
+
+IMPORTANT : ces trois profils sont des ÉTATS DE SAUVEGARDE FORCÉS.
+Ils servent à comparer le rendu, pas à prouver une progression jouée.
+Le profil intermédiaire contient l'île 2 achevée et cinq chapitres ouverts,
+pour documenter la conservation d'une progression antérieure au nouveau
+découpage en actes. Le profil complet couvre les onze stages et les trois
+îles de la référence. Les futures captures all-current seront un supplément
+explicitement distinct s'il faut montrer aussi les nouveaux stages terminés.
+
+L'ancien atlas et l'ancienne grille sont deux destinations différentes.
+Après l'itération, les mêmes points d'entrée doivent ouvrir une carte unique.
+La comparaison porte sur les profils, le thème, le cadrage, la langue et les
+conditions de capture, pas sur une fausse égalité des lieux représentés.
+
+Les tests utilisent un navigateur de bureau et des entrées synthétiques.
+Aucun appareil iPhone/iPad physique et aucune séance d'observation humaine
+ne sont couverts. Les captures seules ne prouvent ni l'agrément de jeu, ni la
+navigation à la manette, ni la distinction des états en niveaux de gris.

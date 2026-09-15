@@ -66,13 +66,25 @@ async function test(name, run) {
     return { page, context, errors };
   }
 
+  // Le joueur choisit une lumière puis son action ; le mobile change de
+  // constellation explicitement. Aucun accès n'est accordé par ce helper.
+  async function enterPlace(page, key) {
+    const node = page.locator('[data-place="' + key + '"]');
+    if (!await node.isVisible()) {
+      const act = await node.evaluate(element => element.closest('[data-act]').dataset.act);
+      await page.locator('[data-journey-act="' + act + '"]').click();
+    }
+    await node.click();
+    await page.locator('[data-journey-launch="' + key + '"]').click();
+  }
+
   await test('Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions', async () => {
     for(const source of [false,true]){
       const {page,context,errors}=await open('bureau',null,{song:true,source,colorScheme:'dark'});
       await page.waitForFunction(()=>window.lumen.frames>=2);
       assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'dark');
       assert.equal(await page.evaluate(()=>window.lumen.progress.settings.appearance),'system');
-      await page.locator('#song-shell [data-command="song-settings"]').click();
+      await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
       const before=await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed]));
       await page.locator('#song-panel [data-appearance="light"]').click();
       assert.equal(await page.locator('#song-panel [data-appearance="light"]').getAttribute('aria-pressed'),'true');
@@ -81,7 +93,7 @@ async function test(name, run) {
       assert.equal(await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed])),before);
       await page.reload();await page.waitForFunction(()=>window.lumen?.song);
       assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
-      await page.locator('#song-shell [data-command="song-settings"]').click();
+      await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
       await page.locator('#song-panel [data-appearance="system"]').click();
       await page.waitForFunction(()=>window.LumenAppearance.current==='dark');
       await page.emulateMedia({colorScheme:'light'});await page.waitForFunction(()=>window.LumenAppearance.current==='light');
@@ -97,7 +109,7 @@ async function test(name, run) {
       await page.waitForFunction(()=>window.lumen.frames>=2);
       const readings={};
       for(const appearance of ['light','dark']){
-        await page.locator('#song-shell [data-command="song-settings"]').click();
+        await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
         await page.locator('#song-panel [data-appearance="'+appearance+'"]').click();
         const contrast=await page.evaluate(()=>{
           const panel=getComputedStyle(document.getElementById('song-panel'));
@@ -130,7 +142,7 @@ async function test(name, run) {
       assert.deepEqual(errors,[]);await context.close();
     }
     const {page,context,errors}=await open('portrait',null,{song:true,locale:'ar-SA',colorScheme:'dark'});
-    await page.locator('#song-shell [data-command="song-settings"]').click();
+    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
     assert.equal(await page.locator('#song-panel [data-appearance="dark"]').textContent(),'داكن');
     await page.screenshot({path:path.join(shots,'appearance-dark-arabic-settings.png')});
     assert.deepEqual(errors,[]);await context.close();
@@ -138,7 +150,7 @@ async function test(name, run) {
 
   await test('Les huit plateformes ont des pixels contrastés et des formes distinctes en jour et en nuit', async () => {
     const { page, context, errors } = await open('bureau', null, { song: true, source: true });
-    const gallery = path.join(root, 'docs', 'iteration-05', 'platforms');
+    const gallery = path.join(root, 'docs', 'iteration-06', 'platforms');
     fs.mkdirSync(gallery, { recursive: true });
     const measurements = [];
     for (const appearance of ['light', 'dark']) for (const theme of ['meadow', 'cavern', 'tide', 'sky', 'forge', 'frost', 'secret', 'eclipse']) {
@@ -237,7 +249,7 @@ async function test(name, run) {
   await test('Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient', async () => {
     const {page,context,errors}=await open('portrait',null,{song:true});
     assert.equal(await page.evaluate(()=>window.lumen.audio.ctx),null,'No audio context before a gesture.');
-    await page.locator('#song-shell [data-command="song-settings"]').click();
+    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
     await page.locator('#song-musicVolume').fill('25');await page.locator('#song-effectsVolume').fill('70');await page.locator('#song-ambienceVolume').fill('40');
     await page.locator('#song-panel [data-command="sound-preview"]').click();
     await page.waitForFunction(()=>window.lumen.audio.unlocked&&[...window.lumen.audio._voices].some(voice=>voice.bus==='preview'));
@@ -291,7 +303,7 @@ async function test(name, run) {
       const state = await page.evaluate(() => ({ language: window.LumenI18n.language,
         preference: window.lumen.progress.settings.language, lang: document.documentElement.lang, dir: document.documentElement.dir,
         name: document.getElementById('song-island-name').textContent, title: document.title,
-        settings: document.querySelector('#song-shell [data-command="song-settings"]').getAttribute('aria-label') }));
+        settings: document.querySelector('#song-shell .song-icon[data-command="song-settings"]').getAttribute('aria-label') }));
       assert.equal(state.language, language); assert.equal(state.preference, 'auto');
       assert.equal(state.lang, language === 'zh' ? 'zh-Hans' : language);
       assert.equal(state.dir, language === 'ar' ? 'rtl' : 'ltr'); assert.equal(state.name, name);
@@ -320,7 +332,7 @@ async function test(name, run) {
   await test('Changer de langue conserve la partie et le focus, et le choix survit au rechargement', async () => {
     const { page, context, errors } = await open('portrait', null, { song: true, locale: 'fr-FR' });
     await page.locator('#game').focus(); await page.keyboard.down('ArrowRight'); await page.waitForTimeout(180); await page.keyboard.up('ArrowRight');
-    await page.locator('#song-shell [data-command="song-settings"]').click();
+    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
     const before = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, elapsed: window.lumen.elapsed, key: window.lumen.level.key, chapters: JSON.stringify(window.lumen.progress.chapters) }));
     for (const language of ['es', 'ar', 'zh', 'en', 'fr', 'ar']) {
       await page.locator('#song-language').selectOption(language);
@@ -333,7 +345,7 @@ async function test(name, run) {
     }
     await page.reload(); await page.waitForFunction(() => window.lumen?.song);
     assert.equal(await page.evaluate(() => window.LumenI18n.language), 'ar');
-    await page.locator('#song-shell [data-command="song-settings"]').click();
+    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
     await page.locator('#song-language').selectOption('auto');
     assert.equal(await page.evaluate(() => window.LumenI18n.language), 'fr');
     await page.evaluate(() => {
@@ -371,7 +383,8 @@ async function test(name, run) {
       await page.locator('#game').focus(); await page.keyboard.down('ArrowRight'); await page.waitForTimeout(250); await page.keyboard.up('ArrowRight');
       assert.ok(await page.evaluate(() => window.lumen.player.x) > before + 30, 'Right must still move right.');
       await page.locator('#song-shell .song-icon[data-command="song-atlas"]').click();
-      assert.ok(await page.locator('#song-panel').evaluate(panel => panel.scrollWidth <= panel.clientWidth + 1));
+      await page.waitForSelector('#map-screen.active');
+      assert.ok(await page.locator('#map-screen').evaluate(panel => panel.scrollWidth <= panel.clientWidth + 1));
       await page.screenshot({ path: path.join(shots, 'language-' + locale + '-' + view + '-atlas.png') });
       assert.deepEqual(errors, []); await context.close();
     }
@@ -477,16 +490,17 @@ async function test(name, run) {
     assert.deepEqual(errors, []); await context.close();
   });
 
-  await test('L’atlas, les réglages persistants, le rythme et le retour au classique fonctionnent', async () => {
+  await test('La carte commune, les réglages persistants et le rythme fonctionnent', async () => {
     const { page, context, errors } = await open('portrait', null, { song: true });
-    await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
-    await page.waitForSelector('.song-panel-atlas');
-    assert.equal(await page.locator('[data-song-island]:disabled').count(), 2);
-    assert.equal(await page.locator('.song-island').count(), 4);
-    assert.equal(await page.locator('.song-islands [data-command="song-classic"] canvas').count(), 1);
-    assert.equal(await page.evaluate(() => document.getElementById('song-shell').inert), true);
+    await page.locator('#song-shell .song-icon[data-command="song-atlas"]').click();
+    await page.waitForSelector('#map-screen.active');
+    const placeCount = await page.evaluate(() => window.LUMEN_LEVELS.length + window.LumenSong.ISLANDS.length + 1);
+    assert.equal(await page.locator('[data-place]').count(), placeCount);
+    assert.equal(await page.locator('.journey-node.island.is-locked').count(), 2);
+    assert.equal(await page.locator('#level-grid,.song-islands').count(), 0);
     await page.screenshot({ path: path.join(shots, 'chant-atlas.png') });
-    await page.getByRole('button', { name: 'Reprendre', exact: true }).click();
+    await page.locator('[data-journey-back]').click();
+    await page.waitForFunction(() => window.lumen.song && window.lumen.mode === 'playing');
     await page.getByRole('button', { name: 'Réglages', exact: true }).click();
     await page.getByRole('switch', { name: 'Mouvements réduits' }).check();
     await page.getByRole('switch', { name: 'Commandes pour gaucher' }).check();
@@ -504,16 +518,14 @@ async function test(name, run) {
     await page.waitForFunction(() => window.lumen.song?.style === 'flow');
     assert.equal(await page.evaluate(() => window.lumen.runMode), 'timed');
     await page.waitForTimeout(400);
-    await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
-    await page.getByRole('button', { name: 'Les jardins de la lune', exact: true }).click();
+    await page.locator('#song-shell .song-icon[data-command="song-atlas"]').click();
     await page.waitForFunction(() => window.lumen.mode === 'map');
-    assert.equal(await page.evaluate(() => window.lumen.song), null);
+    assert.equal(await page.evaluate(() => window.lumen.song?.index), 0, 'La carte suspend l’île sans perdre sa session.');
     const chapterCount = await page.evaluate(() => window.LUMEN_LEVELS.filter(level => !level.hub).length);
-    assert.equal(await page.locator('#level-grid [data-level]').count(), chapterCount);
-    const hubIndex = await page.evaluate(() => window.LUMEN_LEVELS.findIndex(level => level.hub));
-    assert.equal(await page.locator('#level-grid [data-level="' + hubIndex + '"]').count(), 0);
+    assert.equal(await page.locator('.journey-node.stage').count(), chapterCount);
+    assert.equal(await page.locator('.journey-node.hub').count(), 1);
     await page.waitForTimeout(400);
-    await page.locator('#map-screen [data-command="song-return"]').click();
+    await page.locator('[data-journey-back]').click();
     await page.waitForFunction(() => window.lumen.session === 'song');
     assert.deepEqual(errors, []); await context.close();
   });
@@ -525,10 +537,9 @@ async function test(name, run) {
       await page.keyboard.down('ArrowRight');
       await page.waitForFunction(() => window.lumen.player.x > 180);
       await page.keyboard.up('ArrowRight');
-      await page.getByRole('button', { name: 'L’archipel', exact: true }).click();
-      await page.getByRole('button', { name: 'Les jardins de la lune', exact: true }).click();
+      await page.locator('#song-shell .song-icon[data-command="song-atlas"]').click();
       await page.waitForSelector('#map-screen.active');
-      await page.locator('[data-level="0"]').click();
+      await enterPlace(page, 'prairies-aurore');
       await page.waitForFunction(() => window.lumen.session === 'campaign' && window.lumen.mode === 'playing');
       const played = await page.evaluate(() => {
         const game = window.lumen;
@@ -561,7 +572,7 @@ async function test(name, run) {
       await page.screenshot({ path: path.join(shots, 'identity-route-' + (source ? 'source' : 'portable') + '.png') });
       await page.locator('#complete-screen [data-command="map"]').click();
       await page.waitForSelector('#map-screen.active');
-      await page.locator('#map-screen [data-command="song-return"]').click();
+      await enterPlace(page, 'chant-petits-matins');
       await page.waitForFunction(() => window.lumen.song?.index === 0 && window.lumen.mode === 'playing');
       assert.equal(await page.evaluate(key => JSON.stringify(window.lumen.store.chapter(key)), played.key), played.record);
       await page.reload(); await page.waitForFunction(() => window.lumen?.song?.index === 0);
@@ -573,8 +584,11 @@ async function test(name, run) {
     }
   });
 
-  await test('Les trois îles se terminent via le vrai moteur, puis l’interface ouvre la suite', async () => {
+  await test('Les trois îles se jouent réellement avec une fixture d’accès historique et conduisent aux actes', async () => {
+    // État forcé d'accès uniquement. Les échos, fragments et sorties sont joués.
+    // Le parcours de progression neuf est couvert par test-journey.cjs.
     const { page, context, errors } = await open('bureau', null, { song: true });
+    await page.evaluate(() => { window.lumen.store.unlock('coeur-eclipse'); window.lumen.saveProgress(); });
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'song-pilot.cjs'), 'utf8') });
     const results = [];
     for (let index = 0; index < 3; index++) {
@@ -588,21 +602,27 @@ async function test(name, run) {
         return pilot.summary();
       });
       results.push(result);
-      assert.equal(result.mode, index === 2 ? 'ending' : 'complete', JSON.stringify(result));
+      assert.ok(['complete','ending'].includes(result.mode), JSON.stringify(result));
       assert.equal(result.echoes, 3); assert.equal(result.stars, 3); assert.equal(result.falls, 0);
       await page.waitForSelector('.song-panel-result');
       await page.screenshot({ path: path.join(shots, 'chant-fin-' + (index + 1) + '.png') });
       if (index < 2) {
-        await page.getByRole('button', { name: 'Vers la prochaine île' }).click();
-        await page.waitForFunction(next => window.lumen.song.index === next && window.lumen.mode === 'playing', index + 1);
+        await page.locator('#song-panel [data-command="song-next"]').click();
+        await page.waitForFunction(() => window.lumen.session === 'campaign' && window.lumen.mode === 'playing');
+        await page.evaluate(() => window.lumen.showMap());
+        await page.waitForSelector('#map-screen.active');
+        const nextIsland = await page.evaluate(next => window.LumenSong.ISLANDS[next].key, index + 1);
+        await enterPlace(page, nextIsland);
+        await page.waitForFunction(next => window.lumen.song?.index === next && window.lumen.mode === 'playing', index + 1);
         await page.waitForTimeout(400);
         await page.evaluate(() => { window.lumen.renderer.draw(window.lumen, 0); });
         await page.screenshot({ path: path.join(shots, 'chant-ile-' + (index + 2) + '.png') });
       }
     }
     assert.equal(await page.evaluate(() => window.lumen.progress.codex.creatures.filter(entry => entry.startsWith('chant-')).length), 9);
-    await page.getByRole('button', { name: 'Revoir l’archipel' }).click();
-    assert.equal(await page.locator('[data-song-island]:disabled').count(), 0);
+    await page.locator('#song-panel [data-command="song-atlas"]').click();
+    await page.waitForSelector('#map-screen.active');
+    assert.equal(await page.locator('.journey-node.island.is-locked').count(), 0);
     await page.reload(); await page.waitForFunction(() => window.lumen?.song);
     assert.equal(await page.evaluate(() => window.LumenSong.ISLANDS.filter(island => window.lumen.store.chapter(island.key)?.completed).length), 3);
     assert.deepEqual(errors, []);
@@ -668,7 +688,7 @@ async function test(name, run) {
   await test('L’édition portable démarre seule en file://, sans aucune requête externe', async () => {
     const standalone = fs.mkdtempSync(path.join(os.tmpdir(), 'lumen-build-'));
     try {
-      for (const file of ['index.html', 'style.css', 'song.css', 'icon.svg', 'assets', 'js', 'tools']) {
+      for (const file of ['index.html', 'style.css', 'song.css', 'journey.css', 'icon.svg', 'assets', 'js', 'tools']) {
         fs.cpSync(path.join(root, file), path.join(standalone, file), { recursive: true });
       }
       assert.equal(fs.existsSync(path.join(standalone, 'node_modules')), false);
@@ -875,7 +895,7 @@ async function test(name, run) {
     // terminer le fondu : un clic pendant la transition est ignoré — c'est
     // consigné au backlog, ce n'est pas ce que ce test mesure.)
     await page.waitForTimeout(800);
-    await page.click('[data-level="0"]');
+    await enterPlace(page, 'prairies-aurore');
     await page.waitForFunction(() => window.lumen.mode === 'playing' && window.lumen.levelIndex === 0, null, { timeout: 25000 });
     const enCampagne = await page.evaluate(() => ({
       session: window.lumen.session,

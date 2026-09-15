@@ -60,21 +60,6 @@
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
         <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
-    } else if (pane === 'atlas') {
-      content = title('L’ATLAS DES LUMIÈRES', 'L’archipel') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
-        const record = game.store.chapter(island.key), unlocked = !index || game.store.chapter(global.LumenSong.ISLANDS[index - 1].key)?.completed;
-        const voices = island.lights.filter(echo => game.progress.codex.creatures.includes('chant-' + echo.id)).length;
-        const name = translate(island.name);
-        return `<button class="song-island" data-song-island="${index}" ${unlocked ? '' : 'disabled'} aria-label="${escape(unlocked ? name : translate('{name}, verrouillée', { name }))}">
-          <div class="song-island-art"><canvas data-island-preview="${index}" width="640" height="300" aria-hidden="true"></canvas><span>${String(index + 1).padStart(2, '0')}</span></div>
-          <div class="song-island-copy"><small>${record?.completed ? 'LE CHŒUR EST RÉUNI' : unlocked ? 'LE VOYAGE CONTINUE' : 'LE CHANT ATTEND'}</small><h3>${escape(island.name)}</h3>
-          <p>${escape(island.subtitle)}</p><div class="song-island-meta"><span>${icon('sparkles')} ${voices} / 3</span><span>${icon('feather')} ${record?.stars || 0} / 3</span>${record?.bestTimedTime ? `<span>${icon('wind')} ${clock(record.bestTimedTime)}</span>` : ''}</div></div>
-          <span class="song-island-arrow">${icon(unlocked ? 'arrow-up-right' : 'lock-keyhole')}</span></button>`;
-      }).join('') + `<button class="song-island" data-command="song-classic" aria-label="${escape(translate('Les jardins de la lune'))}">
-        <div class="song-island-art"><canvas data-classic-preview width="640" height="300" aria-hidden="true"></canvas></div>
-        <div class="song-island-copy"><small>${escape(translate('{count} CHAPITRES À EXPLORER', { count: global.LUMEN_LEVELS.filter(level => !level.hub).length }))}</small>
-        <h3>Les jardins de la lune</h3><p>Suivez les étoiles. Chaque jardin a son secret.</p></div>
-        <span class="song-island-arrow">${icon('arrow-up-right')}</span></button></div>`;
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
@@ -100,29 +85,16 @@
         <div><span>NOTES</span><strong>${result.coins}</strong></div><div><span>PLUS BEL ÉLAN</span><strong>×${result.combo}</strong></div>
         <div><span>SOUVENIRS</span><strong>${result.stars} / 3</strong></div><div><span>${result.timed ? 'CHRONO' : 'VOYAGE'}</span><strong>${clock(result.time)}</strong></div></div>
         ${result.timed && result.record ? '<p class="song-record">' + icon('trophy') + ' Nouveau record personnel</p>' : ''}
-        <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-next">${result.final ? 'Revoir l’archipel' : 'Vers la prochaine île'} ${icon('arrow-right')}</button>
+        <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-next">Continuer le voyage ${icon('arrow-right')}</button>
+        <button class="song-button" data-command="song-atlas">${icon('map')} L’atlas des lumières</button>
         <button class="song-text-button" data-command="song-retry">${icon('rotate-ccw')} Rejouer cette île</button></div>`;
     }
     panel.innerHTML = closeButton + content;
     I18n.translateDOM(panel);
     const languageSelect = panel.querySelector('[data-language-select]');
     if (languageSelect) languageSelect.value = game.progress.settings.language;
-    if (pane === 'atlas') renderPreviews();
-    const focus = panel.querySelector('.song-primary, [data-song-island]:not(:disabled), input, select, button');
+    const focus = panel.querySelector('.song-primary, input, select, button');
     requestAnimationFrame(() => { if (!byId('song-overlay').hidden) (focus || panel).focus({ preventScroll: true }); });
-  }
-  function renderPreviews() {
-    for (const canvas of byId('song-panel').querySelectorAll('[data-island-preview], [data-classic-preview]')) {
-      const classic = canvas.hasAttribute('data-classic-preview');
-      const index = Number(canvas.dataset.islandPreview), level = classic ? global.LUMEN_LEVELS[0] : global.LumenSong.create(index);
-      const renderer = new global.LumenRenderer(canvas); renderer.resize(640, 300);
-      const preview = { ...game, level, mode: 'playing', song: classic ? null : new global.LumenSong.Journey(level.song),
-        player: { ...game.player, x: 230, y: 554, vx: 0, vy: 0, grounded: true, gliding: false, dead: false, anim: 0, landTimer: 0 },
-        camera: { x: 0, y: 0, shake: 0 }, time: 3, platforms: level.platforms.map(platform => ({ ...platform, active: true })),
-        wakeables: [], collectibles: level.collectibles, checkpoints: [], particles: [], floatingTexts: [], waves: [],
-        enemies: [], characters: [], hazards: [], boss: null, secrets: [], exit: level.exit };
-      renderer.draw(preview, 0);
-    }
   }
   function echoes() {
     return game.song.lights.map(echo => {
@@ -132,7 +104,7 @@
   }
   function sync() {
     if (!game) return;
-    const active = !!game.song;
+    const active = !!game.song && game.mode !== 'map';
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
     if (welcomeJourney !== game.song) { welcomeJourney = game.song; welcomeVisible = game.song?.index === 0; }
@@ -200,7 +172,7 @@
       if (operation?.catch) operation.catch(() => helpers.toast('Le plein écran n’est pas disponible ici.'));
       return true;
     }
-    if (action === 'song-atlas' || action === 'map' || action === 'home') { open('atlas'); return true; }
+    if (action === 'song-atlas' || action === 'map' || action === 'home') { returnIsland = game.song.index; pane=null; helpers.transition(() => game.showMap()); return true; }
     if (action === 'song-settings' || action === 'help') { open('settings'); return true; }
     if (action === 'pause') { if (game.mode === 'playing') open('pause'); else if (game.mode === 'paused') close(); return true; }
     if (action === 'resume' || action === 'song-close' || action === 'close-help') { close(); return true; }
@@ -219,8 +191,11 @@
     }
     if (action === 'song-next' || action === 'next' || action === 'confirm') {
       if (game.mode === 'paused') close();
-      else if (game.mode === 'complete') { const index = game.song.index + 1, style = game.song.style; helpers.transition(() => game.startSong(index, { style })); }
-      else if (game.mode === 'ending') open('atlas');
+      else if (['complete','ending'].includes(game.mode)) {
+        const next = game.nextJourneyPlace(), style = game.song.style;
+        if (next) helpers.transition(() => game.openJourneyPlace(next.id, { style, timed:style === 'flow' }));
+        else helpers.transition(() => game.showMap());
+      }
       return true;
     }
     return false;
@@ -244,12 +219,6 @@
     document.addEventListener('click', event => {
       const style = event.target.closest('[data-song-style]');
       if (style && game.song) changeStyle(style.dataset.songStyle);
-      const island = event.target.closest('[data-song-island]');
-      if (island && !island.disabled && game.song) {
-        const index = Number(island.dataset.songIsland), style = game.song.style;
-        if (index === game.song.index && game.mode === 'paused') close();
-        else helpers.transition(() => game.startSong(index, { style }));
-      }
       const touch = event.target.closest('[data-touch]');
       if (touch && event.detail === 0 && game.mode === 'playing') {
         const action = touch.dataset.touch; game.input.virtual(action, true, 'keyboard-control');
@@ -285,7 +254,6 @@
       });
       if (game.song) sync();
     });
-    global.LumenAppearance.onChange(() => { if (pane === 'atlas' && game.song) renderPreviews(); });
     if (!document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
     applyPreferences();
   }

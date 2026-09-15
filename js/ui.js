@@ -28,7 +28,15 @@
     if (focused instanceof HTMLElement && focused.closest('.screen') && !focused.closest('.screen.active')) focused.blur();
   }
   function showMode(mode) {
+    if (mode !== 'map') window.LumenJourneyUI?.hide();
     window.LumenSongUI?.sync();
+    document.body.classList.toggle('journey-open', mode === 'map');
+    if (mode === 'map') {
+      document.body.classList.remove('in-game');
+      showScreen('map'); renderMap();
+      for (const id of ['hud','run-clock','level-hint','power-indicator','boss-hud','dialogue','quest-banner','touch-controls']) $(id).classList.add('hidden');
+      $('chapter-intro').classList.remove('show'); return;
+    }
     if (game.song) {
       document.body.classList.add('in-game'); showScreen(null);
       if (mode !== 'playing') { clearTimeout(toastTimer); $('toast').classList.remove('show'); }
@@ -44,7 +52,7 @@
     if (mode==='home') {
       showScreen('home');$('start-button').querySelector('span').textContent=game.progress.finished?'Repartir à l’aventure':game.nextChapterIndex()>0?'Poursuivre l’aventure':'Commencer l’aventure';
       $('chapter-intro').classList.remove('show');
-    } else if (mode==='map') {showScreen('map');renderMap();updateRunMode();$('chapter-intro').classList.remove('show');}
+    } else if (mode==='map') {showScreen('map');renderMap();$('chapter-intro').classList.remove('show');}
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
       $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
@@ -161,17 +169,13 @@
   function startLevel(index, mode=selectedRunMode) {
     game.start(index,{timed:mode==='timed'});
   }
-  function updateRunMode() {
-    document.querySelectorAll('[data-run-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.runMode===selectedRunMode)));
-    $('run-mode-hint').textContent=translate(selectedRunMode==='timed'?'Un chrono, votre meilleur temps, et l’envie de recommencer.':'Le temps vous appartient. Explorez à votre rythme.');
-    $('map-screen').classList.toggle('timed-selected',selectedRunMode==='timed');
-  }
   function command(action) {
     if (transitioning) return;
     if(action==='sound-preview'){
       game.audio.unlock().then(()=>game.audio.audition());return;
     }
     if(!['sound','pause','start','confirm'].includes(action))game.audio.sfx('menu');
+    if (window.LumenJourneyUI?.handle(action)) return;
     if (window.LumenSongUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
@@ -241,9 +245,9 @@
       transition(()=>startLevel(game.levelIndex,game.runMode));return;
     }
     if(action==='next') {
-      if(game.level.final||game.levelIndex>=window.LUMEN_LEVELS.length-1)transition(()=>game.showMap());
-      else if(game.level.bonus&&!game.isUnlocked(game.levelIndex+1))transition(()=>startLevel(game.nextChapterIndex(),game.runMode));
-      else transition(()=>startLevel(game.levelIndex+1,game.runMode));
+      const next=game.nextJourneyPlace();
+      if(next)transition(()=>game.openJourneyPlace(next.id,{timed:game.runMode==='timed'}));
+      else transition(()=>game.showMap());
     }
   }
   function updateSound() {
@@ -251,35 +255,7 @@
     document.querySelectorAll('.sound-icon').forEach(el=>el.textContent=game.audio.muted?'♩':'♪');
     document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',translate(game.audio.muted?'Activer le son':'Couper le son'));});
   }
-  function chapterArt(theme, index) {
-    return `<canvas data-chapter-preview="${index}" width="640" height="300" aria-hidden="true"></canvas>`;
-  }
-  function renderMap() {
-    const chapters=window.LUMEN_LEVELS.map((level,index)=>({level,index})).filter(({level})=>!level.hub);
-    $('total-stars').textContent=chapters.reduce((sum,{level})=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+chapters.reduce((total,{level})=>total+level.collectibles.filter(item=>item.type==='star').length,0);
-    $('level-grid').innerHTML=chapters.map(({level,index:i},rank)=>{
-      const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(rank+1).padStart(2,'0');
-      const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
-      const medal=medals[r?.medal]?r.medal:r?.completed?'bronze':null;
-      const targets=level.medalTargets;
-      const record=Number.isFinite(r?.bestTimedTime)?`◷ ${timeLabel(r.bestTimedTime,true)}`:translate('◷ À vous d’écrire le chrono');
-      const medalTitle=medal?translate('Médaille {medal}',{medal:translate(medals[medal])}):'';
-      const medalMarkup=medal?`<span class="card-medal ${medal}" title="${escape(medalTitle)}" aria-label="${escape(medalTitle)}">✦ ${escape(translate(medals[medal]))}</span>`:'<span class="card-medal unearned">'+escape(translate('✧ À décrocher'))+'</span>';
-      const targetMarkup=targets?`<span class="card-targets">${escape(translate('OR {time}',{time:timeLabel(targets.gold)}))} <i>·</i> ${escape(translate('ARGENT {time}',{time:timeLabel(targets.silver)}))}</span>`:'';
-      const label=translate('Chapitre {index}, {name}, {status}',{index:rank+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
-      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(chapters.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
-    }).join('');
-    for (const canvas of $('level-grid').querySelectorAll('[data-chapter-preview]')) {
-      const level = window.LUMEN_LEVELS[Number(canvas.dataset.chapterPreview)];
-      const renderer = new window.LumenRenderer(canvas); renderer.resize(640, 300);
-      renderer.draw({ ...game, level, song: null, mode: 'playing', time: 3,
-        player: { ...game.player, x: 180, y: 554, grounded: true, vx: 0, vy: 0, dead: false, gliding: false,
-          anim: 0, power: null, invuln: 0, landTimer: 0, jumpTimer: 0, dashTime: 0, slide: false },
-        camera: { x: 0, y: 0, shake: 0 }, platforms: level.platforms.map(platform => ({ ...platform, active: platform.type !== 'echo' })),
-        collectibles: level.collectibles, wakeables: [], waves: [], particles: [], floatingTexts: [],
-        enemies: [], hazards: [], characters: [], checkpoints: [], boss: null, secrets: [], exit: level.exit }, 0);
-    }
-  }
+  function renderMap() { window.LumenJourneyUI.show(); }
   function updateHud(dt) {
     if (game.song) { window.LumenSongUI?.update(dt); return; }
     uiTime+=dt;if(uiTime<.07)return;uiTime=0;
@@ -379,7 +355,7 @@
     $('result-record').classList.toggle('hidden',!result.record||!result.timed);
     $('complete-note').textContent=result.secrets?translate('Passages secrets découverts : {count} · +{bonus} points',{count:result.secrets,bonus:I18n.number(result.bonus)}):translate('+{bonus} points de fin de chapitre',{bonus:I18n.number(result.bonus)})+' · '+translate(result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !');
     $('result-medal-hint').textContent=medal==='gold'?translate('Un voyage éclatant. Saurez-vous encore améliorer votre temps ?'):targets?translate('Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.',{time:timeLabel(targets.gold)}):translate('Chaque retour dans les jardins est une nouvelle aventure.');
-    $('next-button').innerHTML=result.final||game.levelIndex>=window.LUMEN_LEVELS.length-1?'Revoir les jardins <span>✧</span>':game.level.bonus&&!game.isUnlocked(game.levelIndex+1)?'Reprendre l’aventure <span>→</span>':'Le prochain jardin <span>→</span>';
+    $('next-button').innerHTML=translate('Continuer le voyage')+' <span>→</span>';
     I18n.translateDOM($('complete-screen'));
   }
   try {
@@ -403,7 +379,6 @@
     game.on('expedition-end',detail=>{toast(detail.won?'Nuit menée au bout · graine {seed}':'La nuit s’achève ici · graine {seed}',{seed:detail.run.code});if(detail.won){game.mode='dream';showMode('dream');}});
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-command]');if(button){command(button.dataset.command);if(event.detail>0)button.blur();}
-      const mode=event.target.closest('[data-run-mode]');if(mode&&!transitioning){selectedRunMode=mode.dataset.runMode;updateRunMode();}
       const level=event.target.closest('[data-level]');if(level&&!level.disabled){game.audio.unlock();transition(()=>startLevel(Number(level.dataset.level)));}
     });
     $('dialogue').addEventListener('click',()=>advanceDialogue());
@@ -491,6 +466,7 @@
       game.store.setSetting('reducedEffects',true);
     }
     applySettings();
+    window.LumenJourneyUI.attach(game, { transition, toast });
     window.LumenSongUI?.attach(game, { transition, toast });
     const refreshAppearance=()=>{
       document.querySelectorAll('[data-appearance]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearance===game.progress.settings.appearance)));

@@ -67,6 +67,7 @@
     const record = {
       completed: !!raw.completed,
       stars: clamp(Math.floor(finite(raw.stars)), 0, 99),
+      secrets: clamp(Math.floor(finite(raw.secrets)), 0, 99),
       coins: clamp(Math.floor(finite(raw.coins)), 0, 9999),
       score: clamp(Math.floor(finite(raw.score)), 0, 99999999),
       time: Number.isFinite(Number(raw.time)) ? Math.max(0, Number(raw.time)) : null,
@@ -295,6 +296,7 @@
       const record = {
         completed: true,
         stars: Math.max(previous.stars || 0, finite(result.stars)),
+        secrets: clamp(Math.max(previous.secrets || 0, Math.floor(finite(result.secrets))), 0, 99),
         coins: Math.max(previous.coins || 0, finite(result.coins)),
         score: Math.max(previous.score || 0, finite(result.score)),
         time: Math.min(previous.time ?? Infinity, finite(result.time, Infinity)),
@@ -309,6 +311,16 @@
       } else if (Number.isFinite(best)) record.bestTimedTime = best;
       this.profile.chapters[key] = record;
       return newRecord;
+    }
+    /** A discovered passage survives leaving or losing the stage. It does not
+     *  mark the stage as completed, and a weaker revisit never removes it. */
+    recordSecrets(key, count) {
+      if (typeof key !== 'string' || !key) return false;
+      const previous = this.profile.chapters[key];
+      const secrets = clamp(Math.floor(finite(count)), 0, 99);
+      if (secrets <= (previous?.secrets || 0)) return false;
+      this.profile.chapters[key] = { ...(previous || cleanChapter({})), secrets };
+      return true;
     }
 
     /* ── Observatoire ──────────────────────────────────────────────────── */

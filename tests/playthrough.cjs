@@ -7,7 +7,7 @@ function create(stage,options){
     LumenAudio:class{setMuted(){}setTheme(){}setDanger(v){this.danger=v}setBossPhase(v){this.bossPhase=v}unlock(){}resume(){}pause(){}sfx(){}}};
   const document={addEventListener(){},body:{classList:{contains:()=>true}}};
   const context=vm.createContext({window,document,localStorage:{getItem(){return null},setItem(){}},requestAnimationFrame(){},console,Math});
-  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','levels.js','song.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
+  for(const file of ['rng.js','save.js','resonance.js','modules.js','expedition.js','upgrades.js','levels.js','song.js','journey.js','engine.js'])vm.runInContext(fs.readFileSync(root+'js/'+file,'utf8'),context);
   const game=new window.LumenGame({});
   if(options)game.start(stage,options);else game.loadLevel(stage);
   game.levels=window.LUMEN_LEVELS;return game;
@@ -172,6 +172,9 @@ for(const stage of [7,8]){
 const songPilot = require('./song-pilot.cjs');
 for (const style of ['gentle', 'flow']) {
   const game = create(0);
+  // Fixture d'accès historique : ce contrôle joue la géométrie des trois îles.
+  // Les règles des actes sont vérifiées séparément par test-journey.cjs.
+  game.store.unlock('coeur-eclipse');
   for (let index = 0; index < 3; index++) {
     if (!game.startSong(index, { style })) {
       results.push({ test: 'song island ' + (index + 1) + ' (' + style + ') unlocked by previous completion', ok: false });

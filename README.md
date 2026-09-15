@@ -15,10 +15,24 @@ hébergement statique. Aucune application native n'est publiée en boutique.
 
 ## Une Entrée, Plusieurs Destinations
 
-L'atlas propose les trois îles et une quatrième carte, **Les jardins de la
-lune**, au même niveau. Cette carte ouvre les onze chapitres de la campagne.
-L'observatoire possède son propre accès et n'est pas un douzième chapitre.
-Depuis l'atlas des jardins, **L'archipel** ramène à l'île quittée.
+**Un seul atlas des lumières rassemble tout le voyage.** Trois constellations
+relient les trois îles aux stages de campagne. Chaque île est une étape de
+repos, sans créature hostile : île 1 → acte I → île 2 → acte II → île 3 →
+acte III → finale. L'observatoire et les Rêves nomades restent hors du chemin
+obligatoire. La quête de la coupole reste nécessaire pour entrer dans les Rêves.
+
+La carte s'ouvre uniquement sur demande, depuis le jeu, la pause ou une fin
+de lieu. Elle suspend une île ou un chapitre et permet de le reprendre.
+Choisir une lumière montre son nom, ses records et, si elle dort encore,
+la condition qui l'ouvre. Les fragments et les détours restent facultatifs.
+Les succès ajoutent de petites lumières ; une partie moins réussie ne les
+retire jamais. Les passages secrets sont désormais mémorisés par stage.
+
+Sur téléphone, on change explicitement de constellation avec les boutons
+d'acte. Au clavier ou à la manette, les directions parcourent les lieux et
+les actions ; Entrée/A choisit, Échap/B revient. Un lieu verrouillé reste
+consultable. Les îles déjà terminées et les chapitres historiquement ouverts
+restent accessibles lors de cette nouvelle organisation.
 
 Chaque lancement revient à l'île 1, même pour un profil avancé. Les îles
 déverrouillées, souvenirs et records restent dans l'atlas. La position au
@@ -110,7 +124,8 @@ Les sessions `song`, `campaign`, `hub` et `expedition` restent distinctes.
 Le stockage dépend du navigateur, de l'origine ou du chemin local. Déplacer
 le fichier ou changer de navigateur ne transfère pas automatiquement la
 progression. Un stockage refusé n'empêche pas de jouer, mais interdit sa
-conservation.
+conservation. Le joueur ou le système peut effacer les données du navigateur.
+Il n'existe ni compte, ni serveur, ni synchronisation entre appareils.
 
 ## Vérifier
 

@@ -10,6 +10,7 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="song.css">
+  <link rel="stylesheet" href="journey.css">
 </head>
 <body>
   <main id="app" aria-label="LUMEN, jeu de plateforme">
@@ -67,12 +68,15 @@
     <div id="boss-hud" class="boss-hud hidden"><div><span>LE VEILLEUR DE L’ÉCLIPSE</span><span id="boss-phase">PHASE I</span></div><div class="boss-track"><i id="boss-fill"></i></div><small id="boss-tip">Évitez ses attaques. Sa couronne s’ouvre après son bond.</small></div>
     <div id="chapter-intro" class="chapter-intro"><span id="intro-number"></span><h2 id="intro-name"></h2><p id="intro-subtitle"></p></div>
 
-    <section id="map-screen" class="screen map-screen" aria-labelledby="map-title">
-      <div class="map-heading"><div><div class="eyebrow">L’ATLAS DES LUMIÈRES</div><h2 id="map-title">Un monde à réveiller.</h2><p>Suivez les étoiles. Chaque jardin a son secret.</p></div><div class="map-total"><span>✦</span><strong id="total-stars">0 / 30</strong><small>FRAGMENTS RETROUVÉS</small></div></div>
-      <div class="atlas-toolbar"><div class="run-mode-switch" role="group" aria-label="Mode des prochains chapitres"><button data-run-mode="explore" aria-pressed="true"><span aria-hidden="true">☾</span> Exploration</button><button data-run-mode="timed" aria-pressed="false"><span aria-hidden="true">◷</span> Contre-la-montre</button></div><p id="run-mode-hint">Le temps vous appartient. Explorez à votre rythme.</p><button class="medal-help-button" data-command="medal-help" aria-expanded="false" aria-controls="medal-help">Les médailles <span aria-hidden="true">ⓘ</span></button></div>
-      <div id="medal-help" class="medal-help hidden"><strong>Une médaille pour chaque lumière.</strong><p><span class="medal-dot gold">✦</span><b>Or</b> · 3 fragments, au plus 1 dégât et le temps d’or. <span class="medal-dot silver">✦</span><b>Argent</b> · 2 fragments, au plus 3 dégâts et le temps d’argent. <span class="medal-dot bronze">✦</span><b>Bronze</b> · Terminer le chapitre.</p><p>Les objectifs de temps figurent sur chaque carte. Les médailles sont disponibles dans les deux modes ; seuls les records du contre-la-montre sont enregistrés au classement personnel. Aucun compte à rebours, aucune pénalité à prendre votre temps.</p></div>
-      <div id="level-grid" class="level-grid"></div>
-      <div class="map-bottom"><button class="button secondary" data-command="song-return"><span data-icon="arrow-left"></span> L’archipel</button><button class="button secondary" data-command="hub">L’observatoire <span>☾</span></button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
+    <section id="map-screen" class="screen map-screen journey-map" aria-labelledby="map-title">
+      <header class="journey-header"><div class="journey-brand"><img src="icon.svg" alt="" width="29" height="38"><div><span>L’ATLAS DES LUMIÈRES</span><h2 id="map-title">Votre ciel prend vie.</h2></div></div><div class="journey-header-actions"><button class="journey-button" id="journey-codex-button" data-journey-codex="toggle">Le carnet des créatures</button><button class="journey-button" data-journey-back>Reprendre le voyage <span aria-hidden="true">↗</span></button></div></header>
+      <p class="journey-intro">Trois îles pour souffler. Entre elles, des jardins à réveiller.</p>
+      <div id="journey-totals" class="journey-totals" aria-label="Votre progression"></div>
+      <div class="journey-main"><div class="journey-view"><nav class="journey-act-nav" aria-label="Changer de constellation"><button data-journey-act="1" aria-pressed="true">Acte I</button><button data-journey-act="2" aria-pressed="false">Acte II</button><button data-journey-act="3" aria-pressed="false">Acte III</button></nav><div id="journey-sky" class="journey-sky"></div><div class="journey-legend"><span>○ Lumière en sommeil</span><span>✦ Lumière retrouvée</span><span>◇ Facultatif</span></div></div><aside id="journey-details" class="journey-details" aria-labelledby="journey-place-title"></aside></div>
+      <button class="journey-button journey-mobile-codex" data-journey-codex="toggle">Le carnet des créatures</button>
+      <section id="journey-codex" class="journey-codex" hidden></section>
+      <footer class="journey-footer"><span>Flèches : parcourir · Entrée / A : choisir · Échap / B : revenir</span><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></footer>
+      <p id="journey-announcement" class="journey-live" role="status" aria-live="polite"></p>
     </section>
 
     <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><p id="remaining-lives"></p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="text-button" data-command="help">Voir les commandes</button></div></div></section>
@@ -108,6 +112,7 @@
   <script src="js/locales-ui.js"></script>
   <script src="js/locales-classic.js"></script>
   <script src="js/locales-world.js"></script>
+  <script src="js/locales-journey.js"></script>
   <script src="js/rng.js"></script>
   <script src="js/resonance.js"></script>
   <script src="js/save.js"></script>
@@ -116,12 +121,14 @@
   <script src="js/upgrades.js"></script>
   <script src="js/levels.js"></script>
   <script src="js/song.js"></script>
+  <script src="js/journey.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/world-art.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/song-art.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/icons.js"></script>
+  <script src="js/journey-ui.js"></script>
   <script src="js/song-ui.js"></script>
   <script src="js/ui.js"></script>
 </body>

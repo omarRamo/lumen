@@ -840,6 +840,128 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
   background-color: var(--lumen-raised); color: var(--lumen-ink); border-color: var(--lumen-line);
 }
 </style>
+  <style>
+/* A sky, never a grid of chapter cards. The geometry carries the journey. */
+body.journey-open .masthead { display:none; }
+/* Visibility must switch immediately: a just-opened map can receive focus
+ * before the first opacity frame, including after the Dreams selector. */
+body #map-screen.journey-map { transition:opacity .35s; }
+body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflow:auto; overscroll-behavior:contain; background:var(--journey-bg); color:var(--journey-ink); --journey-bg:#ecf0eb; --journey-ink:#2d514f; --journey-muted:#627875; --journey-line:#b0c2b9; --journey-star:#4c7970; --journey-paper:#f7f8f0; z-index:24; }
+:root[data-appearance="dark"] body #map-screen.journey-map { --journey-bg:#142c35; --journey-ink:#e6eee1; --journey-muted:#a6bbb9; --journey-line:#557074; --journey-star:#c9deba; --journey-paper:#213943; }
+.journey-map::before { content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 25% 55%,#739bb220,transparent 60%),radial-gradient(ellipse at 76% 16%,#cfc19c24,transparent 52%); }
+.journey-header { display:flex;align-items:center;justify-content:space-between;gap:24px;max-width:1500px;margin:auto; }
+.journey-brand { display:flex;gap:13px;align-items:center; }
+.journey-brand img { width:29px;height:38px;object-fit:contain; }
+.journey-brand span { display:block;font-size:10px;letter-spacing:.1em!important;color:var(--journey-muted); }
+.journey-brand h2 { font:500 clamp(24px,2.9vw,38px)/1.1 Fredoka,sans-serif;margin:3px 0; }
+.journey-header-actions { display:flex;align-items:center;gap:10px; }
+.journey-button { min-height:48px;padding:11px 15px;border:1px solid var(--journey-line);border-radius:24px;background:transparent;color:var(--journey-ink);font-size:13px;display:inline-flex;gap:10px;align-items:center;justify-content:center; }
+.journey-button:hover { background:var(--journey-paper); }
+.journey-map button:focus-visible { outline:3px solid var(--journey-ink);outline-offset:4px; }
+.journey-primary { background:var(--journey-ink);color:var(--journey-bg);border-color:var(--journey-ink);width:100%;justify-content:space-between; }
+.journey-primary:hover { background:var(--journey-star);color:var(--journey-bg); }
+.journey-map .journey-intro { max-width:1500px;margin:15px auto 17px;font-size:14px;color:var(--journey-muted); }
+.journey-totals { display:flex;gap:clamp(15px,3vw,45px);border-top:1px solid var(--journey-line);border-bottom:1px solid var(--journey-line);padding:14px 0;max-width:1500px;margin:auto; }
+.journey-totals>div { display:flex;gap:10px;align-items:center; }
+.journey-totals strong { font:500 24px Fredoka,sans-serif;white-space:nowrap; }
+.journey-totals strong small { font:400 14px Outfit,sans-serif;color:var(--journey-muted); }
+.journey-totals>div>span { max-width:95px;font-size:11px;color:var(--journey-muted);line-height:1.4; }
+.journey-main { display:grid;grid-template-columns:minmax(0,1fr) 275px;gap:clamp(14px,3vw,45px);max-width:1500px;margin:20px auto 0;align-items:start; }
+.journey-view { min-width:0; }
+.journey-act-nav { display:none; }
+.journey-sky { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:relative;min-width:0;direction:ltr; }
+.journey-sky::before { content:"";position:absolute;inset:25px 0 120px;pointer-events:none;opacity:.32;background-image:radial-gradient(circle,var(--journey-star) .8px,transparent 1px);background-size:53px 73px;mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent); }
+.journey-region { min-width:0;position:relative; }
+.journey-region-title { text-align:center;min-height:48px; }
+.journey-region-title span { font:400 10px Outfit,sans-serif;text-transform:uppercase;letter-spacing:.15em!important;color:var(--journey-muted); }
+.journey-region-title h3 { font:400 15px Fredoka,sans-serif;margin:4px 0 0;color:var(--journey-ink); }
+.journey-constellation { position:relative;height:var(--region-height,400px); }
+.journey-lines { position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none; }
+.journey-lines polyline { stroke:var(--journey-line);stroke-width:1;vector-effect:non-scaling-stroke;fill:none;stroke-dasharray:2 5; }
+.journey-node { position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;padding:0;border:0;border-radius:50%;background:transparent;color:var(--journey-ink);transition:background .2s; }
+.journey-node:hover,.journey-node.is-selected { background:var(--journey-paper); }
+.journey-node.is-selected::after { content:"";position:absolute;inset:0;border:1px solid currentColor;border-radius:50%; }
+.journey-core { font:400 23px Fredoka,sans-serif;line-height:1;width:25px;height:25px;display:flex;align-items:center;justify-content:center;border:1px solid var(--journey-star);border-radius:50%; }
+.journey-node.stage:not(.is-lit) .journey-core { font-size:0;width:13px;height:13px;border-radius:50%; }
+.journey-node.is-locked .journey-core { border-style:dashed;border-color:var(--journey-muted); }
+.journey-node.is-lit .journey-core { border:0;color:var(--journey-star);font-size:34px; }
+.journey-node.island { width:76px;height:76px; }
+.journey-node.island .journey-core { width:52px;height:52px;font-size:33px;border-style:solid;border-width:1px; }
+.journey-node.island::before { content:"";position:absolute;inset:-8px;border-radius:50%;border:1px solid var(--journey-line);opacity:.6; }
+.journey-node.island.is-lit .journey-core { background:var(--journey-star);color:var(--journey-bg); }
+.journey-node-number { position:absolute;top:50%;left:calc(100% + 3px);transform:translateY(-50%);font-size:11px;color:var(--journey-muted); }
+.journey-node-name { position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%);width:150px;max-width:70vw;font-size:12px;line-height:1.25;font-weight:500;text-align:center; }
+.journey-orbit { position:absolute;inset:0;border-radius:50%; }
+.journey-award { position:absolute;left:calc(50% + var(--dx));top:calc(50% + var(--dy));width:4px;height:4px;border-radius:50%;background:var(--journey-star);transform:translate(-50%,-50%); }
+.journey-award.star { width:5px;height:5px;border-radius:0;transform:translate(-50%,-50%) rotate(45deg); }
+.journey-award.secret { background:var(--journey-bg);border:1px solid var(--journey-star);width:5px;height:5px;border-radius:0; }
+.journey-award.medal { width:5px;height:5px; }.journey-award.voice { width:4px;height:7px;border-radius:4px; }
+.journey-light-count { position:absolute;left:-3px;top:0;background:var(--journey-paper);font-size:9px;border:1px solid var(--journey-line);border-radius:12px;padding:1px 4px; }
+.journey-new-label { position:absolute;bottom:calc(100% + 8px);white-space:nowrap;font-size:9px;background:var(--journey-ink);color:var(--journey-bg);padding:4px 7px;border-radius:10px; }
+.journey-node.birth .journey-core,.journey-node.birth .journey-orbit { animation:journey-birth 1.1s cubic-bezier(.19,1,.22,1) both; }
+@keyframes journey-birth { 0% { opacity:.15;transform:scale(.3); } 55% { opacity:1;transform:scale(1.3); } 100% { opacity:1;transform:scale(1); } }
+.journey-refuges { grid-column:1/-1;position:relative;min-height:150px;margin:0 12% 0;border-top:1px solid var(--journey-line); }
+.journey-refuges-label { display:block;text-align:center;font-size:10px;margin-top:10px;color:var(--journey-muted); }
+.journey-node.hub .journey-core { border-radius:45% 45% 8px 8px;width:36px;height:36px; }
+.journey-node.dreams { background:radial-gradient(ellipse,#9cbab04d 10%,transparent 70%);border-radius:35% 65% 60% 40%;width:84px;height:62px; }
+.journey-node.dreams .journey-core { border:0;font-size:34px; }
+.journey-map .journey-legend { display:flex;justify-content:center;gap:20px;margin:4px 0 14px;color:var(--journey-muted);font-size:10px; }
+.journey-legend span { display:flex;gap:6px;align-items:center; }
+.journey-details { border-inline-start:1px solid var(--journey-line);padding:15px 0 10px 24px;position:sticky;top:20px;min-height:420px; }
+.journey-detail-emblem { width:85px;height:85px;position:relative;margin:0 0 26px 12px;font-size:53px;color:var(--journey-star);display:flex;align-items:center;justify-content:center; }
+.journey-detail-emblem::before,.journey-detail-emblem i { content:"";position:absolute;inset:0;border:1px solid var(--journey-line);border-radius:50%;transform:rotate(-20deg) scaleY(.4); }
+.journey-detail-emblem i { transform:rotate(55deg) scaleY(.4); }
+.journey-detail-emblem.is-lit { background:radial-gradient(circle,var(--journey-paper),transparent 70%); }
+.journey-kicker { font-size:10px;color:var(--journey-muted);line-height:1.5; }
+.journey-details h3 { font:500 29px/1.16 Fredoka,sans-serif;margin:7px 0 13px;overflow-wrap:anywhere; }
+body .journey-map .journey-description { font-size:13px;color:var(--journey-muted);line-height:1.55;margin:0 0 18px; }
+.journey-state { font-size:12px;display:flex;align-items:center;gap:8px; }
+.journey-state span { font-size:20px; }
+.journey-collectibles { display:grid;grid-template-columns:1fr 1fr;gap:15px 8px;margin:22px 0; }
+.journey-collectibles:empty { display:none; }
+.journey-collectibles span { display:flex;flex-direction:column;gap:4px; }
+.journey-collectibles b { font:500 17px Fredoka,sans-serif; }
+.journey-collectibles small { font-size:10px;color:var(--journey-muted);line-height:1.4; }
+body .journey-map .journey-lock-note { font-size:12px;line-height:1.6;border-inline-start:2px solid var(--journey-muted);padding-inline-start:12px;color:var(--journey-ink); }
+.journey-run-mode { display:flex;gap:3px;padding:3px;border:1px solid var(--journey-line);border-radius:25px;margin-bottom:12px; }
+.journey-run-mode button { flex:1;border:0;min-height:48px;font-size:11px;padding:7px 8px;border-radius:24px;color:var(--journey-ink);background:transparent; }
+.journey-run-mode button[aria-pressed=true] { background:var(--journey-paper);box-shadow:0 1px 4px #00000012; }
+body .journey-map .journey-optional-note { font-size:10px;color:var(--journey-muted);line-height:1.6;margin:16px 0 0; }
+body .journey-map .journey-new-note { font-size:12px;padding:9px 10px;border:1px solid var(--journey-line);border-radius:5px;color:var(--journey-ink);background:var(--journey-paper); }
+.journey-footer { display:flex;justify-content:space-between;gap:15px;max-width:1500px;margin:10px auto 0;padding-top:15px;border-top:1px solid var(--journey-line);font-size:10px;color:var(--journey-muted);line-height:1.5; }
+.journey-codex { max-width:1500px;margin:20px auto;background:var(--journey-paper);border-radius:8px;padding:22px; }
+.journey-codex[hidden] { display:none; }
+.journey-codex-heading { display:flex;align-items:center;justify-content:space-between;gap:15px; }
+.journey-codex h3 { margin:4px 0;font:500 24px Fredoka,sans-serif; }
+.journey-voices { display:grid;grid-template-columns:repeat(9,1fr);gap:12px;margin-top:24px; }
+.journey-voice { display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;text-align:center; }
+.journey-voice>span:last-child { font-size:9px;line-height:1.3;color:var(--journey-muted); }
+.journey-voice-face { display:block;position:relative;width:35px;height:34px;border-radius:45% 45% 35% 35%;border:1px dashed var(--journey-muted);margin-bottom:7px; }
+.journey-voice.found .journey-voice-face { background:var(--journey-star);border:0; }
+.journey-voice-face::before,.journey-voice-face::after { content:"";position:absolute;top:-9px;width:9px;height:17px;border:1px solid var(--journey-muted);border-radius:50%;left:3px;transform:rotate(-18deg); }
+.journey-voice-face::after { left:auto;right:3px;transform:rotate(18deg); }
+.journey-voice.found .journey-voice-face::before,.journey-voice.found .journey-voice-face::after { background:var(--journey-star);border:0; }
+.journey-voice-face.voice-1::before,.journey-voice-face.voice-1::after { height:9px;top:-4px; }.journey-voice-face.voice-2 { border-radius:50%; }
+.journey-voice-face i,.journey-voice-face b { position:absolute;left:10px;top:15px;width:3px;height:4px;background:var(--journey-muted);border-radius:50%; }
+.journey-voice-face b { left:22px; }.journey-voice.found .journey-voice-face i,.journey-voice.found .journey-voice-face b { background:var(--journey-bg); }
+.journey-live { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%); }
+body.reduced-effects .journey-node.birth .journey-core,body.reduced-effects .journey-node.birth .journey-orbit { animation:none; }
+[dir=rtl] .journey-details { padding-left:0;padding-right:24px; }
+[dir=rtl] .journey-region-title,[dir=rtl] .journey-node-name { direction:rtl; }
+@media(min-width:1400px) { .journey-main { grid-template-columns:minmax(0,1fr) 310px; }.journey-constellation { height:max(410px,var(--region-height)); } }
+@media(max-width:1000px) { .journey-main { grid-template-columns:minmax(0,1fr) 235px;gap:18px; }.journey-details { padding-inline-start:17px; }.journey-details h3 {font-size:25px;}.journey-totals>div{gap:6px;}.journey-totals>div>span{font-size:10px;}.journey-node-name{font-size:10px;width:115px;}.journey-region-title h3{font-size:13px;}.journey-voices{grid-template-columns:repeat(5,1fr);} }
+@media(max-width:760px) {
+  body #map-screen.journey-map { padding:18px max(16px,env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
+  .journey-header { gap:12px;align-items:flex-start; }.journey-brand img{display:none;}.journey-brand h2{font-size:28px;}.journey-brand span{font-size:9px;}.journey-header-actions{gap:7px;}.journey-header-actions .journey-button{padding:8px 12px;font-size:11px;max-width:112px;line-height:1.3;}.journey-header-actions #journey-codex-button{display:none;}
+  .journey-map .journey-intro{font-size:12px;margin:12px 0;}.journey-totals{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 0;}.journey-totals>div{gap:8px;}.journey-totals>div>span{max-width:none;font-size:10px;}.journey-totals strong{font-size:21px;}
+  .journey-main{display:block;margin-top:15px;}.journey-act-nav{display:flex;gap:5px;justify-content:center;}.journey-act-nav button{min-height:48px;flex:1;background:transparent;color:var(--journey-ink);border:1px solid var(--journey-line);border-radius:24px;font-size:12px;}.journey-act-nav button[aria-pressed=true]{background:var(--journey-ink);color:var(--journey-bg);}
+  .journey-sky{display:block;}.journey-region{display:none;}.journey-region.is-current{display:block;}.journey-region-title{padding-top:18px;min-height:50px;}.journey-region-title span{display:none;}.journey-region-title h3{font-size:18px;}.journey-constellation{height:var(--region-height);max-width:470px;margin:auto;}.journey-node-name{font-size:12px;width:170px;}.journey-refuges{min-height:150px;margin:0 4%;}.journey-node-number{font-size:13px;}.journey-details{position:static;border-inline-start:0;border-top:1px solid var(--journey-line);padding:22px 0 12px;min-height:0;}.journey-detail-emblem{float:right;width:64px;height:64px;margin:0 5px 15px 15px;font-size:42px;}.journey-details h3{font-size:28px;max-width:80%;}.journey-collectibles{grid-template-columns:repeat(2,1fr);}.journey-legend{font-size:10px;gap:12px;}.journey-footer{flex-direction:column;gap:8px;}.journey-mobile-codex{display:flex!important;width:100%;margin-top:15px;}.journey-voices{grid-template-columns:repeat(3,1fr);gap:25px 14px;}.journey-codex{padding:18px;}.journey-codex h3{font-size:21px;}
+}
+.journey-mobile-codex,.journey-mobile-detail-back { display:none; }
+@media(max-width:760px) { .journey-mobile-detail-back { display:flex;margin-bottom:18px;font-size:12px; } }
+@media(prefers-reduced-motion:reduce) { .journey-node.birth .journey-core,.journey-node.birth .journey-orbit { animation:none; } }
+
+</style>
 </head>
 <body>
   <main id="app" aria-label="LUMEN, jeu de plateforme">
@@ -897,12 +1019,15 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
     <div id="boss-hud" class="boss-hud hidden"><div><span>LE VEILLEUR DE L’ÉCLIPSE</span><span id="boss-phase">PHASE I</span></div><div class="boss-track"><i id="boss-fill"></i></div><small id="boss-tip">Évitez ses attaques. Sa couronne s’ouvre après son bond.</small></div>
     <div id="chapter-intro" class="chapter-intro"><span id="intro-number"></span><h2 id="intro-name"></h2><p id="intro-subtitle"></p></div>
 
-    <section id="map-screen" class="screen map-screen" aria-labelledby="map-title">
-      <div class="map-heading"><div><div class="eyebrow">L’ATLAS DES LUMIÈRES</div><h2 id="map-title">Un monde à réveiller.</h2><p>Suivez les étoiles. Chaque jardin a son secret.</p></div><div class="map-total"><span>✦</span><strong id="total-stars">0 / 30</strong><small>FRAGMENTS RETROUVÉS</small></div></div>
-      <div class="atlas-toolbar"><div class="run-mode-switch" role="group" aria-label="Mode des prochains chapitres"><button data-run-mode="explore" aria-pressed="true"><span aria-hidden="true">☾</span> Exploration</button><button data-run-mode="timed" aria-pressed="false"><span aria-hidden="true">◷</span> Contre-la-montre</button></div><p id="run-mode-hint">Le temps vous appartient. Explorez à votre rythme.</p><button class="medal-help-button" data-command="medal-help" aria-expanded="false" aria-controls="medal-help">Les médailles <span aria-hidden="true">ⓘ</span></button></div>
-      <div id="medal-help" class="medal-help hidden"><strong>Une médaille pour chaque lumière.</strong><p><span class="medal-dot gold">✦</span><b>Or</b> · 3 fragments, au plus 1 dégât et le temps d’or. <span class="medal-dot silver">✦</span><b>Argent</b> · 2 fragments, au plus 3 dégâts et le temps d’argent. <span class="medal-dot bronze">✦</span><b>Bronze</b> · Terminer le chapitre.</p><p>Les objectifs de temps figurent sur chaque carte. Les médailles sont disponibles dans les deux modes ; seuls les records du contre-la-montre sont enregistrés au classement personnel. Aucun compte à rebours, aucune pénalité à prendre votre temps.</p></div>
-      <div id="level-grid" class="level-grid"></div>
-      <div class="map-bottom"><button class="button secondary" data-command="song-return"><span data-icon="arrow-left"></span> L’archipel</button><button class="button secondary" data-command="hub">L’observatoire <span>☾</span></button><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></div>
+    <section id="map-screen" class="screen map-screen journey-map" aria-labelledby="map-title">
+      <header class="journey-header"><div class="journey-brand"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="29" height="38"><div><span>L’ATLAS DES LUMIÈRES</span><h2 id="map-title">Votre ciel prend vie.</h2></div></div><div class="journey-header-actions"><button class="journey-button" id="journey-codex-button" data-journey-codex="toggle">Le carnet des créatures</button><button class="journey-button" data-journey-back>Reprendre le voyage <span aria-hidden="true">↗</span></button></div></header>
+      <p class="journey-intro">Trois îles pour souffler. Entre elles, des jardins à réveiller.</p>
+      <div id="journey-totals" class="journey-totals" aria-label="Votre progression"></div>
+      <div class="journey-main"><div class="journey-view"><nav class="journey-act-nav" aria-label="Changer de constellation"><button data-journey-act="1" aria-pressed="true">Acte I</button><button data-journey-act="2" aria-pressed="false">Acte II</button><button data-journey-act="3" aria-pressed="false">Acte III</button></nav><div id="journey-sky" class="journey-sky"></div><div class="journey-legend"><span>○ Lumière en sommeil</span><span>✦ Lumière retrouvée</span><span>◇ Facultatif</span></div></div><aside id="journey-details" class="journey-details" aria-labelledby="journey-place-title"></aside></div>
+      <button class="journey-button journey-mobile-codex" data-journey-codex="toggle">Le carnet des créatures</button>
+      <section id="journey-codex" class="journey-codex" hidden></section>
+      <footer class="journey-footer"><span>Flèches : parcourir · Entrée / A : choisir · Échap / B : revenir</span><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></footer>
+      <p id="journey-announcement" class="journey-live" role="status" aria-live="polite"></p>
     </section>
 
     <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><p id="remaining-lives"></p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="text-button" data-command="help">Voir les commandes</button></div></div></section>
@@ -1543,6 +1668,60 @@ window.LumenI18n.add([
 ]);
 </script>
   <script>
+/* LUMEN — messages du voyage commun, conservés dans les cinq langues. */
+window.LumenI18n.add([
+  ['Meilleur chrono', 'Best time', 'Mejor tiempo', 'أفضل وقت', '最佳用时'],
+  ['Fermer', 'Close', 'Cerrar', 'إغلاق', '关闭'],
+  ['Revenir à la constellation', 'Back to the constellation', 'Volver a la constelación', 'عد إلى الكوكبة', '返回星座'],
+  ['L’atlas des lumières', 'The atlas of lights', 'El atlas de las luces', 'أطلس الأضواء', '光之星图'],
+  ['Votre ciel prend vie.', 'Your sky comes alive.', 'Tu cielo cobra vida.', 'سماءك تنبض بالحياة.', '你的天空焕发生机。'],
+  ['Trois îles pour souffler. Entre elles, des jardins à réveiller.', 'Three islands to catch your breath. Between them, gardens to awaken.', 'Tres islas para tomar aliento. Entre ellas, jardines por despertar.', 'ثلاث جزر لالتقاط الأنفاس. وبينها حدائق تنتظر الاستيقاظ.', '在三座岛屿歇息，再唤醒沿途的花园。'],
+  ['Votre progression', 'Your progress', 'Tu progreso', 'تقدّمك', '你的进度'],
+  ['Changer de constellation', 'Change constellation', 'Cambiar de constelación', 'غيّر الكوكبة', '切换星座'],
+  ['Acte I', 'Act I', 'Acto I', 'الفصل الأول', '第一幕'],
+  ['Acte II', 'Act II', 'Acto II', 'الفصل الثاني', '第二幕'],
+  ['Acte III', 'Act III', 'Acto III', 'الفصل الثالث', '第三幕'],
+  ['○ Lumière en sommeil', '○ Sleeping light', '○ Luz dormida', '○ ضوء نائم', '○ 沉睡的光'],
+  ['✦ Lumière retrouvée', '✦ Light restored', '✦ Luz recuperada', '✦ ضوء مستعاد', '✦ 重获光芒'],
+  ['◇ Facultatif', '◇ Optional', '◇ Opcional', '◇ اختياري', '◇ 可选'],
+  ['Flèches : parcourir · Entrée / A : choisir · Échap / B : revenir', 'Arrows: browse · Enter / A: choose · Esc / B: return', 'Flechas: explorar · Intro / A: elegir · Esc / B: volver', 'الأسهم: تنقّل · Enter / A: اختر · Esc / B: عودة', '方向键：浏览 · 回车 / A：选择 · Esc / B：返回'],
+  ['Continuer le voyage', 'Continue the journey', 'Continuar el viaje', 'تابع الرحلة', '继续旅程'],
+  ['Les chemins du ciel', 'Paths through the sky', 'Los caminos del cielo', 'دروب السماء', '天空之路'],
+  ['Jusqu’à la lune', 'All the way to the moon', 'Hasta la luna', 'حتى القمر', '直到月亮'],
+  ['Lumière retrouvée', 'Light restored', 'Luz recuperada', 'ضوء مستعاد', '重获光芒'],
+  ['À explorer', 'Ready to explore', 'Por explorar', 'جاهز للاستكشاف', '等待探索'],
+  ['Lumière en sommeil', 'Sleeping light', 'Luz dormida', 'ضوء نائم', '沉睡的光'],
+  ['Une île pour souffler', 'An island to catch your breath', 'Una isla para tomar aliento', 'جزيرة لالتقاط الأنفاس', '歇息的小岛'],
+  ['La finale', 'The finale', 'El final', 'الخاتمة', '终章'],
+  ['Un jardin à réveiller', 'A garden to awaken', 'Un jardín por despertar', 'حديقة تنتظر الاستيقاظ', '等待唤醒的花园'],
+  ['Nouvelle lumière', 'New light', 'Nueva luz', 'ضوء جديد', '新的光芒'],
+  ['Acte {act}', 'Act {act}', 'Acto {act}', 'الفصل {act}', '第 {act} 幕'],
+  ['En dehors du chemin', 'Beyond the path', 'Fuera del camino', 'خارج الدرب', '旅途之外'],
+  ['Revenir dans ce lieu', 'Revisit this place', 'Volver a este lugar', 'عد إلى هذا المكان', '重访此地'],
+  ['Entrer dans ce lieu', 'Enter this place', 'Entrar en este lugar', 'ادخل هذا المكان', '进入此地'],
+  ['Facultatif', 'Optional', 'Opcional', 'اختياري', '可选'],
+  ['Une lumière de plus dans votre ciel.', 'One more light in your sky.', 'Una luz más en tu cielo.', 'ضوء آخر في سمائك.', '你的天空又多了一束光。'],
+  ['Fragments · facultatifs', 'Shards · optional', 'Fragmentos · opcionales', 'شظايا · اختيارية', '碎片 · 可选'],
+  ['Passages secrets · facultatifs', 'Secret paths · optional', 'Pasajes secretos · opcionales', 'ممرات سرية · اختيارية', '秘密通道 · 可选'],
+  ['Meilleure médaille', 'Best medal', 'Mejor medalla', 'أفضل ميدالية', '最佳奖牌'],
+  ['Ce lieu attend encore.', 'This place is still waiting.', 'Este lugar sigue esperando.', 'ما زال هذا المكان ينتظر.', '此地仍在等待。'],
+  ['Voir {name}', 'Find {name}', 'Ver {name}', 'اعثر على {name}', '查看{name}'],
+  ['Rythme du prochain voyage', 'Pace of the next journey', 'Ritmo del próximo viaje', 'إيقاع الرحلة القادمة', '下一段旅程的节奏'],
+  ['Les fragments et les détours ne sont jamais requis pour la finale.', 'Shards and detours are never required for the finale.', 'Los fragmentos y desvíos nunca son necesarios para el final.', 'الشظايا والطرق الجانبية ليست مطلوبة للوصول إلى الخاتمة.', '到达终章无需集齐碎片或完成支线。'],
+  ['Lieux rallumés', 'Places relit', 'Lugares iluminados', 'أماكن أُعيدت إضاءتها', '已点亮的地点'],
+  ['Voix retrouvées', 'Voices found', 'Voces encontradas', 'أصوات مستعادة', '已找回的声音'],
+  ['Le carnet des créatures', 'The creature journal', 'El cuaderno de criaturas', 'دفتر الكائنات', '生灵手册'],
+  ['Voix retrouvée', 'Voice found', 'Voz encontrada', 'صوت مستعاد', '已找回的声音'],
+  ['Une voix à retrouver', 'A voice to find', 'Una voz por encontrar', 'صوت ينتظر العثور عليه', '等待找回的声音'],
+  ['Termine l’acte précédent pour rejoindre cette île.', 'Complete the preceding act to reach this island.', 'Completa el acto anterior para llegar a esta isla.', 'أكمل الفصل السابق للوصول إلى هذه الجزيرة.', '完成上一幕即可到达这座岛。'],
+  ['Découvre un passage secret dans les jardins.', 'Discover a secret path in the gardens.', 'Descubre un pasaje secreto en los jardines.', 'اكتشف ممرًا سريًا في الحدائق.', '在花园中发现一条秘密通道。'],
+  ['Termine le jardin précédent pour ouvrir ce lieu.', 'Complete the preceding garden to open this place.', 'Completa el jardín anterior para abrir este lugar.', 'أكمل الحديقة السابقة لفتح هذا المكان.', '完成前一座花园即可开启此地。'],
+  ['Les Rêves nomades', 'Wandering Dreams', 'Los Sueños Nómadas', 'الأحلام الرحّالة', '流浪梦境'],
+  ['Une nuit ne ressemble à aucune autre.', 'Every night is different.', 'Cada noche es diferente.', 'لا تشبه ليلةٌ أخرى.', '每一夜都不同。']
+]);
+
+</script>
+  <script>
 /* LUMEN — déterminisme des rêves nomades.
  *
  * Un seul principe gouverne ce module : ce que le joueur VOIT ne doit jamais
@@ -2005,6 +2184,7 @@ window.LumenI18n.add([
     const record = {
       completed: !!raw.completed,
       stars: clamp(Math.floor(finite(raw.stars)), 0, 99),
+      secrets: clamp(Math.floor(finite(raw.secrets)), 0, 99),
       coins: clamp(Math.floor(finite(raw.coins)), 0, 9999),
       score: clamp(Math.floor(finite(raw.score)), 0, 99999999),
       time: Number.isFinite(Number(raw.time)) ? Math.max(0, Number(raw.time)) : null,
@@ -2233,6 +2413,7 @@ window.LumenI18n.add([
       const record = {
         completed: true,
         stars: Math.max(previous.stars || 0, finite(result.stars)),
+        secrets: clamp(Math.max(previous.secrets || 0, Math.floor(finite(result.secrets))), 0, 99),
         coins: Math.max(previous.coins || 0, finite(result.coins)),
         score: Math.max(previous.score || 0, finite(result.score)),
         time: Math.min(previous.time ?? Infinity, finite(result.time, Infinity)),
@@ -2247,6 +2428,16 @@ window.LumenI18n.add([
       } else if (Number.isFinite(best)) record.bestTimedTime = best;
       this.profile.chapters[key] = record;
       return newRecord;
+    }
+    /** A discovered passage survives leaving or losing the stage. It does not
+     *  mark the stage as completed, and a weaker revisit never removes it. */
+    recordSecrets(key, count) {
+      if (typeof key !== 'string' || !key) return false;
+      const previous = this.profile.chapters[key];
+      const secrets = clamp(Math.floor(finite(count)), 0, 99);
+      if (secrets <= (previous?.secrets || 0)) return false;
+      this.profile.chapters[key] = { ...(previous || cleanChapter({})), secrets };
+      return true;
     }
 
     /* ── Observatoire ──────────────────────────────────────────────────── */
@@ -3946,6 +4137,131 @@ window.LumenI18n.add([
   }
   global.LumenSong = { ISLANDS, create, Journey };
 })(typeof window !== 'undefined' ? window : globalThis);
+</script>
+  <script>
+/* LUMEN — one read-only description of the journey, shared by every map.
+ * Stable chapter keys are the identity. No navigation state is persisted here. */
+(function (global) {
+  'use strict';
+  const ACT_ENDS = ['lagon-lucioles', 'palais-givre', 'coeur-eclipse'];
+  const MEDALS = ['bronze', 'silver', 'gold'];
+  const DREAMS_KEY = 'reves-nomades';
+  const count = (value, ceiling) => Math.max(0, Math.min(ceiling, Math.floor(Number(value) || 0)));
+
+  function stages(game) {
+    let act = 1;
+    return (global.LUMEN_LEVELS || []).flatMap((level, index) => {
+      if (level.hub) return [];
+      const assigned = [1, 2, 3].includes(level.journeyAct) ? level.journeyAct : act;
+      const result = { level, index, act: assigned };
+      // The historical bonus remains beside act II, outside its required route.
+      if (level.key === 'jardin-heures-bleues') result.act = 2;
+      if (level.key === ACT_ENDS[act - 1] && act < 3) act++;
+      return [result];
+    });
+  }
+
+  function islandAccess(game, index) {
+    const islands = global.LumenSong?.ISLANDS || [];
+    const island = islands[index];
+    if (!Number.isInteger(index) || !island) return { allowed: false };
+    if (!index || game.store.chapter(island.key)?.completed || game.store.isUnlocked(island.key)) return { allowed: true };
+    const route = stages(game);
+    const preceding = route.filter(item => item.act === index && !item.level.bonus);
+    // Existing players keep every island already reached, including profiles
+    // whose old numeric frontier has been migrated into stable unlocked keys.
+    if (route.some(item => item.act > index && !item.level.bonus && game.store.isUnlocked(item.level.key))) return { allowed: true };
+    const missing = preceding.find(item => !game.store.chapter(item.level.key)?.completed);
+    if (!missing && preceding.length) return { allowed: true };
+    return { allowed: false, reason: 'Termine l’acte précédent pour rejoindre cette île.',
+      requirementId: missing?.level.key || islands[0].key };
+  }
+
+  function chapterLights(node, record) {
+    const lights = [];
+    const add = kind => lights.push({ id: node.id + ':' + kind, kind });
+    if (node.completed) add('completed');
+    for (let i = 0; i < node.stars; i++) add('star-' + i);
+    for (let i = 0; i < node.secrets; i++) add('secret-' + i);
+    for (let i = 0; i <= MEDALS.indexOf(record?.medal); i++) add('medal-' + MEDALS[i]);
+    if (node.bestTimedTime != null) add('time');
+    return lights;
+  }
+
+  function describe(game) {
+    const profile = game.store.profile;
+    const route = stages(game);
+    const islands = global.LumenSong?.ISLANDS || [];
+    const codex = islands.flatMap(island => (island.lights || []).map(voice => ({
+      id: 'chant-' + voice.id, name: voice.name, color: voice.color,
+      found: profile.codex.creatures.includes('chant-' + voice.id), islandId: island.key
+    })));
+    const finish = (base, level, record) => {
+      const node = { ...base, key: base.id, name: level.name, subtitle: level.subtitle || '', theme: level.theme,
+        completed: !!record?.completed, stars: count(record?.stars, (level.collectibles || []).filter(c => c.type === 'star').length),
+        maxStars: (level.collectibles || []).filter(c => c.type === 'star').length,
+        secrets: count(record?.secrets, (level.secrets || []).length), maxSecrets: (level.secrets || []).length,
+        medal: MEDALS.includes(record?.medal) ? record.medal : null,
+        bestTimedTime: Number.isFinite(record?.bestTimedTime) && record.bestTimedTime > 0 ? record.bestTimedTime : null };
+      node.lights = chapterLights(node, record);
+      return node;
+    };
+    const places = [];
+    for (let act = 1; act <= 3; act++) {
+      const island = islands[act - 1];
+      if (island) {
+        const access = islandAccess(game, act - 1);
+        const node = finish({ id: island.key, kind: 'island', index: act - 1, act, optional: false,
+          unlocked: access.allowed, reason: access.reason || '', requirementId: access.requirementId || null }, island, game.store.chapter(island.key));
+        for (const voice of codex.filter(v => v.islandId === island.key && v.found)) node.lights.push({ id: voice.id, kind: 'voice' });
+        places.push(node);
+      }
+      for (const { level, index } of route.filter(item => item.act === act)) {
+        const unlocked = game.isUnlocked(index);
+        const previous = route.filter(item => item.index < index && !item.level.bonus).at(-1);
+        places.push(finish({ id: level.key, kind: 'stage', index, act, optional: !!level.bonus,
+          unlocked, reason: unlocked ? '' : level.bonus ? 'Découvre un passage secret dans les jardins.' : 'Termine le jardin précédent pour ouvrir ce lieu.',
+          requirementId: unlocked ? null : level.bonus ? 'prairies-aurore' : previous?.level.key || islands[0]?.key }, level, game.store.chapter(level.key)));
+      }
+    }
+    const hubIndex = (global.LUMEN_LEVELS || []).findIndex(level => level.hub);
+    const hub = global.LUMEN_LEVELS[hubIndex];
+    if (hub) {
+      const node = finish({ id: hub.key, kind: 'hub', index: hubIndex, act: 0, optional: true, unlocked: true, reason: '', requirementId: null }, hub, game.store.chapter(hub.key));
+      node.completed ||= !!hub.quest && game.store.questState(hub.quest.id) === 'done';
+      if (node.completed && !node.lights.some(light => light.kind === 'completed')) node.lights.push({ id: node.id + ':completed', kind: 'completed' });
+      if (hub.quest?.transformation && game.store.hasTransformation(hub.quest.transformation)) node.lights.push({ id: node.id + ':transformation', kind: 'transformation' });
+      places.push(node);
+    }
+    const gate = game.canEnterDreams();
+    const nights = count(profile.expeditions.completed, Number.MAX_SAFE_INTEGER);
+    places.push({ id: DREAMS_KEY, key: DREAMS_KEY, kind: 'dreams', index: -1, act: 0,
+      name: 'Les Rêves nomades', subtitle: 'Une nuit ne ressemble à aucune autre.', theme: 'secret', optional: true,
+      unlocked: gate.allowed, completed: nights > 0, reason: gate.reason || '', requirementId: gate.allowed ? null : hub?.key,
+      stars: 0, maxStars: 0, secrets: 0, maxSecrets: 0, medal: null, bestTimedTime: null, nights,
+      lights: nights ? [{ id: DREAMS_KEY + ':completed', kind: 'completed' }] : [] });
+    for (const node of places) node.lightCount = node.lights.length;
+    const totals = { total: places.length, completed: places.filter(node => node.completed).length,
+      stars: 0, maxStars: 0, secrets: 0, maxSecrets: 0, lights: 0,
+      voices: codex.filter(voice => voice.found).length, maxVoices: codex.length };
+    for (const node of places) for (const field of ['stars', 'maxStars', 'secrets', 'maxSecrets']) totals[field] += node[field];
+    totals.lights = places.reduce((sum, node) => sum + node.lightCount, 0);
+    return { places, totals, codex, pendingLights: game.journeyEvents || [],
+      groups: [1, 2, 3, 0].map(act => ({ id: 'act-' + act, act, places: places.filter(node => node.act === act).map(node => node.id) })) };
+  }
+
+  function next(game) {
+    const model = describe(game);
+    const route = model.places.filter(place => !place.optional && place.kind !== 'dreams' && place.kind !== 'hub');
+    const current = game.level?.key;
+    const index = route.findIndex(place => place.id === current);
+    if (index >= 0 && index + 1 < route.length) return route[index + 1];
+    return route.find(place => place.unlocked && !place.completed) || route[0] || null;
+  }
+
+  global.LumenJourney = { ACT_ENDS, DREAMS_KEY, describe, places: game => describe(game).places, islandAccess, next };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 </script>
   <script>
 /* LUMEN — original, procedurally performed score. No audio assets required.
@@ -5937,11 +6253,19 @@ window.LumenI18n.add([
     ShiftLeft:'run', ShiftRight:'run', KeyX:'action', KeyJ:'action', Escape:'pause', KeyP:'pause', KeyR:'retry', KeyM:'sound', Enter:'confirm' };
 
   class Input {
-    constructor(onCommand) {
-      this.keys = new Map(); this.pressed = new Set(); this.released = new Set(); this.onCommand = onCommand;
+    constructor(onCommand, getMode = () => '') {
+      this.keys = new Map(); this.pressed = new Set(); this.released = new Set(); this.onCommand = onCommand; this.getMode = getMode;
       window.addEventListener('keydown', e => {
         const action = KEY_ACTIONS[e.code];
         if (!action || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (this.getMode() === 'map') {
+          const direction = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' }[e.code];
+          if (direction || e.code === 'Escape') {
+            e.preventDefault(); if (!e.repeat) this.onCommand('journey-' + (direction || 'back')); return;
+          }
+          if (e.code === 'Enter' || e.code === 'Space') return;
+          return;
+        }
         // Let keyboard users activate focused interface controls normally.
         if ((e.code === 'Enter' || e.code === 'Space') && e.target.closest('button,a')) return;
         e.preventDefault();
@@ -5970,6 +6294,17 @@ window.LumenI18n.add([
       const pad = [...navigator.getGamepads()].find(p => p && p.connected);
       const button = i => !!pad?.buttons[i]?.pressed;
       const horizontal = pad?.axes[0] || 0;
+      if (mode === 'map') {
+        // The map owns its focus, including its action buttons. Edge-triggered
+        // navigation prevents one held stick from skipping several places.
+        const vertical = pad?.axes[1] || 0;
+        const navigation = { left:horizontal < -.5 || button(14), right:horizontal > .5 || button(15),
+          up:vertical < -.5 || button(12), down:vertical > .5 || button(13), confirm:button(0), back:button(1) || button(9) };
+        const previous = this.padJourney || { confirm: this.padConfirm, back: this.padPause };
+        for (const [action, held] of Object.entries(navigation)) if (held && !previous[action]) this.onCommand('journey-' + action);
+        this.padJourney = navigation; this.padConfirm = button(0); this.padPause = button(9); return;
+      }
+      this.padJourney = null;
       const actions = {left:horizontal < -.25 || button(14),right:horizontal > .25 || button(15),
         down:(pad?.axes[1] || 0) > .5 || button(13),jump:button(0) || button(1),
         action:button(2),run:button(4)||button(5)||button(6)||button(7)};
@@ -5983,7 +6318,7 @@ window.LumenI18n.add([
   class Game {
     constructor(canvas) {
       this.canvas = canvas; this.renderer = new window.LumenRenderer(canvas); this.audio = new window.LumenAudio();
-      this.listeners = {}; this.input = new Input(action => this.emit('command', action));
+      this.listeners = {}; this.input = new Input(action => this.emit('command', action), () => this.mode);
       this.mode = 'home'; this.time = 0; this.runMode='explore'; this.camera = { x:0, y:0, shake:0 };
       // Les règles de la Résonance sont exposées telles quelles : l'interface,
       // les tests et les pilotes automatiques lisent les mêmes constantes que
@@ -6000,6 +6335,8 @@ window.LumenI18n.add([
       // l'interface soit prête (cf. flushNotices).
       this.notices = []; this.uiReady = false;
       this.progress = this.readProgress(); this.storageAvailable = true;
+      this.journeyEvents = []; this.journeySnapshot = this.journeyLights();
+      this.journeyTimes = Object.fromEntries((window.LumenJourney?.places(this) || []).map(place => [place.id, place.bestTimedTime]));
       this.audio.setMuted(!!this.progress.settings.muted);
       this.audio.volume = this.progress.settings.volume ?? .35;
       this.audio.setMix?.(this.progress.settings);
@@ -6032,7 +6369,7 @@ window.LumenI18n.add([
       for (let i = 0; i < window.LUMEN_LEVELS.length; i++) {
         if (window.LUMEN_LEVELS[i].bonus || window.LUMEN_LEVELS[i].hub) continue;
         if (!this.isUnlocked(i)) return Math.max(0, i - 1);
-        if (!this.recordFor(i)) return i;
+        if (!this.recordFor(i)?.completed) return i;
       }
       return 0;
     }
@@ -6062,6 +6399,7 @@ window.LumenI18n.add([
     }
     saveProgress() {
       if (!this.store) return;
+      this.captureJourneyLights();
       if (!this.store.save(this.progress)) {
         this.storageAvailable = false;
         if (!this.storageWarned) { this.storageWarned = true;
@@ -6112,13 +6450,18 @@ window.LumenI18n.add([
       return this.applyLevel(window.LumenLevels.create(index), index, active);
     }
     nextSongIndex() {
-      const index = window.LumenSong.ISLANDS.findIndex(island => !this.store.chapter(island.key)?.completed);
+      const index = window.LumenSong.ISLANDS.findIndex((island, i) => this.isSongUnlocked(i) && !this.store.chapter(island.key)?.completed);
       return index < 0 ? 0 : index;
+    }
+    isSongUnlocked(index) {
+      if (window.LumenJourney) return window.LumenJourney.islandAccess(this, index).allowed;
+      const islands = window.LumenSong?.ISLANDS || [];
+      return Number.isInteger(index) && !!islands[index] && (!index || !!this.store.chapter(islands[index].key)?.completed);
     }
     startSong(index = 0, options = {}) {
       const Song = window.LumenSong;
       if (!Song || !Number.isInteger(index) || !Song.ISLANDS[index]) return false;
-      if (index > 0 && !this.store.chapter(Song.ISLANDS[index - 1].key)?.completed) return false;
+      if (!this.isSongUnlocked(index)) return false;
       this.leaveExpedition(); this.lastRun = null; this.session = 'song';
       const style = options.style || this.progress.settings.songStyle || 'gentle';
       this.runMode = style === 'flow' ? 'timed' : 'explore';
@@ -6370,14 +6713,63 @@ window.LumenI18n.add([
       if (this.mode !== 'paused') return;
       this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
     }
-    /** L'atlas est un lieu de campagne : y aller, c'est abandonner la nuit en
-     *  cours. La transition est explicite ici plutôt que devinée plus tard. */
+    /** The map is a destination requested by the player, never a startup gate.
+     * A song or campaign stays resumable; leaving an expedition keeps its
+     * established session isolation rules. */
     showMap() {
+      if (this.mode === 'map') return;
+      this.journeyReturn = this.session !== 'expedition' ? { mode: this.mode, session: this.session } : null;
       this.leaveExpedition();
-      if (this.session === 'song') { this.session = 'home'; this.song = null; this.audio.setSongLayer?.(0); }
-      if (this.session === 'expedition') this.session = 'home';
       this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
     }
+    returnFromJourneyMap() {
+      const previous = this.journeyReturn; this.journeyReturn = null;
+      if (!previous || previous.mode === 'map' || previous.mode === 'dream') {
+        const hub = window.LUMEN_LEVELS.findIndex(level => level.hub);
+        return hub >= 0 ? this.start(hub) : this.startSong(0);
+      }
+      this.mode = previous.mode; this.session = previous.session; this.input.reset();
+      this.lastFrame = 0; this.accumulator = 0;
+      if (this.mode === 'playing') this.audio.resume();
+      this.emit('mode', this.mode);
+      return true;
+    }
+    nextJourneyPlace() { return window.LumenJourney?.next(this) || null; }
+    openJourneyPlace(id, options = {}) {
+      const place = window.LumenJourney?.places(this).find(node => node.id === id);
+      if (!place) return false;
+      if (!place.unlocked) { this.notify(place.reason); return false; }
+      if (place.kind === 'island') return this.startSong(place.index, options);
+      if (place.kind === 'dreams') {
+        if (!this.canEnterDreams().allowed) return false;
+        this.leaveExpedition(); this.session = 'home'; this.song = null; this.audio.setSongLayer?.(0);
+        this.emit('portal', 'expedition'); return true;
+      }
+      // start() checks the authoritative stage guard again, including bonus.
+      this.start(place.index, options); return true;
+    }
+    journeyLights() {
+      if (!window.LumenJourney || !this.store) return {};
+      return Object.fromEntries(window.LumenJourney.places(this).map(place => [place.id, place.lights.map(light => light.id)]));
+    }
+    captureJourneyLights() {
+      if (!this.journeyEvents) return;
+      const next = this.journeyLights(), previous = this.journeySnapshot || {};
+      const times = Object.fromEntries((window.LumenJourney?.places(this) || []).map(place => [place.id, place.bestTimedTime]));
+      for (const [id, lights] of Object.entries(next)) {
+        const added = lights.filter(light => !(previous[id] || []).includes(light));
+        // A better personal time lights the same clock again; it does not
+        // manufacture an ever-growing collection of points in the profile.
+        if (times[id] != null && this.journeyTimes?.[id] != null && times[id] < this.journeyTimes[id] && !added.includes(id + ':time')) added.push(id + ':time');
+        if (!added.length) continue;
+        let event = this.journeyEvents.find(item => item.id === id);
+        if (!event) this.journeyEvents.push(event = { id, lights: [] });
+        event.lights = [...new Set([...event.lights, ...added])];
+        this.emit('journey-light', { id, lights: added });
+      }
+      this.journeySnapshot = next; this.journeyTimes = times;
+    }
+    consumeJourneyLights() { return this.journeyEvents.splice(0); }
     beginLoop() { if (this.running) return; this.running = true; requestAnimationFrame(t => this.frame(t)); }
     frame(timestamp) {
       if (!this.running) return;
@@ -7038,7 +7430,9 @@ window.LumenI18n.add([
     updateSecrets() {
       for (const s of this.secrets) if (!s.found&&overlap(this.player,s)) {
         s.found=true;this.secretCount++;this.addScore(750);this.audio.sfx('secret');this.burst(this.player.x+16,this.player.y,35,'#cfe7b8',210,'spark');
-        this.progress.bonusUnlocked=true;this.saveProgress();this.float(this.player.x,this.player.y,'Passage secret +750','#daf0c4');
+        this.progress.bonusUnlocked=true;
+        if (this.session !== 'expedition') this.store.recordSecrets(this.level.key, this.secretCount);
+        this.saveProgress();this.float(this.player.x,this.player.y,'Passage secret +750','#daf0c4');
         this.emit('toast','Passage secret découvert ! Le Jardin oublié vous attend dans l’atlas.');
       }
     }
@@ -7100,11 +7494,17 @@ window.LumenI18n.add([
       const medal=this.medalFor(this.levelStars,this.damageTaken,this.elapsed);
       const timed=this.runMode==='timed';
       const record=this.store.recordChapter(this.keyOf(this.levelIndex),{
-        stars:this.levelStars,coins:this.levelCoins,score:this.levelScore,
+        stars:this.levelStars,coins:this.levelCoins,score:this.levelScore,secrets:this.secretCount,
         time:this.elapsed,medal,timed});
       // Un chapitre bonus atteint en avance n'ouvre pas la suite de la campagne.
       const openNext=!this.level.bonus||this.store.isUnlocked(this.keyOf(this.levelIndex));
       if (openNext&&this.levelIndex+1<window.LUMEN_LEVELS.length) this.store.unlock(this.keyOf(this.levelIndex+1));
+      // Bonus stages remain optional in the journey. Preserve their historical
+      // unlock, while also opening the next required garden after one.
+      if (openNext) {
+        const nextRequired = window.LUMEN_LEVELS.findIndex((level, index) => index > this.levelIndex && !level.bonus && !level.hub);
+        if (nextRequired >= 0) this.store.unlock(this.keyOf(nextRequired));
+      }
       if (final) this.progress.finished=true;
       this.saveProgress();this.audio.sfx('victory');this.burst(this.player.x+16,this.player.y,70,'#ffe1a0',300,'spark');
       if (medal==='gold') { this.audio.sfx('medal'); this.screenFlash('#fff0be',.6); }
@@ -7116,7 +7516,8 @@ window.LumenI18n.add([
     }
     completeSong() {
       if (this.mode !== 'playing' || !this.song || this.song.count !== this.song.lights.length) return false;
-      const song = this.song, final = song.index === window.LumenSong.ISLANDS.length - 1;
+      // The third island is a breath before act III, not the end of LUMEN.
+      const song = this.song, final = false;
       const timed = song.style === 'flow';
       const medal = this.medalFor(this.levelStars, this.deaths, this.elapsed);
       this.addScore(1000 + song.bestCombo * 25);
@@ -7217,6 +7618,213 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
 
 </script>
   <script>
+/* One sky for every journey. The map reads the model; only the engine grants access. */
+(function (global) {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const t = (source, values) => global.LumenI18n.t(source, values);
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const text = (source, values) => esc(t(source, values));
+  const clock = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}.${Math.floor(seconds * 10) % 10}`;
+  const acts = ['Le premier souffle', 'Les chemins du ciel', 'Jusqu’à la lune'];
+  const medals = { bronze:'Bronze', silver:'Argent', gold:'Or' };
+  let game, helpers, model, selectedId, selectedAct = 1, runMode = 'explore', codexOpen = false;
+  let newLights = new Map(), announcement = '', visible = false, animateBirth = false;
+  const glyph = kind => kind === 'island' ? '☾' : kind === 'hub' ? '⌂' : kind === 'dreams' ? '≋' : '✦';
+  const state = place => place.completed ? 'Lumière retrouvée' : place.unlocked ? 'À explorer' : 'Lumière en sommeil';
+  const kindLabel = place => place.kind === 'island' ? 'Une île pour souffler' : place.kind === 'hub' ? 'L’observatoire' : place.kind === 'dreams' ? 'Les rêves nomades' : place.key === 'coeur-eclipse' ? 'La finale' : 'Un jardin à réveiller';
+
+  function node(place, x, y, number) {
+    const label = [t(place.name), t(state(place)), place.optional ? t('Facultatif') : '', !place.unlocked ? t(place.reason || '') : ''].filter(Boolean).join('. ');
+    const earned = place.lightCount || place.lights?.length || 0;
+    const fresh = newLights.has(place.id);
+    const awards = (place.lights || []).filter(light => light.kind !== 'completed').slice(0,16);
+    const radius = place.kind === 'island' ? 35 : 24;
+    const orbit = awards.map((light,index)=>{
+      const angle = -Math.PI / 2 + index * Math.PI * 2 / Math.max(8, awards.length);
+      const type = light.kind.split('-')[0];
+      return `<i class="journey-award ${esc(type)}" data-light="${esc(light.id)}" style="--dx:${Math.cos(angle)*radius}px;--dy:${Math.sin(angle)*radius}px"></i>`;
+    }).join('');
+    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
+      <span class="journey-orbit" aria-hidden="true">${orbit}</span><span class="journey-core" aria-hidden="true">${place.completed ? '✦' : glyph(place.kind)}</span>
+      <span class="journey-node-number" aria-hidden="true">${place.kind === 'stage' ? String(number).padStart(2,'0') + (place.optional ? ' ◇' : '') : ''}</span>
+      ${earned ? `<span class="journey-light-count" aria-hidden="true">${earned}</span>` : ''}
+      ${place.kind !== 'stage' ? `<span class="journey-node-name">${text(place.name)}</span>` : ''}
+      ${fresh ? `<span class="journey-new-label">${text('Nouvelle lumière')}</span>` : ''}
+    </button>`;
+  }
+
+  function region(act) {
+    const places = model.places.filter(place => place.act === act && !['hub','dreams'].includes(place.kind));
+    const island = places.find(place => place.kind === 'island');
+    const stages = places.filter(place => place.kind === 'stage');
+    const points = [{ x:48, y:15 }];
+    // The alternating constellation extends vertically with content; nodes never shrink below 56 px.
+    stages.forEach((place, index) => points.push({ x:[24,69,34,77,29,65,46][index % 7], y:38 + index * 48 / Math.max(1, stages.length - 1) }));
+    const coords = points.map(point => `${point.x},${point.y}`).join(' ');
+    return `<section class="journey-region${act === selectedAct ? ' is-current' : ''}" data-act="${act}" aria-label="${text('Acte {act}', { act:['I','II','III'][act-1] })}">
+      <div class="journey-region-title"><span>${text('Acte {act}', {act:['I','II','III'][act-1]})}</span><h3>${text(acts[act-1])}</h3></div>
+      <div class="journey-constellation" style="--region-height:${Math.max(370, stages.length * 62 + 140)}px">
+        <svg class="journey-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
+        ${island ? node(island, points[0].x, points[0].y, 0) : ''}
+        ${stages.map((place, index) => node(place, points[index+1].x, points[index+1].y, model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1)).join('')}
+      </div></section>`;
+  }
+
+  function renderSky() {
+    $('journey-sky').innerHTML = [1,2,3].map(region).join('') +
+      `<section class="journey-refuges" aria-label="${text('En dehors du chemin')}"><span class="journey-refuges-label">${text('En dehors du chemin')}</span>${model.places.filter(place => ['hub','dreams'].includes(place.kind)).map((place,index)=>node(place,index ? 70 : 30,45,0)).join('')}</section>`;
+    document.querySelectorAll('[data-journey-act]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.journeyAct) === selectedAct)));
+  }
+
+  function selected() { return model.places.find(place => place.id === selectedId) || model.places[0]; }
+  function renderDetails() {
+    const place = selected();
+    if (!place) return;
+    const timed = ['stage','island'].includes(place.kind);
+    const requirement = model.places.find(candidate => candidate.id === place.requirementId);
+    const title = place.completed ? 'Revenir dans ce lieu' : 'Entrer dans ce lieu';
+    $('journey-details').innerHTML = `<button class="journey-button journey-mobile-detail-back" data-journey-sky>${text('Revenir à la constellation')}</button><div class="journey-detail-emblem ${place.kind}${place.completed ? ' is-lit' : ''}" aria-hidden="true">${glyph(place.kind)}<i></i></div>
+      <span class="journey-kicker">${text(kindLabel(place))}${place.optional ? ' · ' + text('Facultatif') : ''}</span>
+      <h3 id="journey-place-title">${text(place.name)}</h3><p class="journey-description">${text(place.subtitle || '')}</p>
+      <div class="journey-state${place.completed ? ' is-lit' : ''}"><span aria-hidden="true">${place.completed ? '✦' : place.unlocked ? '○' : '◇'}</span>${text(state(place))}</div>
+      ${newLights.has(place.id) ? `<p class="journey-new-note"><span aria-hidden="true">＋</span>${text('Une lumière de plus dans votre ciel.')}</p>` : ''}
+      <div class="journey-collectibles">${place.maxStars ? `<span><b>✦ ${place.stars} / ${place.maxStars}</b><small>${text('Fragments · facultatifs')}</small></span>` : ''}${place.maxSecrets ? `<span><b>◇ ${place.secrets || 0} / ${place.maxSecrets}</b><small>${text('Passages secrets · facultatifs')}</small></span>` : ''}${place.medal ? `<span><b>${text(medals[place.medal] || 'Bronze')}</b><small>${text('Meilleure médaille')}</small></span>` : ''}${Number.isFinite(place.bestTimedTime) ? `<span><b>${clock(place.bestTimedTime)}</b><small>${text('Meilleur chrono')}</small></span>` : ''}</div>
+      ${!place.unlocked ? `<p id="journey-lock-note" class="journey-lock-note">${text(place.reason || 'Ce lieu attend encore.')}</p>${requirement ? `<button class="journey-button" data-journey-requirement="${esc(requirement.id)}">${text('Voir {name}', {name:t(requirement.name)})}<span aria-hidden="true">↗</span></button>` : ''}` : ''}
+      ${timed && place.unlocked ? `<div class="journey-run-mode" role="group" aria-label="${text('Rythme du prochain voyage')}"><button data-journey-mode="explore" aria-pressed="${runMode === 'explore'}">${text('Exploration')}</button><button data-journey-mode="timed" aria-pressed="${runMode === 'timed'}">${text('Contre-la-montre')}</button></div>` : ''}
+      ${place.unlocked ? `<button class="journey-button journey-primary" data-journey-launch="${esc(place.id)}">${text(title)}<span aria-hidden="true">→</span></button>` : ''}
+      <p class="journey-optional-note">${text('Les fragments et les détours ne sont jamais requis pour la finale.')}</p>`;
+  }
+
+  function renderTotals() {
+    const places = model.places;
+    const total = key => places.reduce((sum, place)=>sum+(Number(place[key])||0),0);
+    const voices = global.LumenSong.ISLANDS.flatMap(island=>island.lights);
+    const found = voices.filter(voice=>game.progress.codex.creatures.includes('chant-'+voice.id)).length;
+    $('journey-totals').innerHTML = `<div><strong>${places.filter(place=>place.completed).length}<small> / ${places.length}</small></strong><span>${text('Lieux rallumés')}</span></div><div><strong>${total('stars')}<small> / ${total('maxStars')}</small></strong><span>${text('Fragments · facultatifs')}</span></div><div><strong>${found}<small> / ${voices.length}</small></strong><span>${text('Voix retrouvées')}</span></div><div><strong>${total('secrets')}<small> / ${total('maxSecrets')}</small></strong><span>${text('Passages secrets · facultatifs')}</span></div>`;
+    $('journey-codex').hidden = !codexOpen;
+    $('journey-codex').innerHTML = `<div class="journey-codex-heading"><div><span class="journey-kicker">${text('LES VOIX RETROUVÉES')}</span><h3>${text('Le carnet des créatures')}</h3></div><button class="journey-button" data-journey-codex="close">${text('Fermer')}</button></div><div class="journey-voices">${voices.map((voice, index)=>{
+      const rescued = game.progress.codex.creatures.includes('chant-'+voice.id);
+      return `<div class="journey-voice${rescued ? ' found' : ''}"><span class="journey-voice-face voice-${index%3}" aria-hidden="true"><i></i><b></b></span><strong>${rescued ? text(voice.name) : '···'}</strong><span>${text(rescued ? 'Voix retrouvée' : 'Une voix à retrouver')}</span></div>`;
+    }).join('')}</div>`;
+  }
+
+  function render(options = {}) {
+    if (!game || game.mode !== 'map') return;
+    model = global.LumenJourney.describe(game);
+    if (options.enter) {
+      newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
+      // Several victories can wait while the player uses Next. Show the
+      // place just left, especially when mobile displays only one act.
+      if (newLights.size) selectedId = newLights.has(game.level?.key) ? game.level.key : [...newLights.keys()].at(-1);
+      if (!selectedId || !model.places.some(place=>place.id===selectedId)) selectedId = game.level?.key || model.places[0]?.id;
+      const initial = selected();
+      if (initial.act) selectedAct = initial.act;
+      announcement = newLights.size ? t('Une lumière de plus dans votre ciel.') + ' ' + t(initial.name) : '';
+    }
+    animateBirth = !!options.enter && newLights.size > 0;
+    renderSky(); renderDetails(); renderTotals(); animateBirth = false;
+    $('journey-announcement').textContent = announcement;
+    global.LumenI18n.translateDOM($('map-screen'));
+    if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));
+  }
+  function focusPlace(id) {
+    const place = model.places.find(candidate=>candidate.id===id);
+    if (!place) return;
+    if (place.act && place.act !== selectedAct) { selectedAct = place.act; renderSky(); }
+    selectedId = id;
+    $('journey-sky').querySelectorAll('[data-place]').forEach(button=>{
+      button.classList.toggle('is-selected', button.dataset.place === id);
+      button.setAttribute('aria-pressed', String(button.dataset.place === id));
+    });
+    renderDetails();
+    const button = [...$('journey-sky').querySelectorAll('[data-place]')].find(element=>element.dataset.place===id);
+    button?.focus({preventScroll:true});
+    button?.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
+  }
+  function focusables() {
+    return [...$('map-screen').querySelectorAll('button:not(:disabled), [tabindex="0"]')].filter(element=>element.getClientRects().length && !element.closest('[hidden]'));
+  }
+  function navigate(direction) {
+    if (game.mode !== 'map') return false;
+    const controls = focusables(), current = controls.indexOf(document.activeElement);
+    const step = ['left','up','previous'].includes(direction) ? -1 : 1;
+    const next = controls[(current+step+controls.length)%controls.length];
+    next?.focus({preventScroll:true});next?.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
+    return true;
+  }
+  function activate() {
+    if (game.mode !== 'map') return false;
+    if (!$('map-screen').contains(document.activeElement)) focusPlace(selectedId);
+    else document.activeElement.click();
+    return true;
+  }
+  function back() {
+    if (codexOpen) { codexOpen=false;renderTotals();focusCodexButton();return; }
+    if (game.returnFromJourneyMap) game.returnFromJourneyMap();
+    else helpers.transition(()=>game.song ? game.startSong(game.song.index) : game.start(game.levelIndex));
+  }
+  function handle(action) {
+    if (game?.mode !== 'map') return false;
+    if (['confirm','start','journey-confirm','menu-confirm'].includes(action)) return activate();
+    if (['pause','home','journey-back','menu-back'].includes(action)) {back();return true;}
+    const direction = /^(?:journey|menu)-(left|right|up|down)$/.exec(action)?.[1];
+    return direction ? navigate(direction) : false;
+  }
+  function focusCodexButton() {
+    [...$('map-screen').querySelectorAll('[data-journey-codex="toggle"]')].find(button=>button.getClientRects().length)?.focus();
+  }
+
+  function attach(instance, callbacks) {
+    game=instance;helpers=callbacks;
+    $('map-screen').addEventListener('click',event=>{
+      const button=event.target.closest('button');if(!button)return;
+      if(button.dataset.place) {
+        focusPlace(button.dataset.place);
+        const action = $('journey-details').querySelector('[data-journey-launch], [data-journey-requirement]');
+        action?.focus({preventScroll:true});
+        if (matchMedia('(max-width:760px)').matches) $('journey-details').scrollIntoView({block:'start',behavior:'instant'});
+      }
+      if(button.dataset.journeyAct) {
+        selectedAct=Number(button.dataset.journeyAct);renderSky();
+        const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id);
+      }
+      if(button.dataset.journeyRequirement) focusPlace(button.dataset.journeyRequirement);
+      if(button.dataset.journeyMode) {runMode=button.dataset.journeyMode;renderDetails();$('journey-details').querySelector(`[data-journey-mode="${runMode}"]`)?.focus();}
+      if(button.dataset.journeyLaunch) {
+        const id=button.dataset.journeyLaunch;
+        game.audio.unlock();helpers.transition(()=>game.openJourneyPlace(id,{timed:runMode==='timed',style:runMode==='timed'?'flow':'gentle'}));
+      }
+      if(button.hasAttribute('data-journey-codex')) {
+        codexOpen=button.dataset.journeyCodex!=='close'&&!codexOpen;renderTotals();
+        if(codexOpen){$('journey-codex').querySelector('button').focus();$('journey-codex').scrollIntoView({block:'nearest'});}
+        else focusCodexButton();
+      }
+      if(button.hasAttribute('data-journey-back'))back();
+      if(button.hasAttribute('data-journey-sky'))focusPlace(selectedId);
+    });
+    document.addEventListener('keydown',event=>{
+      if(game.mode!=='map')return;
+      const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[event.key];
+      if(direction){event.preventDefault();event.stopImmediatePropagation();navigate(direction);}
+      else if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();back();}
+      else if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopImmediatePropagation();activate();}
+      else if(event.key==='Tab') {
+        const controls=focusables(), first=controls[0], last=controls[controls.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      }
+    },true);
+    global.LumenI18n.onChange(()=>{if(game.mode==='map')render();});
+    game.on('mode',mode=>{if(mode!=='map')visible=false;});
+  }
+  function show() { render({enter:!visible});visible=true; }
+  function hide() { visible=false; }
+  global.LumenJourneyUI={attach,show,hide,render,navigate,activate,back,handle,focusPlace,get selectedId(){return selectedId;}};
+})(window);
+
+</script>
+  <script>
 (function (global) {
   'use strict';
   const byId = id => document.getElementById(id);
@@ -7279,21 +7887,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
         <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
-    } else if (pane === 'atlas') {
-      content = title('L’ATLAS DES LUMIÈRES', 'L’archipel') + '<div class="song-islands">' + global.LumenSong.ISLANDS.map((island, index) => {
-        const record = game.store.chapter(island.key), unlocked = !index || game.store.chapter(global.LumenSong.ISLANDS[index - 1].key)?.completed;
-        const voices = island.lights.filter(echo => game.progress.codex.creatures.includes('chant-' + echo.id)).length;
-        const name = translate(island.name);
-        return `<button class="song-island" data-song-island="${index}" ${unlocked ? '' : 'disabled'} aria-label="${escape(unlocked ? name : translate('{name}, verrouillée', { name }))}">
-          <div class="song-island-art"><canvas data-island-preview="${index}" width="640" height="300" aria-hidden="true"></canvas><span>${String(index + 1).padStart(2, '0')}</span></div>
-          <div class="song-island-copy"><small>${record?.completed ? 'LE CHŒUR EST RÉUNI' : unlocked ? 'LE VOYAGE CONTINUE' : 'LE CHANT ATTEND'}</small><h3>${escape(island.name)}</h3>
-          <p>${escape(island.subtitle)}</p><div class="song-island-meta"><span>${icon('sparkles')} ${voices} / 3</span><span>${icon('feather')} ${record?.stars || 0} / 3</span>${record?.bestTimedTime ? `<span>${icon('wind')} ${clock(record.bestTimedTime)}</span>` : ''}</div></div>
-          <span class="song-island-arrow">${icon(unlocked ? 'arrow-up-right' : 'lock-keyhole')}</span></button>`;
-      }).join('') + `<button class="song-island" data-command="song-classic" aria-label="${escape(translate('Les jardins de la lune'))}">
-        <div class="song-island-art"><canvas data-classic-preview width="640" height="300" aria-hidden="true"></canvas></div>
-        <div class="song-island-copy"><small>${escape(translate('{count} CHAPITRES À EXPLORER', { count: global.LUMEN_LEVELS.filter(level => !level.hub).length }))}</small>
-        <h3>Les jardins de la lune</h3><p>Suivez les étoiles. Chaque jardin a son secret.</p></div>
-        <span class="song-island-arrow">${icon('arrow-up-right')}</span></button></div>`;
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
@@ -7319,29 +7912,16 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <div><span>NOTES</span><strong>${result.coins}</strong></div><div><span>PLUS BEL ÉLAN</span><strong>×${result.combo}</strong></div>
         <div><span>SOUVENIRS</span><strong>${result.stars} / 3</strong></div><div><span>${result.timed ? 'CHRONO' : 'VOYAGE'}</span><strong>${clock(result.time)}</strong></div></div>
         ${result.timed && result.record ? '<p class="song-record">' + icon('trophy') + ' Nouveau record personnel</p>' : ''}
-        <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-next">${result.final ? 'Revoir l’archipel' : 'Vers la prochaine île'} ${icon('arrow-right')}</button>
+        <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-next">Continuer le voyage ${icon('arrow-right')}</button>
+        <button class="song-button" data-command="song-atlas">${icon('map')} L’atlas des lumières</button>
         <button class="song-text-button" data-command="song-retry">${icon('rotate-ccw')} Rejouer cette île</button></div>`;
     }
     panel.innerHTML = closeButton + content;
     I18n.translateDOM(panel);
     const languageSelect = panel.querySelector('[data-language-select]');
     if (languageSelect) languageSelect.value = game.progress.settings.language;
-    if (pane === 'atlas') renderPreviews();
-    const focus = panel.querySelector('.song-primary, [data-song-island]:not(:disabled), input, select, button');
+    const focus = panel.querySelector('.song-primary, input, select, button');
     requestAnimationFrame(() => { if (!byId('song-overlay').hidden) (focus || panel).focus({ preventScroll: true }); });
-  }
-  function renderPreviews() {
-    for (const canvas of byId('song-panel').querySelectorAll('[data-island-preview], [data-classic-preview]')) {
-      const classic = canvas.hasAttribute('data-classic-preview');
-      const index = Number(canvas.dataset.islandPreview), level = classic ? global.LUMEN_LEVELS[0] : global.LumenSong.create(index);
-      const renderer = new global.LumenRenderer(canvas); renderer.resize(640, 300);
-      const preview = { ...game, level, mode: 'playing', song: classic ? null : new global.LumenSong.Journey(level.song),
-        player: { ...game.player, x: 230, y: 554, vx: 0, vy: 0, grounded: true, gliding: false, dead: false, anim: 0, landTimer: 0 },
-        camera: { x: 0, y: 0, shake: 0 }, time: 3, platforms: level.platforms.map(platform => ({ ...platform, active: true })),
-        wakeables: [], collectibles: level.collectibles, checkpoints: [], particles: [], floatingTexts: [], waves: [],
-        enemies: [], characters: [], hazards: [], boss: null, secrets: [], exit: level.exit };
-      renderer.draw(preview, 0);
-    }
   }
   function echoes() {
     return game.song.lights.map(echo => {
@@ -7351,7 +7931,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
   function sync() {
     if (!game) return;
-    const active = !!game.song;
+    const active = !!game.song && game.mode !== 'map';
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
     if (welcomeJourney !== game.song) { welcomeJourney = game.song; welcomeVisible = game.song?.index === 0; }
@@ -7419,7 +7999,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       if (operation?.catch) operation.catch(() => helpers.toast('Le plein écran n’est pas disponible ici.'));
       return true;
     }
-    if (action === 'song-atlas' || action === 'map' || action === 'home') { open('atlas'); return true; }
+    if (action === 'song-atlas' || action === 'map' || action === 'home') { returnIsland = game.song.index; pane=null; helpers.transition(() => game.showMap()); return true; }
     if (action === 'song-settings' || action === 'help') { open('settings'); return true; }
     if (action === 'pause') { if (game.mode === 'playing') open('pause'); else if (game.mode === 'paused') close(); return true; }
     if (action === 'resume' || action === 'song-close' || action === 'close-help') { close(); return true; }
@@ -7438,8 +8018,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
     if (action === 'song-next' || action === 'next' || action === 'confirm') {
       if (game.mode === 'paused') close();
-      else if (game.mode === 'complete') { const index = game.song.index + 1, style = game.song.style; helpers.transition(() => game.startSong(index, { style })); }
-      else if (game.mode === 'ending') open('atlas');
+      else if (['complete','ending'].includes(game.mode)) {
+        const next = game.nextJourneyPlace(), style = game.song.style;
+        if (next) helpers.transition(() => game.openJourneyPlace(next.id, { style, timed:style === 'flow' }));
+        else helpers.transition(() => game.showMap());
+      }
       return true;
     }
     return false;
@@ -7463,12 +8046,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     document.addEventListener('click', event => {
       const style = event.target.closest('[data-song-style]');
       if (style && game.song) changeStyle(style.dataset.songStyle);
-      const island = event.target.closest('[data-song-island]');
-      if (island && !island.disabled && game.song) {
-        const index = Number(island.dataset.songIsland), style = game.song.style;
-        if (index === game.song.index && game.mode === 'paused') close();
-        else helpers.transition(() => game.startSong(index, { style }));
-      }
       const touch = event.target.closest('[data-touch]');
       if (touch && event.detail === 0 && game.mode === 'playing') {
         const action = touch.dataset.touch; game.input.virtual(action, true, 'keyboard-control');
@@ -7504,12 +8081,12 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       });
       if (game.song) sync();
     });
-    global.LumenAppearance.onChange(() => { if (pane === 'atlas' && game.song) renderPreviews(); });
     if (!document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
     applyPreferences();
   }
   global.LumenSongUI = { attach, sync, update, handle };
 })(window);
+
 </script>
   <script>
 /* All menus and HUD live in the DOM: crisp text, keyboard focus and touch controls. */
@@ -7542,7 +8119,15 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (focused instanceof HTMLElement && focused.closest('.screen') && !focused.closest('.screen.active')) focused.blur();
   }
   function showMode(mode) {
+    if (mode !== 'map') window.LumenJourneyUI?.hide();
     window.LumenSongUI?.sync();
+    document.body.classList.toggle('journey-open', mode === 'map');
+    if (mode === 'map') {
+      document.body.classList.remove('in-game');
+      showScreen('map'); renderMap();
+      for (const id of ['hud','run-clock','level-hint','power-indicator','boss-hud','dialogue','quest-banner','touch-controls']) $(id).classList.add('hidden');
+      $('chapter-intro').classList.remove('show'); return;
+    }
     if (game.song) {
       document.body.classList.add('in-game'); showScreen(null);
       if (mode !== 'playing') { clearTimeout(toastTimer); $('toast').classList.remove('show'); }
@@ -7558,7 +8143,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (mode==='home') {
       showScreen('home');$('start-button').querySelector('span').textContent=game.progress.finished?'Repartir à l’aventure':game.nextChapterIndex()>0?'Poursuivre l’aventure':'Commencer l’aventure';
       $('chapter-intro').classList.remove('show');
-    } else if (mode==='map') {showScreen('map');renderMap();updateRunMode();$('chapter-intro').classList.remove('show');}
+    } else if (mode==='map') {showScreen('map');renderMap();$('chapter-intro').classList.remove('show');}
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
       $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
@@ -7675,17 +8260,13 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   function startLevel(index, mode=selectedRunMode) {
     game.start(index,{timed:mode==='timed'});
   }
-  function updateRunMode() {
-    document.querySelectorAll('[data-run-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.runMode===selectedRunMode)));
-    $('run-mode-hint').textContent=translate(selectedRunMode==='timed'?'Un chrono, votre meilleur temps, et l’envie de recommencer.':'Le temps vous appartient. Explorez à votre rythme.');
-    $('map-screen').classList.toggle('timed-selected',selectedRunMode==='timed');
-  }
   function command(action) {
     if (transitioning) return;
     if(action==='sound-preview'){
       game.audio.unlock().then(()=>game.audio.audition());return;
     }
     if(!['sound','pause','start','confirm'].includes(action))game.audio.sfx('menu');
+    if (window.LumenJourneyUI?.handle(action)) return;
     if (window.LumenSongUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
@@ -7755,9 +8336,9 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       transition(()=>startLevel(game.levelIndex,game.runMode));return;
     }
     if(action==='next') {
-      if(game.level.final||game.levelIndex>=window.LUMEN_LEVELS.length-1)transition(()=>game.showMap());
-      else if(game.level.bonus&&!game.isUnlocked(game.levelIndex+1))transition(()=>startLevel(game.nextChapterIndex(),game.runMode));
-      else transition(()=>startLevel(game.levelIndex+1,game.runMode));
+      const next=game.nextJourneyPlace();
+      if(next)transition(()=>game.openJourneyPlace(next.id,{timed:game.runMode==='timed'}));
+      else transition(()=>game.showMap());
     }
   }
   function updateSound() {
@@ -7765,35 +8346,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     document.querySelectorAll('.sound-icon').forEach(el=>el.textContent=game.audio.muted?'♩':'♪');
     document.querySelectorAll('[data-command="sound"]').forEach(el=>{el.setAttribute('aria-pressed',String(!game.audio.muted));el.setAttribute('aria-label',translate(game.audio.muted?'Activer le son':'Couper le son'));});
   }
-  function chapterArt(theme, index) {
-    return `<canvas data-chapter-preview="${index}" width="640" height="300" aria-hidden="true"></canvas>`;
-  }
-  function renderMap() {
-    const chapters=window.LUMEN_LEVELS.map((level,index)=>({level,index})).filter(({level})=>!level.hub);
-    $('total-stars').textContent=chapters.reduce((sum,{level})=>sum+(game.store.chapter(level.key)?.stars||0),0)+' / '+chapters.reduce((total,{level})=>total+level.collectibles.filter(item=>item.type==='star').length,0);
-    $('level-grid').innerHTML=chapters.map(({level,index:i},rank)=>{
-      const unlocked=game.isUnlocked(i),r=game.recordFor(i),number=String(rank+1).padStart(2,'0');
-      const status=r?.completed?'TERMINÉ':unlocked?'À EXPLORER':'VERROUILLÉ';
-      const medal=medals[r?.medal]?r.medal:r?.completed?'bronze':null;
-      const targets=level.medalTargets;
-      const record=Number.isFinite(r?.bestTimedTime)?`◷ ${timeLabel(r.bestTimedTime,true)}`:translate('◷ À vous d’écrire le chrono');
-      const medalTitle=medal?translate('Médaille {medal}',{medal:translate(medals[medal])}):'';
-      const medalMarkup=medal?`<span class="card-medal ${medal}" title="${escape(medalTitle)}" aria-label="${escape(medalTitle)}">✦ ${escape(translate(medals[medal]))}</span>`:'<span class="card-medal unearned">'+escape(translate('✧ À décrocher'))+'</span>';
-      const targetMarkup=targets?`<span class="card-targets">${escape(translate('OR {time}',{time:timeLabel(targets.gold)}))} <i>·</i> ${escape(translate('ARGENT {time}',{time:timeLabel(targets.silver)}))}</span>`:'';
-      const label=translate('Chapitre {index}, {name}, {status}',{index:rank+1,name:translate(level.name),status:translate(status)})+(medal?', '+medalTitle:'');
-      return `<button class="level-card" data-level="${i}" ${unlocked?'':'disabled'} aria-label="${escape(label)}"><div class="card-art">${chapterArt(level.theme,i)}<span class="card-number">${number} / ${String(chapters.length).padStart(2,'0')}</span><span class="card-status">${r?.completed?'✓':unlocked?'↗':'◇'}</span></div><div class="card-content"><h3>${escape(translate(level.name))}</h3><p>${escape(translate(level.bonus?'Jardin secret · Le détour des curieux':level.subtitle))}</p><div class="card-bottom"><span class="card-stars">${stars(r?.stars||0,level.collectibles.filter(c=>c.type==='star').length)}</span>${medalMarkup}</div><div class="card-record"><span>${escape(record)}</span>${targetMarkup}</div><span class="card-action">${escape(translate(status))} <span aria-hidden="true">${unlocked?'↗':'◇'}</span></span></div></button>`;
-    }).join('');
-    for (const canvas of $('level-grid').querySelectorAll('[data-chapter-preview]')) {
-      const level = window.LUMEN_LEVELS[Number(canvas.dataset.chapterPreview)];
-      const renderer = new window.LumenRenderer(canvas); renderer.resize(640, 300);
-      renderer.draw({ ...game, level, song: null, mode: 'playing', time: 3,
-        player: { ...game.player, x: 180, y: 554, grounded: true, vx: 0, vy: 0, dead: false, gliding: false,
-          anim: 0, power: null, invuln: 0, landTimer: 0, jumpTimer: 0, dashTime: 0, slide: false },
-        camera: { x: 0, y: 0, shake: 0 }, platforms: level.platforms.map(platform => ({ ...platform, active: platform.type !== 'echo' })),
-        collectibles: level.collectibles, wakeables: [], waves: [], particles: [], floatingTexts: [],
-        enemies: [], hazards: [], characters: [], checkpoints: [], boss: null, secrets: [], exit: level.exit }, 0);
-    }
-  }
+  function renderMap() { window.LumenJourneyUI.show(); }
   function updateHud(dt) {
     if (game.song) { window.LumenSongUI?.update(dt); return; }
     uiTime+=dt;if(uiTime<.07)return;uiTime=0;
@@ -7893,7 +8446,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     $('result-record').classList.toggle('hidden',!result.record||!result.timed);
     $('complete-note').textContent=result.secrets?translate('Passages secrets découverts : {count} · +{bonus} points',{count:result.secrets,bonus:I18n.number(result.bonus)}):translate('+{bonus} points de fin de chapitre',{bonus:I18n.number(result.bonus)})+' · '+translate(result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !');
     $('result-medal-hint').textContent=medal==='gold'?translate('Un voyage éclatant. Saurez-vous encore améliorer votre temps ?'):targets?translate('Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.',{time:timeLabel(targets.gold)}):translate('Chaque retour dans les jardins est une nouvelle aventure.');
-    $('next-button').innerHTML=result.final||game.levelIndex>=window.LUMEN_LEVELS.length-1?'Revoir les jardins <span>✧</span>':game.level.bonus&&!game.isUnlocked(game.levelIndex+1)?'Reprendre l’aventure <span>→</span>':'Le prochain jardin <span>→</span>';
+    $('next-button').innerHTML=translate('Continuer le voyage')+' <span>→</span>';
     I18n.translateDOM($('complete-screen'));
   }
   try {
@@ -7917,7 +8470,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     game.on('expedition-end',detail=>{toast(detail.won?'Nuit menée au bout · graine {seed}':'La nuit s’achève ici · graine {seed}',{seed:detail.run.code});if(detail.won){game.mode='dream';showMode('dream');}});
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-command]');if(button){command(button.dataset.command);if(event.detail>0)button.blur();}
-      const mode=event.target.closest('[data-run-mode]');if(mode&&!transitioning){selectedRunMode=mode.dataset.runMode;updateRunMode();}
       const level=event.target.closest('[data-level]');if(level&&!level.disabled){game.audio.unlock();transition(()=>startLevel(Number(level.dataset.level)));}
     });
     $('dialogue').addEventListener('click',()=>advanceDialogue());
@@ -8005,6 +8557,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       game.store.setSetting('reducedEffects',true);
     }
     applySettings();
+    window.LumenJourneyUI.attach(game, { transition, toast });
     window.LumenSongUI?.attach(game, { transition, toast });
     const refreshAppearance=()=>{
       document.querySelectorAll('[data-appearance]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearance===game.progress.settings.appearance)));

@@ -29,11 +29,19 @@
     ShiftLeft:'run', ShiftRight:'run', KeyX:'action', KeyJ:'action', Escape:'pause', KeyP:'pause', KeyR:'retry', KeyM:'sound', Enter:'confirm' };
 
   class Input {
-    constructor(onCommand) {
-      this.keys = new Map(); this.pressed = new Set(); this.released = new Set(); this.onCommand = onCommand;
+    constructor(onCommand, getMode = () => '') {
+      this.keys = new Map(); this.pressed = new Set(); this.released = new Set(); this.onCommand = onCommand; this.getMode = getMode;
       window.addEventListener('keydown', e => {
         const action = KEY_ACTIONS[e.code];
         if (!action || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (this.getMode() === 'map') {
+          const direction = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' }[e.code];
+          if (direction || e.code === 'Escape') {
+            e.preventDefault(); if (!e.repeat) this.onCommand('journey-' + (direction || 'back')); return;
+          }
+          if (e.code === 'Enter' || e.code === 'Space') return;
+          return;
+        }
         // Let keyboard users activate focused interface controls normally.
         if ((e.code === 'Enter' || e.code === 'Space') && e.target.closest('button,a')) return;
         e.preventDefault();
@@ -62,6 +70,17 @@
       const pad = [...navigator.getGamepads()].find(p => p && p.connected);
       const button = i => !!pad?.buttons[i]?.pressed;
       const horizontal = pad?.axes[0] || 0;
+      if (mode === 'map') {
+        // The map owns its focus, including its action buttons. Edge-triggered
+        // navigation prevents one held stick from skipping several places.
+        const vertical = pad?.axes[1] || 0;
+        const navigation = { left:horizontal < -.5 || button(14), right:horizontal > .5 || button(15),
+          up:vertical < -.5 || button(12), down:vertical > .5 || button(13), confirm:button(0), back:button(1) || button(9) };
+        const previous = this.padJourney || { confirm: this.padConfirm, back: this.padPause };
+        for (const [action, held] of Object.entries(navigation)) if (held && !previous[action]) this.onCommand('journey-' + action);
+        this.padJourney = navigation; this.padConfirm = button(0); this.padPause = button(9); return;
+      }
+      this.padJourney = null;
       const actions = {left:horizontal < -.25 || button(14),right:horizontal > .25 || button(15),
         down:(pad?.axes[1] || 0) > .5 || button(13),jump:button(0) || button(1),
         action:button(2),run:button(4)||button(5)||button(6)||button(7)};
@@ -75,7 +94,7 @@
   class Game {
     constructor(canvas) {
       this.canvas = canvas; this.renderer = new window.LumenRenderer(canvas); this.audio = new window.LumenAudio();
-      this.listeners = {}; this.input = new Input(action => this.emit('command', action));
+      this.listeners = {}; this.input = new Input(action => this.emit('command', action), () => this.mode);
       this.mode = 'home'; this.time = 0; this.runMode='explore'; this.camera = { x:0, y:0, shake:0 };
       // Les règles de la Résonance sont exposées telles quelles : l'interface,
       // les tests et les pilotes automatiques lisent les mêmes constantes que
@@ -92,6 +111,8 @@
       // l'interface soit prête (cf. flushNotices).
       this.notices = []; this.uiReady = false;
       this.progress = this.readProgress(); this.storageAvailable = true;
+      this.journeyEvents = []; this.journeySnapshot = this.journeyLights();
+      this.journeyTimes = Object.fromEntries((window.LumenJourney?.places(this) || []).map(place => [place.id, place.bestTimedTime]));
       this.audio.setMuted(!!this.progress.settings.muted);
       this.audio.volume = this.progress.settings.volume ?? .35;
       this.audio.setMix?.(this.progress.settings);
@@ -124,7 +145,7 @@
       for (let i = 0; i < window.LUMEN_LEVELS.length; i++) {
         if (window.LUMEN_LEVELS[i].bonus || window.LUMEN_LEVELS[i].hub) continue;
         if (!this.isUnlocked(i)) return Math.max(0, i - 1);
-        if (!this.recordFor(i)) return i;
+        if (!this.recordFor(i)?.completed) return i;
       }
       return 0;
     }
@@ -154,6 +175,7 @@
     }
     saveProgress() {
       if (!this.store) return;
+      this.captureJourneyLights();
       if (!this.store.save(this.progress)) {
         this.storageAvailable = false;
         if (!this.storageWarned) { this.storageWarned = true;
@@ -204,13 +226,18 @@
       return this.applyLevel(window.LumenLevels.create(index), index, active);
     }
     nextSongIndex() {
-      const index = window.LumenSong.ISLANDS.findIndex(island => !this.store.chapter(island.key)?.completed);
+      const index = window.LumenSong.ISLANDS.findIndex((island, i) => this.isSongUnlocked(i) && !this.store.chapter(island.key)?.completed);
       return index < 0 ? 0 : index;
+    }
+    isSongUnlocked(index) {
+      if (window.LumenJourney) return window.LumenJourney.islandAccess(this, index).allowed;
+      const islands = window.LumenSong?.ISLANDS || [];
+      return Number.isInteger(index) && !!islands[index] && (!index || !!this.store.chapter(islands[index].key)?.completed);
     }
     startSong(index = 0, options = {}) {
       const Song = window.LumenSong;
       if (!Song || !Number.isInteger(index) || !Song.ISLANDS[index]) return false;
-      if (index > 0 && !this.store.chapter(Song.ISLANDS[index - 1].key)?.completed) return false;
+      if (!this.isSongUnlocked(index)) return false;
       this.leaveExpedition(); this.lastRun = null; this.session = 'song';
       const style = options.style || this.progress.settings.songStyle || 'gentle';
       this.runMode = style === 'flow' ? 'timed' : 'explore';
@@ -462,14 +489,63 @@
       if (this.mode !== 'paused') return;
       this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
     }
-    /** L'atlas est un lieu de campagne : y aller, c'est abandonner la nuit en
-     *  cours. La transition est explicite ici plutôt que devinée plus tard. */
+    /** The map is a destination requested by the player, never a startup gate.
+     * A song or campaign stays resumable; leaving an expedition keeps its
+     * established session isolation rules. */
     showMap() {
+      if (this.mode === 'map') return;
+      this.journeyReturn = this.session !== 'expedition' ? { mode: this.mode, session: this.session } : null;
       this.leaveExpedition();
-      if (this.session === 'song') { this.session = 'home'; this.song = null; this.audio.setSongLayer?.(0); }
-      if (this.session === 'expedition') this.session = 'home';
       this.mode = 'map'; this.input.reset(); this.audio.pause(); this.emit('mode', this.mode);
     }
+    returnFromJourneyMap() {
+      const previous = this.journeyReturn; this.journeyReturn = null;
+      if (!previous || previous.mode === 'map' || previous.mode === 'dream') {
+        const hub = window.LUMEN_LEVELS.findIndex(level => level.hub);
+        return hub >= 0 ? this.start(hub) : this.startSong(0);
+      }
+      this.mode = previous.mode; this.session = previous.session; this.input.reset();
+      this.lastFrame = 0; this.accumulator = 0;
+      if (this.mode === 'playing') this.audio.resume();
+      this.emit('mode', this.mode);
+      return true;
+    }
+    nextJourneyPlace() { return window.LumenJourney?.next(this) || null; }
+    openJourneyPlace(id, options = {}) {
+      const place = window.LumenJourney?.places(this).find(node => node.id === id);
+      if (!place) return false;
+      if (!place.unlocked) { this.notify(place.reason); return false; }
+      if (place.kind === 'island') return this.startSong(place.index, options);
+      if (place.kind === 'dreams') {
+        if (!this.canEnterDreams().allowed) return false;
+        this.leaveExpedition(); this.session = 'home'; this.song = null; this.audio.setSongLayer?.(0);
+        this.emit('portal', 'expedition'); return true;
+      }
+      // start() checks the authoritative stage guard again, including bonus.
+      this.start(place.index, options); return true;
+    }
+    journeyLights() {
+      if (!window.LumenJourney || !this.store) return {};
+      return Object.fromEntries(window.LumenJourney.places(this).map(place => [place.id, place.lights.map(light => light.id)]));
+    }
+    captureJourneyLights() {
+      if (!this.journeyEvents) return;
+      const next = this.journeyLights(), previous = this.journeySnapshot || {};
+      const times = Object.fromEntries((window.LumenJourney?.places(this) || []).map(place => [place.id, place.bestTimedTime]));
+      for (const [id, lights] of Object.entries(next)) {
+        const added = lights.filter(light => !(previous[id] || []).includes(light));
+        // A better personal time lights the same clock again; it does not
+        // manufacture an ever-growing collection of points in the profile.
+        if (times[id] != null && this.journeyTimes?.[id] != null && times[id] < this.journeyTimes[id] && !added.includes(id + ':time')) added.push(id + ':time');
+        if (!added.length) continue;
+        let event = this.journeyEvents.find(item => item.id === id);
+        if (!event) this.journeyEvents.push(event = { id, lights: [] });
+        event.lights = [...new Set([...event.lights, ...added])];
+        this.emit('journey-light', { id, lights: added });
+      }
+      this.journeySnapshot = next; this.journeyTimes = times;
+    }
+    consumeJourneyLights() { return this.journeyEvents.splice(0); }
     beginLoop() { if (this.running) return; this.running = true; requestAnimationFrame(t => this.frame(t)); }
     frame(timestamp) {
       if (!this.running) return;
@@ -1130,7 +1206,9 @@
     updateSecrets() {
       for (const s of this.secrets) if (!s.found&&overlap(this.player,s)) {
         s.found=true;this.secretCount++;this.addScore(750);this.audio.sfx('secret');this.burst(this.player.x+16,this.player.y,35,'#cfe7b8',210,'spark');
-        this.progress.bonusUnlocked=true;this.saveProgress();this.float(this.player.x,this.player.y,'Passage secret +750','#daf0c4');
+        this.progress.bonusUnlocked=true;
+        if (this.session !== 'expedition') this.store.recordSecrets(this.level.key, this.secretCount);
+        this.saveProgress();this.float(this.player.x,this.player.y,'Passage secret +750','#daf0c4');
         this.emit('toast','Passage secret découvert ! Le Jardin oublié vous attend dans l’atlas.');
       }
     }
@@ -1192,11 +1270,17 @@
       const medal=this.medalFor(this.levelStars,this.damageTaken,this.elapsed);
       const timed=this.runMode==='timed';
       const record=this.store.recordChapter(this.keyOf(this.levelIndex),{
-        stars:this.levelStars,coins:this.levelCoins,score:this.levelScore,
+        stars:this.levelStars,coins:this.levelCoins,score:this.levelScore,secrets:this.secretCount,
         time:this.elapsed,medal,timed});
       // Un chapitre bonus atteint en avance n'ouvre pas la suite de la campagne.
       const openNext=!this.level.bonus||this.store.isUnlocked(this.keyOf(this.levelIndex));
       if (openNext&&this.levelIndex+1<window.LUMEN_LEVELS.length) this.store.unlock(this.keyOf(this.levelIndex+1));
+      // Bonus stages remain optional in the journey. Preserve their historical
+      // unlock, while also opening the next required garden after one.
+      if (openNext) {
+        const nextRequired = window.LUMEN_LEVELS.findIndex((level, index) => index > this.levelIndex && !level.bonus && !level.hub);
+        if (nextRequired >= 0) this.store.unlock(this.keyOf(nextRequired));
+      }
       if (final) this.progress.finished=true;
       this.saveProgress();this.audio.sfx('victory');this.burst(this.player.x+16,this.player.y,70,'#ffe1a0',300,'spark');
       if (medal==='gold') { this.audio.sfx('medal'); this.screenFlash('#fff0be',.6); }
@@ -1208,7 +1292,8 @@
     }
     completeSong() {
       if (this.mode !== 'playing' || !this.song || this.song.count !== this.song.lights.length) return false;
-      const song = this.song, final = song.index === window.LumenSong.ISLANDS.length - 1;
+      // The third island is a breath before act III, not the end of LUMEN.
+      const song = this.song, final = false;
       const timed = song.style === 'flow';
       const medal = this.medalFor(this.levelStars, this.deaths, this.elapsed);
       this.addScore(1000 + song.bestCombo * 25);

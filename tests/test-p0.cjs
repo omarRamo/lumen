@@ -19,7 +19,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const FILES = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'engine.js'];
+const FILES = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js', 'journey.js', 'engine.js'];
 const sources = FILES.map(file => fs.readFileSync(path.join(root, 'js', file), 'utf8'));
 const DT = 1 / 120;
 

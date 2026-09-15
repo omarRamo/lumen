@@ -15,7 +15,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const SOURCES = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'engine.js'];
+const SOURCES = ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'levels.js', 'song.js', 'journey.js', 'engine.js'];
 const DT = 1 / 120;
 const CORPUS = 1000;
 /** Les graines qui ont un jour produit une salle fautive. Elles restent ici

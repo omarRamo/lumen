@@ -50,7 +50,7 @@ function environment() {
   };
   const sandbox = { window, document, localStorage: { getItem: () => null, setItem() {} }, requestAnimationFrame() {}, console };
   const ctx = vm.createContext(sandbox);
-  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'world-art.js', 'renderer.js', 'levels.js', 'song.js', 'song-art.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
+  for (const file of ['rng.js', 'save.js', 'resonance.js', 'modules.js', 'expedition.js', 'upgrades.js', 'world-art.js', 'renderer.js', 'levels.js', 'song.js', 'song-art.js', 'journey.js', 'engine.js']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), ctx);
   window.canvas = canvas;
   const game = new window.LumenGame(canvas);
   return { game, window, calls };
