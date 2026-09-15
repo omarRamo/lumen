@@ -7,3 +7,5 @@ work/*.log
 node_modules/
 package-lock.json
 .git-commit-msg.txt
+lumen.bundle
+Claude outputs/
