@@ -9,6 +9,8 @@ const browserTools = require('../tools/browser.cjs');
 const root = path.resolve(__dirname, '..');
 const phase = process.argv[2];
 assert.ok(['before', 'after'].includes(phase), 'Choose before or after.');
+const sourceRoot = process.argv[3] ? path.resolve(process.argv[3]) : root;
+if (phase === 'before') assert.notEqual(sourceRoot, root, 'Before captures require a checkout of the starting revision.');
 const output = path.join(root, 'docs', 'iteration-05', 'captures', phase);
 const returning = {
   schema: 3, unlocked: ['prairies-aurore'], chapters: {},
@@ -38,7 +40,7 @@ const returning = {
           window.requestAnimationFrame = callback => frame(time => { if (!window.captureFrozen) callback(time); });
         }, returning);
         const classic = ['chapter-1', 'observatory', 'dream'].includes(scene);
-        await page.goto(pathToFileURL(path.join(root, 'index.html')).href + (classic ? '?classic' : ''));
+        await page.goto(pathToFileURL(path.join(sourceRoot, 'index.html')).href + (classic ? '?classic' : ''));
         await page.waitForFunction(() => window.lumen?.frames >= 2);
         await page.evaluate(() => document.fonts.ready);
         if (scene === 'chapter-1') {
@@ -61,17 +63,21 @@ const returning = {
           await page.waitForFunction(() => window.lumen.player.x > 180);
           await page.keyboard.up('ArrowRight');
         }
-        const state = await page.evaluate(() => {
+        if (classic) await page.waitForFunction(() => !document.getElementById('chapter-intro').classList.contains('show'));
+        await page.waitForFunction(() => !document.getElementById('transition').classList.contains('show'));
+        const state = await page.evaluate(scene => {
           const game = window.lumen;
           window.captureFrozen = true;
           game.time = 2;
-          game.camera.x = 0; game.camera.y = 0; game.camera.shake = 0;
-          Object.assign(game.player, { x: 180, y: 554, vx: 0, vy: 0, grounded: true, facing: 1,
+          const observatory = scene === 'observatory';
+          game.camera.x = observatory ? 530 : 0; game.camera.y = 0; game.camera.shake = 0;
+          Object.assign(game.player, { x: observatory ? 710 : 180, y: 554, vx: 0, vy: 0, grounded: true, facing: 1,
             anim: 0, landTimer: 0, jumpTimer: 0, invuln: 0 });
+          game.emit('frame', .1);
           game.renderer.draw(game, 0);
           return { key: game.level.key, session: game.session, x: game.player.x, y: game.player.y,
             camera: { x: game.camera.x, y: game.camera.y }, time: game.time };
-        });
+        }, scene);
         const image = view + '-' + scene + '.png';
         await page.screenshot({ path: path.join(output, image), animations: 'disabled' });
         assert.deepEqual(errors, []);
@@ -81,7 +87,11 @@ const returning = {
         await context.close();
       }
     }
-    fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify({ phase, captures }, null, 2) + '\n');
+    if (phase === 'after') {
+      const before = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'iteration-05', 'captures', 'before', 'manifest.json'), 'utf8'));
+      assert.deepEqual(captures, before.captures, 'Every scene must use the same world position, clock and viewport.');
+    }
+    fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify({ phase, revision: phase === 'before' ? 'e805bb4' : 'iteration-05', captures }, null, 2) + '\n');
   } finally {
     await browser.close();
   }

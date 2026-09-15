@@ -1,5 +1,5 @@
 {
-  "passed": 27,
+  "passed": 29,
   "failed": 0,
   "checks": [
     {
@@ -8,6 +8,10 @@
     },
     {
       "name": "Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau",
+      "passed": true
+    },
+    {
+      "name": "Les huit plateformes ont des pixels contrastés et des formes distinctes en jour et en nuit",
       "passed": true
     },
     {
@@ -59,6 +63,10 @@
       "passed": true
     },
     {
+      "name": "Le parcours île, atlas, chapitre joué et retour conserve la progression sans triche",
+      "passed": true
+    },
+    {
       "name": "Les trois îles se terminent via le vrai moteur, puis l’interface ouvre la suite",
       "passed": true
     },
@@ -107,7 +115,7 @@
       "passed": true
     },
     {
-      "name": "Aucun défilement horizontal, et une cadence stable, aux trois formats",
+      "name": "Aucun défilement horizontal et des particules bornées sur cinq formats",
       "passed": true
     }
   ]

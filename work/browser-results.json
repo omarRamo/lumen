@@ -1,25 +1,20 @@
 {
   "mesures": {
     "bureau": {
-      "fps": 55,
       "particules": 0
     },
     "portrait": {
-      "fps": 60,
       "particules": 0
     },
     "paysage": {
-      "fps": 50,
       "particules": 0
     },
     "compact": {
-      "fps": 60,
       "particules": 0
     },
     "large": {
-      "fps": 48,
       "particules": 0
     }
   },
-  "note": "Cadence relevée dans un Chromium sans accélération matérielle, en conteneur : indicative seulement."
+  "note": "Cadrage et bornes de particules seulement ; aucune mesure de performance."
 }

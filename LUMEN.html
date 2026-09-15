@@ -379,7 +379,8 @@ body .touch-controls button svg { width: 22px; height: 22px; flex-shrink: 0; }
 body:not(.song-playing) .touch-controls button { display: flex; align-items: center; justify-content: center; background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
 body:not(.song-playing) .touch-controls .touch-jump { background: var(--lumen-strong); color: var(--lumen-on-strong); }
 body:not(.song-playing) .touch-controls .touch-action { background: var(--lumen-coral); color: #453b3c; }
-body .chapter-pill { position: static; transform: none; min-width: 0; max-width: 340px; justify-self: center; text-align: left; background: none; padding: 8px 0; box-shadow: none; border: 0; }
+body .chapter-pill { display: flex; align-items: center; gap: 10px; position: static; transform: none; min-width: 0; max-width: 340px; justify-self: center; text-align: left; background: none; padding: 8px 0; box-shadow: none; border: 0; }
+body .hud [hidden] { display: none !important; }
 body .chapter-pill>span { font: 500 22px var(--serif); color: var(--lumen-muted); }
 body .chapter-pill strong { font: 500 18px/1.2 var(--serif); white-space: normal; }
 body .chapter-pill small { font: 500 9px var(--font); }
@@ -918,7 +919,7 @@ html[lang="ar"] :is(.song-objective p, .song-dialog-sub, .dialogue-body p) { lin
       <div class="setting"><span>Secousses et flashs</span><div class="seg" role="group" aria-label="Effets d’écran"><button data-setting="reducedEffects" data-value="false" aria-pressed="true">Normaux</button><button data-setting="reducedEffects" data-value="true" aria-pressed="false">Atténués</button></div></div>
     </div><p class="settings-note">Sur écran tactile, maintenir une direction déclenche la course toute seule : le chemin principal ne demande jamais plus de deux doigts.</p></div><p class="power-guide-note">Chaque pouvoir est temporaire : sa jauge clignote durant les 5 dernières secondes. Un grelot se relance avec X tant que vous le portez.</p><button class="button primary" data-command="close-help">C’est parti <span>→</span></button></div></section>
 
-    <section id="complete-screen" class="screen modal-screen" aria-labelledby="complete-title"><div class="modal-card complete-card"><div class="eyebrow" id="complete-eyebrow">UNE LUMIÈRE DE PLUS</div><h2 id="complete-title">Le jardin s’éveille.</h2><p id="complete-subtitle"></p><div class="achievement-row"><div id="result-medal" class="result-medal bronze"><span class="medal-emblem" aria-hidden="true">✦</span><span><small>MÉDAILLE OBTENUE</small><strong id="result-medal-name">Bronze</strong></span></div><div class="result-fragments"><div id="result-stars" class="result-stars">✧ ✧ ✧</div><small id="result-star-label">FRAGMENTS DE LUNE</small></div></div><div class="results"><div class="result-time-cell"><span id="result-mode-label">TEMPS DU VOYAGE</span><strong id="result-time">0:00.0</strong></div><div><span>ÉCLATS</span><strong id="result-coins">0</strong></div><div><span>ENNEMIS VAINCUS</span><strong id="result-enemies">0</strong></div><div><span>DÉGÂTS REÇUS</span><strong id="result-damage">0</strong></div><div><span>SCORE</span><strong id="result-score">0</strong></div><div><span id="result-best-label">OBJECTIF OR</span><strong id="result-best">—</strong></div></div><p id="result-record" class="result-record hidden" role="status">✦ Nouveau record personnel</p><p id="complete-note" class="complete-note"></p><p id="result-medal-hint" class="result-medal-hint"></p><div class="modal-actions"><button class="button primary" id="next-button" data-command="next">Le prochain jardin <span>→</span></button><div class="result-secondary-actions"><button class="button secondary" data-command="replay">Rejouer <span>↻</span></button><button class="button secondary" data-command="map">L’atlas <span>✧</span></button></div></div></div></section>
+    <section id="complete-screen" class="screen modal-screen" aria-labelledby="complete-title"><div class="modal-card complete-card"><div class="eyebrow" id="complete-eyebrow">UNE LUMIÈRE DE PLUS</div><h2 id="complete-title">Le jardin s’éveille.</h2><p id="complete-subtitle"></p><div class="achievement-row"><div id="result-medal" class="result-medal bronze"><span class="medal-emblem" aria-hidden="true">✦</span><span><small>MÉDAILLE OBTENUE</small><strong id="result-medal-name">Bronze</strong></span></div><div class="result-fragments"><div id="result-stars" class="result-stars">✧ ✧ ✧</div><small id="result-star-label">FRAGMENTS DE LUNE</small></div></div><div class="results"><div class="result-time-cell"><span id="result-mode-label">TEMPS DU VOYAGE</span><strong id="result-time">0:00.0</strong></div><div><span>NOTES</span><strong id="result-coins">0</strong></div><div><span>ENNEMIS VAINCUS</span><strong id="result-enemies">0</strong></div><div><span>DÉGÂTS REÇUS</span><strong id="result-damage">0</strong></div><div><span id="result-best-label">OBJECTIF OR</span><strong id="result-best">—</strong></div></div><p id="result-record" class="result-record hidden" role="status">✦ Nouveau record personnel</p><p id="complete-note" class="complete-note"></p><p id="result-medal-hint" class="result-medal-hint"></p><div class="modal-actions"><button class="button primary" id="next-button" data-command="next">Le prochain jardin <span>→</span></button><div class="result-secondary-actions"><button class="button secondary" data-command="replay">Rejouer <span>↻</span></button><button class="button secondary" data-command="map">L’atlas <span>✧</span></button></div></div></div></section>
     <div id="touch-controls" class="touch-controls hidden" aria-label="Commandes tactiles"><div class="touch-move"><button data-touch="left" aria-label="Aller à gauche">←</button><button data-touch="right" aria-label="Aller à droite">→</button></div><div class="touch-actions"><button data-touch="down" class="touch-minor" aria-label="Glisser">↓</button><button data-touch="action" class="touch-action" aria-label="Appeler, résonance">✦</button><button data-touch="jump" class="touch-jump" aria-label="Sauter">↑</button></div></div>
     <section id="dream-screen" class="screen modal-screen" aria-labelledby="dream-title"><div class="modal-card dream-card"><span class="modal-symbol">☾</span><div class="eyebrow">LES RÊVES NOMADES</div><h2 id="dream-title">Chaque nuit invente un chemin.</h2><p>Cinq salles, une carte à embranchements, un gardien au bout. Une nuit dure une dizaine de minutes et s’enregistre au refuge.</p>
       <div class="seed-row"><label for="seed-input">GRAINE DE LA NUIT</label><div class="seed-field"><input id="seed-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="lune-fleur-onde-3"><button class="seed-dice" id="seed-dice" type="button" aria-label="Tirer une graine au hasard">⚄</button></div><small id="seed-note">Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.</small></div>
@@ -1192,9 +1193,6 @@ window.LumenI18n.add([
   ['Informations de jeu', 'Game information', 'Información del juego', 'معلومات اللعبة', '游戏信息'],
   ['Santé', 'Health', 'Salud', 'الصحة', '生命值'],
   ['Lumen', 'Lumen', 'Lumen', 'Lumen', 'Lumen'],
-  ['5 VIES', '5 LIVES', '5 VIDAS', '5 محاولات', '5 条生命'],
-  ['VIES : {count}', 'LIVES: {count}', 'VIDAS: {count}', 'المحاولات: {count}', '生命：{count}'],
-  ['SCORE', 'SCORE', 'PUNTUACIÓN', 'النقاط', '得分'],
   ['L’éveil des jardins', 'The gardens awaken', 'El despertar de los jardines', 'استيقاظ الحدائق', '花园苏醒'],
   ['Mettre en pause', 'Pause game', 'Pausar el juego', 'إيقاف اللعبة مؤقتًا', '暂停游戏'],
   ['Chronomètre de la course', 'Time trial clock', 'Cronómetro de la carrera', 'مؤقت السباق', '竞速计时器'],
@@ -1234,7 +1232,7 @@ window.LumenI18n.add([
   ['Le monde peut attendre.', 'The world can wait.', 'El mundo puede esperar.', 'العالم يستطيع الانتظار.', '世界可以等一等。'],
   ['Une lumière renaîtra.', 'A light will shine again.', 'Una luz volverá a brillar.', 'سيولد ضوء من جديد.', '光芒会再次亮起。'],
   ['Votre lumière sera toujours là.', 'Your light will always be here.', 'Tu luz siempre estará aquí.', 'سيبقى نورك هنا دائمًا.', '你的光芒一直都在。'],
-  ['Vos fragments et les chapitres terminés sont conservés. Repartez avec cinq vies.', 'Your shards and completed chapters are safe. Start again with five lives.', 'Tus fragmentos y capítulos completados se conservan. Vuelve con cinco vidas.', 'تُحفظ شظاياك والفصول المكتملة. ابدأ من جديد بخمس محاولات.', '碎片和已完成章节都会保留。带着五条生命重新出发。'],
+  ['Vos fragments et les chapitres terminés sont conservés. Reprenez avec cinq souffles.', 'Your shards and completed chapters are safe. Return with five breaths.', 'Tus fragmentos y capítulos completados se conservan. Regresa con cinco alientos.', 'تُحفظ شظاياك والفصول المكتملة. عد بخمسة أنفاس.', '碎片和已完成章节都会保留。带着五次气息重新出发。'],
   ['Le chronomètre est en pause. Votre record attendra.', 'The clock is paused. Your record can wait.', 'El cronómetro está en pausa. Tu récord puede esperar.', 'المؤقت متوقف. رقمك القياسي سينتظر.', '计时已暂停，纪录可以等一等。'],
   ['Reprendre le voyage', 'Resume the journey', 'Retomar el viaje', 'تابع الرحلة', '继续旅程'],
   ['Recommencer le chapitre', 'Restart chapter', 'Reiniciar el capítulo', 'أعد الفصل', '重新开始章节'],
@@ -3803,7 +3801,9 @@ window.LumenI18n.add([
         { type: 'star', x: 1810, y: 184 }, { type: 'star', x: 2830, y: 221 }, { type: 'star', x: 3830, y: 282 }
       ],
       lights: [light('aya', 'Aya', 704, 350, '#ffb861', 1), light('lou', 'Lou', 2160, 265, '#88dbed', 3), light('tika', 'Tika', 3790, 335, '#efa4c7', 5)],
-      wind: [{ x: 835, y: 180, w: 230, h: 540 }, { x: 1930, y: 130, w: 335, h: 570 }, { x: 3010, y: 230, w: 330, h: 470 }],
+      wind: [{ x: 835, y: 180, w: 230, h: 540 },
+        { x: 1930, y: 130, w: 335, h: 570, id: 'recifs-courant', respondsToCall: true, drift: -150 },
+        { x: 3010, y: 230, w: 330, h: 470 }],
       wakeables: [{ type: 'bloom', x: 1380, y: 545, id: 'recifs-fleur' }, { type: 'chime', x: 2900, y: 420, id: 'recifs-cloche' }],
       checkpoints: [{ x: 1220, y: 560 }, { x: 2440, y: 530 }, { x: 3460, y: 590 }, { x: 4250, y: 600 }],
       scenery: [
@@ -3831,7 +3831,9 @@ window.LumenI18n.add([
         ...notes(4470, 433, 4), ...notes(4730, 548, 6, 42),
         { type: 'star', x: 1790, y: 181 }, { type: 'star', x: 3030, y: 192 }, { type: 'star', x: 3900, y: 240 }
       ],
-      lights: [light('sol', 'Sol', 740, 350, '#f3bd64', 0), light('neve', 'Nève', 2280, 252, '#aff0df', 3), light('orion', 'Orion', 3860, 293, '#ffb1b1', 6)],
+      lights: [light('sol', 'Sol', 740, 350, '#f3bd64', 0),
+        { ...light('neve', 'Nève', 2280, 252, '#aff0df', 3), roam: { x: 1990, y: 294, speed: 90 } },
+        light('orion', 'Orion', 3860, 293, '#ffb1b1', 6)],
       wind: [{ x: 1920, y: 175, w: 400, h: 525 }, { x: 3150, y: 180, w: 270, h: 520 }, { x: 4100, y: 260, w: 180, h: 450 }],
       wakeables: [
         { type: 'chime', x: 1820, y: 360, id: 'choeur-cloche-a' },
@@ -3862,7 +3864,9 @@ window.LumenI18n.add([
   class Journey {
     constructor(data) {
       this.index = data.index; this.style = data.style;
-      this.lights = data.lights.map(entry => ({ ...entry, found: false, followX: entry.x, followY: entry.y }));
+      this.lights = data.lights.map(entry => ({ ...entry, found: false, followX: entry.x, followY: entry.y,
+        originX: entry.x, originY: entry.y, motion: 0, drift: 0 }));
+      this.wind = data.wind.map(current => ({ ...current }));
       this.count = 0; this.combo = 0; this.comboTime = 0; this.bestCombo = 0;
       this.bloom = 0; this.celebration = 0; this.safe = null; this.returnPoint = null;
       this.trail = []; this.trailTime = 0; this.airNotes = 0;
@@ -3883,12 +3887,32 @@ window.LumenI18n.add([
       this.celebration = Math.max(0, this.celebration - dt);
       this.bloom += (this.count / this.lights.length - this.bloom) * (1 - Math.exp(-dt * 1.8));
       const player = game.player, standing = player.standingPlatform;
+      for (const current of this.wind) {
+        if (!current.respondsToCall) continue;
+        const key = 'wind:' + current.id;
+        for (const wave of game.waves) {
+          if (wave.source !== 'player' || wave.touched.has(key)) continue;
+          const nearestX = Math.max(current.x, Math.min(wave.x, current.x + current.w));
+          const nearestY = Math.max(current.y, Math.min(wave.y, current.y + current.h));
+          if (Math.hypot(nearestX - wave.x, nearestY - wave.y) > wave.radius) continue;
+          current.drift *= -1; wave.touched.add(key);
+          game.burst(nearestX, nearestY, 12, '#e5f5c5', 80, 'leaf');
+        }
+      }
       if (player.grounded && standing && standing.type === 'ground' &&
           player.x > standing.x + 20 && player.x + player.w < standing.x + standing.w - 20) {
         this.safe = { x: player.x, y: standing.y - 48 };
       }
       for (const echo of this.lights) {
         if (echo.found) continue;
+        if (echo.roam) {
+          const spanX = echo.roam.x - echo.originX, spanY = echo.roam.y - echo.originY;
+          const distance = Math.hypot(spanX, spanY);
+          echo.motion = (echo.motion + dt * echo.roam.speed / distance) % 2;
+          const fraction = echo.motion <= 1 ? echo.motion : 2 - echo.motion;
+          echo.x = echo.originX + spanX * fraction; echo.y = echo.originY + spanY * fraction;
+          echo.drift = (echo.motion < 1 ? 1 : -1) * spanX / distance;
+        }
         if (!game.waves.some(wave => Math.hypot(echo.x - wave.x, echo.y - wave.y) <= wave.radius)) continue;
         echo.found = true; this.count++; this.celebration = 2.5;
         game.addScore(750); game.burst(echo.x, echo.y, 38, echo.color, 170, 'petal');
@@ -5596,6 +5620,10 @@ window.LumenI18n.add([
     const x = found ? echo.followX : echo.x, y = (found ? echo.followY : echo.y) + Math.sin(time * 2.2 + echo.voice) * 5;
     const size = found ? .72 : 1;
     ctx.save(); ctx.translate(x, y); ctx.scale(size, size);
+    if (!found && echo.roam) for (let trail = 1; trail <= 3; trail++) {
+      ctx.save(); ctx.globalAlpha = .65 - trail * .14;
+      star(ctx, -echo.drift * (22 + trail * 13), trail * 2, 4 - trail * .5, echo.color); ctx.restore();
+    }
     if (!found) {
       ctx.strokeStyle = echo.color + '75'; ctx.lineWidth = 1.5; ctx.setLineDash([2, 7]);
       ctx.beginPath(); ctx.arc(0, 0, 32 + Math.sin(time * 2) * 2, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -5747,15 +5775,17 @@ window.LumenI18n.add([
     ctx.save(); ctx.translate(0, renderer.offsetY); ctx.scale(scale, scale);
     ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, 0);
     const visible = (x, width = 0, margin = 150) => x + width > game.camera.x - margin && x < game.camera.x + renderer.worldWidth + margin;
-    for (const current of data.wind) {
+    for (const current of game.song.wind) {
       if (!visible(current.x, current.w)) continue;
       ctx.save(); ctx.beginPath(); ctx.rect(current.x, current.y, current.w, current.h); ctx.clip();
       for (let index = 0; index < 18; index++) {
-        const x = current.x + 15 + random(index + 122) * (current.w - 30);
+        const drift = current.drift || 0, lean = Math.sign(drift) * 22;
+        const x = current.x + 15 + ((random(index + 122) * (current.w - 30) + time * drift * .45) % (current.w - 30) + current.w - 30) % (current.w - 30);
         const y = current.y + current.h - ((time * (72 + index % 4 * 20) + index * 49) % current.h);
         ctx.strokeStyle = '#f5ffdc90'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x, y + 25);
-        ctx.quadraticCurveTo(x + 11, y + 13, x + 2, y - 12); ctx.stroke();
-        if (index % 3 === 0) leaf(ctx, x, y, 7, -.3, '#e7f9c9');
+        ctx.quadraticCurveTo(x + 11 + lean * .5, y + 13, x + 2 + lean, y - 12); ctx.stroke();
+        if (drift) stroke(ctx, [[x + lean - 5, y - 8], [x + lean + 2, y - 12], [x + lean + 6, y - 5]], '#f5ffdc', 1.5);
+        if (index % 3 === 0) leaf(ctx, x, y, 7, drift ? Math.sign(drift) * .85 : -.3, '#e7f9c9');
       }
       ctx.restore();
     }
@@ -6469,6 +6499,7 @@ window.LumenI18n.add([
         if (p.coyote > 0) this.jump(false);
         else if ((p.power === 'breeze' || this.level.song) && p.airJumps < 1) this.jump(true);
       }
+      let windDrift = 0;
       if (p.wet) {
         p.vy += 500 * dt;
         if (input.down('jump')) { p.vy -= 1120 * dt; p.vy = Math.max(p.vy, -310); p.grounded = false; }
@@ -6484,8 +6515,8 @@ window.LumenI18n.add([
           p.vy = Math.min(140, p.vy);
         }
         if (this.level.song && input.down('jump') && !input.down('down')) {
-          const wind = (this.level.song.wind || []).find(current => overlap(p, current));
-          if (wind) { p.vy = approach(p.vy, -310, 4000 * dt); p.gliding = true; }
+          const wind = (this.song?.wind || this.level.song.wind || []).find(current => overlap(p, current));
+          if (wind) { p.vy = approach(p.vy, -310, 4000 * dt); p.gliding = true; windDrift = wind.drift || 0; }
         }
       }
       if (p.dashTime > 0) {
@@ -6514,11 +6545,12 @@ window.LumenI18n.add([
         }
       }
       const oldY = p.y, oldBottom = p.y + p.h, wasGrounded = p.grounded;
-      p.x += p.vx * dt;
+      const horizontalSpeed = p.vx + windDrift;
+      p.x += horizontalSpeed * dt;
       for (const ground of this.platforms) {
         if (!ground.active || ground.type !== 'ground' || !overlap(p,ground)) continue;
         if (oldBottom <= ground.y + 5 || p.y >= ground.y + ground.h - 3) continue;
-        if (p.vx > 0) p.x = ground.x - p.w; else if (p.vx < 0) p.x = ground.x + ground.w;
+        if (horizontalSpeed > 0) p.x = ground.x - p.w; else if (horizontalSpeed < 0) p.x = ground.x + ground.w;
         p.vx = 0;
       }
       p.x = clamp(p.x, 0, this.level.width - p.w); p.y += p.vy * dt;
@@ -7530,7 +7562,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
       $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
-      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Repartez avec cinq vies.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
+      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Reprenez avec cinq souffles.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
       // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
       // avec sa graine, ou on en demande une autre. Deux décisions, deux boutons.
@@ -7774,8 +7806,14 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       $('remaining-lives').textContent=translate('Souffles restants : {count}',{count:Math.max(0,game.lives)});
       $('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
       $('star-count').textContent=game.levelStars+' / '+totalFragments;$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
-      $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=translate(game.level.name);
-      $('chapter-caption').textContent=translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
+      $('star-count').parentElement.hidden=totalFragments===0;
+      const chapter=game.session==='campaign';
+      $('chapter-number').hidden=!chapter;
+      $('chapter-number').textContent=chapter?String(window.LUMEN_LEVELS.slice(0,game.levelIndex+1).filter(level=>!level.hub).length).padStart(2,'0'):'';
+      $('chapter-name').textContent=translate(game.level.name);
+      $('chapter-caption').textContent=game.level.hub?translate('L’OBSERVATOIRE'):game.level.expedition
+        ?translate('NUIT · SALLE {room} / {total}',{room:String((game.run?.roomIndex||0)+1).padStart(2,'0'),total:String(game.run?.plan.rooms.length||5).padStart(2,'0')})
+        :translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
     }
     if(game.runMode==='timed') {
       $('clock-time').textContent=timeLabel(game.elapsed,true);
@@ -7846,7 +7884,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     const targets=game.level.medalTargets;
     const best=game.recordFor(result.index)?.bestTimedTime;
     $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total});
-    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);$('result-score').textContent=I18n.number(result.score);
+    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);
     $('result-enemies').textContent=result.enemiesDefeated||0;$('result-damage').textContent=result.damageTaken||0;
     $('result-medal').className='result-medal '+medal;$('result-medal-name').textContent=medals[medal];
     $('result-mode-label').textContent=result.timed?'CONTRE-LA-MONTRE':'TEMPS DU VOYAGE';

@@ -647,11 +647,12 @@ async function test(name, run) {
 
   await test('Le Chant répond à deux pointeurs et annule les entrées lors d’une interruption', async () => {
     const { page, context, errors } = await open('paysage', null, { song: true });
-    const before = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y }));
+    await page.waitForFunction(() => window.lumen.frames >= 2 && window.lumen.player.grounded);
+    const before = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, elapsed: window.lumen.elapsed }));
     await page.evaluate(() => {
       for (const [action, pointerId] of [['right', 41], ['jump', 42]]) document.querySelector(`[data-touch="${action}"]`).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId, pointerType: 'touch' }));
     });
-    await page.waitForTimeout(450);
+    await page.waitForFunction(elapsed => window.lumen.elapsed >= elapsed + .45, before.elapsed);
     const after = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, run: window.lumen.input.down('run') }));
     assert.ok(after.x > before.x + 80); assert.ok(after.y < before.y - 20); assert.equal(after.run, true);
     await page.evaluate(() => {
@@ -726,6 +727,8 @@ async function test(name, run) {
     const { page, context, errors } = await open();
     await page.click('[data-command="hub"]');
     await page.waitForFunction(() => window.lumen.mode === 'playing' && window.lumen.level.hub, null, { timeout: 25000 });
+    await page.waitForFunction(() => document.getElementById('chapter-caption').textContent === window.LumenI18n.t('L’OBSERVATOIRE'));
+    assert.equal(await page.locator('#chapter-number').isVisible(), false);
     assert.equal(await page.evaluate(() => window.lumen.exit.open), false, 'La porte des rêves doit être fermée au départ.');
     // Deux carillons sur trois ne suffisent pas : la quête n'est pas un compteur flou.
     await page.evaluate(() => {
@@ -808,6 +811,8 @@ async function test(name, run) {
     assert.equal(premier.salles.length, 5);
     assert.equal(premier.salles[4], 'guardian', 'Une nuit finit toujours par un gardien.');
     assert.equal(premier.salles[2], 'refuge');
+    await page.waitForFunction(() => document.getElementById('chapter-caption').textContent.includes('01 / 05'));
+    assert.equal(await page.locator('#chapter-number').isVisible(), false);
 
     // On traverse les cinq salles par l'interface, en choisissant à chaque carte.
     let refugeSauvegarde = null;
@@ -1018,11 +1023,45 @@ async function test(name, run) {
     assert.equal(migre.chapitre.bestTimedTime, 61.2);
     assert.equal(migre.ouvert, true);
     assert.equal(migre.ferme, false, 'La migration ne doit rien ouvrir de plus.');
+    const firstVersion = await page.evaluate(() => {
+      localStorage.clear();
+      const original = JSON.stringify({ version: 1, unlocked: 7, finished: true, bonusUnlocked: true,
+        records: { 7: { completed: true, stars: 3, coins: 51, score: 8700, time: 87.2, medal: 'gold' } } });
+      localStorage.setItem('lumen.gardens.v1', original);
+      const store = new window.LumenSave.SaveStore(localStorage);
+      return { source: store.migratedFrom, intact: localStorage.getItem('lumen.gardens.v1') === original,
+        finale: store.chapter('coeur-eclipse'), unrelated: store.chapter('vergers-vent'),
+        finished: store.profile.finished, addedChapter: store.isUnlocked('galerie-echos') };
+    });
+    assert.equal(firstVersion.source, 'lumen.gardens.v1');
+    assert.equal(firstVersion.intact, true);
+    assert.equal(firstVersion.finale.stars, 3);
+    assert.equal(firstVersion.finale.score, 8700);
+    assert.equal(firstVersion.unrelated, null);
+    assert.equal(firstVersion.finished, true);
+    assert.equal(firstVersion.addedChapter, true);
+    await page.goto(PAGE);
+    await page.waitForFunction(() => window.lumen?.song?.index === 0);
+    assert.deepEqual(await page.evaluate(() => window.lumen.store.chapter('coeur-eclipse')), firstVersion.finale);
+    await page.evaluate(() => {
+      const profile = JSON.parse(localStorage.getItem('lumen.gardens.v3'));
+      profile.hub = { quests: { 'premier-souffle': 'done' }, transformations: ['coupole-allumee'] };
+      localStorage.setItem('lumen.gardens.v3', JSON.stringify(profile));
+    });
+    await page.reload(); await page.waitForFunction(() => window.lumen?.song?.index === 0);
+    const thirdVersion = await page.evaluate(() => ({ finale: window.lumen.store.chapter('coeur-eclipse'),
+      quest: window.lumen.store.questState('premier-souffle'), transformations: window.lumen.progress.hub.transformations,
+      allowed: window.lumen.canEnterDreams().allowed, legacy: !!localStorage.getItem('lumen.gardens.v1') }));
+    assert.deepEqual(thirdVersion.finale, firstVersion.finale);
+    assert.equal(thirdVersion.quest, 'done');
+    assert.deepEqual(thirdVersion.transformations, ['coupole-allumee']);
+    assert.equal(thirdVersion.allowed, true);
+    assert.equal(thirdVersion.legacy, true);
     assert.deepEqual(errors, []);
     await context.close();
   });
 
-  await test('Aucun défilement horizontal, et une cadence stable, aux trois formats', async () => {
+  await test('Aucun défilement horizontal et des particules bornées sur cinq formats', async () => {
     const mesures = {};
     for (const view of Object.keys(VIEWS)) {
       const { page, context, errors } = await open(view);
@@ -1031,20 +1070,14 @@ async function test(name, run) {
       const debordement = await page.evaluate(() =>
         document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
       assert.equal(debordement, false, 'Défilement horizontal en ' + view);
-      mesures[view] = await page.evaluate(() => ({ fps: window.lumen.fps, particules: window.lumen.particles.length }));
+      mesures[view] = await page.evaluate(() => ({ particules: window.lumen.particles.length }));
       // Les réservoirs restent bornés : rien ne s'accumule pendant une session.
       assert.ok(mesures[view].particules <= 500, 'Particules non bornées en ' + view + ' : ' + mesures[view].particules);
       assert.deepEqual(errors, [], 'Erreurs en ' + view);
       await context.close();
     }
-    // La cadence est RELEVÉE, pas exigée : ce contrôle tourne dans un Chromium
-    // sans accélération matérielle, souvent en conteneur partagé. Le chiffre
-    // qu'il affiche ne dit rien de la cadence sur un vrai appareil ; il n'est
-    // là que pour repérer un effondrement soudain entre deux exécutions.
-    console.log('      cadence relevée (logiciel, indicative) : '
-      + Object.entries(mesures).map(([k, v]) => k + ' ' + v.fps + ' i/s').join(' · '));
     fs.writeFileSync(path.join(root, 'work', 'browser-results.json'),
-      JSON.stringify({ mesures, note: 'Cadence relevée dans un Chromium sans accélération matérielle, en conteneur : indicative seulement.' }, null, 2));
+      JSON.stringify({ mesures, note: 'Cadrage et bornes de particules seulement ; aucune mesure de performance.' }, null, 2));
   });
 
   await browser.close();

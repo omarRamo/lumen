@@ -48,7 +48,7 @@
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
       $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
-      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Repartez avec cinq vies.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
+      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Reprenez avec cinq souffles.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
       // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
       // avec sa graine, ou on en demande une autre. Deux décisions, deux boutons.
@@ -292,8 +292,14 @@
       $('remaining-lives').textContent=translate('Souffles restants : {count}',{count:Math.max(0,game.lives)});
       $('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
       $('star-count').textContent=game.levelStars+' / '+totalFragments;$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
-      $('chapter-number').textContent=String(game.levelIndex+1).padStart(2,'0');$('chapter-name').textContent=translate(game.level.name);
-      $('chapter-caption').textContent=translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
+      $('star-count').parentElement.hidden=totalFragments===0;
+      const chapter=game.session==='campaign';
+      $('chapter-number').hidden=!chapter;
+      $('chapter-number').textContent=chapter?String(window.LUMEN_LEVELS.slice(0,game.levelIndex+1).filter(level=>!level.hub).length).padStart(2,'0'):'';
+      $('chapter-name').textContent=translate(game.level.name);
+      $('chapter-caption').textContent=game.level.hub?translate('L’OBSERVATOIRE'):game.level.expedition
+        ?translate('NUIT · SALLE {room} / {total}',{room:String((game.run?.roomIndex||0)+1).padStart(2,'0'),total:String(game.run?.plan.rooms.length||5).padStart(2,'0')})
+        :translate(game.runMode==='timed'?'CONTRE-LA-MONTRE':'LES JARDINS DE LA LUNE');
     }
     if(game.runMode==='timed') {
       $('clock-time').textContent=timeLabel(game.elapsed,true);
@@ -364,7 +370,7 @@
     const targets=game.level.medalTargets;
     const best=game.recordFor(result.index)?.bestTimedTime;
     $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total});
-    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);$('result-score').textContent=I18n.number(result.score);
+    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);
     $('result-enemies').textContent=result.enemiesDefeated||0;$('result-damage').textContent=result.damageTaken||0;
     $('result-medal').className='result-medal '+medal;$('result-medal-name').textContent=medals[medal];
     $('result-mode-label').textContent=result.timed?'CONTRE-LA-MONTRE':'TEMPS DU VOYAGE';
