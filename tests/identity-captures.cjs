@@ -5,6 +5,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const browserTools = require('../tools/browser.cjs');
+const capture = require('../tools/capture.cjs');
 
 const root = path.resolve(__dirname, '..');
 const phase = process.argv[2];
@@ -78,8 +79,8 @@ const returning = {
           return { key: game.level.key, session: game.session, x: game.player.x, y: game.player.y,
             camera: { x: game.camera.x, y: game.camera.y }, time: game.time };
         }, scene);
-        const image = view + '-' + scene + '.png';
-        await page.screenshot({ path: path.join(output, image), animations: 'disabled' });
+        const image = view + '-' + scene + capture.EXTENSION;
+        await capture.shot(page, path.join(output, image), { animations: 'disabled' });
         assert.deepEqual(errors, []);
         assert.deepEqual(external, []);
         captures.push({ image, scene, viewport, colorScheme, ...state });

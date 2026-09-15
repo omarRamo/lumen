@@ -16,6 +16,7 @@ const { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const browserTools = require('../tools/browser.cjs');
+const capture = require('../tools/capture.cjs');
 
 const root = path.resolve(__dirname, '..');
 const shots = path.join(root, 'work', 'shots');
@@ -150,7 +151,7 @@ async function test(name, run) {
 
   await test('Les huit plateformes ont des pixels contrastés et des formes distinctes en jour et en nuit', async () => {
     const { page, context, errors } = await open('bureau', null, { song: true, source: true });
-    const gallery = path.join(root, 'docs', 'iteration-06', 'platforms');
+    const gallery = path.join(root, 'docs', 'platforms');
     fs.mkdirSync(gallery, { recursive: true });
     const measurements = [];
     const scenes = await page.evaluate(() => [
@@ -213,7 +214,7 @@ async function test(name, run) {
       for (const row of result.rows) assert.ok(row.contrasted >= 144,
         `${appearance}/${scene.id}/${row.type}: ${row.contrasted} reception pixels at 3:1`);
       assert.equal(result.distinct, 8, appearance + '/' + scene.id + ': identical platform shapes');
-      await page.locator('#platform-gallery').screenshot({ path: path.join(gallery, appearance + '-' + scene.id + '.png') });
+      await capture.shot(page.locator('#platform-gallery'), path.join(gallery, appearance + '-' + scene.id + capture.EXTENSION), {});
       measurements.push(result);
     }
     fs.writeFileSync(path.join(gallery, 'measurements.json'), JSON.stringify(measurements, null, 2) + '\n');

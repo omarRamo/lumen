@@ -5,15 +5,11 @@ de pixels 1. Bureau : 1440 × 900 en jour. Mobile : 390 × 844 en nuit.
 Les images avant sont prises sur un export temporaire du commit `e805bb4`.
 Les images après sont prises sur le code de l'itération 05.
 
-| Lieu | Bureau avant | Bureau après | Mobile avant | Mobile après |
-| --- | --- | --- | --- | --- |
-| Accueil | [Avant](before/desktop-home.png) | [Après](after/desktop-home.png) | [Avant](before/mobile-home.png) | [Après](after/mobile-home.png) |
-| Chapitre 1 | [Avant](before/desktop-chapter-1.png) | [Après](after/desktop-chapter-1.png) | [Avant](before/mobile-chapter-1.png) | [Après](after/mobile-chapter-1.png) |
-| Observatoire | [Avant](before/desktop-observatory.png) | [Après](after/desktop-observatory.png) | [Avant](before/mobile-observatory.png) | [Après](after/mobile-observatory.png) |
-| Salle de rêve | [Avant](before/desktop-dream.png) | [Après](after/desktop-dream.png) | [Avant](before/mobile-dream.png) | [Après](after/mobile-dream.png) |
-| Île 1 | [Avant](before/desktop-island-1.png) | [Après](after/desktop-island-1.png) | [Avant](before/mobile-island-1.png) | [Après](after/mobile-island-1.png) |
-| Île 2 | [Avant](before/desktop-island-2.png) | [Après](after/desktop-island-2.png) | [Avant](before/mobile-island-2.png) | [Après](after/mobile-island-2.png) |
-| Île 3 | [Avant](before/desktop-island-3.png) | [Après](after/desktop-island-3.png) | [Avant](before/mobile-island-3.png) | [Après](after/mobile-island-3.png) |
+**Les images de cette série ont été retirées du dépôt à l'itération 07.**
+Leur bilan est écrit ci-dessus et dans `../README.md` ; les conserver coûtait
+13 Mo d'historique pour une comparaison close. La méthode, elle, est restée :
+c'est celle que `tests/identity-captures.cjs` applique toujours.
+
 
 Le [script](../../../tests/identity-captures.cjs) attend les polices, les
 premières images et la disparition des transitions, puis fige le cadrage.

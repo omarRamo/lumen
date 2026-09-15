@@ -20,10 +20,10 @@ sont terminés. Elles sont exclues de la comparaison à profil identique.
 
 | État | Avant | Après |
 | --- | --- | --- |
-| Neuf, bureau, jour | [Avant](before/fresh-light-desktop-archipelago.png) | [Après](after/fresh-light-desktop-archipelago.png) |
-| Intermédiaire, mobile, nuit | [Avant](before/mid-dark-mobile-archipelago.png) | [Après](after/mid-dark-mobile-archipelago.png) |
-| Ancienne campagne terminée, bureau, nuit | [Avant](before/full-dark-desktop-campaign.png) | [Après](after/full-dark-desktop-campaign.png) |
-| Tous les lieux actuels, mobile, jour | — | [Après](after/all-current-light-mobile-archipelago.png) |
+| Neuf, bureau, jour | [Avant](before/fresh-light-desktop-archipelago.webp) | [Après](after/fresh-light-desktop-archipelago.webp) |
+| Intermédiaire, mobile, nuit | [Avant](before/mid-dark-mobile-archipelago.webp) | [Après](after/mid-dark-mobile-archipelago.webp) |
+| Ancienne campagne terminée, bureau, nuit | [Avant](before/full-dark-desktop-campaign.webp) | [Après](after/full-dark-desktop-campaign.webp) |
+| Tous les lieux actuels, mobile, jour | — | [Après](after/all-current-light-mobile-archipelago.webp) |
 
 ## Les six nouveaux lieux
 

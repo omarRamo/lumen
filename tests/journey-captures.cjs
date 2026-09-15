@@ -16,6 +16,7 @@ const { createHash } = require('node:crypto');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const browserTools = require('../tools/browser.cjs');
+const capture = require('../tools/capture.cjs');
 
 const root = path.resolve(__dirname, '..');
 const phase = process.argv[2];
@@ -114,8 +115,8 @@ async function capturePlace(browser, key, appearance, profile) {
     await page.evaluate(() => document.fonts.ready);
     // Gameplay RAF is deliberately frozen above; poll the real-time intro timer independently.
     await page.waitForFunction(() => !document.getElementById('chapter-intro').classList.contains('show'), null, { polling: 100 });
-    const image = 'place-' + key + '-' + appearance + '-desktop.png';
-    await page.screenshot({ path: path.join(output, image), animations: 'disabled' });
+    const image = 'place-' + key + '-' + appearance + '-desktop' + capture.EXTENSION;
+    await capture.shot(page, path.join(output, image), { animations: 'disabled' });
     assert.deepEqual(errors, []); assert.deepEqual(external, []);
     console.log('CAPTURE ' + phase + '/' + image);
     return { image, viewport, appearance, locale: 'fr-FR', cosmeticSeed: 6006, bootstrapFrames: 2, fixedStep: 1 / 120, ...state };
@@ -165,8 +166,8 @@ async function capture(browser, profile, fixture, entry, view, appearance, suppl
         scrollHeight: panel.scrollHeight, clientHeight: panel.clientHeight,
         title: panel.querySelector('h1,h2')?.textContent || '' };
     });
-    const image = [fixture, appearance, view, entry].join('-') + '.png';
-    await page.screenshot({ path: path.join(output, image), animations: 'disabled' });
+    const image = [fixture, appearance, view, entry].join('-') + capture.EXTENSION;
+    await capture.shot(page, path.join(output, image), { animations: 'disabled' });
     assert.deepEqual(errors, [], image + ' has JavaScript errors');
     assert.deepEqual(external, [], image + ' made a network request');
     console.log('CAPTURE ' + phase + '/' + image);

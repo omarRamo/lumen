@@ -1,0 +1,23 @@
+{
+  "ranAt": "2026-09-15T22:39:43.689Z",
+  "budgets": {
+    "images": 6291456,
+    "total": 12582912
+  },
+  "total": 3,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Aucune capture n’entre dans le dépôt dans un format qui pèse six fois son poids",
+      "passed": true
+    },
+    {
+      "name": "Le poids des images suivies tient dans son budget",
+      "passed": true
+    },
+    {
+      "name": "Le dépôt suivi reste petit devant ce qu’il contient",
+      "passed": true
+    }
+  ]
+}

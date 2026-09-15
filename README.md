@@ -1,6 +1,6 @@
 # LUMEN
 
-![Lumen sur l'île des petits matins](docs/iteration-05/captures/after/desktop-home.png)
+![Lumen sur l'île des petits matins](docs/iteration-05/captures/after/desktop-home.webp)
 
 **Lumen est le petit renard à l'écharpe. LUMEN est son aventure.**
 
@@ -34,7 +34,7 @@ les actions ; Entrée/A choisit, Échap/B revient. Un lieu verrouillé reste
 consultable. Les îles déjà terminées et les chapitres historiquement ouverts
 restent accessibles lors de cette nouvelle organisation.
 
-![L'atlas commun et ses trois constellations](docs/iteration-06/captures/after/fresh-light-desktop-archipelago.png)
+![L'atlas commun et ses trois constellations](docs/iteration-06/captures/after/fresh-light-desktop-archipelago.webp)
 
 Chaque lancement revient à l'île 1, même pour un profil avancé. Les îles
 déverrouillées, souvenirs et records restent dans l'atlas. La position au
@@ -96,7 +96,7 @@ salles, des choix de routes, un refuge enregistré et un gardien. Sa graine
 permet de rejouer la même nuit. Les améliorations des souvenirs restent
 reportées, comme indiqué dans le [backlog](BACKLOG.md).
 
-![La pluie lumineuse fait pousser les appuis de Lumen](docs/iteration-06/captures/after/place-pluie-de-lumiere-dark-desktop.png)
+![La pluie lumineuse fait pousser les appuis de Lumen](docs/iteration-06/captures/after/place-pluie-de-lumiere-dark-desktop.webp)
 
 ## Commandes Et Réglages
 
@@ -178,7 +178,7 @@ historiques de `docs/` sont explicitement exclus.
 Consulter le [rapport intégral](docs/iteration-06/verify-final.txt), la
 [note d'itération](docs/iteration-06/README.md), les
 [captures avant/après](docs/iteration-06/captures/README.md) et les
-[mesures des plateformes](docs/iteration-06/platforms/measurements.json).
+[mesures des plateformes](docs/platforms/measurements.json).
 Le parcours navigateur joue un chapitre après passage par l'atlas et revient
 à l'île, sans téléportation, invulnérabilité injectée ni `complete()` manuel.
 
