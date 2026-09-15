@@ -847,9 +847,20 @@ body.journey-open .masthead { display:none; }
 /* Visibility must switch immediately: a just-opened map can receive focus
  * before the first opacity frame, including after the Dreams selector. */
 body #map-screen.journey-map { transition:opacity .35s; }
-body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflow:auto; overscroll-behavior:contain; background:var(--journey-bg); color:var(--journey-ink); --journey-bg:#ecf0eb; --journey-ink:#2d514f; --journey-muted:#627875; --journey-line:#b0c2b9; --journey-star:#4c7970; --journey-paper:#f7f8f0; z-index:24; }
-:root[data-appearance="dark"] body #map-screen.journey-map { --journey-bg:#142c35; --journey-ink:#e6eee1; --journey-muted:#a6bbb9; --journey-line:#557074; --journey-star:#c9deba; --journey-paper:#213943; }
-.journey-map::before { content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 25% 55%,#739bb220,transparent 60%),radial-gradient(ellipse at 76% 16%,#cfc19c24,transparent 52%); }
+body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflow:auto; overscroll-behavior:contain; background:var(--journey-bg); color:var(--journey-ink); --journey-bg:#ecf0eb; --journey-ink:#2d514f; --journey-muted:#627875; --journey-line:#b0c2b9; --journey-veil-top:#eef2ece8;--journey-veil-bottom:#eef2ecf4;--journey-star:#4c7970; --journey-paper:#f7f8f0; z-index:24; }
+:root[data-appearance="dark"] body #map-screen.journey-map { --journey-bg:#142c35; --journey-ink:#e6eee1; --journey-muted:#a6bbb9; --journey-line:#557074; --journey-veil-top:#142c35e0;--journey-veil-bottom:#142c35f2;--journey-star:#c9deba; --journey-paper:#213943; }
+/* Le ciel de la carte, dessiné par js/world-art.js — le même que celui des
+ * lieux. Il est SOUS le DOM, il ne reçoit aucun événement, et le DOM garde
+ * tout ce qui compte : le focus, la manette, les 48 px, les traductions. */
+.journey-backdrop { position:fixed;inset:0;z-index:0;pointer-events:none;
+  /* Le flou et l'opacité tiennent le décor à SA place : on doit sentir le
+   * ciel, jamais avoir à le regarder pour lire un nom de lieu. */
+  opacity:.62;filter:blur(3px) saturate(.82);transform:scale(1.02);transition:opacity .4s; }
+.journey-map>*:not(.journey-backdrop) { position:relative;z-index:1; }
+/* Un voile qui garde les textes lisibles par-dessus un ciel vivant, sans
+ * éteindre le ciel : c'est la hiérarchie habituelle, décor en dernier. */
+.journey-map::before { content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,var(--journey-veil-top),var(--journey-veil-bottom)); }
 .journey-header { display:flex;align-items:center;justify-content:space-between;gap:24px;max-width:1500px;margin:auto; }
 .journey-brand { display:flex;gap:13px;align-items:center; }
 .journey-brand img { width:29px;height:38px;object-fit:contain; }
@@ -878,7 +889,17 @@ body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflo
 .journey-region-title h3 { font:400 15px Fredoka,sans-serif;margin:4px 0 0;color:var(--journey-ink); }
 .journey-constellation { position:relative;height:var(--region-height,400px); }
 .journey-lines { position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none; }
-.journey-lines polyline { stroke:var(--journey-line);stroke-width:1;vector-effect:non-scaling-stroke;fill:none;stroke-dasharray:2 5; }
+/* Un chemin de lumière, pas un trait de diagramme : des grains qui avancent
+ * d'un lieu au suivant, avec un halo doux. Le trait garde son épaisseur
+ * réelle quel que soit l'étirement du viewBox. */
+.journey-lines polyline { stroke:var(--journey-star);stroke-width:1.6;vector-effect:non-scaling-stroke;fill:none;
+  stroke-linecap:round;stroke-dasharray:1 9;opacity:.75;
+  filter:drop-shadow(0 0 3px var(--journey-star));
+  animation:journey-path 9s linear infinite; }
+@keyframes journey-path { to { stroke-dashoffset:-60; } }
+@media (prefers-reduced-motion:reduce) { .journey-lines polyline { animation:none; } }
+body.journey-reduced .journey-lines polyline { animation:none; }
+body.journey-reduced .journey-backdrop { filter:blur(3px) saturate(.82); }
 .journey-node { position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;padding:0;border:0;border-radius:50%;background:transparent;color:var(--journey-ink);transition:background .2s; }
 .journey-node:hover,.journey-node.is-selected { background:var(--journey-paper); }
 .journey-node.is-selected::after { content:"";position:absolute;inset:0;border:1px solid currentColor;border-radius:50%; }
@@ -4137,8 +4158,16 @@ window.LumenI18n.add([
         ledge(500, 585, 240, 'solid', { placeRole: 'mount' }),
         ledge(1070, 490, 230), ledge(1280, 390, 240), ledge(1490, 490, 310),
         ledge(2660, 485, 220), ledge(2850, 390, 180)],
-      enemies: [{ ...enemy('sleeper', 500, 660, 500, 2410), x: 500, y: 588, w: 240, h: 78, mount: true }],
-      collectibles: [...coins(235, 552, 6), ...arc(620, 525, 5), ...coins(1310, 345, 5), ...coins(2680, 443, 5),
+      enemies: [{ ...enemy('sleeper', 500, 660, 500, 2410), x: 500, y: 588, w: 240, h: 78, mount: true },
+        // Sur la route de la monture : l'essaim oblige à décider si l'on baisse
+        // la tête, si l'on saute, ou si l'on quitte le dos avant qu'il n'arrive.
+        enemy('swarm', 1560, 430, 1400, 1760),
+        // À l'arrivée, un veilleur : descendre du songe n'est pas gratuit.
+        enemy('hopper', 2700, 600, 2560, 2900)],
+      collectibles: [...coins(235, 552, 6), ...arc(620, 525, 5), ...coins(1310, 345, 5),
+        // Le long du trajet de la monture : ce qu'on ramasse sans descendre.
+        ...arc(1500, 500, 6), ...coins(1880, 470, 5), ...arc(2120, 500, 5),
+        ...coins(2680, 443, 5),
         item('star', 1140, 442), item('star', 1400, 340), item('star', 2930, 340), item('heart', 2500, 550)],
       checkpoints: [checkpoint(350), checkpoint(2560)], hazards: [],
       secrets: [secret(1290, 280, 210, 105)], wakeables: [],
@@ -4156,9 +4185,18 @@ window.LumenI18n.add([
         captureAfter: 11 },
       platforms: [ground(0, 3100), ledge(600, 480, 230), ledge(1070, 400, 230), ledge(1600, 480, 240),
         ledge(2030, 375, 220, 'echo'), ledge(2480, 470, 220)],
-      enemies: [], hazards: [],
+      // Le dormeur est posté juste devant la quatrième fleur : une seule onde
+      // l'apaise ET ouvre la corolle. La créature ne s'ajoute pas à l'idée, elle
+      // la resserre. Le patrouilleur, lui, fait payer la course en avant.
+      enemies: [{ ...enemy('sleeper', 1615, 600, 1560, 1720) },
+        enemy('patrol', 2260, 600, 2140, 2440)],
+      hazards: [],
       wakeables: [440,850,1260,1670,2080,2490,2840].map((x, i) => wake('bloom', x, 575, { id: 'astre-fleur-' + (i + 1) })),
-      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5), ...coins(1700, 438, 4),
+      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5),
+        // Dans le vide 1218→1700 : de quoi occuper l'attente pendant que l'astre
+        // rattrape la fleur qu'on vient d'ouvrir.
+        ...arc(1290, 520, 6), ...coins(1500, 470, 4),
+        ...coins(1700, 438, 4),
         ...coins(2070, 333, 4), ...coins(2520, 428, 4), item('star', 1170, 352), item('star', 2140, 323), item('star', 2610, 417), item('echo', 1900, 550)],
       checkpoints: [checkpoint(950), checkpoint(2190)], secrets: [secret(2035, 250, 210, 130)],
       hints: [{ x: 180, text: 'Réveille les fleurs avec X. Le petit astre avance seulement dans leur lumière.' },
@@ -4177,8 +4215,17 @@ window.LumenI18n.add([
       platforms: [ground(0, 720), ground(1270, 310), ground(2180, 820),
         ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge' }), ledge(1550, 600, 660, 'solid', { placeRole: 'living-bridge' }),
         ledge(390, 490, 210), ledge(1320, 485, 200), ledge(1480, 380, 230), ledge(2340, 480, 220), ledge(2590, 380, 230, 'vanish')],
-      enemies: [], hazards: [], wakeables: [], checkpoints: [checkpoint(400), checkpoint(1430)],
-      collectibles: [...coins(270, 547, 5), ...arc(890, 548, 6), ...coins(1360, 442, 4), ...arc(1760, 548, 6), ...coins(2390, 438, 4),
+      // Un veilleur endormi à côté du deuxième maillon : l'apaiser prolonge la
+      // chaîne au lieu de la rompre — c'est la même onde qui sert aux deux.
+      // Et un patrouilleur sur la rive d'arrivée : le pont expire, lui non.
+      enemies: [{ ...enemy('sleeper', 1455, 600, 1400, 1560) },
+        enemy('patrol', 2520, 600, 2330, 2830)],
+      hazards: [], wakeables: [], checkpoints: [checkpoint(400), checkpoint(1430)],
+      collectibles: [...coins(270, 547, 5), ...arc(890, 548, 6),
+        // Suspendus au-dessus des deux travées : on ne les a qu'en passant PAR
+        // le pont, jamais en contournant.
+        ...arc(600, 500, 5), ...arc(2010, 500, 6),
+        ...coins(1360, 442, 4), ...arc(1760, 548, 6), ...coins(2390, 438, 4),
         item('star', 480, 440), item('star', 1600, 333), item('star', 2700, 330)],
       secrets: [secret(1490, 275, 210, 108)],
       hints: [{ x: 180, text: 'Appelle un veilleur. Sa voix traverse toute la chaîne et le pont prend forme.' },
@@ -4204,8 +4251,14 @@ window.LumenI18n.add([
         wake('chime', 2390, 545, { id: 'riviere-relais-5' }), wake('chime', 2540, 545, { id: 'riviere-relais-6' }),
         wake('chime', 2680, 545, { id: 'riviere-relais-7' }), wake('bridge', 2700, 600, { id: 'riviere-pont-2', span: 700 }),
         wake('bloom', 3420, 575, { id: 'riviere-lune' })],
-      enemies: [enemy('sleeper', 1830, 600, 1720, 1930)], hazards: [],
-      collectibles: [...coins(240, 550, 5), ...coins(660, 333, 4), ...arc(1050, 548, 6), ...coins(1920, 333, 4),
+      // Une tourelle sur la rive d'en face de la deuxième balise : allumer
+      // devient une question de POSITION, pas seulement d'ordre.
+      enemies: [enemy('sleeper', 1830, 600, 1720, 1930),
+        enemy('turret', 2760, 600, 2700, 2820)], hazards: [],
+      collectibles: [...coins(240, 550, 5), ...coins(660, 333, 4), ...arc(1050, 548, 6),
+        // Les deux vides suivent le lit de la rivière remise en marche.
+        ...arc(1320, 490, 6), ...coins(1620, 430, 5), ...arc(2900, 500, 6), ...coins(3200, 440, 5),
+        ...coins(1920, 333, 4),
         ...arc(2490, 548, 6), ...coins(3480, 338, 5), item('star', 730, 325), item('star', 2200, 235), item('star', 3580, 330)],
       checkpoints: [checkpoint(1630), checkpoint(3170)],
       secrets: [secret(645, 270, 205, 108), secret(2100, 180, 215, 108), secret(3450, 275, 230, 108)],
@@ -4234,7 +4287,12 @@ window.LumenI18n.add([
         ledge(390, 545, 240), ledge(180, 430, 240, 'moving', { axis: 'y', range: 15, speed: .6 }),
         ledge(0, 320, 250, 'conveyor', { direction: 1 }), { ...ground(310, 500, 210), h: 38 },
         ledge(1700, 1010, 190, 'crumble'), ledge(1720, 900, 170)],
-      enemies: [], hazards: [], wakeables: [],
+      // Deux paliers gardés, à mi-hauteur et sous la couronne : dans une
+      // ascension, une créature ne barre pas la route — elle décide du MOMENT
+      // où l'on quitte le palier qui porte.
+      enemies: [enemy('hopper', 1000, 1295, 880, 1180),
+        enemy('swarm', 700, 700, 540, 900)],
+      hazards: [], wakeables: [],
       collectibles: [...coins(420, 1638, 4), ...arc(910, 1295, 5), ...coins(1460, 1073, 6), ...coins(960, 843, 4),
         ...arc(420, 493, 5), ...coins(410, 164, 4), item('star', 555, 1635), item('star', 1800, 850), item('star', 570, 160)],
       checkpoints: [checkpoint(260, 1800), checkpoint(1600, 1120)], secrets: [secret(1710, 795, 190, 110)],
@@ -4255,8 +4313,16 @@ window.LumenI18n.add([
       platforms: [ground(0, 560), ground(1430, 420), ground(2670, 480),
         ...[600,820,1040,1260,1860,2080,2300,2520].map(x => ledge(x, 585, 180, 'solid', { placeRole: 'rain-step' })),
         ledge(250, 490, 210), ledge(1510, 490, 230), ledge(2790, 490, 250)],
-      enemies: [], hazards: [], wakeables: [], checkpoints: [checkpoint(300), checkpoint(1630)],
-      collectibles: [...coins(290, 446, 4), ...arc(830, 525, 5), ...coins(1540, 445, 4), ...arc(2120, 525, 5),
+      // Un lieu sans sol continu appelle une créature qui n'en a pas besoin :
+      // l'essaim dérive au-dessus des vides, là où la pluie fait pousser.
+      enemies: [enemy('swarm', 1180, 400, 1000, 1420),
+        enemy('swarm', 2450, 420, 2280, 2700)],
+      hazards: [], wakeables: [], checkpoints: [checkpoint(300), checkpoint(1630)],
+      collectibles: [...coins(290, 446, 4), ...arc(830, 525, 5),
+        // Dans les quatre vides : ce que la pluie fait pousser mérite d'être
+        // parcouru, pas seulement franchi.
+        ...arc(520, 470, 5), ...coins(1120, 400, 5), ...arc(1780, 470, 6), ...coins(2420, 400, 5),
+        ...coins(1540, 445, 4), ...arc(2120, 525, 5),
         ...coins(2820, 446, 4), item('star', 355, 440), item('star', 1620, 440), item('star', 2920, 440)],
       secrets: [secret(1515, 385, 220, 110)],
       hints: [{ x: 160, text: 'Appelle avec X : le nuage vient pleuvoir devant toi. Attends que le prochain pas ait poussé.' },
@@ -8445,6 +8511,83 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       </div></section>`;
   }
 
+  /* ── Le ciel de la carte ────────────────────────────────────────────────
+   * La carte était un document : typographie, points, filets. Belle, mais
+   * d'un autre jeu. Elle reçoit ici le MÊME ciel que les lieux, dessiné par
+   * js/world-art.js — celui qui dessine les îles et les jardins.
+   *
+   * Le DOM ne bouge pas : c'est lui qui porte les 22 lieux atteignables à la
+   * manette, les cibles de 48 px, les états en niveaux de gris, le focus et
+   * l'arabe. Le canvas se glisse DERRIÈRE, et ne reçoit aucun événement.
+   *
+   * Le ciel suit l'acte regardé — aube, midi, couchant — de sorte que changer
+   * de constellation change l'heure du jour. La carte devient un endroit d'où
+   * l'on regarde le voyage, et non un tableau de bord qui le résume. */
+  const SKIES = ['dawn', 'noon', 'sunset'];
+  let backdrop = null, backdropFrame = 0, backdropStart = 0;
+
+  function backdropCanvas() {
+    if (backdrop) return backdrop;
+    const screen = $('map-screen');
+    if (!screen) return null;
+    backdrop = document.createElement('canvas');
+    backdrop.className = 'journey-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    screen.insertBefore(backdrop, screen.firstChild);
+    return backdrop;
+  }
+
+  /** Une seule image du ciel. `time` avance en secondes ; à 0 tout est figé,
+   *  ce qui est exactement ce que demande le mode « mouvements réduits ». */
+  function paintBackdrop(time) {
+    const canvas = backdropCanvas();
+    if (!canvas || !global.LumenArt) return;
+    const ratio = Math.min(2, global.devicePixelRatio || 1);
+    const width = Math.max(320, $('map-screen').clientWidth);
+    const height = Math.max(320, $('map-screen').clientHeight);
+    if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
+      canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
+      canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
+      surface.songAssets = null; // les ciels en cache sont à la mauvaise taille
+    }
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.clearRect(0, 0, width, height);
+    surface.ctx = context; surface.width = width; surface.height = height;
+    const palette = global.LumenArt.paletteFor(SKIES[(selectedAct - 1) % 3]);
+    // La dérive horizontale raconte la traversée de l'archipel d'un acte à
+    // l'autre ; elle s'arrête net quand le joueur a demandé moins de mouvement.
+    const drift = time * 9 + (selectedAct - 1) * 260;
+    global.LumenArt.horizon(surface, palette, time, drift, width, height);
+    context.save();
+    context.globalAlpha = 0.5;
+    context.fillStyle = palette.night ? '#0d1a1c' : '#f7f8ec';
+    context.fillRect(0, 0, width, height);
+    context.restore();
+  }
+  const surface = { ctx: null, width: 0, height: 0, songAssets: null };
+
+  function startBackdrop() {
+    stopBackdrop();
+    const reduced = game?.progress?.settings?.reducedEffects;
+    // Mouvements réduits : le ciel s'immobilise et le chemin cesse d'avancer.
+    // Il ne DISPARAÎT pas — l'information reste, seul le mouvement s'en va.
+    document.body.classList.toggle('journey-reduced', !!reduced);
+    backdropStart = performance.now();
+    paintBackdrop(0);
+    if (reduced) return;
+    const step = now => {
+      paintBackdrop((now - backdropStart) / 1000);
+      backdropFrame = requestAnimationFrame(step);
+    };
+    backdropFrame = requestAnimationFrame(step);
+  }
+  function stopBackdrop() {
+    if (backdropFrame) cancelAnimationFrame(backdropFrame);
+    backdropFrame = 0;
+  }
+
   function renderSky() {
     $('journey-sky').innerHTML = [1,2,3].map(region).join('') +
       `<section class="journey-refuges" aria-label="${text('En dehors du chemin')}"><span class="journey-refuges-label">${text('En dehors du chemin')}</span>${model.places.filter(place => ['hub','dreams'].includes(place.kind)).map((place,index)=>node(place,index ? 70 : 30,45,0)).join('')}</section>`;
@@ -8484,7 +8627,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
 
   function render(options = {}) {
-    if (!game || game.mode !== 'map') return;
+    if (!game || game.mode !== 'map') { stopBackdrop(); return; }
     model = global.LumenJourney.describe(game);
     if (options.enter) {
       newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
@@ -8498,6 +8641,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
     animateBirth = !!options.enter && newLights.size > 0;
     renderSky(); renderDetails(); renderTotals(); animateBirth = false;
+    startBackdrop();
     $('journey-announcement').textContent = announcement;
     global.LumenI18n.translateDOM($('map-screen'));
     if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));
@@ -8560,7 +8704,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         if (matchMedia('(max-width:760px)').matches) $('journey-details').scrollIntoView({block:'start',behavior:'instant'});
       }
       if(button.dataset.journeyAct) {
-        selectedAct=Number(button.dataset.journeyAct);renderSky();
+        selectedAct=Number(button.dataset.journeyAct);renderSky();startBackdrop();
         const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id);
       }
       if(button.dataset.journeyRequirement) focusPlace(button.dataset.journeyRequirement);
@@ -8593,7 +8737,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     game.on('mode',mode=>{if(mode!=='map')visible=false;});
   }
   function show() { render({enter:!visible});visible=true; }
-  function hide() { visible=false; }
+  function hide() {
+    stopBackdrop(); visible=false; }
   global.LumenJourneyUI={attach,show,hide,render,navigate,activate,back,handle,focusPlace,get selectedId(){return selectedId;}};
 })(window);
 

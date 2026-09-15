@@ -51,6 +51,83 @@
       </div></section>`;
   }
 
+  /* ── Le ciel de la carte ────────────────────────────────────────────────
+   * La carte était un document : typographie, points, filets. Belle, mais
+   * d'un autre jeu. Elle reçoit ici le MÊME ciel que les lieux, dessiné par
+   * js/world-art.js — celui qui dessine les îles et les jardins.
+   *
+   * Le DOM ne bouge pas : c'est lui qui porte les 22 lieux atteignables à la
+   * manette, les cibles de 48 px, les états en niveaux de gris, le focus et
+   * l'arabe. Le canvas se glisse DERRIÈRE, et ne reçoit aucun événement.
+   *
+   * Le ciel suit l'acte regardé — aube, midi, couchant — de sorte que changer
+   * de constellation change l'heure du jour. La carte devient un endroit d'où
+   * l'on regarde le voyage, et non un tableau de bord qui le résume. */
+  const SKIES = ['dawn', 'noon', 'sunset'];
+  let backdrop = null, backdropFrame = 0, backdropStart = 0;
+
+  function backdropCanvas() {
+    if (backdrop) return backdrop;
+    const screen = $('map-screen');
+    if (!screen) return null;
+    backdrop = document.createElement('canvas');
+    backdrop.className = 'journey-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    screen.insertBefore(backdrop, screen.firstChild);
+    return backdrop;
+  }
+
+  /** Une seule image du ciel. `time` avance en secondes ; à 0 tout est figé,
+   *  ce qui est exactement ce que demande le mode « mouvements réduits ». */
+  function paintBackdrop(time) {
+    const canvas = backdropCanvas();
+    if (!canvas || !global.LumenArt) return;
+    const ratio = Math.min(2, global.devicePixelRatio || 1);
+    const width = Math.max(320, $('map-screen').clientWidth);
+    const height = Math.max(320, $('map-screen').clientHeight);
+    if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
+      canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
+      canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
+      surface.songAssets = null; // les ciels en cache sont à la mauvaise taille
+    }
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.clearRect(0, 0, width, height);
+    surface.ctx = context; surface.width = width; surface.height = height;
+    const palette = global.LumenArt.paletteFor(SKIES[(selectedAct - 1) % 3]);
+    // La dérive horizontale raconte la traversée de l'archipel d'un acte à
+    // l'autre ; elle s'arrête net quand le joueur a demandé moins de mouvement.
+    const drift = time * 9 + (selectedAct - 1) * 260;
+    global.LumenArt.horizon(surface, palette, time, drift, width, height);
+    context.save();
+    context.globalAlpha = 0.5;
+    context.fillStyle = palette.night ? '#0d1a1c' : '#f7f8ec';
+    context.fillRect(0, 0, width, height);
+    context.restore();
+  }
+  const surface = { ctx: null, width: 0, height: 0, songAssets: null };
+
+  function startBackdrop() {
+    stopBackdrop();
+    const reduced = game?.progress?.settings?.reducedEffects;
+    // Mouvements réduits : le ciel s'immobilise et le chemin cesse d'avancer.
+    // Il ne DISPARAÎT pas — l'information reste, seul le mouvement s'en va.
+    document.body.classList.toggle('journey-reduced', !!reduced);
+    backdropStart = performance.now();
+    paintBackdrop(0);
+    if (reduced) return;
+    const step = now => {
+      paintBackdrop((now - backdropStart) / 1000);
+      backdropFrame = requestAnimationFrame(step);
+    };
+    backdropFrame = requestAnimationFrame(step);
+  }
+  function stopBackdrop() {
+    if (backdropFrame) cancelAnimationFrame(backdropFrame);
+    backdropFrame = 0;
+  }
+
   function renderSky() {
     $('journey-sky').innerHTML = [1,2,3].map(region).join('') +
       `<section class="journey-refuges" aria-label="${text('En dehors du chemin')}"><span class="journey-refuges-label">${text('En dehors du chemin')}</span>${model.places.filter(place => ['hub','dreams'].includes(place.kind)).map((place,index)=>node(place,index ? 70 : 30,45,0)).join('')}</section>`;
@@ -90,7 +167,7 @@
   }
 
   function render(options = {}) {
-    if (!game || game.mode !== 'map') return;
+    if (!game || game.mode !== 'map') { stopBackdrop(); return; }
     model = global.LumenJourney.describe(game);
     if (options.enter) {
       newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
@@ -104,6 +181,7 @@
     }
     animateBirth = !!options.enter && newLights.size > 0;
     renderSky(); renderDetails(); renderTotals(); animateBirth = false;
+    startBackdrop();
     $('journey-announcement').textContent = announcement;
     global.LumenI18n.translateDOM($('map-screen'));
     if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));
@@ -166,7 +244,7 @@
         if (matchMedia('(max-width:760px)').matches) $('journey-details').scrollIntoView({block:'start',behavior:'instant'});
       }
       if(button.dataset.journeyAct) {
-        selectedAct=Number(button.dataset.journeyAct);renderSky();
+        selectedAct=Number(button.dataset.journeyAct);renderSky();startBackdrop();
         const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id);
       }
       if(button.dataset.journeyRequirement) focusPlace(button.dataset.journeyRequirement);
@@ -199,6 +277,7 @@
     game.on('mode',mode=>{if(mode!=='map')visible=false;});
   }
   function show() { render({enter:!visible});visible=true; }
-  function hide() { visible=false; }
+  function hide() {
+    stopBackdrop(); visible=false; }
   global.LumenJourneyUI={attach,show,hide,render,navigate,activate,back,handle,focusPlace,get selectedId(){return selectedId;}};
 })(window);

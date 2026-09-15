@@ -3,9 +3,20 @@ body.journey-open .masthead { display:none; }
 /* Visibility must switch immediately: a just-opened map can receive focus
  * before the first opacity frame, including after the Dreams selector. */
 body #map-screen.journey-map { transition:opacity .35s; }
-body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflow:auto; overscroll-behavior:contain; background:var(--journey-bg); color:var(--journey-ink); --journey-bg:#ecf0eb; --journey-ink:#2d514f; --journey-muted:#627875; --journey-line:#b0c2b9; --journey-star:#4c7970; --journey-paper:#f7f8f0; z-index:24; }
-:root[data-appearance="dark"] body #map-screen.journey-map { --journey-bg:#142c35; --journey-ink:#e6eee1; --journey-muted:#a6bbb9; --journey-line:#557074; --journey-star:#c9deba; --journey-paper:#213943; }
-.journey-map::before { content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 25% 55%,#739bb220,transparent 60%),radial-gradient(ellipse at 76% 16%,#cfc19c24,transparent 52%); }
+body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflow:auto; overscroll-behavior:contain; background:var(--journey-bg); color:var(--journey-ink); --journey-bg:#ecf0eb; --journey-ink:#2d514f; --journey-muted:#627875; --journey-line:#b0c2b9; --journey-veil-top:#eef2ece8;--journey-veil-bottom:#eef2ecf4;--journey-star:#4c7970; --journey-paper:#f7f8f0; z-index:24; }
+:root[data-appearance="dark"] body #map-screen.journey-map { --journey-bg:#142c35; --journey-ink:#e6eee1; --journey-muted:#a6bbb9; --journey-line:#557074; --journey-veil-top:#142c35e0;--journey-veil-bottom:#142c35f2;--journey-star:#c9deba; --journey-paper:#213943; }
+/* Le ciel de la carte, dessiné par js/world-art.js — le même que celui des
+ * lieux. Il est SOUS le DOM, il ne reçoit aucun événement, et le DOM garde
+ * tout ce qui compte : le focus, la manette, les 48 px, les traductions. */
+.journey-backdrop { position:fixed;inset:0;z-index:0;pointer-events:none;
+  /* Le flou et l'opacité tiennent le décor à SA place : on doit sentir le
+   * ciel, jamais avoir à le regarder pour lire un nom de lieu. */
+  opacity:.62;filter:blur(3px) saturate(.82);transform:scale(1.02);transition:opacity .4s; }
+.journey-map>*:not(.journey-backdrop) { position:relative;z-index:1; }
+/* Un voile qui garde les textes lisibles par-dessus un ciel vivant, sans
+ * éteindre le ciel : c'est la hiérarchie habituelle, décor en dernier. */
+.journey-map::before { content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,var(--journey-veil-top),var(--journey-veil-bottom)); }
 .journey-header { display:flex;align-items:center;justify-content:space-between;gap:24px;max-width:1500px;margin:auto; }
 .journey-brand { display:flex;gap:13px;align-items:center; }
 .journey-brand img { width:29px;height:38px;object-fit:contain; }
@@ -34,7 +45,17 @@ body #map-screen.journey-map { padding:28px clamp(18px,3.2vw,52px) 22px; overflo
 .journey-region-title h3 { font:400 15px Fredoka,sans-serif;margin:4px 0 0;color:var(--journey-ink); }
 .journey-constellation { position:relative;height:var(--region-height,400px); }
 .journey-lines { position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none; }
-.journey-lines polyline { stroke:var(--journey-line);stroke-width:1;vector-effect:non-scaling-stroke;fill:none;stroke-dasharray:2 5; }
+/* Un chemin de lumière, pas un trait de diagramme : des grains qui avancent
+ * d'un lieu au suivant, avec un halo doux. Le trait garde son épaisseur
+ * réelle quel que soit l'étirement du viewBox. */
+.journey-lines polyline { stroke:var(--journey-star);stroke-width:1.6;vector-effect:non-scaling-stroke;fill:none;
+  stroke-linecap:round;stroke-dasharray:1 9;opacity:.75;
+  filter:drop-shadow(0 0 3px var(--journey-star));
+  animation:journey-path 9s linear infinite; }
+@keyframes journey-path { to { stroke-dashoffset:-60; } }
+@media (prefers-reduced-motion:reduce) { .journey-lines polyline { animation:none; } }
+body.journey-reduced .journey-lines polyline { animation:none; }
+body.journey-reduced .journey-backdrop { filter:blur(3px) saturate(.82); }
 .journey-node { position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;padding:0;border:0;border-radius:50%;background:transparent;color:var(--journey-ink);transition:background .2s; }
 .journey-node:hover,.journey-node.is-selected { background:var(--journey-paper); }
 .journey-node.is-selected::after { content:"";position:absolute;inset:0;border:1px solid currentColor;border-radius:50%; }

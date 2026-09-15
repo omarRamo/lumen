@@ -5,6 +5,26 @@ sont dans la [note d'itération 06](docs/iteration-06/README.md). Les sujets
 reportés attendent une décision explicite ; leur présence ici n'autorise pas
 à les commencer pendant une itération d'identité.
 
+
+## Fermé À L'Itération 07
+
+- **La carte appartient au jeu.** Un ciel de `world-art.js` derrière le DOM,
+  qui suit l'acte regardé ; les filets sont devenus un chemin de lumière.
+- **La colonne des saisons est un puits.** Palette `shaft`, parois visibles,
+  strates qui défilent, couronne au sommet.
+- **Les six lieux sont habités.** 0,3 → 2,2 créature par lieu, aucun vide,
+  planchers tenus par `tests/test-density.cjs`.
+- **Le dos de la créature est une carapace**, à boîte de collision inchangée.
+- **Le dépôt pèse 6 Mo au lieu de 40**, et `tests/test-repo-weight.cjs` le
+  garde.
+
+## À Trancher
+
+- **L'historique du dépôt.** Les 48 Mo d'objets des itérations 05 et 06 y
+  restent : `git rm` ne les en sort pas. Un `git filter-repo` ramènerait le
+  dépôt sous 10 Mo mais réécrirait tous les commits et casserait les clones.
+  Décision d'Omar, pas d'une itération.
+
 ## D'abord, Observer
 
 1. **Trois playtests humains sans explication préalable.** Une personne

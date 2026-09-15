@@ -10,3 +10,4 @@ package-lock.json
 .git-commit-msg.txt
 lumen.bundle
 Claude outputs/
+work/shot*.cjs
