@@ -31,6 +31,9 @@ const BUDGETS = {
 /** Les formats d'image tolérés dans le dépôt. Le PNG d'une capture d'écran de
  *  jeu en aplats pèse six fois son WebP : voir tools/capture.cjs. */
 const IMAGE_FORMATS = ['.webp', '.svg', '.woff2'];
+// Xcode requires an opaque PNG master; exception is limited to this asset,
+// counted in both budgets and capped at 128 KiB.
+const IOS_ICON = 'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png';
 const FORBIDDEN_FORMATS = ['.png', '.jpg', '.jpeg', '.bmp', '.tiff'];
 
 const checks = [];
@@ -51,17 +54,21 @@ function weigh(files) {
   }
   return total;
 }
+test('L’icône iOS reste légère', () => {
+  assert.ok(fs.statSync(path.join(root, IOS_ICON)).size <= 128 * 1024);
+});
+
 const mb = bytes => (bytes / 1048576).toFixed(1) + ' Mo';
 
 test('Aucune capture n’entre dans le dépôt dans un format qui pèse six fois son poids', () => {
-  const files = tracked().filter(file => FORBIDDEN_FORMATS.includes(path.extname(file).toLowerCase()));
+  const files = tracked().filter(file => file !== IOS_ICON && FORBIDDEN_FORMATS.includes(path.extname(file).toLowerCase()));
   assert.deepEqual(files.slice(0, 8), [],
     files.length + ' image(s) dans un format interdit. Passer par tools/capture.cjs :\n      ' +
     files.slice(0, 8).join('\n      '));
 });
 
 test('Le poids des images suivies tient dans son budget', () => {
-  const images = tracked().filter(file => IMAGE_FORMATS.includes(path.extname(file).toLowerCase()));
+  const images = tracked().filter(file => (file === IOS_ICON || IMAGE_FORMATS.includes(path.extname(file).toLowerCase())));
   const weight = weigh(images);
   assert.ok(weight <= BUDGETS.images,
     `${images.length} images pèsent ${mb(weight)}, budget ${mb(BUDGETS.images)}.\n` +

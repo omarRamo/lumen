@@ -6,7 +6,6 @@ work/*.log
 
 # Dépendances de développement (le jeu lui-même n'en a aucune)
 node_modules/
-package-lock.json
 .git-commit-msg.txt
 lumen.bundle
 Claude outputs/

@@ -1,0 +1,13 @@
+{
+  "appId": "com.omartrabelsi.lumen",
+  "appName": "LUMEN",
+  "webDir": "dist",
+  "ios": {
+    "scheme": "LUMEN",
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "limitsNavigationsToAppBoundDomains": true,
+    "backgroundColor": "#dce6d5"
+  },
+  "server": { "iosScheme": "capacitor" }
+}
