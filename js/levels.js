@@ -814,9 +814,11 @@
       wakeables: [wake('bloom', 600, 575, { id: 'riviere-source' }),
         wake('chime', 820, 545, { id: 'riviere-relais-1' }), wake('chime', 980, 545, { id: 'riviere-relais-2' }),
         wake('chime', 1130, 545, { id: 'riviere-relais-3' }), wake('bridge', 1200, 600, { id: 'riviere-pont-1', span: 640 }),
+        wake('chime', 1300, 545, { id: 'riviere-retour-1' }), wake('chime', 1450, 545, { id: 'riviere-retour-2' }),
         wake('bloom', 2000, 575, { id: 'riviere-reflet' }), wake('chime', 2230, 545, { id: 'riviere-relais-4' }),
         wake('chime', 2390, 545, { id: 'riviere-relais-5' }), wake('chime', 2540, 545, { id: 'riviere-relais-6' }),
         wake('chime', 2680, 545, { id: 'riviere-relais-7' }), wake('bridge', 2700, 600, { id: 'riviere-pont-2', span: 700 }),
+        wake('chime', 2840, 545, { id: 'riviere-retour-3' }), wake('chime', 2990, 545, { id: 'riviere-retour-4' }),
         wake('bloom', 3420, 575, { id: 'riviere-lune' })],
       // Une tourelle sur la rive d'en face de la deuxième balise : allumer
       // devient une question de POSITION, pas seulement d'ordre.
@@ -941,6 +943,17 @@
       if (ascent) platform.h = 40; // The upper canopy must not wall off the original climb.
       level.platforms.push(platform);
       level.collectibles.push(...coins(start + x + 45, surface - 48, 7, (width - 90) / 6));
+      // A downhill shortcut must still be climbable on the way back.
+      // Split drops exceeding the normal jump into two ordinary steps.
+      if (i && route[i - 1][2] - rise > 95) {
+        const [previousX, previousWidth, previousRise] = route[i - 1];
+        const stepX = start + previousX + previousWidth + 15;
+        const stepY = shore - (previousRise + rise) / 2;
+        level.platforms.push(ledge(stepX, stepY, 150));
+        const step = { x: stepX + 80, surfaceY: stepY };
+        level.continuation.route.push(step);
+        if (level.place) level.place.pilot.push(step);
+      }
       const point = { x: start + x + width * .55, surfaceY: surface };
       level.continuation.route.push(point);
       if (level.place) level.place.pilot.push(point);
@@ -960,6 +973,16 @@
     const finish = { x: level.exit.x + 25, surfaceY: shore };
     level.continuation.route.push(finish);
     if (level.place) level.place.pilot.push(finish);
+  }
+
+  // Two extra chances per chapter, kept collected until a fresh attempt.
+  // They sit by the first flags, on reachable ground, apart from healing hearts.
+  for (const level of levels.filter(level => !level.hub)) {
+    for (const flag of level.checkpoints.slice(0, 2)) {
+      const support = level.platforms.find(p => p.type === 'ground' && flag.x >= p.x && flag.x <= p.x + p.w && p.y === flag.y);
+      const x = support ? Math.max(support.x + 24, flag.x - 45) : flag.x - 45;
+      level.collectibles.push(item('life', x, flag.y - 65));
+    }
   }
 
   // Static definitions are never mutated by the simulation. Creating a stage

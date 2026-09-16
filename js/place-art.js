@@ -299,6 +299,20 @@
       stroke(c,[[x,y],[x+35+hash(i)*60,y]],p.rim+(light>.5?'60':'25'),1.4);
     }
     const ids=game.level.place.beacons||[];
+    // The closed door shows the three flowers it needs, not the optional shards.
+    if (!game.exit.open) {
+      const x=game.exit.x+game.exit.w/2,y=game.exit.y-38;
+      ids.forEach((id,index)=>{
+        const lit=game.wokenOnce.has(id),cx=x+(index-1)*23;
+        for(let petal=0;petal<5;petal++) {
+          const a=petal*Math.PI*2/5;
+          oval(c,cx+Math.cos(a)*5,y+Math.sin(a)*5,4,4,lit?p.coral:p.shade);
+        }
+        oval(c,cx,y,3,3,lit?'#fff0aa':p.rim);
+      });
+      stroke(c,[[x-5,y+19],[x-13,y+25],[x-5,y+31]],p.rim,2.5);
+      stroke(c,[[x-13,y+25],[x+12,y+25]],p.rim,2.5);
+    }
     for(const beacon of game.wakeables.filter(w=>ids.includes(w.id))) {
       if(!game.wokenOnce.has(beacon.id))continue;
       for(let row=0;row<7;row++) {

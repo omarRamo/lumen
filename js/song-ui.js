@@ -51,7 +51,7 @@
     if (pane === renderedPane) return;
     renderedPane = pane;
     panel.className = 'song-panel song-panel-' + pane;
-    const closeButton = pane === 'result' ? '' : roundButton('song-close', 'Reprendre', 'x');
+    const closeButton = ['result','gameover'].includes(pane) ? '' : roundButton('song-close', 'Reprendre', 'x');
     let content = '';
     if (pane === 'pause') {
       content = title('UNE PAUSE DANS LE VOYAGE', global.LumenTouch?.enabled ? 'Pause' : 'Le ciel peut attendre.') +
@@ -60,6 +60,11 @@
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
         <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
+    } else if (pane === 'gameover') {
+      content = title('', 'Une lumière renaîtra.') +
+        `<p class="song-dialog-sub">Repartez du début avec 3 vies.</p>
+        <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
+        <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>`;
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
@@ -112,6 +117,7 @@
     }
     const mode = game.mode;
     if (mode === 'playing' || mode === 'dead') pane = null;
+    else if (mode === 'gameover') pane = 'gameover';
     else if (mode === 'paused' && !pane) pane = 'pause';
     else if ((mode === 'complete' || mode === 'ending') && !pane) pane = 'result';
     byId('song-overlay').hidden = !pane;
@@ -129,9 +135,11 @@
     if (Math.abs(game.player.vx) > 1 || game.player.jumpTimer > 0) welcomeVisible = false;
     byId('song-welcome').hidden = !welcomeVisible || mode !== 'playing';
     document.body.classList.toggle('song-welcoming', !byId('song-welcome').hidden);
-    const key = [song.index, song.count, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
+    const key = [song.index, song.count, game.lives, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
     if (key !== lastHud) {
       lastHud = key;
+      byId('song-life-count').textContent = '×' + Math.max(0, game.lives);
+      byId('song-life-count').setAttribute('aria-label', translate('{count} vies', {count: Math.max(0, game.lives)}));
       byId('song-island-number').textContent = String(song.index + 1).padStart(2, '0') + ' / 03';
       byId('song-island-name').textContent = translate(game.level.name);
       byId('song-echoes').innerHTML = echoes();
@@ -189,6 +197,7 @@
     }
     if (action === 'song-next' || action === 'next' || action === 'confirm') {
       if (game.mode === 'paused') close();
+      else if (game.mode === 'gameover') helpers.transition(() => game.retry());
       else if (['complete','ending'].includes(game.mode)) {
         const next = game.nextJourneyPlace(), style = game.song.style;
         if (next) helpers.transition(() => game.openJourneyPlace(next.id, { style, timed:style === 'flow' }));

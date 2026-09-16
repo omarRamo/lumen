@@ -293,9 +293,17 @@ async function test(name, run) {
     assert.equal(await page.evaluate(()=>window.lumen.mode),'paused');
     const audible=await page.evaluate(async()=>{
       const audio=window.lumen.audio,analyser=audio.ctx.createAnalyser();analyser.fftSize=2048;audio.master.connect(analyser);
-      await new Promise(resolve=>setTimeout(resolve,300));
-      const samples=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(samples);analyser.disconnect();
-      return [...samples].some(value=>Math.abs(value)>.0001);
+      // Observe actual output across audio quanta; a single wall-clock sample
+      // can land before the analyser has received its first rendered block.
+      const samples=new Float32Array(analyser.fftSize);
+      try {
+        for(let attempt=0;attempt<30;attempt++) {
+          analyser.getFloatTimeDomainData(samples);
+          if(samples.some(value=>Math.abs(value)>.0001))return true;
+          await new Promise(resolve=>setTimeout(resolve,50));
+        }
+        return false;
+      } finally { audio.master.disconnect(analyser); analyser.disconnect(); }
     });
     assert.equal(audible,true,'The preview should produce actual samples.');
     await page.reload();await page.waitForFunction(()=>window.lumen?.song);

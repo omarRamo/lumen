@@ -431,6 +431,8 @@
         Art.note(c, 0, 0, p);
       } else if (ty === 'star') {
         c.rotate(Math.sin(t) * .12); c.shadowColor = '#ffcf6f'; c.shadowBlur = 14; star(c, 0, 0, 19, '#f5c772'); c.shadowBlur = 0; star(c, 0, 0, 12, '#ffebaa'); ellipse(c, -3, -2, 1.3, 2, '#94764a'); ellipse(c, 3, -2, 1.3, 2, '#94764a'); c.strokeStyle = '#a88d5b'; c.lineWidth = 1; c.beginPath(); c.arc(0, 1, 3, .2, Math.PI - .2); c.stroke(); c.strokeStyle = p.accent + '44'; c.lineWidth = 1; c.beginPath(); c.arc(0, 0, 26, t, t + 4); c.stroke();
+      } else if (ty === 'life') {
+        Art.life(c, 0, 0);
       } else if (ty === 'heart') {
         c.fillStyle = '#f5a4a2'; c.beginPath(); c.moveTo(0, 10); c.bezierCurveTo(-23, -4, -8, -20, 0, -9); c.bezierCurveTo(8, -20, 23, -4, 0, 10); c.fill(); ellipse(c, -5, -7, 3, 2, '#ffe0c9', -.5);
       } else {

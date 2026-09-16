@@ -48,15 +48,16 @@
     } else if (mode==='map') {showScreen('map');renderMap();$('chapter-intro').classList.remove('show');}
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
+      $('pause-screen').classList.toggle('stage-over',over);
       $('pause-title').textContent=over?'Une lumière renaîtra.':window.LumenTouch?.enabled?'Pause':'Le monde peut attendre.';
-      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Reprenez avec cinq souffles.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
+      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Repartez du début avec 3 vies.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
       // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
       // avec sa graine, ou on en demande une autre. Deux décisions, deux boutons.
       const lostNight=over&&game.lastRun&&!game.lastRun.won;
       const second=$('pause-screen').querySelector('[data-command="map"],[data-command="dream"]');
       $('pause-screen').querySelector('[data-command="retry"]').innerHTML=
-        lostNight?`Refaire cette nuit <span>↻</span>`:over?'Rallumer une lumière <span>↻</span>':'Recommencer le chapitre <span>↻</span>';
+        lostNight?`Refaire cette nuit <span>↻</span>`:'Recommencer le chapitre <span>↻</span>';
       if(lostNight) {
         $('pause-title').textContent='La nuit s’achève ici.';
         $('pause-screen').querySelector('.modal-card>p').textContent=
@@ -258,7 +259,9 @@
     if(key!==lastHud) {
       lastHud=key;$('hearts').innerHTML=Array.from({length:3},(_,i)=>`<span class="${i<p.hp?'':'empty'}">♥</span>`).join('');
       $('hearts').setAttribute('aria-label',translate('{hp} points de vie sur 3',{hp:p.hp}));
-      $('remaining-lives').textContent=translate('Souffles restants : {count}',{count:Math.max(0,game.lives)});
+      $('life-count').textContent='×'+Math.max(0,game.lives);
+      $('life-count').setAttribute('aria-label',translate('{count} vies',{count:Math.max(0,game.lives)}));
+      $('remaining-lives').textContent=translate('{count} vies',{count:Math.max(0,game.lives)});
       $('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
       $('star-count').textContent=game.levelStars+' / '+totalFragments;$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
       $('star-count').parentElement.hidden=totalFragments===0;

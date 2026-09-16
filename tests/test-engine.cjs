@@ -224,7 +224,7 @@ test('Only actual resonance rescues echoes, opens the portal and survives a fall
   game.die(); tick(game, .7);
   assert.equal(game.mode, 'playing');
   assert.equal(game.song.count, 1);
-  assert.equal(game.lives, 5);
+  assert.equal(game.lives, 2);
   for (const remaining of game.song.lights.filter(entry => !entry.found)) {
     game.emitResonance(remaining.x, remaining.y, 180);
     tick(game, .3);
@@ -334,7 +334,7 @@ test('Balade returns near the fall, Elan returns to a lantern, and neither loses
     game.die(); tick(game, .6);
     assert.equal(game.mode, 'playing');
     assert.equal(game.player.x, expected);
-    assert.equal(game.lives, 5);
+    assert.equal(game.lives, 2);
   }
 });
 
@@ -440,7 +440,7 @@ test('Checkpoint heals, death costs exactly one life, respawn restores a safe st
   assert.ok(Math.abs(game.player.y - saved.y) < 4);
   assert.equal(game.player.hp, 3); assert.equal(game.player.power, null); assert.ok(game.player.invuln > 1.8);
   game.lives = 1; game.die(); tick(game, 1); assert.equal(game.mode, 'gameover');
-  game.retry(); assert.equal(game.mode, 'playing'); assert.equal(game.lives, 5);
+  game.retry(); assert.equal(game.mode, 'playing'); assert.equal(game.lives, 3);
 });
 
 test('Damage grace period prevents repeated hits; falling and lava are lethal', () => {
@@ -464,11 +464,11 @@ test('A lethal enemy contact stops the frame before the corpse can collect items
   assert.equal(game.levelCoins, 0); assert.ok(game.collectibles.every(item => !item.taken));
 });
 
-test('Coins/stars/heart collect once; forty coins award exactly one extra life', () => {
+test('Coins/stars/heart collect once; notes do not refill chapter lives', () => {
   const game = fresh(); safeWorld(game); place(game, 100);
   const lives = game.lives;
   for (let i = 0; i < 40; i++) collect(game, 'coin');
-  assert.equal(game.levelCoins, 40); assert.equal(game.lives, lives + 1); assert.equal(game.levelScore, 1000);
+  assert.equal(game.levelCoins, 40); assert.equal(game.lives, lives); assert.equal(game.levelScore, 1000);
   game.updateCollectibles(); assert.equal(game.levelCoins, 40);
   collect(game, 'star'); assert.equal(game.levelStars, 1); assert.equal(game.levelScore, 1500);
   game.player.hp = 1; collect(game, 'heart'); assert.equal(game.player.hp, 2);
@@ -621,8 +621,8 @@ test('Historical dry routes retain their physical walking-jump solutions after s
   };
   // Follow the inserted finale through its new terraces to the original arena.
   const final = DEFINITIONS[FINAL_INDEX];
-  paths['coeur-eclipse'] = [0, 1, 2, ...final.continuation.route.slice(0,8).map(point =>
-    final.platforms.findIndex(p => p.type === 'ground' && point.x >= p.x && point.x < p.x + p.w && point.surfaceY === p.y)), 3];
+  paths['coeur-eclipse'] = [0, 1, 2, ...final.continuation.route.slice(0,-1).map(point =>
+    final.platforms.findIndex(p => ['ground','solid'].includes(p.type) && point.x >= p.x && point.x < p.x + p.w && point.surfaceY === p.y)), 3];
   const failures = [];
   for (const [stage, route] of Object.entries(paths)) {
     for (let n = 0; n < route.length - 1; n++) {

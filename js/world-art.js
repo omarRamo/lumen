@@ -337,7 +337,19 @@
       stroke(ctx, [[x, y], [x + 15 + depth * 72, y]], palette.rim + (depth > .5 ? '45' : '80'), 1 + depth);
     }
   }
+  // A tiny Lumen and a plus: extra life, visually distinct from a healing heart.
+  function life(ctx, x, y) {
+    ctx.save(); ctx.translate(x, y);
+    ellipse(ctx, 0, 0, 24, 24, '#eaf1c1');
+    path(ctx, [[-13,-4],[-17,-23],[-4,-14],[4,-14],[17,-23],[13,-4]], '#32796f');
+    ellipse(ctx, 0, 0, 17, 14, '#fff4cf');
+    ellipse(ctx, -6, 0, 2, 4, '#24565d'); ellipse(ctx, 6, 0, 2, 4, '#24565d');
+    ellipse(ctx, 17, 16, 10, 10, '#32796f');
+    stroke(ctx, [[12,16],[22,16]], '#fff4cf', 3);
+    stroke(ctx, [[17,11],[17,21]], '#fff4cf', 3);
+    ctx.restore();
+  }
   global.LumenArt = { TAU, THEMES, NIGHT_THEMES, paletteFor, CAMPAIGN_THEMES, CAMPAIGN_NIGHT_THEMES,
     campaignPalette, PLATFORM_MARKS, platformStyle, platformMarks, random, ellipse, path, stroke, leaf, star,
-    sprite, material, cloud, tree, distantIsland, terrain, note, facetedOval, sky, horizon };
+    sprite, material, life, cloud, tree, distantIsland, terrain, note, facetedOval, sky, horizon };
 })(typeof window !== 'undefined' ? window : globalThis);

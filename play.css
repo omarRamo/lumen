@@ -14,11 +14,11 @@ html.lumen-native, .lumen-native body { position:fixed; inset:0; width:100%; hei
 .lumen-touch .song-icon { width:48px; height:48px; min-width:48px; backdrop-filter:none; }
 .lumen-touch .song-header .song-brand { min-width:48px; min-height:48px; }
 .lumen-touch .song-brand img { width:28px; height:34px; }
-.lumen-touch .song-brand>span, .lumen-touch #song-sound, .lumen-touch #song-fullscreen,
+.lumen-touch .song-brand>span:not(.life-badge), .lumen-touch #song-sound, .lumen-touch #song-fullscreen,
 .lumen-touch .song-mode, .lumen-touch .song-welcome, .lumen-touch .song-act,
 .lumen-touch .song-objective p, .lumen-touch .song-chorus-label, .lumen-touch .song-combo,
 .lumen-touch .chapter-pill, .lumen-touch .hud-caption, .lumen-touch .lives-line { display:none!important; }
-.lumen-touch .song-objective { left:calc(var(--play-left) + 54px); top:calc(var(--play-top) + 8px); max-width:calc(100% - var(--play-left) - var(--play-right) - 245px); visibility:visible; }
+.lumen-touch .song-objective { left:calc(var(--play-left) + 80px); top:calc(var(--play-top) + 8px); max-width:calc(100% - var(--play-left) - var(--play-right) - 271px); visibility:visible; }
 .lumen-touch .song-objective h2 { font-size:15px; margin:0; line-height:1.3; }
 .lumen-touch .song-notes { bottom:auto; top:calc(var(--play-top) + 58px); right:var(--play-right); padding:3px 9px; font-size:12px; gap:12px; background:#e8f1dcdd; backdrop-filter:none; }
 .lumen-touch .song-chorus { left:var(--play-left); top:calc(var(--play-top) + 62px); bottom:auto; }
@@ -241,3 +241,18 @@ body .song-panel-result .song-echo { transform:scale(.8); }
   body .song-panel-result .song-pause-echoes { height:42px; min-height:42px; }
   body .song-panel-result .song-echo { transform:scale(.65); }
 }
+
+/* Lives belong next to Lumen, separate from the three damage hearts. */
+.life-badge{display:inline-flex;align-items:center;gap:3px;flex:none;direction:ltr}
+.life-badge img{display:block}
+.life-badge strong{font-size:14px;font-weight:600;white-space:nowrap}
+.song-header .song-brand .life-badge{display:inline-flex}
+.song-header .song-brand .life-badge strong{display:block;font-size:14px}
+#pause-screen.stage-over .pause-card>p:first-of-type{display:block;font-size:14px;margin:6px 0 12px}
+#pause-screen.stage-over #remaining-lives,#pause-screen.stage-over [data-command="help"]{display:none}
+
+body .song-panel-gameover{width:min(440px,100%);text-align:center}
+body .song-panel-gameover h2{font-size:clamp(24px,4vw,32px);margin:6px 0 12px}
+body .song-panel-gameover .song-kicker:empty{display:none}
+body .song-panel-gameover .song-dialog-sub{margin:8px 0 16px;font-size:14px}
+body .song-panel-gameover .song-button{min-height:48px;padding:10px 16px}

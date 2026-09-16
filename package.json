@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-ios-ci.cjs && node tests/test-native.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs && node tests/test-continuations.cjs",
+    "test": "node tests/test-ios-ci.cjs && node tests/test-native.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs && node tests/test-continuations.cjs && node tests/test-river-return.cjs && node tests/test-lives.cjs",
     "test:weight": "node tests/test-repo-weight.cjs",
     "test:density": "node tests/test-density.cjs",
     "test:appearance": "node tests/test-appearance.cjs",
@@ -18,7 +18,7 @@
     "test:expedition": "node tests/test-expedition.cjs",
     "test:journey": "node tests/test-journey.cjs",
     "test:places": "node tests/test-places.cjs && node tests/test-places-playthrough.cjs",
-    "test:playthrough": "node tests/playthrough.cjs && node tests/test-continuations.cjs",
+    "test:playthrough": "node tests/playthrough.cjs && node tests/test-continuations.cjs && node tests/test-river-return.cjs && node tests/test-lives.cjs",
     "test:browser": "node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs && node tests/test-mobile.cjs",
     "test:journey-browser": "node tests/test-journey-browser.cjs",
     "verify": "npm run build && npm test && npm run test:browser",

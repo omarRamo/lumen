@@ -139,6 +139,12 @@
       { type: 'chime', x: start + 1600, y: terraces[3][2] - 60, id: island.key + '-carillon' });
   }
 
+  for (const island of ISLANDS) {
+    for (const flag of island.checkpoints.slice(0, 2)) {
+      island.collectibles.push({ type: 'life', x: flag.x - 45, y: flag.y - 65 });
+    }
+  }
+
   function create(index, style = 'gentle') {
     if (!Number.isInteger(index) || !ISLANDS[index]) return null;
     const island = JSON.parse(JSON.stringify(ISLANDS[index]));

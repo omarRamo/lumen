@@ -84,10 +84,11 @@
           set(game, 'left', delta < 0 && p.facing > 0); set(game, 'right', delta > 0 && p.facing < 0); set(game, 'jump', false);
         }
         if (waitingForLift) { set(game, 'left', false); set(game, 'right', false); set(game, 'jump', false); }
-        if (p.grounded && standing && delta > 0 && edge < 105 && ['river', 'chain'].includes(game.place.kind)) {
-          const end = standing.x + standing.w;
+        if (p.grounded && standing && edge < 105 && ['river', 'chain'].includes(game.place.kind)) {
+          const end = delta > 0 ? standing.x + standing.w : standing.x;
           const waitingBridge = game.platforms.some(platform => !platform.active && platform.w > 250 &&
-            (platform.wakeId || platform.placeRole === 'living-bridge') && platform.x < end + 50 && platform.x + platform.w > end + 150);
+            (platform.wakeId || platform.placeRole === 'living-bridge') && (delta > 0 ? platform.x < end + 50 && platform.x + platform.w > end + 150 :
+              platform.x + platform.w > end - 50 && platform.x < end - 150));
           if (waitingBridge) { set(game, 'left', false); set(game, 'right', false); set(game, 'jump', false); }
         }
         if (game.elapsed - this.lastTrace >= 2) {

@@ -433,7 +433,7 @@ body.song-playing #game { outline: none; touch-action: none; }
 .song-welcome p { font: 500 23px/1.3 Fredoka, sans-serif; margin: 12px 0; }
 .song-welcome>span { font-size: 14px; line-height: 1.5; }
 .song-welcoming .song-objective { visibility: hidden; }
-.song-welcoming .song-brand>span { visibility: hidden; }
+.song-welcoming .song-brand>span:not(.life-badge) { visibility: hidden; }
 .song-kicker { font-size: 10px; line-height: 1.5; font-weight: 600; color: var(--song-muted); }
 .song-act { display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 500; color: #427572; }
 .song-act i { width: 28px; height: 1px; background: #397c745e; }
@@ -988,11 +988,11 @@ html.lumen-native, .lumen-native body { position:fixed; inset:0; width:100%; hei
 .lumen-touch .song-icon { width:48px; height:48px; min-width:48px; backdrop-filter:none; }
 .lumen-touch .song-header .song-brand { min-width:48px; min-height:48px; }
 .lumen-touch .song-brand img { width:28px; height:34px; }
-.lumen-touch .song-brand>span, .lumen-touch #song-sound, .lumen-touch #song-fullscreen,
+.lumen-touch .song-brand>span:not(.life-badge), .lumen-touch #song-sound, .lumen-touch #song-fullscreen,
 .lumen-touch .song-mode, .lumen-touch .song-welcome, .lumen-touch .song-act,
 .lumen-touch .song-objective p, .lumen-touch .song-chorus-label, .lumen-touch .song-combo,
 .lumen-touch .chapter-pill, .lumen-touch .hud-caption, .lumen-touch .lives-line { display:none!important; }
-.lumen-touch .song-objective { left:calc(var(--play-left) + 54px); top:calc(var(--play-top) + 8px); max-width:calc(100% - var(--play-left) - var(--play-right) - 245px); visibility:visible; }
+.lumen-touch .song-objective { left:calc(var(--play-left) + 80px); top:calc(var(--play-top) + 8px); max-width:calc(100% - var(--play-left) - var(--play-right) - 271px); visibility:visible; }
 .lumen-touch .song-objective h2 { font-size:15px; margin:0; line-height:1.3; }
 .lumen-touch .song-notes { bottom:auto; top:calc(var(--play-top) + 58px); right:var(--play-right); padding:3px 9px; font-size:12px; gap:12px; background:#e8f1dcdd; backdrop-filter:none; }
 .lumen-touch .song-chorus { left:var(--play-left); top:calc(var(--play-top) + 62px); bottom:auto; }
@@ -1216,6 +1216,21 @@ body .song-panel-result .song-echo { transform:scale(.8); }
   body .song-panel-result .song-echo { transform:scale(.65); }
 }
 
+/* Lives belong next to Lumen, separate from the three damage hearts. */
+.life-badge{display:inline-flex;align-items:center;gap:3px;flex:none;direction:ltr}
+.life-badge img{display:block}
+.life-badge strong{font-size:14px;font-weight:600;white-space:nowrap}
+.song-header .song-brand .life-badge{display:inline-flex}
+.song-header .song-brand .life-badge strong{display:block;font-size:14px}
+#pause-screen.stage-over .pause-card>p:first-of-type{display:block;font-size:14px;margin:6px 0 12px}
+#pause-screen.stage-over #remaining-lives,#pause-screen.stage-over [data-command="help"]{display:none}
+
+body .song-panel-gameover{width:min(440px,100%);text-align:center}
+body .song-panel-gameover h2{font-size:clamp(24px,4vw,32px);margin:6px 0 12px}
+body .song-panel-gameover .song-kicker:empty{display:none}
+body .song-panel-gameover .song-dialog-sub{margin:8px 0 16px;font-size:14px}
+body .song-panel-gameover .song-button{min-height:48px;padding:10px 16px}
+
 </style>
 </head>
 <body>
@@ -1229,7 +1244,7 @@ body .song-panel-result .song-echo { transform:scale(.8); }
 
     <div id="song-shell" class="song-shell" hidden>
       <header class="song-header">
-        <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="43" height="49"><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
+        <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><span class="life-badge"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="43" height="49"><strong id="song-life-count">×3</strong></span><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
         <nav aria-label="Menu du voyage">
           <button class="song-icon" data-command="song-atlas" aria-label="L’archipel" title="L’archipel"><span data-icon="map"></span></button>
           <button class="song-icon" data-command="song-settings" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button>
@@ -1261,7 +1276,7 @@ body .song-panel-result .song-echo { transform:scale(.8); }
     </section>
 
     <section id="hud" class="hud hidden" aria-label="Informations de jeu">
-      <div class="hud-left"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="Lumen" width="29" height="35"><div id="hearts" class="hearts" aria-label="Santé"></div></div>
+      <div class="hud-left"><span class="life-badge"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="Lumen" width="29" height="35"><strong id="life-count">×3</strong></span><div id="hearts" class="hearts" aria-label="Santé"></div></div>
       <div class="chapter-pill"><span id="chapter-number">01</span><div><small id="chapter-caption">LES JARDINS DE LA LUNE</small><strong id="chapter-name">L’éveil des jardins</strong></div></div>
       <div class="hud-right"><button class="song-icon" data-command="help" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button><div class="collect-counter" title="Notes réunies"><span data-icon="music"></span><strong id="coin-count">00</strong></div><div class="collect-counter" title="Souvenirs de l’île"><span data-icon="feather"></span><strong id="star-count">0 / 3</strong></div><button class="song-icon" data-command="pause" aria-label="Mettre en pause" title="Mettre en pause"><span data-icon="pause"></span></button></div>
     </section>
@@ -1428,6 +1443,8 @@ body .song-panel-result .song-echo { transform:scale(.8); }
 </script>
   <script>
 window.LumenI18n.add([
+  ['{count} vies', '{count} lives', '{count} vidas', '{count} محاولات', '{count} 条命'],
+  ['Repartez du début avec 3 vies.', 'Start again with 3 lives.', 'Vuelve a empezar con 3 vidas.', 'ابدأ من جديد بثلاث محاولات.', '带着 3 条命重新开始。'],
   ['Viens, le ciel nous attend.', 'Come, the sky is waiting.', 'Ven, el cielo nos espera.', 'تعال، السماء تنتظرنا.', '来吧，天空在等我们。'],
   ['Apparence', 'Appearance', 'Apariencia', 'المظهر', '外观'],
   ['Système', 'System', 'Sistema', 'النظام', '系统'],
@@ -4602,9 +4619,11 @@ window.LumenI18n.add([
       wakeables: [wake('bloom', 600, 575, { id: 'riviere-source' }),
         wake('chime', 820, 545, { id: 'riviere-relais-1' }), wake('chime', 980, 545, { id: 'riviere-relais-2' }),
         wake('chime', 1130, 545, { id: 'riviere-relais-3' }), wake('bridge', 1200, 600, { id: 'riviere-pont-1', span: 640 }),
+        wake('chime', 1300, 545, { id: 'riviere-retour-1' }), wake('chime', 1450, 545, { id: 'riviere-retour-2' }),
         wake('bloom', 2000, 575, { id: 'riviere-reflet' }), wake('chime', 2230, 545, { id: 'riviere-relais-4' }),
         wake('chime', 2390, 545, { id: 'riviere-relais-5' }), wake('chime', 2540, 545, { id: 'riviere-relais-6' }),
         wake('chime', 2680, 545, { id: 'riviere-relais-7' }), wake('bridge', 2700, 600, { id: 'riviere-pont-2', span: 700 }),
+        wake('chime', 2840, 545, { id: 'riviere-retour-3' }), wake('chime', 2990, 545, { id: 'riviere-retour-4' }),
         wake('bloom', 3420, 575, { id: 'riviere-lune' })],
       // Une tourelle sur la rive d'en face de la deuxième balise : allumer
       // devient une question de POSITION, pas seulement d'ordre.
@@ -4729,6 +4748,17 @@ window.LumenI18n.add([
       if (ascent) platform.h = 40; // The upper canopy must not wall off the original climb.
       level.platforms.push(platform);
       level.collectibles.push(...coins(start + x + 45, surface - 48, 7, (width - 90) / 6));
+      // A downhill shortcut must still be climbable on the way back.
+      // Split drops exceeding the normal jump into two ordinary steps.
+      if (i && route[i - 1][2] - rise > 95) {
+        const [previousX, previousWidth, previousRise] = route[i - 1];
+        const stepX = start + previousX + previousWidth + 15;
+        const stepY = shore - (previousRise + rise) / 2;
+        level.platforms.push(ledge(stepX, stepY, 150));
+        const step = { x: stepX + 80, surfaceY: stepY };
+        level.continuation.route.push(step);
+        if (level.place) level.place.pilot.push(step);
+      }
       const point = { x: start + x + width * .55, surfaceY: surface };
       level.continuation.route.push(point);
       if (level.place) level.place.pilot.push(point);
@@ -4748,6 +4778,16 @@ window.LumenI18n.add([
     const finish = { x: level.exit.x + 25, surfaceY: shore };
     level.continuation.route.push(finish);
     if (level.place) level.place.pilot.push(finish);
+  }
+
+  // Two extra chances per chapter, kept collected until a fresh attempt.
+  // They sit by the first flags, on reachable ground, apart from healing hearts.
+  for (const level of levels.filter(level => !level.hub)) {
+    for (const flag of level.checkpoints.slice(0, 2)) {
+      const support = level.platforms.find(p => p.type === 'ground' && flag.x >= p.x && flag.x <= p.x + p.w && p.y === flag.y);
+      const x = support ? Math.max(support.x + 24, flag.x - 45) : flag.x - 45;
+      level.collectibles.push(item('life', x, flag.y - 65));
+    }
   }
 
   // Static definitions are never mutated by the simulation. Creating a stage
@@ -4903,6 +4943,12 @@ window.LumenI18n.add([
     island.wind.push({ x: start + 1910, y: 260, w: 100, h: 410 });
     island.wakeables.push({ type: 'bloom', x: start + 2160, y: terraces[4][2] - 15, id: island.key + '-bosquet' },
       { type: 'chime', x: start + 1600, y: terraces[3][2] - 60, id: island.key + '-carillon' });
+  }
+
+  for (const island of ISLANDS) {
+    for (const flag of island.checkpoints.slice(0, 2)) {
+      island.collectibles.push({ type: 'life', x: flag.x - 45, y: flag.y - 65 });
+    }
   }
 
   function create(index, style = 'gentle') {
@@ -6056,9 +6102,21 @@ window.LumenI18n.add([
       stroke(ctx, [[x, y], [x + 15 + depth * 72, y]], palette.rim + (depth > .5 ? '45' : '80'), 1 + depth);
     }
   }
+  // A tiny Lumen and a plus: extra life, visually distinct from a healing heart.
+  function life(ctx, x, y) {
+    ctx.save(); ctx.translate(x, y);
+    ellipse(ctx, 0, 0, 24, 24, '#eaf1c1');
+    path(ctx, [[-13,-4],[-17,-23],[-4,-14],[4,-14],[17,-23],[13,-4]], '#32796f');
+    ellipse(ctx, 0, 0, 17, 14, '#fff4cf');
+    ellipse(ctx, -6, 0, 2, 4, '#24565d'); ellipse(ctx, 6, 0, 2, 4, '#24565d');
+    ellipse(ctx, 17, 16, 10, 10, '#32796f');
+    stroke(ctx, [[12,16],[22,16]], '#fff4cf', 3);
+    stroke(ctx, [[17,11],[17,21]], '#fff4cf', 3);
+    ctx.restore();
+  }
   global.LumenArt = { TAU, THEMES, NIGHT_THEMES, paletteFor, CAMPAIGN_THEMES, CAMPAIGN_NIGHT_THEMES,
     campaignPalette, PLATFORM_MARKS, platformStyle, platformMarks, random, ellipse, path, stroke, leaf, star,
-    sprite, material, cloud, tree, distantIsland, terrain, note, facetedOval, sky, horizon };
+    sprite, material, life, cloud, tree, distantIsland, terrain, note, facetedOval, sky, horizon };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -6364,6 +6422,20 @@ window.LumenI18n.add([
       stroke(c,[[x,y],[x+35+hash(i)*60,y]],p.rim+(light>.5?'60':'25'),1.4);
     }
     const ids=game.level.place.beacons||[];
+    // The closed door shows the three flowers it needs, not the optional shards.
+    if (!game.exit.open) {
+      const x=game.exit.x+game.exit.w/2,y=game.exit.y-38;
+      ids.forEach((id,index)=>{
+        const lit=game.wokenOnce.has(id),cx=x+(index-1)*23;
+        for(let petal=0;petal<5;petal++) {
+          const a=petal*Math.PI*2/5;
+          oval(c,cx+Math.cos(a)*5,y+Math.sin(a)*5,4,4,lit?p.coral:p.shade);
+        }
+        oval(c,cx,y,3,3,lit?'#fff0aa':p.rim);
+      });
+      stroke(c,[[x-5,y+19],[x-13,y+25],[x-5,y+31]],p.rim,2.5);
+      stroke(c,[[x-13,y+25],[x+12,y+25]],p.rim,2.5);
+    }
     for(const beacon of game.wakeables.filter(w=>ids.includes(w.id))) {
       if(!game.wokenOnce.has(beacon.id))continue;
       for(let row=0;row<7;row++) {
@@ -6894,6 +6966,8 @@ window.LumenI18n.add([
         Art.note(c, 0, 0, p);
       } else if (ty === 'star') {
         c.rotate(Math.sin(t) * .12); c.shadowColor = '#ffcf6f'; c.shadowBlur = 14; star(c, 0, 0, 19, '#f5c772'); c.shadowBlur = 0; star(c, 0, 0, 12, '#ffebaa'); ellipse(c, -3, -2, 1.3, 2, '#94764a'); ellipse(c, 3, -2, 1.3, 2, '#94764a'); c.strokeStyle = '#a88d5b'; c.lineWidth = 1; c.beginPath(); c.arc(0, 1, 3, .2, Math.PI - .2); c.stroke(); c.strokeStyle = p.accent + '44'; c.lineWidth = 1; c.beginPath(); c.arc(0, 0, 26, t, t + 4); c.stroke();
+      } else if (ty === 'life') {
+        Art.life(c, 0, 0);
       } else if (ty === 'heart') {
         c.fillStyle = '#f5a4a2'; c.beginPath(); c.moveTo(0, 10); c.bezierCurveTo(-23, -4, -8, -20, 0, -9); c.bezierCurveTo(8, -20, 23, -4, 0, 10); c.fill(); ellipse(c, -5, -7, 3, 2, '#ffe0c9', -.5);
       } else {
@@ -7437,7 +7511,9 @@ window.LumenI18n.add([
       if (note.taken || !visible(note.x, 0, 30)) continue;
       const y = note.y + Math.sin(time * 2.4 + note.x * .02) * 4, souvenir = note.type === 'star';
       ctx.save(); ctx.translate(note.x, y);
-      if (souvenir) {
+      if (note.type === 'life') {
+        global.LumenArt.life(ctx, 0, 0);
+      } else if (souvenir) {
         ctx.rotate(time * .3); ctx.strokeStyle = '#fff2c49c'; ctx.lineWidth = 1.5; ctx.strokeRect(-17, -17, 34, 34);
         star(ctx, 0, 0, 17, '#fff9da'); star(ctx, 0, 0, 10, '#efb967');
       } else {
@@ -7614,7 +7690,7 @@ window.LumenI18n.add([
       this.audio.setMuted(!!this.progress.settings.muted);
       this.audio.volume = this.progress.settings.volume ?? .35;
       this.audio.setMix?.(this.progress.settings);
-      this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
+      this.lives = 3; this.score = 0; this.particles = []; this.floatingTexts = [];
       this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
       this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
       this.resize = () => this.renderer.resize(window.innerWidth, window.innerHeight);
@@ -7717,11 +7793,11 @@ window.LumenI18n.add([
       this.leaveExpedition();
       this.lastRun = null;
       this.session = window.LUMEN_LEVELS[index].hub ? 'hub' : 'campaign';
-      if (this.lives <= 0) this.lives = 5;
       this.runMode=options.timed?'timed':'explore';
       this.loadLevel(index); this.audio.unlock(); this.audio.resume();
     }
     loadLevel(index, active = true) {
+      this.lives = 3;
       return this.applyLevel(window.LumenLevels.create(index), index, active);
     }
     nextSongIndex() {
@@ -7740,7 +7816,7 @@ window.LumenI18n.add([
       this.leaveExpedition(); this.lastRun = null; this.session = 'song';
       const style = options.style || this.progress.settings.songStyle || 'gentle';
       this.runMode = style === 'flow' ? 'timed' : 'explore';
-      this.lives = 5;
+      this.lives = 3;
       this.applyLevel(Song.create(index, style), -1);
       this.audio.resume();
       return true;
@@ -7825,7 +7901,6 @@ window.LumenI18n.add([
       if (this.session === 'expedition' && this.run) return this.enterRoom(this.run.roomIndex);
       if (this.lastRun) return this.retryExpedition();
       if (this.levelIndex < 0) return this.showHome();
-      this.lives = this.lives <= 0 ? 5 : this.lives;
       this.start(this.levelIndex,{timed:this.runMode==='timed'});
     }
 
@@ -8640,7 +8715,7 @@ window.LumenI18n.add([
     updateCollectibles() {
       const p=this.player;
       for (const c of this.collectibles) {
-        if (c.taken) continue;
+        if (c.taken || c.type==='life' && this.lives>=9) continue;
         const radius=c.type==='star'?21:17;
         if (!overlap(p,{x:c.x-radius,y:c.y-radius,w:radius*2,h:radius*2})) continue;
         c.taken=true;
@@ -8649,10 +8724,15 @@ window.LumenI18n.add([
           if (this.song) this.song.note(this, c);
           else {
             this.audio.sfx('coin');
-            if (this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
+            if (this.session==='expedition' && this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
           }
         } else if (c.type==='star') {
           this.levelStars++;this.addScore(500);this.audio.sfx('star');this.burst(c.x,c.y,28,'#ffe4a1',210,'spark');this.float(c.x,c.y,'Fragment lunaire +500','#f9daa2');
+        } else if (c.type==='life') {
+          this.lives=Math.min(9,this.lives+1);
+          if(this.session==='expedition'&&this.run)this.run.lives=this.lives;
+          this.audio.sfx('power');this.burst(c.x,c.y,18,'#c3df9f',150,'spark');
+          this.float(c.x,c.y,'+1','#eaf1c1');
         } else if (c.type==='heart') {
           p.hp=Math.min(3,p.hp+1);this.audio.sfx('power');this.burst(c.x,c.y,15,'#e7a994',130,'spark');this.float(c.x,c.y,'Une nouvelle énergie','#e6ac98');
         } else {
@@ -8751,7 +8831,7 @@ window.LumenI18n.add([
         this.song.returnPoint = this.song.style === 'gentle' ? this.song.safe || this.checkpoint : this.checkpoint;
         this.song.combo = 0; this.song.comboTime = 0; this.song.trail = [];
         this.player.dead = true; this.player.vx = 0; this.player.vy = -160;
-        this.mode = 'dead'; this.deadTimer = .5; this.deaths++;
+        this.mode = 'dead'; this.deadTimer = .5; this.deaths++; this.lives--;
         this.audio.sfx('wakeEnd'); this.emit('mode', this.mode);
         return;
       }
@@ -9281,7 +9361,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (pane === renderedPane) return;
     renderedPane = pane;
     panel.className = 'song-panel song-panel-' + pane;
-    const closeButton = pane === 'result' ? '' : roundButton('song-close', 'Reprendre', 'x');
+    const closeButton = ['result','gameover'].includes(pane) ? '' : roundButton('song-close', 'Reprendre', 'x');
     let content = '';
     if (pane === 'pause') {
       content = title('UNE PAUSE DANS LE VOYAGE', global.LumenTouch?.enabled ? 'Pause' : 'Le ciel peut attendre.') +
@@ -9290,6 +9370,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
         <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
+    } else if (pane === 'gameover') {
+      content = title('', 'Une lumière renaîtra.') +
+        `<p class="song-dialog-sub">Repartez du début avec 3 vies.</p>
+        <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
+        <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>`;
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
@@ -9342,6 +9427,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
     const mode = game.mode;
     if (mode === 'playing' || mode === 'dead') pane = null;
+    else if (mode === 'gameover') pane = 'gameover';
     else if (mode === 'paused' && !pane) pane = 'pause';
     else if ((mode === 'complete' || mode === 'ending') && !pane) pane = 'result';
     byId('song-overlay').hidden = !pane;
@@ -9359,9 +9445,11 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (Math.abs(game.player.vx) > 1 || game.player.jumpTimer > 0) welcomeVisible = false;
     byId('song-welcome').hidden = !welcomeVisible || mode !== 'playing';
     document.body.classList.toggle('song-welcoming', !byId('song-welcome').hidden);
-    const key = [song.index, song.count, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
+    const key = [song.index, song.count, game.lives, game.levelStars, game.levelCoins, song.style, game.audio.muted, I18n.language].join(':');
     if (key !== lastHud) {
       lastHud = key;
+      byId('song-life-count').textContent = '×' + Math.max(0, game.lives);
+      byId('song-life-count').setAttribute('aria-label', translate('{count} vies', {count: Math.max(0, game.lives)}));
       byId('song-island-number').textContent = String(song.index + 1).padStart(2, '0') + ' / 03';
       byId('song-island-name').textContent = translate(game.level.name);
       byId('song-echoes').innerHTML = echoes();
@@ -9419,6 +9507,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
     if (action === 'song-next' || action === 'next' || action === 'confirm') {
       if (game.mode === 'paused') close();
+      else if (game.mode === 'gameover') helpers.transition(() => game.retry());
       else if (['complete','ending'].includes(game.mode)) {
         const next = game.nextJourneyPlace(), style = game.song.style;
         if (next) helpers.transition(() => game.openJourneyPlace(next.id, { style, timed:style === 'flow' }));
@@ -9596,15 +9685,16 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     } else if (mode==='map') {showScreen('map');renderMap();$('chapter-intro').classList.remove('show');}
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
+      $('pause-screen').classList.toggle('stage-over',over);
       $('pause-title').textContent=over?'Une lumière renaîtra.':window.LumenTouch?.enabled?'Pause':'Le monde peut attendre.';
-      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Reprenez avec cinq souffles.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
+      $('pause-screen').querySelector('.modal-card>p').textContent=over?'Repartez du début avec 3 vies.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
       // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
       // avec sa graine, ou on en demande une autre. Deux décisions, deux boutons.
       const lostNight=over&&game.lastRun&&!game.lastRun.won;
       const second=$('pause-screen').querySelector('[data-command="map"],[data-command="dream"]');
       $('pause-screen').querySelector('[data-command="retry"]').innerHTML=
-        lostNight?`Refaire cette nuit <span>↻</span>`:over?'Rallumer une lumière <span>↻</span>':'Recommencer le chapitre <span>↻</span>';
+        lostNight?`Refaire cette nuit <span>↻</span>`:'Recommencer le chapitre <span>↻</span>';
       if(lostNight) {
         $('pause-title').textContent='La nuit s’achève ici.';
         $('pause-screen').querySelector('.modal-card>p').textContent=
@@ -9806,7 +9896,9 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if(key!==lastHud) {
       lastHud=key;$('hearts').innerHTML=Array.from({length:3},(_,i)=>`<span class="${i<p.hp?'':'empty'}">♥</span>`).join('');
       $('hearts').setAttribute('aria-label',translate('{hp} points de vie sur 3',{hp:p.hp}));
-      $('remaining-lives').textContent=translate('Souffles restants : {count}',{count:Math.max(0,game.lives)});
+      $('life-count').textContent='×'+Math.max(0,game.lives);
+      $('life-count').setAttribute('aria-label',translate('{count} vies',{count:Math.max(0,game.lives)}));
+      $('remaining-lives').textContent=translate('{count} vies',{count:Math.max(0,game.lives)});
       $('coin-count').textContent=String(game.levelCoins).padStart(2,'0');
       $('star-count').textContent=game.levelStars+' / '+totalFragments;$('star-count').setAttribute('aria-label',translate('{count} fragments sur {total}',{count:game.levelStars,total:totalFragments}));
       $('star-count').parentElement.hidden=totalFragments===0;

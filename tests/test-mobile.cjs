@@ -83,6 +83,23 @@ async function finishScreen(page,view,song) {
   await page.locator(`${panel} [data-command="${song?'song-retry':'replay'}"]`).tap();
   await page.waitForFunction(()=>lumen.mode==='playing');
 }
+async function exhaustedLives(page,view,song) {
+  await page.evaluate(()=>{
+    for(let n=0;n<3;n++){lumen.die();lumen.respawn();}
+    lumen.emit('frame',.1);
+  });
+  assert.equal(await page.evaluate(()=>lumen.mode),'gameover');
+  const panel=song?'#song-panel':'#pause-screen';
+  await page.locator(panel).waitFor({state:'visible'});
+  await targets(page,`${panel} button`,view);
+  assert.equal(await page.locator(`${panel} [data-command="resume"]:visible`).count(),0);
+  assert.ok(await page.locator(song?'#song-panel':'.pause-card').evaluate(n=>n.scrollHeight<=n.clientHeight+1),'Game over must fit without scrolling');
+  await page.locator(`${panel} [data-command="${song?'song-retry':'retry'}"]`).tap();
+  await page.waitForFunction(()=>lumen.mode==='playing');
+  assert.equal(await page.evaluate(()=>lumen.lives),3);
+  await page.waitForFunction(song=>document.getElementById(song?'song-life-count':'life-count').textContent==='×3',song);
+  assert.ok(await page.locator(song?'#song-life-count':'#life-count').isVisible(),'Lives must stay visible on mobile');
+}
 async function close(run) {
   assert.deepEqual(run.errors,[]);assert.deepEqual(run.external,[]);await run.context.close();
 }
@@ -94,10 +111,12 @@ async function close(run) {
       await targets(page,'#touch-controls button',view);
       await pauseAndSettings(page,view,true);
       await finishScreen(page,view,true);
+      await exhaustedLives(page,view,true);
       await page.evaluate(()=>lumen.start(0));
       await targets(page,'#touch-controls button',view);
       await pauseAndSettings(page,view,false);
       await finishScreen(page,view,false);
+      await exhaustedLives(page,view,false);
       assert.equal(await page.locator("#power-indicator").count(),0);
       assert.equal(await page.evaluate(()=>LumenAppearance.current),"light");
       await page.evaluate(()=>lumen.showMap());

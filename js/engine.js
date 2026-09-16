@@ -118,7 +118,7 @@
       this.audio.setMuted(!!this.progress.settings.muted);
       this.audio.volume = this.progress.settings.volume ?? .35;
       this.audio.setMix?.(this.progress.settings);
-      this.lives = 5; this.score = 0; this.particles = []; this.floatingTexts = [];
+      this.lives = 3; this.score = 0; this.particles = []; this.floatingTexts = [];
       this.lastFrame = 0; this.accumulator = 0; this.running = false; this.frames = 0;
       this.fps = 60; this.frameWindow = []; this.loadLevel(0, false); this.showHome();
       this.resize = () => this.renderer.resize(window.innerWidth, window.innerHeight);
@@ -221,11 +221,11 @@
       this.leaveExpedition();
       this.lastRun = null;
       this.session = window.LUMEN_LEVELS[index].hub ? 'hub' : 'campaign';
-      if (this.lives <= 0) this.lives = 5;
       this.runMode=options.timed?'timed':'explore';
       this.loadLevel(index); this.audio.unlock(); this.audio.resume();
     }
     loadLevel(index, active = true) {
+      this.lives = 3;
       return this.applyLevel(window.LumenLevels.create(index), index, active);
     }
     nextSongIndex() {
@@ -244,7 +244,7 @@
       this.leaveExpedition(); this.lastRun = null; this.session = 'song';
       const style = options.style || this.progress.settings.songStyle || 'gentle';
       this.runMode = style === 'flow' ? 'timed' : 'explore';
-      this.lives = 5;
+      this.lives = 3;
       this.applyLevel(Song.create(index, style), -1);
       this.audio.resume();
       return true;
@@ -329,7 +329,6 @@
       if (this.session === 'expedition' && this.run) return this.enterRoom(this.run.roomIndex);
       if (this.lastRun) return this.retryExpedition();
       if (this.levelIndex < 0) return this.showHome();
-      this.lives = this.lives <= 0 ? 5 : this.lives;
       this.start(this.levelIndex,{timed:this.runMode==='timed'});
     }
 
@@ -1144,7 +1143,7 @@
     updateCollectibles() {
       const p=this.player;
       for (const c of this.collectibles) {
-        if (c.taken) continue;
+        if (c.taken || c.type==='life' && this.lives>=9) continue;
         const radius=c.type==='star'?21:17;
         if (!overlap(p,{x:c.x-radius,y:c.y-radius,w:radius*2,h:radius*2})) continue;
         c.taken=true;
@@ -1153,10 +1152,15 @@
           if (this.song) this.song.note(this, c);
           else {
             this.audio.sfx('coin');
-            if (this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
+            if (this.session==='expedition' && this.levelCoins%40===0) {this.lives=Math.min(9,this.lives+1);this.emit('toast','40 éclats : une vie supplémentaire !');this.audio.sfx('power');}
           }
         } else if (c.type==='star') {
           this.levelStars++;this.addScore(500);this.audio.sfx('star');this.burst(c.x,c.y,28,'#ffe4a1',210,'spark');this.float(c.x,c.y,'Fragment lunaire +500','#f9daa2');
+        } else if (c.type==='life') {
+          this.lives=Math.min(9,this.lives+1);
+          if(this.session==='expedition'&&this.run)this.run.lives=this.lives;
+          this.audio.sfx('power');this.burst(c.x,c.y,18,'#c3df9f',150,'spark');
+          this.float(c.x,c.y,'+1','#eaf1c1');
         } else if (c.type==='heart') {
           p.hp=Math.min(3,p.hp+1);this.audio.sfx('power');this.burst(c.x,c.y,15,'#e7a994',130,'spark');this.float(c.x,c.y,'Une nouvelle énergie','#e6ac98');
         } else {
@@ -1255,7 +1259,7 @@
         this.song.returnPoint = this.song.style === 'gentle' ? this.song.safe || this.checkpoint : this.checkpoint;
         this.song.combo = 0; this.song.comboTime = 0; this.song.trail = [];
         this.player.dead = true; this.player.vx = 0; this.player.vy = -160;
-        this.mode = 'dead'; this.deadTimer = .5; this.deaths++;
+        this.mode = 'dead'; this.deadTimer = .5; this.deaths++; this.lives--;
         this.audio.sfx('wakeEnd'); this.emit('mode', this.mode);
         return;
       }

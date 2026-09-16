@@ -324,7 +324,9 @@
       if (note.taken || !visible(note.x, 0, 30)) continue;
       const y = note.y + Math.sin(time * 2.4 + note.x * .02) * 4, souvenir = note.type === 'star';
       ctx.save(); ctx.translate(note.x, y);
-      if (souvenir) {
+      if (note.type === 'life') {
+        global.LumenArt.life(ctx, 0, 0);
+      } else if (souvenir) {
         ctx.rotate(time * .3); ctx.strokeStyle = '#fff2c49c'; ctx.lineWidth = 1.5; ctx.strokeRect(-17, -17, 34, 34);
         star(ctx, 0, 0, 17, '#fff9da'); star(ctx, 0, 0, 10, '#efb967');
       } else {

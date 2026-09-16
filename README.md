@@ -1,6 +1,6 @@
 # LUMEN
 
-![Lumen sur l'île des petits matins](docs/iteration-05/captures/after/desktop-home.webp)
+![Lumen sur une plateforme haute](docs/iteration-10/camera-haute.webp)
 
 **Lumen est le petit renard à l'écharpe. LUMEN est son aventure.**
 
@@ -10,8 +10,12 @@ traverser, aucun compte, aucune connexion requise.
 
 Ouvrir [index.html](index.html), ou [LUMEN.html](LUMEN.html) pour l'édition
 autonome. Les deux fonctionnent en `file://`, sans serveur ni construction
-préalable. Sur téléphone, les mêmes fichiers peuvent être servis par un
-hébergement statique. Aucune application native n'est publiée en boutique.
+préalable. Sur iPhone et iPad, le projet **Capacitor 8** embarque le même jeu
+hors ligne dans une app plein écran. Il se lance depuis Xcode ; le workflow
+TestFlight est disponible pour un compte Apple Developer configuré.
+
+[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-11/README.md) ·
+[Installation iOS et TestFlight](docs/iteration-08/README.md)
 
 ## Une Entrée, Plusieurs Destinations
 
@@ -23,7 +27,7 @@ obligatoire. La quête de la coupole reste nécessaire pour entrer dans les Rêv
 
 La carte s'ouvre uniquement sur demande, depuis le jeu, la pause ou une fin
 de lieu. Elle suspend une île ou un chapitre et permet de le reprendre.
-Choisir une lumière montre son nom, ses records et, si elle dort encore,
+Choisir une lumière montre son nom, sa progression et, si elle dort encore,
 la condition qui l'ouvre. Les fragments et les détours restent facultatifs.
 Les succès ajoutent de petites lumières ; une partie moins réussie ne les
 retire jamais. Les passages secrets sont désormais mémorisés par stage.
@@ -34,7 +38,7 @@ les actions ; Entrée/A choisit, Échap/B revient. Un lieu verrouillé reste
 consultable. Les îles déjà terminées et les chapitres historiquement ouverts
 restent accessibles lors de cette nouvelle organisation.
 
-![L'atlas commun et ses trois constellations](docs/iteration-06/captures/after/fresh-light-desktop-archipelago.webp)
+![L'atlas commun et ses trois constellations](docs/iteration-09/captures/atlas-iphone.webp)
 
 Chaque lancement revient à l'île 1, même pour un profil avancé. Les îles
 déverrouillées, souvenirs et records restent dans l'atlas. La position au
@@ -56,19 +60,23 @@ enrichissent la musique et font refleurir le paysage.
 
 Une note prise en vol rend le second saut disponible. À dix notes enchaînées,
 Lumen gagne un peu de vitesse. Relâcher le saut replie les ailes et permet de
-sortir d'un courant. Les îles n'ont pas été allongées : 73, 82 et 90 notes,
-aux longueurs d'origine.
+sortir d'un courant. L'introduction reste courte (4 200 unités, 73 notes).
+Les Récifs et le Grand chœur sont prolongés : 8 900 / 9 300 unités et
+146 / 154 notes. La dernière voix attend dans leur nouvelle portion.
 
 **Balade** revient au dernier sol stable après une chute et laisse quatre
 secondes entre deux notes. **Élan** revient à la dernière lanterne, ramène
-l'intervalle à 2,5 secondes et conserve un chrono personnel. Aucun des deux
-ne retire un écho retrouvé. Changer de rythme recommence l'île après
+l'intervalle à 2,5 secondes et conserve un chrono personnel. Chaque chute
+consomme une vie ; les échos restent retrouvés tant que la tentative continue.
+À zéro vie, il faut recommencer l'île. Changer de rythme la recommence après
 confirmation ; leurs records sont séparés.
 
 ### Les Jardins Et Les Rêves
 
 La campagne compte **dix-sept chapitres**, secrets, lanternes, médailles et
-contre-la-montre. Le même Lumen porte les quatre pouvoirs temporaires :
+contre-la-montre. Après les Prairies d'aurore, les seize autres jardins
+possèdent une seconde portion avec terrasses, détours et lanternes. La caméra
+suit aussi les montées et descentes. Le même Lumen porte les quatre pouvoirs temporaires :
 `bloom`, `breeze`, `comet`, `echo`. Halos, expiration, glissade, ruée, dégâts
 et défaite ont un dessin commun. Le vol plané reste propre au Chant.
 
@@ -96,14 +104,33 @@ salles, des choix de routes, un refuge enregistré et un gardien. Sa graine
 permet de rejouer la même nuit. Les améliorations des souvenirs restent
 reportées, comme indiqué dans le [backlog](BACKLOG.md).
 
-![La pluie lumineuse fait pousser les appuis de Lumen](docs/iteration-06/captures/after/place-pluie-de-lumiere-dark-desktop.webp)
+### Trois vies par tentative
+
+Chaque île et chaque chapitre commence avec **3 vies**, affichées `×3` près
+du portrait. Les **trois cœurs** représentent les dégâts que Lumen peut
+encaisser avant de perdre une vie ; une chute dans le vide en coûte une.
+
+Deux petites effigies de Lumen marquées **+** se trouvent dans chaque stage.
+Chacune ajoute une vie, jusqu'à neuf. Une effigie ramassée ne réapparaît pas
+au drapeau ; les vies gagnées ne passent pas au stage suivant. À zéro, un
+menu court propose de recommencer le stage avec trois vies ou de revenir
+à l'atlas. Les lieux déjà terminés, découvertes enregistrées et records restent
+acquis. Les notes ne donnent plus de vies dans les chapitres.
+
+Les Rêves nomades conservent leurs règles propres : trois vies pour toute
+l'expédition, sauvegarde au refuge et bonus de vie toutes les quarante notes.
+
+Dans **La rivière sans lune**, ce sont les trois grandes fleurs appelées par
+Résonance qui ouvrent la porte. Les fragments sont facultatifs. Les ponts se
+réveillent depuis les deux rives et les dernières terrasses se remontent avec
+le saut normal. La porte fermée rappelle les trois fleurs avec des pictogrammes.
 
 ## Commandes Et Réglages
 
 | Action | Clavier | Tactile | Manette en jeu |
 | --- | --- | --- | --- |
 | Avancer | Flèches, Q/D ou A/D | Flèches | Stick ou croix |
-| Sauter | Espace, Z, W ou haut | Plume | A ou B |
+| Sauter | Espace, Z, W ou haut | Sauter | A ou B |
 | Second saut / vol du Chant | Appuyer à nouveau / maintenir | Même bouton de saut | Même bouton de saut |
 | Résonance / pouvoir | X ou J | Étincelles | X |
 | Courir | Maj | Maintenir une direction | Gâchette ou épaule droite |
@@ -111,15 +138,16 @@ reportées, comme indiqué dans le [backlog](BACKLOG.md).
 | Pause | Échap ou P | Pause | Start |
 | Recommencer / son | R / M | Menus | Menus non intégralement validés |
 
-Notes et souvenirs forment les deux compteurs ; les cœurs restent visibles.
-Les souffles restants de la campagne se consultent en pause. Les anciens
-champs de score et de vies restent internes pour la compatibilité des profils.
+Les commandes tactiles acceptent le glissement du pouce entre les directions
+et deux appuis simultanés. Les réglages et la pause restent dans les zones
+sûres de l'écran. Sur iOS natif, sélection, zoom accidentel et rebond sont bloqués.
+Les panneaux de pouvoir sont supprimés ; une fin montre les souvenirs et les
+actions pour continuer, sans tableau de statistiques.
 
-Les réglages proposent **Système**, **Clair** et **Sombre**, changement
-immédiat et préférence mémorisée. Les huit thèmes de campagne et les trois
-îles ont de vraies palettes jour/nuit, sans filtre global. Ciel en bandes,
-mer, facettes, feuillages et notes viennent du même module. Fredoka et Outfit
-sont locales ; les polices arabes et chinoises de l'appareil prennent le relais.
+La **palette claire est toujours active**, indépendamment du système. Les
+anciennes préférences sombre/système sont normalisées sans effacer la
+progression. Fredoka et Outfit sont locales ; les polices arabes et chinoises
+de l'appareil prennent le relais.
 
 Le français, l'anglais, l'espagnol, l'arabe et le chinois simplifié couvrent
 menus, niveaux, dialogues et noms accessibles. **Lumen** reste identique
@@ -130,7 +158,7 @@ ni le monde, ni les directions, ni les graines.
 Trois partitions originales sont synthétisées par Web Audio. Le mixage
 sépare musique, effets et ambiance. **Écouter LUMEN** fonctionne aussi en
 pause. L'audio commence après interaction et respecte le mode silencieux.
-La nuit change l'orchestration. Aucune ressource n'est téléchargée en jeu.
+Aucune ressource n'est téléchargée en jeu.
 Main dominante, taille des commandes et mouvements réduits sont mémorisés.
 
 ## Sauvegardes
@@ -144,48 +172,57 @@ Le stockage dépend du navigateur, de l'origine ou du chemin local. Déplacer
 le fichier ou changer de navigateur ne transfère pas automatiquement la
 progression. Un stockage refusé n'empêche pas de jouer, mais interdit sa
 conservation. Le joueur ou le système peut effacer les données du navigateur.
-Il n'existe ni compte, ni serveur, ni synchronisation entre appareils.
+Dans l'app iOS, un miroir dans les fichiers de l'app protège la sauvegarde
+contre une éviction du stockage WebKit. L'origine `capacitor://localhost`
+est gelée. Installer par-dessus l'app conserve la progression ; la désinstaller
+peut la supprimer. Il n'existe ni compte, ni serveur, ni synchronisation entre appareils.
 
-## Vérifier
+## Construire, vérifier et installer
 
-Node 18 ou plus suffit aux suites Node et au build. Les dépendances de
-développement ne sont nécessaires que pour les tests Playwright.
+Node **22 ou plus** est requis pour Capacitor 8.
 
 ```sh
-npm install
+npm ci
+npx playwright install chromium webkit
 npm run verify
+npm run test:browser:webkit
+npm run test:places
 ```
 
-`verify` reconstruit le portable, lance les suites Node et tous les
-contrôles navigateur. [tools/browser.cjs](tools/browser.cjs) utilise Chromium
-ou un Chrome/Edge installé. Ne pas désactiver TLS si son téléchargement est
-refusé par un environnement d'entreprise.
+Le build produit `LUMEN.html` et `dist/index.html`, identiques et autonomes.
+`verify` couvre les suites de logique, stockage, rendu, audio, langues, poids,
+parcours et navigateur Chromium. WebKit exécute les mêmes suites navigateur.
+Les tests mobile couvrent six formats iPhone/iPad, français et arabe, zones
+sûres, commandes simultanées, caméra, fins et défaite sans défilement.
+
+Le retour complet dans la rivière, les 16 prolongements dans les deux sens,
+les 40 vies ramassables et leur consommation font partie de `npm test`.
+Voir le [rapport de l'itération 11](docs/iteration-11/README.md).
+
+Sur un Mac avec Xcode, pour réinstaller sur son iPhone branché :
 
 ```sh
-node tools/build.cjs
-node tests/test-renderer.cjs
-node tests/test-i18n.cjs
-node tests/test-places.cjs
-node tests/test-places-playthrough.cjs
-npm run test:browser -- "huit plateformes|Le parcours"
-node tests/journey-captures.cjs after
+npm run ios:sync
+npx cap open ios
 ```
 
-Un test reconstruit le portable sans `node_modules` et le compare octet pour
-octet. Le test de nom inspecte sources, catalogues, tests et portable ; les
-historiques de `docs/` sont explicitement exclus.
+Choisir **LUMEN → votre iPhone**, garder son équipe de signature, puis **⌘R**.
+Le test personnel par Xcode reste possible sans abonnement payant ; TestFlight
+nécessite l'adhésion. Ne pas désinstaller l'app pour la mettre à jour.
 
-Consulter le [rapport intégral](docs/iteration-06/verify-final.txt), la
-[note d'itération](docs/iteration-06/README.md), les
-[captures avant/après](docs/iteration-06/captures/README.md) et les
-[mesures des plateformes](docs/platforms/measurements.json).
-Le parcours navigateur joue un chapitre après passage par l'atlas et revient
-à l'île, sans téléportation, invulnérabilité injectée ni `complete()` manuel.
+### Jouer sans notifications sur iOS
 
-**Aucun playtest humain n'a eu lieu.** Contrastes, captures et parcours
-automatiques ne prouvent ni le plaisir, ni la compréhension sans texte,
-ni la lisibilité perçue : ces qualités restent des hypothèses. Aucun FPS
-de Chromium logiciel n'est présenté comme un résultat de performance.
+L'app déclare sa compatibilité avec le **mode Jeu**, dont iOS décide
+l'activation. Ce mode améliore les ressources disponibles et la latence ; il
+ne configure pas la Concentration à votre place. Pour filtrer les notifications :
+**Réglages → Concentration → + → Jeu vidéo**, puis **Ajouter un programme →
+App → LUMEN**. Choisir les personnes et applications autorisées.
+Voir le [guide détaillé](docs/guide-du-jeu.md#iphone--mode-jeu-et-notifications)
+et [l'aide Apple](https://support.apple.com/fr-fr/guide/iphone/iphd6288a67f/ios).
+
+Les retours de jeu sur **iPhone 16 Pro Max**, jusqu'à l'acte II, guident ces
+itérations. Les parcours automatisés prouvent la franchissabilité et les
+règles ; ils ne mesurent ni le plaisir, ni les FPS, ni la batterie sur appareil.
 
 ## Organisation Et Licences
 
@@ -201,7 +238,7 @@ de Chromium logiciel n'est présenté comme un résultat de performance.
 | [js/renderer.js](js/renderer.js) | Jardins, coupole, créatures et Rêves. |
 | [js/song-ui.js](js/song-ui.js), [js/ui.js](js/ui.js) | HUD, résultats et menus du Chant et des jardins. |
 | [js/save.js](js/save.js) | Contrat historique de stockage et migration défensive. |
-| [journey.css](journey.css), [song.css](song.css), [style.css](style.css) | Carte, interface commune et mises en page. |
+| [journey.css](journey.css), [song.css](song.css), [style.css](style.css) | Carte, interface commune et mises en page. Le tactile est dans `play.css`. |
 | [tools/build.cjs](tools/build.cjs) | Génération du portable, jamais édité à la main. |
 
 ### Ajouter un lieu
@@ -217,8 +254,8 @@ Les situations particulières déclarent `place.kind`. Leur état de visite est
 créé dans `LumenPlaces.create()`, mis à jour avant/après la physique et remis
 en état au respawn. Le dessin lit cet état dans `place-art.js` et ne modifie
 jamais les collisions. Les textes rejoignent les cinq colonnes des catalogues
-`locales-*.js`. Ajouter un parcours par entrées réelles, vérifier jour/nuit,
-puis reconstruire `LUMEN.html` et lancer `npm run verify`.
+`locales-*.js`. Ajouter un parcours par entrées réelles dans les deux sens, vérifier les vies
+ramassables et les petits écrans, puis lancer `npm run verify` et WebKit.
 
 Ressources embarquées : [Fredoka](assets/LICENSE-fredoka.txt) et
 [Outfit](assets/LICENSE-outfit.txt), SIL Open Font License 1.1 ;

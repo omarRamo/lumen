@@ -40,9 +40,11 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   const plist = read('ios/App/App/Info.plist');
   assert.match(plist, /<key>UIUserInterfaceStyle<\/key>\s*<string>Light<\/string>/);
   for (const [name, value] of Object.entries({ CADisableMinimumFrameDurationOnPhone: true, UIStatusBarHidden: true,
+    LSSupportsGameMode: true, GCSupportsGameMode: true,
     UIViewControllerBasedStatusBarAppearance: false, UIRequiresFullScreen: true, ITSAppUsesNonExemptEncryption: false })) {
     assert.match(plist, new RegExp(`<key>${name}</key>\\s*<${value}/>`));
   }
+  assert.match(plist, /<key>LSApplicationCategoryType<\/key>\s*<string>public.app-category.games<\/string>/);
   function array(name) { return [...plist.match(new RegExp(`<key>${name}</key>\\s*<array>([\\s\\S]*?)</array>`))[1].matchAll(/<string>(.*?)<\/string>/g)].map(m => m[1]); }
   assert.deepEqual(array('UISupportedInterfaceOrientations'), ['UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight']);
   assert.deepEqual(array('UISupportedInterfaceOrientations~ipad'), ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationPortraitUpsideDown', 'UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight']);

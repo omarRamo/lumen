@@ -111,7 +111,7 @@ body.song-playing #game { outline: none; touch-action: none; }
 .song-welcome p { font: 500 23px/1.3 Fredoka, sans-serif; margin: 12px 0; }
 .song-welcome>span { font-size: 14px; line-height: 1.5; }
 .song-welcoming .song-objective { visibility: hidden; }
-.song-welcoming .song-brand>span { visibility: hidden; }
+.song-welcoming .song-brand>span:not(.life-badge) { visibility: hidden; }
 .song-kicker { font-size: 10px; line-height: 1.5; font-weight: 600; color: var(--song-muted); }
 .song-act { display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 500; color: #427572; }
 .song-act i { width: 28px; height: 1px; background: #397c745e; }

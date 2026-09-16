@@ -24,7 +24,7 @@
 
     <div id="song-shell" class="song-shell" hidden>
       <header class="song-header">
-        <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><img src="icon.svg" alt="" width="43" height="49"><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
+        <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><span class="life-badge"><img src="icon.svg" alt="" width="43" height="49"><strong id="song-life-count">×3</strong></span><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
         <nav aria-label="Menu du voyage">
           <button class="song-icon" data-command="song-atlas" aria-label="L’archipel" title="L’archipel"><span data-icon="map"></span></button>
           <button class="song-icon" data-command="song-settings" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button>
@@ -56,7 +56,7 @@
     </section>
 
     <section id="hud" class="hud hidden" aria-label="Informations de jeu">
-      <div class="hud-left"><img src="icon.svg" alt="Lumen" width="29" height="35"><div id="hearts" class="hearts" aria-label="Santé"></div></div>
+      <div class="hud-left"><span class="life-badge"><img src="icon.svg" alt="Lumen" width="29" height="35"><strong id="life-count">×3</strong></span><div id="hearts" class="hearts" aria-label="Santé"></div></div>
       <div class="chapter-pill"><span id="chapter-number">01</span><div><small id="chapter-caption">LES JARDINS DE LA LUNE</small><strong id="chapter-name">L’éveil des jardins</strong></div></div>
       <div class="hud-right"><button class="song-icon" data-command="help" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button><div class="collect-counter" title="Notes réunies"><span data-icon="music"></span><strong id="coin-count">00</strong></div><div class="collect-counter" title="Souvenirs de l’île"><span data-icon="feather"></span><strong id="star-count">0 / 3</strong></div><button class="song-icon" data-command="pause" aria-label="Mettre en pause" title="Mettre en pause"><span data-icon="pause"></span></button></div>
     </section>

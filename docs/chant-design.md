@@ -1,4 +1,7 @@
-# Le Chant Des Îles : Bilan De Conception
+# Le Chant des îles — conception actuelle
+
+Mis à jour après les retours iPhone et les itérations 09–11.
+Les anciens rapports d’itération conservent leurs décisions historiques.
 
 ## Le Diagnostic
 
@@ -32,7 +35,7 @@ harmonique et prolonge un enchaînement. Les notes servent donc de trajectoire,
 de retour sonore et d’objectif de maîtrise. Elles ne sont pas consommées
 deux fois après une chute.
 
-Chanter retrouve un écho. Celui-ci suit Nilo, amplifie les appels suivants,
+Chanter retrouve un écho. Celui-ci suit Lumen, amplifie les appels suivants,
 enrichit la musique, fait avancer le réveil du décor et contribue à ouvrir
 la sortie. Les mêmes ondes réveillent aussi les fleurs, ponts et carillons
 hérités du moteur classique.
@@ -41,8 +44,16 @@ hérités du moteur classique.
 
 Balade et Élan partagent le même monde, mais pas la même tolérance. Balade
 revient au sol stable le plus récent après une chute. Élan revient à la
-lanterne et réduit la fenêtre des enchaînements. Aucun de ces modes ne
-retire un compagnon déjà retrouvé ni ne produit de game over.
+lanterne et réduit la fenêtre des enchaînements. Tous deux commencent avec
+**trois vies** : une chute en consomme une. Deux effigies de Lumen par île
+donnent chacune une chance supplémentaire, jusqu’à neuf. Les compagnons et
+les objets pris sont conservés entre les retours au sol, sans pouvoir
+ramasser la même vie plusieurs fois. À zéro vie, il faut recommencer l’île
+entière avec trois vies. Les records des îles déjà terminées restent acquis.
+
+La même réserve par tentative s’applique aux dix-sept jardins. Les cœurs de
+santé restent distincts des vies, affichées près du portrait. Les expéditions
+gardent leur réserve sur toute une nuit et leur bonus de quarante notes.
 
 La collection complète n’est pas obligatoire pour avancer : seuls les trois
 échos ouvrent le passage ; les trois souvenirs sont des détours de maîtrise.
@@ -57,17 +68,18 @@ Les décors structurants sont mis en cache ; le personnage, les compagnons,
 les courants et le voyageur céleste restent animés.
 
 Le monde occupe tout l’écran sans étirer les personnages. Les contrôles
-s’adaptent au portrait et au paysage. Un voile atmosphérique sur les petits
-écrans en paysage préserve la lisibilité de l’en-tête.
+s’adaptent au portrait et au paysage. Sur iPhone, l’app utilise le paysage.
+La caméra suit les deux axes, avec une zone centrale stable et une anticipation
+à la montée. Le voile de premier plan qui effaçait Lumen en hauteur est supprimé.
+Les commandes et menus restent dans les safe areas, sans zoom ni sélection
+accidentels dans l’app native.
 
-### Du Jour À La Nuit
+### La couleur reste claire
 
-Le joueur choisit son confort visuel, pas une difficulté supplémentaire.
-Le mode sombre baisse la luminance des grands aplats de ciel et des menus,
-mais garde une lumière franche sur Nilo, les notes et les bords des plateformes.
-Les trois îles ont des palettes nocturnes distinctes ; le corail, les verts
-végétaux et les lumières dorées restent présents. Le réglage suit le système
-par défaut et ne modifie jamais l’état de la simulation.
+La palette claire est désormais imposée, indépendamment du système. Le
+réglage sombre/système a été retiré après le playtest iPhone : il dénaturait
+les couleurs. Les préférences historiques sont normalisées sans toucher à
+la progression. Les palettes de chaque biome gardent leur identité propre.
 
 Les nouvelles matières donnent des repères d’échelle et de fabrication :
 strates minérales, cernes de bois, pierre gravée et bannières brodées. Le
@@ -84,14 +96,28 @@ de collectible : leur réponse utilise la même gamme que l’île.
 Le son environnemental traduit des informations physiques : vitesse dans le
 vent, déploiement des ailes, altitude et position des cascades. Les trois
 canaux indépendants permettent d’atténuer la musique sans perdre ces repères,
-ou de garder seulement l’ambiance. Le mode nocturne change les timbres et la
-densité percussive sans désynchroniser la partition.
+ou de garder seulement l’ambiance. La partition reste locale et respecte le
+mode silencieux de l’iPhone.
 
 L’immersion implique aussi le silence : aucune lecture avant le premier geste,
 fondus courts à la pause, silence du mixage à zéro, voix et connexions bornées.
 La démonstration dans les réglages est le seul son autorisé explicitement
 pendant cette pause. Les échantillons sont mesurés dans un vrai moteur Web Audio,
 mais cela ne remplace pas une séance d’écoute humaine.
+
+### Du temps à jouer, peu de texte
+
+Les deux dernières îles ont été prolongées à 8 900 et 9 300 unités ; leurs
+nouvelles portions portent la dernière voix. La première reste à 4 200.
+Les seize jardins après les Prairies ont eux aussi un second mouvement de
+terrasses et de détours, avec des lanternes supplémentaires. Les grandes
+descentes se remontent par des appuis intermédiaires au saut normal : explorer
+ne doit pas exiger de sacrifier une vie pour revenir.
+
+Le panneau de pouvoir a disparu. Les fins sont de petites célébrations avec
+une action principale, sans grille de statistiques. Les informations de
+santé, vies et objets restent discrètes dans le HUD. La porte de la Rivière
+sans lune rappelle ses trois fleurs par des pictogrammes dans le décor.
 
 ## Les Contrats Préservés
 
@@ -107,7 +133,7 @@ flowchart LR
   Engine --> Audio[Musique et notes Web Audio]
 ```
 
-- Aucun changement des clés ou de l’ordre des anciens chapitres.
+- Aucun changement des clés des anciens chapitres ; l’atlas utilise ces clés stables.
 - Aucun souvenir d’expédition actif dans une île du Chant.
 - Aucune modification des sauts de la campagne classique.
 - Aucun framework ou paquet requis pour jouer.
@@ -139,7 +165,14 @@ son adulte, un débutant sur téléphone et une personne habituée aux jeux de
 plateforme. Observer le premier chant volontaire, la compréhension du
 vol plané, les notes aériennes remarquées et l’envie de refaire un trajet.
 
-Avant une diffusion mobile plus large : tester Safari iOS et Chrome Android
-sur matériel réel, le son après interruption, la batterie, les grandes tailles
-de commande, une manette physique et les lecteurs d’écran. Un empaquetage
-PWA ou natif pourra ensuite être décidé ; il n’est pas réalisé ici.
+La coquille Capacitor 8 pour iPhone/iPad est réalisée. Les retours humains
+sur iPhone 16 Pro Max jusqu’à l’acte II ont motivé les itérations récentes.
+Les tests couvrent désormais les trois vies, les ramassages et les menus de
+défaite sous Chromium et WebKit, et un aller-retour complet dans la rivière.
+Ils ne remplacent pas les contrôles physiques de fluidité, batterie, audio
+après interruption, manette et lecteur d’écran.
+
+Le mode Jeu est déclaré dans le projet iOS. Le filtrage des notifications
+reste une Concentration configurée par le joueur, avec un programme lié à
+LUMEN. Voir le [guide actuel](guide-du-jeu.md) et le
+[rapport de l’itération 11](iteration-11/README.md).

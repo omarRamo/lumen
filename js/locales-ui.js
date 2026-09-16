@@ -1,4 +1,6 @@
 window.LumenI18n.add([
+  ['{count} vies', '{count} lives', '{count} vidas', '{count} محاولات', '{count} 条命'],
+  ['Repartez du début avec 3 vies.', 'Start again with 3 lives.', 'Vuelve a empezar con 3 vidas.', 'ابدأ من جديد بثلاث محاولات.', '带着 3 条命重新开始。'],
   ['Viens, le ciel nous attend.', 'Come, the sky is waiting.', 'Ven, el cielo nos espera.', 'تعال، السماء تنتظرنا.', '来吧，天空在等我们。'],
   ['Apparence', 'Appearance', 'Apariencia', 'المظهر', '外观'],
   ['Système', 'System', 'Sistema', 'النظام', '系统'],

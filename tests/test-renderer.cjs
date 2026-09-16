@@ -106,7 +106,7 @@ test('Every platform type, hazard and collectible has artwork', () => {
     w: 140, h: type === 'ground' ? 300 : 22, type, active: true, phase: i * .4, dx: 0, dy: 0,
     crumbleTimer: type === 'crumble' ? .4 : 0, reformTimer: 0, direction: -1, range: 60, speed: .8, axis: 'y' }));
   game.hazards = [{ x: 400, y: 578, w: 70, h: 22, type: 'spikes' }, { x: 600, y: 638, w: 200, h: 262, type: 'lava' }];
-  game.collectibles = ['coin', 'star', 'heart', 'bloom', 'breeze', 'comet', 'echo']
+  game.collectibles = ['coin', 'star', 'heart', 'life', 'bloom', 'breeze', 'comet', 'echo']
     .map((type, i) => ({ type, x: 160 + i * 120, y: 430, taken: false }));
   game.checkpoints = [{ x: 300, y: 600, active: false }, { x: 500, y: 600, active: true }];
   for (const echoTime of [0, 4, .6]) {

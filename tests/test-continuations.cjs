@@ -27,6 +27,21 @@ for(const definition of window.LUMEN_LEVELS.filter(l=>l.continuation)) {
   assert.ok(game.level.width>game.level.originalWidth+2000,definition.key+' insufficient extension');
   passed++;
 }
+// Return from the final flag with the normal jump and no power-up. The exit
+// stays locked in this fixture, as when the player missed an earlier objective.
+for (const definition of window.LUMEN_LEVELS.filter(l=>l.continuation)) {
+  const {game}=environment();game.loadLevel(game.indexOfKey(definition.key));
+  const route=Array.from(game.level.continuation.route).slice(0,-1).reverse();
+  Object.assign(game.player,{x:route[0].x-16,y:route[0].surfaceY-46});
+  game.exit.open=false;
+  const view=Object.create(game);view.level={...game.level,place:{pilot:route}};view.place={kind:'continuation'};
+  const controller=pilot.create(view);
+  for(let f=0;f<120*100&&game.mode==='playing'&&game.player.x>route.at(-1).x+30;f++) {
+    controller.step();game.update(DT);game.input.clearFrame();
+  }
+  assert.equal(game.deaths,0,definition.key+' return caused a fall');
+  assert.ok(game.player.x<=route.at(-1).x+30,definition.key+' return blocked: '+JSON.stringify(controller.summary()));
+}
 assert.equal(window.LUMEN_LEVELS[0].width,3900);
 assert.equal(window.LumenSong.ISLANDS[0].width,4200);
 // The camera follows the real jumping motion at multiple render cadences.
@@ -47,4 +62,4 @@ for(const hz of [30,60,120]) {
   assert.ok(maxDelta<20,'Abrupt vertical camera at '+hz+' Hz');
   game.loadLevel(0);assert.equal(game.camera.y,0,'New stage must reset vertical camera');
 }
-console.log(passed+' extended routes crossed with real inputs; vertical camera checked at 30/60/120 Hz.');
+console.log(passed+' extended routes crossed both ways with real inputs; vertical camera checked at 30/60/120 Hz.');
