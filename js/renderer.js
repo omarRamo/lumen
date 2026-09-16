@@ -26,7 +26,7 @@
     }
     resize(width, height) {
       this.width = Math.max(1, width); this.height = Math.max(1, height);
-      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.dpr = Math.min(window.devicePixelRatio || 1, window.LumenPlatform?.native || window.LumenTouch?.enabled ? 1.5 : 2);
       this.canvas.width = Math.round(this.width * this.dpr);
       this.canvas.height = Math.round(this.height * this.dpr);
       this.updateViewport(this.sceneMode);

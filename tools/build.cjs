@@ -33,4 +33,6 @@ html = html.replace(/<link rel="stylesheet" href="([^"<>]+\.css)">/g, (_, file) 
 html = html.replace(/(href|src)="icon.svg"/g, (_, attr) => attr + '="data:image/svg+xml,' + encodeURIComponent(fs.readFileSync(path.join(root, 'icon.svg'), 'utf8')) + '"');
 html = html.replace(/<script src="(js\/[^"<>]+)"><\/script>/g, (_, file) => '<script>\n' + fs.readFileSync(path.join(root, file), 'utf8').replace(/<\/script/gi, '<\\/script') + '\n</script>');
 fs.writeFileSync(path.join(root, 'LUMEN.html'), html, 'utf8');
+fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
+fs.writeFileSync(path.join(root, 'dist', 'index.html'), html, 'utf8');
 console.log('Portable edition built: LUMEN.html (' + Math.round(Buffer.byteLength(html) / 1024) + ' KiB).');

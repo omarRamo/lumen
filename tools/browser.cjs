@@ -32,6 +32,7 @@ function candidates() {
  *  utilisera alors son propre navigateur, ce qui est le cas normal après
  *  `npx playwright install chromium`. */
 function launchOptions(extra = {}) {
+  if (process.env.LUMEN_BROWSER === 'webkit') return extra;
   let executablePath = candidates()[0];
   if (!executablePath && !fs.existsSync(require('playwright').chromium.executablePath()) && process.platform === 'win32') {
     const roots = [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.LOCALAPPDATA].filter(Boolean);
@@ -47,6 +48,7 @@ function launchOptions(extra = {}) {
 
 /** Un message utile plutôt qu'une trace de pile, si rien n'est installé. */
 function explain(error) {
+  if (process.env.LUMEN_BROWSER === 'webkit') return 'WebKit indisponible : npx playwright install webkit. ' + error.message;
   return 'Aucun Chromium utilisable.\n' +
     '  · Installez-en un : npx playwright install chromium\n' +
     '  · Ou désignez le vôtre : LUMEN_CHROMIUM=/chemin/vers/chrome npm run test:browser\n' +

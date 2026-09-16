@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs",
+    "test": "node tests/test-ios-ci.cjs && node tests/test-native.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs",
     "test:weight": "node tests/test-repo-weight.cjs",
     "test:density": "node tests/test-density.cjs",
     "test:appearance": "node tests/test-appearance.cjs",
@@ -19,11 +19,22 @@
     "test:journey": "node tests/test-journey.cjs",
     "test:places": "node tests/test-places.cjs && node tests/test-places-playthrough.cjs",
     "test:playthrough": "node tests/playthrough.cjs",
-    "test:browser": "node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs",
+    "test:browser": "node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs && node tests/test-mobile.cjs",
     "test:journey-browser": "node tests/test-journey-browser.cjs",
-    "verify": "npm run build && npm test && npm run test:browser"
+    "verify": "npm run build && npm test && npm run test:browser",
+    "test:browser:webkit": "node tools/test-webkit.cjs",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "ios:assets": "node tools/ios-assets.cjs",
+    "test:native": "npm run build && node tests/test-native.cjs",
+    "test:mobile": "npm run build && node tests/test-mobile.cjs"
   },
   "devDependencies": {
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.3",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/status-bar": "^8.0.3",
     "@fontsource-variable/fredoka": "^5.3.0",
     "@fontsource-variable/outfit": "^5.3.0",
     "lucide-static": "^1.46.0",
@@ -31,6 +42,6 @@
     "sharp": "^0.34.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

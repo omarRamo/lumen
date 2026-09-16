@@ -14,7 +14,21 @@
   const state = place => place.completed ? 'Lumière retrouvée' : place.unlocked ? 'À explorer' : 'Lumière en sommeil';
   const kindLabel = place => place.kind === 'island' ? 'Une île pour souffler' : place.kind === 'hub' ? 'L’observatoire' : place.kind === 'dreams' ? 'Les rêves nomades' : place.key === 'coeur-eclipse' ? 'La finale' : 'Un jardin à réveiller';
 
-  function node(place, x, y, number) {
+  function miniature(place) {
+    const forms = {
+      cavern:'<path d="M59 43L63 19 73 9 82 25 79 44Z" fill="#b5a9db"/><path d="M73 9L73 44 63 19Z" fill="#e4d7f4"/>',
+      tide:'<path d="M54 30Q66 16 76 30T98 30M52 38Q64 25 76 38T100 38" fill="none" stroke="#a5e6db" stroke-width="5"/>',
+      sky:'<path d="M59 42V22H67V12H77V22H86V42" fill="#e7dabc"/><path d="M71 42V31H77V42" fill="#547b7d"/>',
+      forge:'<path d="M53 44L69 11 82 29 88 44Z" fill="#82606a"/><path d="M64 26L70 11 79 26 73 25 69 30Z" fill="#ffc37e"/>',
+      frost:'<path d="M54 42L64 31H57L69 19H62L74 4 87 19H79L91 31H82L94 42Z" fill="#d5f2ea"/>',
+      secret:'<path d="M68 25H78V44H68Z" fill="#f2debc"/><path d="M52 27Q70-1 92 27Z" fill="#cba9d3"/><circle cx="69" cy="19" r="3" fill="#f6e5cc"/>',
+      eclipse:'<path d="M79 6A19 19 0 1 0 79 41A17 17 0 0 1 79 6" fill="#f1d694"/>'
+    };
+    const landmark = forms[place.theme] || '<circle cx="73" cy="30" r="8" fill="var(--islet-flower,#f3c78b)"/><circle cx="73" cy="30" r="3" fill="#fcf4cf"/><path d="M73 39V43" stroke="#7ca58b" stroke-width="3"/>';
+    return `<svg class="journey-islet" viewBox="0 0 140 100" aria-hidden="true"><ellipse cx="70" cy="89" rx="40" ry="5" fill="#234c5033"/><path d="M14 47L38 77 73 89 108 71 126 47Z" fill="var(--islet-rock,#365960)"/><path d="M14 47L72 89 55 49M55 49L108 71 126 47" fill="#23444d"/><path d="M12 46Q38 36 66 41T128 46L123 53H18Z" fill="var(--islet-grass,#a7d6b0)"/><path d="M40 43Q32 21 42 16Q51 30 40 43M48 43Q48 31 59 28Q63 40 48 43M95 43Q88 21 97 19Q106 32 95 43" fill="var(--islet-leaf,#78aea1)"/><path d="M103 54Q120 75 107 85M34 55Q25 70 38 80" stroke="#83af99" stroke-width="2" fill="none"/>${landmark}</svg>`;
+  }
+
+  function node(place, x, y, number, px = x, py = y) {
     const label = [t(place.name), t(state(place)), place.optional ? t('Facultatif') : '', !place.unlocked ? t(place.reason || '') : ''].filter(Boolean).join('. ');
     const earned = place.lightCount || place.lights?.length || 0;
     const fresh = newLights.has(place.id);
@@ -25,7 +39,8 @@
       const type = light.kind.split('-')[0];
       return `<i class="journey-award ${esc(type)}" data-light="${esc(light.id)}" style="--dx:${Math.cos(angle)*radius}px;--dy:${Math.sin(angle)*radius}px"></i>`;
     }).join('');
-    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
+    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%;--px:${px}%;--py:${py}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
+      ${miniature(place)}
       <span class="journey-orbit" aria-hidden="true">${orbit}</span><span class="journey-core" aria-hidden="true">${place.completed ? '✦' : glyph(place.kind)}</span>
       <span class="journey-node-number" aria-hidden="true">${place.kind === 'stage' ? String(number).padStart(2,'0') + (place.optional ? ' ◇' : '') : ''}</span>
       ${earned ? `<span class="journey-light-count" aria-hidden="true">${earned}</span>` : ''}
@@ -38,16 +53,22 @@
     const places = model.places.filter(place => place.act === act && !['hub','dreams'].includes(place.kind));
     const island = places.find(place => place.kind === 'island');
     const stages = places.filter(place => place.kind === 'stage');
-    const points = [{ x:48, y:15 }];
-    // The alternating constellation extends vertically with content; nodes never shrink below 56 px.
-    stages.forEach((place, index) => points.push({ x:[24,69,34,77,29,65,46][index % 7], y:38 + index * 48 / Math.max(1, stages.length - 1) }));
+    // Two rows on landscape, two columns on portrait: every destination stays in view.
+    const count = stages.length + 1, columns = Math.ceil(count / 2), rows = Math.ceil(count / 2);
+    const points = Array.from({length:count}, (_,i) => {
+      const row = Math.floor(i / columns), col = row ? columns - 1 - i % columns : i % columns;
+      return { x:12 + col * 76 / Math.max(1,columns-1), y:row ? 73 : 26,
+        px:i % 2 ? 74 : 26, py:13 + Math.floor(i/2) * 74 / Math.max(1,rows-1) };
+    });
     const coords = points.map(point => `${point.x},${point.y}`).join(' ');
+    const portrait = points.map(point => `${point.px},${point.py}`).join(' ');
     return `<section class="journey-region${act === selectedAct ? ' is-current' : ''}" data-act="${act}" aria-label="${text('Acte {act}', { act:['I','II','III'][act-1] })}">
       <div class="journey-region-title"><span>${text('Acte {act}', {act:['I','II','III'][act-1]})}</span><h3>${text(acts[act-1])}</h3></div>
       <div class="journey-constellation" style="--region-height:${Math.max(370, stages.length * 62 + 140)}px">
-        <svg class="journey-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
-        ${island ? node(island, points[0].x, points[0].y, 0) : ''}
-        ${stages.map((place, index) => node(place, points[index+1].x, points[index+1].y, model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1)).join('')}
+        <svg class="journey-lines journey-lines-wide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
+        <svg class="journey-lines journey-lines-tall" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${portrait}"/></svg>
+        ${island ? node(island, points[0].x, points[0].y, 0, points[0].px, points[0].py) : ''}
+        ${stages.map((place, index) => node(place, points[index+1].x, points[index+1].y, model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1, points[index+1].px, points[index+1].py)).join('')}
       </div></section>`;
   }
 
@@ -82,7 +103,7 @@
   function paintBackdrop(time) {
     const canvas = backdropCanvas();
     if (!canvas || !global.LumenArt) return;
-    const ratio = Math.min(2, global.devicePixelRatio || 1);
+    const ratio = Math.min(1.5, global.devicePixelRatio || 1);
     const width = Math.max(320, $('map-screen').clientWidth);
     const height = Math.max(320, $('map-screen').clientHeight);
     if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
@@ -101,7 +122,7 @@
     const drift = time * 9 + (selectedAct - 1) * 260;
     global.LumenArt.horizon(surface, palette, time, drift, width, height);
     context.save();
-    context.globalAlpha = 0.5;
+    context.globalAlpha = 0.12;
     context.fillStyle = palette.night ? '#0d1a1c' : '#f7f8ec';
     context.fillRect(0, 0, width, height);
     context.restore();
@@ -117,8 +138,9 @@
     backdropStart = performance.now();
     paintBackdrop(0);
     if (reduced) return;
+    let last = 0;
     const step = now => {
-      paintBackdrop((now - backdropStart) / 1000);
+      if (!document.hidden && now - last >= 1000 / 30) { paintBackdrop((now - backdropStart) / 1000); last = now; }
       backdropFrame = requestAnimationFrame(step);
     };
     backdropFrame = requestAnimationFrame(step);
@@ -160,7 +182,7 @@
     const found = voices.filter(voice=>game.progress.codex.creatures.includes('chant-'+voice.id)).length;
     $('journey-totals').innerHTML = `<div><strong>${places.filter(place=>place.completed).length}<small> / ${places.length}</small></strong><span>${text('Lieux rallumés')}</span></div><div><strong>${total('stars')}<small> / ${total('maxStars')}</small></strong><span>${text('Fragments · facultatifs')}</span></div><div><strong>${found}<small> / ${voices.length}</small></strong><span>${text('Voix retrouvées')}</span></div><div><strong>${total('secrets')}<small> / ${total('maxSecrets')}</small></strong><span>${text('Passages secrets · facultatifs')}</span></div>`;
     $('journey-codex').hidden = !codexOpen;
-    $('journey-codex').innerHTML = `<div class="journey-codex-heading"><div><span class="journey-kicker">${text('LES VOIX RETROUVÉES')}</span><h3>${text('Le carnet des créatures')}</h3></div><button class="journey-button" data-journey-codex="close">${text('Fermer')}</button></div><div class="journey-voices">${voices.map((voice, index)=>{
+    $('journey-codex').innerHTML = `<div class="journey-codex-heading"><div><span class="journey-kicker">${text('LES VOIX RETROUVÉES')}</span><h3>${text('Le carnet des créatures')}</h3></div><button class="journey-button" data-journey-codex="close">${text('Fermer')}</button></div><div class="journey-totals">${$('journey-totals').innerHTML}</div><div class="journey-voices">${voices.map((voice, index)=>{
       const rescued = game.progress.codex.creatures.includes('chant-'+voice.id);
       return `<div class="journey-voice${rescued ? ' found' : ''}"><span class="journey-voice-face voice-${index%3}" aria-hidden="true"><i></i><b></b></span><strong>${rescued ? text(voice.name) : '···'}</strong><span>${text(rescued ? 'Voix retrouvée' : 'Une voix à retrouver')}</span></div>`;
     }).join('')}</div>`;
@@ -201,7 +223,7 @@
     button?.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
   }
   function focusables() {
-    return [...$('map-screen').querySelectorAll('button:not(:disabled), [tabindex="0"]')].filter(element=>element.getClientRects().length && !element.closest('[hidden]'));
+    return [...$(codexOpen ? 'journey-codex' : 'map-screen').querySelectorAll('button:not(:disabled), [tabindex="0"]')].filter(element=>element.getClientRects().length && !element.closest('[hidden]'));
   }
   function navigate(direction) {
     if (game.mode !== 'map') return false;
@@ -241,7 +263,7 @@
         focusPlace(button.dataset.place);
         const action = $('journey-details').querySelector('[data-journey-launch], [data-journey-requirement]');
         action?.focus({preventScroll:true});
-        if (matchMedia('(max-width:760px)').matches) $('journey-details').scrollIntoView({block:'start',behavior:'instant'});
+
       }
       if(button.dataset.journeyAct) {
         selectedAct=Number(button.dataset.journeyAct);renderSky();startBackdrop();

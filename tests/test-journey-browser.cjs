@@ -9,7 +9,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { chromium } = require('playwright');
+const chromium = require('playwright')[process.env.LUMEN_BROWSER || 'chromium'];
 const browserTools = require('../tools/browser.cjs');
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'work', 'journey');
@@ -179,7 +179,7 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
           // Each case starts on the map. All subsequent focus/activation is
           // driven exclusively by the Gamepad API until that place launches.
           await map(page);
-          if (view === 'portrait' && place.act) {
+          if (place.act) {
             await padTo(page, '[data-journey-act="' + place.act + '"]'); await pressPad(page, 0);
           }
           await padTo(page, '[data-place="' + place.id + '"]'); await pressPad(page, 0);
@@ -197,7 +197,7 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
         }
         assert.deepEqual(launched, places.map(place => place.id));
         await map(page);
-        const codex = view === 'desktop' ? '#journey-codex-button' : '.journey-mobile-codex';
+        const codex = '#journey-codex-button';
         await padTo(page, codex); await pressPad(page, 0);
         assert.equal(await page.locator('#journey-codex').isVisible(), true);
         assert.equal(await page.locator('#journey-codex .journey-voice').count(), 9);
@@ -220,7 +220,7 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
         }, partial);
         await map(page);
         for (const act of [1, 2, 3]) {
-          if (view !== 'desktop') await page.locator('[data-journey-act="' + act + '"]').click();
+          await page.locator('[data-journey-act="' + act + '"]').click();
           const layout = await page.evaluate(() => {
             const elements = [...document.querySelectorAll('#map-screen button')].filter(element => element.getClientRects().length);
             const rects = elements.map(element => ({ key: element.dataset.place || element.textContent.trim(), ...element.getBoundingClientRect().toJSON() }));
@@ -247,7 +247,8 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
                 return .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
               };
               const ink = lum(style.color), background = lum(getComputedStyle(document.getElementById('map-screen')).backgroundColor);
-              return { width: element.getBoundingClientRect().width, fontSize: style.fontSize, border: style.borderStyle,
+              // Destinations in another act are hidden, so compare their defined shapes.
+              return { width: parseFloat(style.width), fontSize: style.fontSize, border: style.borderStyle,
                 contrast: (Math.max(ink, background) + .05) / (Math.min(ink, background) + .05) };
             };
             return { lit: read('.journey-node.stage.is-lit .journey-core'), unlit: read('.journey-node.stage:not(.is-lit) .journey-core') };

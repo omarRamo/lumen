@@ -14,7 +14,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
-const { chromium } = require('playwright');
+const chromium = require('playwright')[process.env.LUMEN_BROWSER || 'chromium'];
 const browserTools = require('../tools/browser.cjs');
 const capture = require('../tools/capture.cjs');
 
@@ -78,6 +78,37 @@ async function test(name, run) {
     await node.click();
     await page.locator('[data-journey-launch="' + key + '"]').click();
   }
+
+  await test('Le démarrage natif attend le miroir, masque le plein écran et écoute le cycle de vie', async () => {
+    const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+    const page = await context.newPage(), errors = [], external = [];
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('request', request => { if (!/^(file|data):/.test(request.url())) external.push(request.url()); });
+    await page.addInitScript(() => {
+      window.Capacitor = { isNativePlatform: () => true, Plugins: {
+        App: { addListener: async (_, listener) => { window.nativeState = listener; } },
+        StatusBar: { hide: async () => {} },
+        Filesystem: {
+          readFile: () => new Promise(resolve => setTimeout(() => resolve({ data: JSON.stringify({
+            'lumen.gardens.v3': JSON.stringify({ schema: 3, settings: { volume: .17, muted: true }, finished: true })
+          }) }), 100)),
+          writeFile: async () => {}, rename: async () => {}
+        }
+      } };
+    });
+    await page.goto(PAGE);
+    await page.waitForFunction(() => window.lumen?.frames >= 2);
+    assert.equal(await page.evaluate(() => window.lumen.progress.finished), true);
+    assert.equal(await page.evaluate(() => window.lumen.progress.settings.volume), .17);
+    assert.equal(await page.locator('#song-fullscreen').isVisible(), false);
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).overscrollBehavior), 'none');
+    await page.evaluate(() => window.nativeState({ isActive: false }));
+    assert.equal(await page.evaluate(() => window.lumen.mode), 'paused');
+    await page.evaluate(() => window.nativeState({ isActive: true }));
+    assert.equal(await page.evaluate(() => window.lumen.mode), 'paused');
+    assert.deepEqual(errors, []); assert.deepEqual(external, []);
+    await context.close();
+  });
 
   await test('Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions', async () => {
     for(const source of [false,true]){
@@ -699,7 +730,7 @@ async function test(name, run) {
   await test('L’édition portable démarre seule en file://, sans aucune requête externe', async () => {
     const standalone = fs.mkdtempSync(path.join(os.tmpdir(), 'lumen-build-'));
     try {
-      for (const file of ['index.html', 'style.css', 'song.css', 'journey.css', 'icon.svg', 'assets', 'js', 'tools']) {
+      for (const file of ['index.html', 'style.css', 'song.css', 'journey.css', 'play.css', 'icon.svg', 'assets', 'js', 'tools']) {
         fs.cpSync(path.join(root, file), path.join(standalone, file), { recursive: true });
       }
       assert.equal(fs.existsSync(path.join(standalone, 'node_modules')), false);
