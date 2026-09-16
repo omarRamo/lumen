@@ -1,0 +1,65 @@
+name: LUMEN · TestFlight interne
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lumen-ios-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Vérifier la configuration Apple sans afficher ses valeurs
+        run: node tools/ios-release.cjs --check
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      - name: Sélectionner Xcode 26
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob, os, re
+          paths = glob.glob('/Applications/Xcode_26*.app/Contents/Developer')
+          if not paths:
+              raise SystemExit('::error::Xcode 26 absent de cette image macos-26.')
+          selected = max(paths, key=lambda p: tuple(map(int, re.search(r'Xcode_([\d.]+)', p).group(1).rstrip('.').split('.'))))
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('DEVELOPER_DIR=' + selected + '\n')
+          PY
+      - run: npm ci
+      - run: npx playwright install chromium webkit
+      - run: npm run verify
+      - run: npm run test:browser:webkit
+      - run: npx cap sync ios
+      - name: Archiver et exporter avec la signature automatique Apple
+        run: node tools/ios-release.cjs --export
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      - name: Conserver l’IPA même si l’envoi suivant échoue
+        uses: actions/upload-artifact@v4
+        with:
+          name: LUMEN-iOS-${{ github.run_number }}
+          path: ios/App/build/export/*.ipa
+          if-no-files-found: error
+          retention-days: 14
+      - name: Envoyer vers TestFlight interne
+        run: node tools/ios-release.cjs --upload
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
