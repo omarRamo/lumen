@@ -254,7 +254,7 @@
       });
       if (game.song) sync();
     });
-    if (!document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
+    if (window.LumenPlatform?.native || !document.fullscreenEnabled) byId('song-fullscreen').hidden = true;
     applyPreferences();
   }
   global.LumenSongUI = { attach, sync, update, handle };

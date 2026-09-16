@@ -1,5 +1,5 @@
 /* All menus and HUD live in the DOM: crisp text, keyboard focus and touch controls. */
-(() => {
+(async () => {
   'use strict';
   const $ = id => document.getElementById(id);
   const I18n = window.LumenI18n;
@@ -359,7 +359,9 @@
     I18n.translateDOM($('complete-screen'));
   }
   try {
+    if (window.LumenPlatform?.native) await window.LumenPlatform.prepare();
     game=new window.LumenGame($('game'));window.lumen=game;
+    window.LumenPlatform?.attach(game);
     window.LumenAppearance.apply(game.progress.settings.appearance);
     I18n.setLanguage(game.progress.settings.language);
     I18n.translateDOM($('app'));

@@ -164,7 +164,7 @@
       return pending.length;
     }
     readProgress() {
-      const storage = (() => { try { return localStorage; } catch (_) { return null; } })();
+      const storage = (() => { try { return window.LumenPlatform ? window.LumenPlatform.storage() : localStorage; } catch (_) { return null; } })();
       this.store = new window.LumenSave.SaveStore(storage);
       this.storageAvailable = this.store.available;
       if (this.store.recovered) this.notify('Sauvegarde principale illisible : la copie de secours a été restaurée.');

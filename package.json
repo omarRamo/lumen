@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-dist.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs",
+    "test": "node tests/test-native.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-places.cjs && node tests/playthrough.cjs",
     "test:weight": "node tests/test-repo-weight.cjs",
     "test:density": "node tests/test-density.cjs",
     "test:appearance": "node tests/test-appearance.cjs",
@@ -24,7 +24,8 @@
     "verify": "npm run build && npm test && npm run test:browser",
     "test:browser:webkit": "node tools/test-webkit.cjs",
     "ios:sync": "npm run build && npx cap sync ios",
-    "ios:assets": "node tools/ios-assets.cjs"
+    "ios:assets": "node tools/ios-assets.cjs",
+    "test:native": "npm run build && node tests/test-native.cjs"
   },
   "devDependencies": {
     "@capacitor/app": "^8.1.1",
