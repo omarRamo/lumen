@@ -4,6 +4,22 @@
   'use strict';
   const native = !!global.Capacitor?.isNativePlatform?.();
   const plugins = native ? global.Capacitor.Plugins : null;
+  // WKWebView's default zoom flag only cancels an already-started pinch.
+  // Lock the viewport before the first touch, only inside the native shell.
+  if (native) {
+    const doc = global.document;
+    doc.documentElement.classList.add('lumen-native');
+    const viewport = doc.querySelector?.('meta[name="viewport"]');
+    if (viewport) viewport.setAttribute('content', 'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover');
+    const editable = target => target?.closest?.('input,textarea,[contenteditable="true"]');
+    for (const event of ['selectstart', 'contextmenu', 'dragstart']) {
+      doc.addEventListener(event, e => { if (!editable(e.target)) e.preventDefault(); }, { capture: true });
+    }
+    for (const event of ['gesturestart', 'gesturechange', 'gestureend']) {
+      doc.addEventListener(event, e => e.preventDefault(), { passive: false });
+    }
+  }
+
   const keys = ['lumen.gardens.v3', 'lumen.gardens.v3.backup', 'lumen.gardens.v2', 'lumen.gardens.v1'];
   const file = { path: 'lumen-progress.json', directory: 'DATA', encoding: 'utf8' };
   let adapter, timer, pending = Promise.resolve();

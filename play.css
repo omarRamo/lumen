@@ -1,0 +1,221 @@
+/* The native game is a fixed touch surface. Only explicit panels may scroll. */
+:root { --play-left:max(16px,env(safe-area-inset-left)); --play-right:max(16px,env(safe-area-inset-right)); --play-top:max(10px,env(safe-area-inset-top)); --play-bottom:max(12px,env(safe-area-inset-bottom)); }
+html.lumen-native, .lumen-native body { position:fixed; inset:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; }
+.lumen-native #app { min-height:0; height:100%; touch-action:none; }
+.lumen-native *, .lumen-native *::before, .lumen-native *::after { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-user-drag:none; }
+.lumen-native input, .lumen-native textarea { -webkit-user-select:text; user-select:text; }
+.lumen-native input, .lumen-native select, .lumen-native textarea { font-size:16px; }
+.lumen-native button, .lumen-native a { touch-action:manipulation; }
+.lumen-native .song-panel, .lumen-native .modal-card, .lumen-native .journey-codex, .lumen-native .journey-details { touch-action:pan-y; overscroll-behavior:none; }
+.lumen-touch #game, .lumen-touch .touch-controls, .lumen-touch .touch-controls button { touch-action:none; }
+/* Keep both families of HUD inside the same safe rectangle. */
+.lumen-touch .song-header, .lumen-touch .hud { top:var(--play-top); left:var(--play-left); right:var(--play-right); gap:8px; }
+.lumen-touch .song-header nav { gap:8px; }
+.lumen-touch .song-icon { width:48px; height:48px; min-width:48px; backdrop-filter:none; }
+.lumen-touch .song-header .song-brand { min-width:48px; min-height:48px; }
+.lumen-touch .song-brand img { width:28px; height:34px; }
+.lumen-touch .song-brand>span, .lumen-touch #song-sound, .lumen-touch #song-fullscreen,
+.lumen-touch .song-mode, .lumen-touch .song-welcome, .lumen-touch .song-act,
+.lumen-touch .song-objective p, .lumen-touch .song-chorus-label, .lumen-touch .song-combo,
+.lumen-touch .chapter-pill, .lumen-touch .hud-caption, .lumen-touch .lives-line { display:none!important; }
+.lumen-touch .song-objective { left:calc(var(--play-left) + 54px); top:calc(var(--play-top) + 8px); max-width:calc(100% - var(--play-left) - var(--play-right) - 245px); visibility:visible; }
+.lumen-touch .song-objective h2 { font-size:15px; margin:0; line-height:1.3; }
+.lumen-touch .song-notes { bottom:auto; top:calc(var(--play-top) + 58px); right:var(--play-right); padding:3px 9px; font-size:12px; gap:12px; background:#e8f1dcdd; backdrop-filter:none; }
+.lumen-touch .song-chorus { left:var(--play-left); top:calc(var(--play-top) + 62px); bottom:auto; }
+.lumen-touch #song-echoes { gap:10px; }
+.lumen-touch #song-echoes .song-echo { width:20px; height:20px; }
+.lumen-touch .hud-left, .lumen-touch .hud-right { padding:4px 8px; gap:8px; backdrop-filter:none; border:0; box-shadow:none; }
+.lumen-touch .hud-left { height:48px; }
+.lumen-touch .hud-left img { width:22px; height:28px; }
+.lumen-touch .hud .hearts { font-size:14px; letter-spacing:0; }
+.lumen-touch .hud-right .collect-counter { font-size:12px; gap:4px; }
+.lumen-touch .hud .song-icon { pointer-events:auto; }
+.lumen-touch .hud-right .collect-counter svg { width:16px; height:16px; }
+/* One continuous pad for the left thumb, two legible actions for the right. */
+.lumen-touch body .touch-controls { left:calc(var(--play-left) + 8px); right:calc(var(--play-right) + 8px); bottom:calc(var(--play-bottom) + 8px); gap:12px; z-index:30; align-items:flex-end; direction:ltr; transform:none; width:auto; justify-content:space-between; }
+.lumen-touch body .touch-controls .touch-move { display:flex; gap:0; background:#12373bbb; border:1px solid #c8ead566; border-radius:32px; box-shadow:0 3px 0 #102a3340; overflow:hidden; }
+.lumen-touch body .touch-controls button { width:calc(66px * var(--touch-scale,1)); height:calc(68px * var(--touch-scale,1)); min-width:48px; min-height:48px; border:1px solid #e4f3cf77; background:#244b50d9; color:#f2f6d6; border-radius:50%; backdrop-filter:none; box-shadow:0 3px 0 #102a3340; transform:none; }
+.lumen-touch body .touch-move button { width:calc(72px * var(--touch-scale,1)); height:calc(74px * var(--touch-scale,1)); border:0; border-radius:0; background:transparent; box-shadow:none; }
+.lumen-touch body .touch-move button+button { border-left:1px solid #e4f3cf33; }
+.lumen-touch body .touch-controls button svg { width:28px; height:28px; }
+.lumen-touch body .touch-actions { display:flex; align-items:flex-end; gap:12px; }
+.lumen-touch body .touch-controls .touch-jump { width:calc(86px * var(--touch-scale,1)); height:calc(86px * var(--touch-scale,1)); background:#e3efb8; color:#245254; }
+.lumen-touch body .touch-controls .touch-action { background:#efb98b; color:#4d4b3a; }
+.lumen-touch body .touch-controls .touch-minor { width:48px; height:48px; opacity:.8; }
+.lumen-touch body .touch-controls button.held { background:#fff5d4; color:#204d52; box-shadow:inset 0 2px 6px #173e3d44; transform:scale(.96); }
+.lumen-touch body .touch-controls button small { display:block; font:500 10px Outfit,sans-serif; line-height:1; margin-top:3px; }
+.lumen-touch body .touch-actions button { display:flex; flex-direction:column; justify-content:center; align-items:center; }
+.lumen-touch body.left-handed .touch-controls { flex-direction:row-reverse; }
+/* Pause is a short menu. Settings can scroll, but their close button stays visible. */
+.lumen-touch .song-overlay, .lumen-touch .modal-screen { padding:var(--play-top) var(--play-right) var(--play-bottom) var(--play-left); backdrop-filter:none; background:#10282ba8; align-items:center; }
+.lumen-touch .song-panel, .lumen-touch .modal-card { max-height:100%; max-width:100%; overscroll-behavior:contain; border-radius:20px; padding:18px 22px; box-shadow:0 12px 45px #10252a33; }
+.lumen-touch .song-panel>.song-icon, .lumen-touch .help-card>.close-button { position:sticky; top:0; float:right; margin:0 0 0 8px; width:48px; height:48px; z-index:2; background:var(--lumen-paper,#e4efd9); }
+.lumen-touch .song-panel-pause { width:460px; }
+.lumen-touch .song-panel-pause .song-kicker, .lumen-touch .song-panel-pause .song-dialog-sub, .lumen-touch .song-panel-pause .song-pause-echoes,
+.lumen-touch .pause-card>.modal-symbol, .lumen-touch .pause-card>.eyebrow, .lumen-touch .pause-card>p { display:none; }
+.lumen-touch .song-panel-pause h2, .lumen-touch .pause-card h2 { font-size:24px; margin:8px 0 14px; }
+.lumen-touch .song-dialog-actions, .lumen-touch .pause-card .modal-actions { margin-top:12px; gap:8px; }
+.lumen-touch .song-pause-tools { padding-top:10px; }
+.lumen-touch .song-panel-settings { width:680px; }
+.lumen-touch .song-settings-row { min-height:52px; }
+.lumen-touch .song-settings-row select { min-height:44px; }
+.lumen-touch .song-panel-settings h2 { font-size:24px; }
+.lumen-touch .help-card .modal-symbol, .lumen-touch .help-card>.eyebrow, .lumen-touch .help-card .controls-grid,
+.lumen-touch .help-card .help-tip, .lumen-touch .help-card .gamepad-guide, .lumen-touch .help-card .power-guide,
+.lumen-touch .help-card .power-guide-note, .lumen-touch .help-card .settings-note { display:none; }
+.lumen-touch .help-card h2 { font-size:24px; margin:8px 0 16px; }
+.lumen-touch .toast { max-width:min(360px,75%); font-size:12px; padding:8px 14px; pointer-events:none; }
+.lumen-touch .chapter-intro { pointer-events:none; }
+.lumen-touch .chapter-intro p, .lumen-touch .chapter-intro>span { display:none; }
+.lumen-touch .chapter-intro h2 { font-size:24px; }
+.lumen-touch .level-hint { display:none!important; }
+@media (max-height:500px) and (orientation:landscape) {
+  .lumen-touch .song-panel-pause, .lumen-touch .pause-card { width:600px; }
+  .lumen-touch .song-panel-pause .song-dialog-actions, .lumen-touch .pause-card .modal-actions { display:grid; grid-template-columns:1fr 1fr; }
+  .lumen-touch .song-panel-pause .song-dialog-actions>.song-primary, .lumen-touch .pause-card .modal-actions>.primary { grid-column:1/-1; }
+  .lumen-touch .song-pause-tools { position:absolute; right:24px; bottom:16px; }
+  .lumen-touch .song-panel-pause .song-dialog-actions { padding-bottom:54px; }
+  .lumen-touch .help-card { width:740px; }
+  .lumen-touch .settings-grid { grid-template-columns:1fr 1fr; }
+  .lumen-touch .song-panel-settings { padding-top:10px; }
+}
+@media (max-width:600px) {
+  .lumen-touch body .touch-controls { left:var(--play-left); right:var(--play-right); }
+  .lumen-touch body .touch-move button { width:calc(55px * var(--touch-scale,1)); height:calc(64px * var(--touch-scale,1)); }
+  .lumen-touch body .touch-controls .touch-jump { width:calc(68px * var(--touch-scale,1)); height:calc(72px * var(--touch-scale,1)); }
+  .lumen-touch body .touch-controls .touch-action { width:calc(50px * var(--touch-scale,1)); height:calc(56px * var(--touch-scale,1)); }
+  .lumen-touch body .touch-actions { gap:6px; }
+  .lumen-touch body:not(.song-playing) .touch-actions { position:relative; }
+  .lumen-touch body:not(.song-playing) .touch-minor { position:absolute; left:0; bottom:calc(76px * var(--touch-scale,1)); }
+  .lumen-touch .song-objective { display:none; }
+  .lumen-touch .hud-right .collect-counter { display:none; }
+}
+/* The atlas is a destination screen: a living archipelago with a fixed departure dock. */
+body #map-screen.journey-map { padding:var(--play-top) var(--play-right) var(--play-bottom) var(--play-left); overflow:hidden; }
+body #map-screen.journey-map.active { display:grid; grid-template-rows:56px minmax(0,1fr); gap:12px; }
+.journey-backdrop, body.journey-reduced .journey-backdrop { opacity:1; filter:none; transform:none; }
+.journey-map::before { background:linear-gradient(90deg,var(--journey-veil-top),transparent 40%,var(--journey-veil-top)); opacity:.35; }
+.journey-map .journey-header { width:100%; max-width:none; margin:0; gap:12px; }
+.journey-brand h2 { font-size:24px; }
+.journey-brand>div>span { display:none; }
+.journey-header-actions .journey-button { min-width:48px; }
+.journey-map>.journey-intro, .journey-map>#journey-totals, .journey-map .journey-legend,
+.journey-map>.journey-footer, .journey-map>.journey-mobile-codex { display:none!important; }
+.journey-main { display:grid; grid-template-columns:minmax(0,1fr) 270px; align-items:stretch; min-height:0; width:100%; max-width:1500px; margin:0 auto; gap:24px; }
+.journey-view { display:grid; grid-template-rows:48px minmax(0,1fr); gap:4px; min-height:0; }
+.journey-act-nav { display:flex; gap:8px; justify-content:center; width:min(400px,100%); margin:0 auto; }
+.journey-act-nav button { flex:1; min-width:48px; min-height:48px; border:1px solid var(--journey-line); background:var(--journey-paper); color:var(--journey-ink); border-radius:24px; font-size:13px; }
+.journey-act-nav button[aria-pressed=true] { background:var(--journey-ink); color:var(--journey-bg); }
+.journey-sky { display:grid; grid-template-rows:minmax(0,1fr) 56px; grid-template-columns:1fr; min-height:0; }
+.journey-sky::before { display:none; }
+.journey-region { display:none; min-height:0; }
+.journey-region.is-current { display:grid; grid-template-rows:32px minmax(0,1fr); }
+.journey-region-title { padding:0; min-height:0; }
+.journey-region-title span { display:none; }
+.journey-region-title h3 { font-size:18px; margin:5px 0 0; text-shadow:0 1px 10px var(--journey-paper); }
+.journey-constellation { height:100%; min-height:0; width:100%; max-width:none; margin:0; }
+.journey-lines { inset:0; }
+.journey-lines polyline { stroke-width:2; opacity:.8; filter:none; stroke-dasharray:2 7; }
+.journey-lines-tall { display:none; }
+.journey-map .journey-node { width:80px; height:72px; border-radius:22px; }
+.journey-map .journey-node.island { width:86px; height:76px; }
+.journey-node.island::before { display:none; }
+.journey-node:hover, .journey-node.is-selected { background:transparent; }
+.journey-node.is-selected::after { inset:-2px; border:2px solid var(--journey-star); border-radius:26px; background:var(--journey-paper); opacity:.25; z-index:-1; }
+.journey-islet { position:absolute; width:126px; height:90px; left:50%; top:42%; transform:translate(-50%,-50%); overflow:visible; pointer-events:none; }
+.journey-node.is-selected .journey-islet { animation:journey-float 3s ease-in-out infinite; }
+.journey-node.is-locked .journey-islet { --islet-grass:#90a6a0; --islet-leaf:#718b87; --islet-flower:#a6b7b2; opacity:.65; }
+[data-act="2"] { --islet-grass:#bed888; --islet-leaf:#7fa99b; --islet-flower:#f2bd75; }
+[data-act="3"] { --islet-grass:#d6bfdf; --islet-leaf:#a89abf; --islet-flower:#f4cca4; --islet-rock:#665c7c; }
+.journey-node .journey-core { position:absolute; bottom:4px; left:6px; z-index:1; background:var(--journey-paper); }
+.journey-node.stage:not(.is-lit) .journey-core { width:14px; height:14px; }
+.journey-node.is-lit .journey-core { width:27px; height:27px; font-size:27px; }
+.journey-node.island .journey-core { width:28px; height:28px; font-size:24px; }
+.journey-node .journey-node-number { left:auto; right:5px; top:auto; bottom:2px; transform:none; padding:2px 5px; border-radius:12px; font-size:12px; font-weight:600; color:var(--journey-ink); background:var(--journey-paper); }
+.journey-node .journey-node-name, .journey-node .journey-new-label { display:none; }
+.journey-orbit { display:none; }
+.journey-node.is-new::before { content:'✧'; position:absolute; right:-4px; top:-10px; color:var(--journey-star); }
+.journey-light-count { top:-8px; left:3px; }
+.journey-refuges { grid-column:auto; min-height:0; height:56px; margin:0; border-top:0; display:flex; justify-content:center; gap:12px; }
+.journey-refuges-label { display:none; }
+.journey-refuges .journey-node { position:relative; left:auto; top:auto; transform:none; width:calc(50% - 8px); max-width:210px; height:48px; border:1px solid var(--journey-line); border-radius:24px; background:var(--journey-paper); }
+.journey-refuges .journey-islet, .journey-refuges .journey-core, .journey-refuges .journey-light-count { display:none; }
+.journey-refuges .journey-node-name { display:block; position:static; transform:none; width:auto; font-size:12px; padding:4px 8px; }
+.journey-details, [dir=rtl] .journey-details { min-height:0; position:relative; top:auto; border:1px solid var(--journey-line); padding:20px; border-radius:24px; background:var(--journey-paper); align-self:center; max-height:100%; overflow:auto; display:flex; flex-direction:column; gap:10px; }
+.journey-map .journey-details .journey-mobile-detail-back, .journey-detail-emblem, .journey-description, .journey-new-note, .journey-optional-note { display:none!important; }
+.journey-details h3 { font-size:25px; margin:0; max-width:none; }
+.journey-details .journey-kicker { font-size:10px; }
+.journey-state { font-size:11px; }
+.journey-collectibles { margin:0; gap:8px; }
+.journey-collectibles small { font-size:9px; }
+.journey-run-mode { margin:0; border-radius:20px; padding:0; gap:4px; border:0; }
+.journey-run-mode button { border-radius:15px; border:1px solid var(--journey-line); }
+.journey-run-mode button[aria-pressed=true] { border-color:var(--journey-ink); }
+.journey-details .journey-lock-note { margin:0; }
+.journey-map>.journey-codex { position:fixed; z-index:10; inset:var(--play-top) var(--play-right) var(--play-bottom) var(--play-left); max-width:850px; max-height:700px; margin:auto; overflow:auto; box-shadow:0 0 0 100vmax #142c35cc; border-radius:24px; padding:20px; }
+.journey-codex-heading { position:sticky; top:-20px; z-index:1; padding:12px 0; background:var(--journey-paper); }
+.journey-codex .journey-totals { margin:12px 0 24px; flex-wrap:wrap; }
+.journey-codex .journey-voices { grid-template-columns:repeat(3,1fr); gap:36px 20px; }
+@keyframes journey-float { 50% { transform:translate(-50%,calc(-50% - 5px)); } }
+body.reduced-effects .journey-islet, body.journey-reduced .journey-islet { animation:none!important; }
+@media(prefers-reduced-motion:reduce) { .journey-islet { animation:none!important; } }
+@media (max-height:540px) and (orientation:landscape) {
+  body #map-screen.journey-map.active { grid-template-rows:48px minmax(0,1fr); gap:4px; }
+  .journey-brand h2 { font-size:20px; }
+  .journey-main { grid-template-columns:minmax(0,1fr) 220px; gap:12px; }
+  .journey-region.is-current { grid-template-rows:24px minmax(0,1fr); }
+  .journey-region-title h3 { font-size:14px; margin:2px 0; }
+  .journey-details, [dir=rtl] .journey-details { padding:12px; gap:6px; }
+  .journey-details h3 { font-size:20px; }
+  .journey-details .journey-kicker, .journey-details .journey-collectibles, .journey-details .journey-state { display:none; }
+  .journey-map .journey-node, .journey-map .journey-node.island { width:60px; height:52px; }
+  .journey-islet { width:96px; height:69px; }
+  .journey-node .journey-core { bottom:0; }
+  .journey-header-actions .journey-button { font-size:11px; padding:8px 12px; }
+}
+@media(max-width:600px) and (orientation:landscape) {
+  .journey-main { grid-template-columns:minmax(0,1fr) 175px; gap:8px; }
+  .journey-brand h2 { font-size:15px; }
+  .journey-brand img { display:none; }
+  .journey-header-actions { gap:4px; }
+  .journey-header-actions .journey-button { max-width:95px; padding:6px; font-size:10px; }
+  .journey-region-title { display:none; }
+  .journey-region.is-current { grid-template-rows:minmax(0,1fr); }
+  .journey-map .journey-node, .journey-map .journey-node.island { width:48px; height:48px; }
+  .journey-islet { width:78px; height:56px; }
+  .journey-details h3 { font-size:17px; }
+}
+@media(max-width:760px) and (orientation:portrait) {
+  body #map-screen.journey-map.active { grid-template-rows:48px minmax(0,1fr); gap:6px; }
+  .journey-brand h2 { font-size:18px; }
+  .journey-header-actions .journey-button { font-size:10px; max-width:90px; padding:6px 8px; }
+  .journey-header-actions #journey-codex-button { display:flex; }
+  .journey-brand img { display:none; }
+  .journey-main { display:grid; grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; gap:4px; }
+  .journey-lines-wide { display:none; }.journey-lines-tall { display:block; }
+  .journey-region.is-current { grid-template-rows:28px minmax(0,1fr); }
+  .journey-region-title h3 { font-size:16px; }
+  .journey-node { left:var(--px); top:var(--py); }
+  .journey-details, [dir=rtl] .journey-details { padding:12px; gap:6px; }
+  .journey-details .journey-kicker, .journey-details .journey-state, .journey-details .journey-collectibles { display:none; }
+  .journey-details h3 { font-size:20px; }
+  .journey-codex h3 { font-size:18px; }
+  .journey-map .journey-node, .journey-map .journey-node.island { width:64px; height:52px; }
+  .journey-islet { width:96px; height:69px; }
+}
+
+.journey-map .journey-refuges .journey-node { width:calc(50% - 8px); max-width:210px; height:48px; }
+html.lumen-touch .song-chorus { transform:none; left:var(--play-left); right:auto; }
+.lumen-touch .power-description { display:none; }
+.lumen-touch .quest-banner { max-width:240px; font-size:12px; padding:7px 12px; }
+.lumen-touch .quest-banner p { display:none; }
+.lumen-touch .song-panel-pause .song-button { min-height:48px; }
+html.lumen-touch body .hud { display:flex; justify-content:space-between; width:auto; }
+html.lumen-touch body .hud .song-icon { width:48px; height:48px; min-height:48px; flex-shrink:0; }
+
+.lumen-touch .pause-card button { min-height:48px; }
+
+.journey-header-actions #journey-codex-button { display:flex; }
+
+.touch-guide { display:none; }
+.lumen-touch .touch-guide { display:block; font-size:12px; line-height:1.5; margin:12px 0; }

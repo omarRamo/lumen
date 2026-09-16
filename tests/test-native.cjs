@@ -48,6 +48,11 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(array('WKAppBoundDomains'), ['localhost']);
   assert.match(read('index.html'), /name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/);
   assert.doesNotMatch(read('ios/App/App/AppDelegate.swift'), /AVAudioSession/);
+  // Both UIKit entry paths must use the hardened view; the scene path is used on iOS 26.
+  assert.match(read('ios/App/App/SceneDelegate.swift'), /rootViewController = LumenViewController\(\)/);
+  assert.match(read('ios/App/App/Base.lproj/Main.storyboard'), /customClass="LumenViewController"/);
+  assert.match(read('ios/App/App/AppDelegate.swift'), /preferences.isTextInteractionEnabled = false/);
+  assert.match(read('ios/App/App/AppDelegate.swift'), /pinchGestureRecognizer\?.isEnabled = false/);
   const web = fixture({ native: false });
   assert.equal(web.platform.storage(), web.localStorage);
   await web.platform.prepare(); web.platform.attach({}); await web.platform.flush();

@@ -730,7 +730,7 @@ async function test(name, run) {
   await test('L’édition portable démarre seule en file://, sans aucune requête externe', async () => {
     const standalone = fs.mkdtempSync(path.join(os.tmpdir(), 'lumen-build-'));
     try {
-      for (const file of ['index.html', 'style.css', 'song.css', 'journey.css', 'icon.svg', 'assets', 'js', 'tools']) {
+      for (const file of ['index.html', 'style.css', 'song.css', 'journey.css', 'play.css', 'icon.svg', 'assets', 'js', 'tools']) {
         fs.cpSync(path.join(root, file), path.join(standalone, file), { recursive: true });
       }
       assert.equal(fs.existsSync(path.join(standalone, 'node_modules')), false);

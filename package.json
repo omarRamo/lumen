@@ -19,13 +19,14 @@
     "test:journey": "node tests/test-journey.cjs",
     "test:places": "node tests/test-places.cjs && node tests/test-places-playthrough.cjs",
     "test:playthrough": "node tests/playthrough.cjs",
-    "test:browser": "node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs",
+    "test:browser": "node tools/build.cjs && node tests/test-browser.cjs && node tests/test-journey-browser.cjs && node tests/test-mobile.cjs",
     "test:journey-browser": "node tests/test-journey-browser.cjs",
     "verify": "npm run build && npm test && npm run test:browser",
     "test:browser:webkit": "node tools/test-webkit.cjs",
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:assets": "node tools/ios-assets.cjs",
-    "test:native": "npm run build && node tests/test-native.cjs"
+    "test:native": "npm run build && node tests/test-native.cjs",
+    "test:mobile": "npm run build && node tests/test-mobile.cjs"
   },
   "devDependencies": {
     "@capacitor/app": "^8.1.1",

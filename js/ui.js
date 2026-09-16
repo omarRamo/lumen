@@ -55,7 +55,7 @@
     } else if (mode==='map') {showScreen('map');renderMap();$('chapter-intro').classList.remove('show');}
     else if (mode==='paused'||mode==='gameover') {
       showScreen('pause');const over=mode==='gameover';
-      $('pause-title').textContent=over?'Une lumière renaîtra.':'Le monde peut attendre.';
+      $('pause-title').textContent=over?'Une lumière renaîtra.':window.LumenTouch?.enabled?'Pause':'Le monde peut attendre.';
       $('pause-screen').querySelector('.modal-card>p').textContent=over?'Vos fragments et les chapitres terminés sont conservés. Reprenez avec cinq souffles.':game.runMode==='timed'?'Le chronomètre est en pause. Votre record attendra.':'Votre lumière sera toujours là.';
       $('pause-screen').querySelector('[data-command="resume"]').classList.toggle('hidden',over);
       // Une nuit perdue n'est pas un chapitre perdu : on la refait telle quelle
@@ -77,7 +77,7 @@
       } else {second.dataset.command='map';second.innerHTML='L’atlas des chapitres <span>✧</span>';}
     } else if (mode==='dream') {showScreen('dream');refreshDream();}
     else if (mode==='route') showScreen('route');
-    else if (mode==='help') showScreen('help');
+    else if (mode==='help') { if(window.LumenTouch?.enabled)$('help-title').textContent='Réglages'; showScreen('help'); }
     else if (mode==='complete'||mode==='ending') showScreen('complete');
     else showScreen(null);
     if (mode!=='playing') {$('level-hint').classList.add('hidden');$('power-indicator').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
@@ -157,7 +157,7 @@
   function toast(message, values = {}) {
     lastToast={message,values};
     clearTimeout(toastTimer);$('toast').textContent=translate(message,typeof values==='function'?values():values);$('toast').classList.add('show');
-    toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3800);
+    toastTimer=setTimeout(()=>$('toast').classList.remove('show'),window.LumenTouch?.enabled?2000:3800);
   }
   function transition(fn) {
     if (transitioning) return;
@@ -307,7 +307,7 @@
       $('quest-title').textContent=translate(quest.title);
       $('quest-progress').textContent=state==='done'?translate(quest.reward):`${translate(quest.summary)} · ${done} / ${quest.needs.length}`;
     } else $('quest-banner').classList.add('hidden');
-    const hint=(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
+    const hint=!window.LumenTouch?.enabled&&(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
     $('level-hint').classList.toggle('hidden',!hint||$('chapter-intro').classList.contains('show'));
     if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=translate(hint.text);}
   }
@@ -326,7 +326,7 @@
     clearTimeout(introTimer);
     if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
     updateIntroText(level);
-    $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),2400);
+    $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),window.LumenTouch?.enabled?1100:2400);
     lastHint='';lastHud='';
     $('hud').classList.remove('heart-hit');
   }
@@ -404,37 +404,7 @@
      *
      * La course n'a pas de bouton : maintenir une direction suffit. Le chemin
      * principal ne demande donc jamais plus de deux doigts. */
-    const RUN_AFTER=.38;
-    const runTimers=new Map();
-    const releaseRun=action=>{
-      if(action!=='left'&&action!=='right')return;
-      clearTimeout(runTimers.get(action));runTimers.delete(action);
-      if(!game.input.down('left')&&!game.input.down('right'))game.input.virtual('run',false,'auto');
-    };
-    document.querySelectorAll('[data-touch]').forEach(button=>{
-      const action=button.dataset.touch;
-      const press=e=>{
-        e.preventDefault();
-        try{button.setPointerCapture(e.pointerId);}catch(_){/* certains navigateurs refusent : sans gravité */}
-        game.input.virtual(action,true,e.pointerId);button.classList.add('held');
-        if(action==='left'||action==='right'){
-          clearTimeout(runTimers.get(action));
-          runTimers.set(action,setTimeout(()=>{if(game.input.down(action))game.input.virtual('run',true,'auto');},RUN_AFTER*1000));
-        }
-      };
-      const release=e=>{game.input.virtual(action,false,e.pointerId);button.classList.remove('held');releaseRun(action);};
-      button.addEventListener('pointerdown',press);
-      button.addEventListener('pointerup',release);
-      button.addEventListener('pointercancel',release);
-      button.addEventListener('lostpointercapture',release);
-      // Une fenêtre qui perd le focus ne doit jamais laisser un doigt appuyé.
-      button.addEventListener('contextmenu',e=>e.preventDefault());
-    });
-    window.addEventListener('blur',()=>{
-      for(const [action,timer] of runTimers){clearTimeout(timer);}
-      runTimers.clear();
-      document.querySelectorAll('[data-touch].held').forEach(el=>el.classList.remove('held'));
-    });
+    window.LumenTouch.attach(game);
 
     /* ── Réglages de confort ─────────────────────────────────────────────── */
     function applySettings() {

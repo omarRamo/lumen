@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import WebKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -40,5 +41,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                           sessionRole: connectingSceneSession.role)
         config.delegateClass = SceneDelegate.self
         return config
+    }
+}
+
+// The game owns its gestures; WebKit must not select or magnify the interface.
+// Kept in this compiled source to avoid changing personal Xcode signing settings.
+class LumenViewController: CAPBridgeViewController {
+    override func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
+        let configuration = super.webViewConfiguration(for: instanceConfiguration)
+        configuration.preferences.isTextInteractionEnabled = false
+        configuration.ignoresViewportScaleLimits = false
+        return configuration
+    }
+
+    override func capacitorDidLoad() {
+        super.capacitorDidLoad()
+        webView?.scrollView.bounces = false
+        webView?.scrollView.pinchGestureRecognizer?.isEnabled = false
     }
 }

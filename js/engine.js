@@ -34,6 +34,7 @@
       window.addEventListener('keydown', e => {
         const action = KEY_ACTIONS[e.code];
         if (!action || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        this.touchActive = false;
         if (this.getMode() === 'map') {
           const direction = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' }[e.code];
           if (direction || e.code === 'Escape') {
@@ -84,6 +85,7 @@
       const actions = {left:horizontal < -.25 || button(14),right:horizontal > .25 || button(15),
         down:(pad?.axes[1] || 0) > .5 || button(13),jump:button(0) || button(1),
         action:button(2),run:button(4)||button(5)||button(6)||button(7)};
+      if (Object.values(actions).some(Boolean)) this.touchActive = false;
       for (const [action, held] of Object.entries(actions)) this.virtual(action, held, 'gamepad');
       if (button(9) && !this.padPause) this.onCommand('pause');
       if (button(0) && !this.padConfirm && ['home','paused','complete','ending','gameover'].includes(mode)) this.onCommand('confirm');
@@ -557,7 +559,11 @@
       this.input.pollGamepad(this.mode);
       this.accumulator += dt;
       while (this.accumulator >= STEP) { this.update(STEP); this.input.clearFrame(); this.accumulator -= STEP; }
-      this.renderer.draw(this, dt); this.emit('frame', dt);
+      // A second full scene behind the atlas or a static pause screen wastes GPU time.
+      const staticView = ['map','paused','help','gameover'].includes(this.mode);
+      const stamp = [this.mode, this.renderer.width, this.renderer.height, window.LumenAppearance?.current].join(':');
+      if (!staticView || this.lastRenderStamp !== stamp) this.renderer.draw(this, dt);
+      this.lastRenderStamp = stamp; this.emit('frame', dt);
       this.frames++; this.frameWindow.push(realDt);
       if (this.frameWindow.length > 120) this.frameWindow.shift();
       if (this.frames % 30 === 0) this.fps = Math.round(this.frameWindow.length / this.frameWindow.reduce((a,b) => a+b, 0));
@@ -648,13 +654,13 @@
       p.invuln = Math.max(0, p.invuln - dt); p.landTimer = Math.max(0, p.landTimer - dt);
       p.jumpTimer=Math.max(0,p.jumpTimer-dt);p.runStartTimer=Math.max(0,p.runStartTimer-dt);p.stepSoundTimer=Math.max(0,p.stepSoundTimer-dt);
       p.actionCooldown = Math.max(0, p.actionCooldown - dt); p.jumpBuffer = Math.max(0, p.jumpBuffer - dt);
-      if (p.grounded) { p.coyote = .12; p.airJumps = 0; } else p.coyote = Math.max(0, p.coyote - dt);
+      if (p.grounded) { p.coyote = input.touchActive ? .16 : .12; p.airJumps = 0; } else p.coyote = Math.max(0, p.coyote - dt);
       if (p.power) {
         p.powerTime -= dt;
         if(p.powerTime<5&&!p.powerWarning){p.powerWarning=true;this.audio.sfx('powerWarning');}
         if(p.powerTime<=0){const oldPower=p.power;p.power=null;this.audio.sfx('expire_'+oldPower);this.burst(p.x+16,p.y+22,12,'#d2dcbb',90,'spark');this.emit('toast','Le pouvoir s’est dissipé. Continuez votre voyage !');}
       }
-      if (input.just('jump')) p.jumpBuffer = .15;
+      if (input.just('jump')) p.jumpBuffer = input.touchActive ? .19 : .15;
       const water = this.level.water;
       p.wet = !!water && p.x + p.w > (water.start || 0) && p.x < (water.end || this.level.width) && p.y + p.h * .6 > water.y;
       const axis = (input.down('right') ? 1 : 0) - (input.down('left') ? 1 : 0);

@@ -54,7 +54,7 @@
     const closeButton = pane === 'result' ? '' : roundButton('song-close', 'Reprendre', 'x');
     let content = '';
     if (pane === 'pause') {
-      content = title('UNE PAUSE DANS LE VOYAGE', 'Le ciel peut attendre.') +
+      content = title('UNE PAUSE DANS LE VOYAGE', global.LumenTouch?.enabled ? 'Pause' : 'Le ciel peut attendre.') +
         `<p class="song-dialog-sub">${escape(translate(game.level.name))}</p><div class="song-pause-echoes">${echoes()}</div>
         <div class="song-dialog-actions"><button class="song-button song-primary" data-command="resume">${icon('play')} Reprendre le vol</button>
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
@@ -63,7 +63,7 @@
     } else if (pane === 'settings') {
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
-        `<label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
+        `<p class="touch-guide">Glisse le pouce entre les flèches. Maintiens une direction pour courir, et Sauter pour planer.</p><label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
         <div class="song-settings-row appearance-row"><span>Apparence</span>${global.LumenAppearance.controls(settings.appearance)}</div>
         <div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
         <label class="song-settings-row song-range-row" for="song-volume"><span>Volume</span><input id="song-volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" data-song-pref="volume"><output id="song-volume-value">${Math.round(settings.volume * 100)} %</output></label>
@@ -104,6 +104,8 @@
   }
   function sync() {
     if (!game) return;
+    const actionLabel = document.querySelector('[data-touch="action"] small');
+    if (actionLabel) { actionLabel.textContent = game.song ? 'Chanter' : 'Agir'; I18n.translateDOM(actionLabel.parentNode); }
     const active = !!game.song && game.mode !== 'map';
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
@@ -203,9 +205,9 @@
   function attach(instance, callbacks) {
     game = instance; helpers = callbacks;
     document.querySelectorAll('[data-icon]').forEach(element => { element.innerHTML = icon(element.dataset.icon); });
-    const glyphs = { left: 'arrow-left', right: 'arrow-right', jump: 'feather', action: 'sparkles' };
+    const glyphs = { left: 'arrow-left', right: 'arrow-right', jump: 'arrow-up-right', action: 'sparkles' };
     document.querySelectorAll('[data-touch]').forEach(button => {
-      if (glyphs[button.dataset.touch]) button.innerHTML = icon(glyphs[button.dataset.touch]);
+      if (glyphs[button.dataset.touch]) button.innerHTML = icon(glyphs[button.dataset.touch]) + (global.LumenTouch?.enabled && ['jump','action'].includes(button.dataset.touch) ? '<small>' + translate(button.dataset.touch === 'jump' ? 'Sauter' : 'Chanter') + '</small>' : '');
       const names = { left: 'À gauche · Q / A / ←', right: 'À droite · D / →', jump: 'Sauter, planer · Espace', action: 'Chanter · X / J' };
       if (names[button.dataset.touch]) button.title = translate(names[button.dataset.touch]);
     });
