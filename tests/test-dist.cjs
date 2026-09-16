@@ -1,0 +1,12 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8');
+assert.deepEqual(fs.readdirSync(path.join(root, 'dist')), ['index.html']);
+assert.equal(html, fs.readFileSync(path.join(root, 'LUMEN.html'), 'utf8'));
+assert.doesNotMatch(html, /https?:\/\/|fetch\s*\(|XMLHttpRequest/i);
+assert.doesNotMatch(html, /\b(?:src|href)\s*=\s*["'](?!data:|#)[^"']+["']/i);
+assert.doesNotMatch(html, /url\(\s*["']?(?!data:)[^\s)]+\)/i);
+console.log('PASS portable and dist are identical, single-file and offline');

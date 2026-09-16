@@ -14,7 +14,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
-const { chromium } = require('playwright');
+const chromium = require('playwright')[process.env.LUMEN_BROWSER || 'chromium'];
 const browserTools = require('../tools/browser.cjs');
 const capture = require('../tools/capture.cjs');
 

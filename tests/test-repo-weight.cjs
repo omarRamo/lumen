@@ -42,7 +42,7 @@ function test(name, run) {
 
 function tracked() {
   const output = execFileSync('git', ['ls-files', '-z'], { cwd: root, maxBuffer: 1 << 26 });
-  return output.toString('utf8').split('\0').filter(Boolean);
+  return output.toString('utf8').split('\0').filter(file => file && !/^(dist\/|ios\/App\/Pods\/)/.test(file));
 }
 function weigh(files) {
   let total = 0;
