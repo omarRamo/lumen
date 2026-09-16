@@ -31,7 +31,7 @@ test('Six stable places add exactly two different decisions per act, each with f
     for (const lantern of level.checkpoints) assert.ok(level.platforms.some(platform => platform.type === 'ground' && lantern.x >= platform.x && lantern.x <= platform.x + platform.w && lantern.y === platform.y), level.key + ': unsafe lantern');
     assert.ok(level.secrets.length >= 1, level.key);
   }
-  assert.equal(places.find(level => level.place.kind === 'river').secrets.length, 3);
+  assert.equal(places.find(level => level.place.kind === 'river').secrets.length, 4);
 });
 
 test('Position fixture: the sleeper only travels when calmed, physically carries its rider, then waits', () => {

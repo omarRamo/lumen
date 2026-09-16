@@ -64,7 +64,6 @@
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
         `<p class="touch-guide">Glisse le pouce entre les flèches. Maintiens une direction pour courir, et Sauter pour planer.</p><label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
-        <div class="song-settings-row appearance-row"><span>Apparence</span>${global.LumenAppearance.controls(settings.appearance)}</div>
         <div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
         <label class="song-settings-row song-range-row" for="song-volume"><span>Volume</span><input id="song-volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" data-song-pref="volume"><output id="song-volume-value">${Math.round(settings.volume * 100)} %</output></label>
         ${[['musicVolume','Musique','music'],['effectsVolume','Effets sonores','sparkles'],['ambienceVolume','Ambiance','wind']].map(([setting,label,glyph])=>`<label class="song-settings-row song-range-row song-mix-row" for="song-${setting}"><span>${icon(glyph)}<span>${translate(label)}</span></span><input id="song-${setting}" type="range" min="0" max="100" value="${Math.round(settings[setting]*100)}" data-song-pref="${setting}"><output id="song-${setting}-value">${Math.round(settings[setting]*100)} %</output></label>`).join('')}
@@ -78,16 +77,13 @@
         `<p class="song-dialog-sub">Cette île recommencera. Les îles achevées restent acquises.</p><div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-apply-style">${icon('rotate-ccw')} ${escape(translate('Partir en {style}', { style: translate(pendingStyle === 'flow' ? 'Élan' : 'Balade') }))}</button><button class="song-button" data-command="song-close">Annuler</button></div>`;
     } else if (pane === 'result' && lastResult) {
       const result = lastResult;
-      content = `<div class="song-result-mark">${icon(result.final ? 'sun' : 'sparkles')}</div>` +
-        title(result.final ? 'LES NEUF VOIX SONT RÉUNIES' : 'UNE ÎLE A RETROUVÉ SA VOIX', result.final ? 'Le ciel se souvient.' : 'Ensemble, on va plus haut.') +
-        `<p class="song-dialog-sub">${result.final ? 'Auralis reprend son voyage. Il emporte un peu de vous.' : escape(game.level.name)}</p>
-        <div class="song-pause-echoes">${echoes()}</div><div class="song-results">
-        <div><span>NOTES</span><strong>${result.coins}</strong></div><div><span>PLUS BEL ÉLAN</span><strong>×${result.combo}</strong></div>
-        <div><span>SOUVENIRS</span><strong>${result.stars} / 3</strong></div><div><span>${result.timed ? 'CHRONO' : 'VOYAGE'}</span><strong>${clock(result.time)}</strong></div></div>
-        ${result.timed && result.record ? '<p class="song-record">' + icon('trophy') + ' Nouveau record personnel</p>' : ''}
+      content = `<div class="song-pause-echoes">${echoes()}</div>` +
+        `<h2 id="song-panel-title">${translate(result.final ? 'Le ciel se souvient.' : 'Ensemble, on va plus haut.')}</h2>
+        <p class="song-dialog-sub">${escape(translate(game.level.name))}</p>
+        ${result.timed ? `<p class="finish-time">${result.record ? '✦ ' : ''}${clock(result.time)}</p>` : ''}
         <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-next">Continuer le voyage ${icon('arrow-right')}</button>
-        <button class="song-button" data-command="song-atlas">${icon('map')} L’atlas des lumières</button>
-        <button class="song-text-button" data-command="song-retry">${icon('rotate-ccw')} Rejouer cette île</button></div>`;
+        <div class="result-secondary-actions"><button class="song-button" data-command="song-retry">Rejouer ${icon('rotate-ccw')}</button>
+        <button class="song-button" data-command="song-atlas">L’atlas ${icon('map')}</button></div></div>`;
     }
     panel.innerHTML = closeButton + content;
     I18n.translateDOM(panel);

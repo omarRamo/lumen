@@ -288,7 +288,7 @@
         vulnerable:false, hitFlash:0, facing:-1, state:'sleep', vx:0, vy:0, attack:0, activated:false, homeX:data.width - 650,
         stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
       this.camera = { x:clamp(data.spawn.x - 300, 0, Math.max(0, data.width - WIDTH)), y:0, shake:0 };
-      if (data.place?.kind === 'ascent') this.camera.y = clamp(data.spawn.y - HEIGHT * .52, 0, Math.max(0, data.height - HEIGHT));
+      this.followCamera(0, true);
       this.place = window.LumenPlaces?.create(this) || null;
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
       this.audio.setScene?.(data.song?.index ?? -1);
@@ -612,13 +612,27 @@
         else if (this.session === 'expedition' && this.run) this.completeRoom();
         else this.complete();
       }
-      const visibleWidth = this.renderer.worldWidth || WIDTH;
-      const target = clamp(this.player.x - visibleWidth * .36 + this.player.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
-      this.camera.x += (target - this.camera.x) * (1 - Math.exp(-5 * dt));
-      if (this.level.place?.kind === 'ascent') {
-        const vertical = clamp(this.player.y - HEIGHT * .52, 0, Math.max(0, this.level.height - HEIGHT));
-        this.camera.y += (vertical - this.camera.y) * (1 - Math.exp(-5 * dt));
-      } else this.camera.y = 0;
+      this.followCamera(dt);
+    }
+    followCamera(dt, snap = false) {
+      const r = this.renderer, p = this.player;
+      const width = r.width || WIDTH, height = r.height || HEIGHT;
+      const portrait = width < height;
+      const scale = portrait ? width / 510 : Math.max(.64, height / 790);
+      const offsetY = height * (portrait ? .72 : height < 500 ? .69 : .79) - 600 * scale;
+      const visibleWidth = width / scale;
+      const targetX = clamp(p.x - visibleWidth * .36 + p.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
+      this.camera.x += (targetX - this.camera.x) * (snap ? 1 : 1 - Math.exp(-5 * dt));
+      // Quiet middle band for ordinary jumps; look up before a spring or ascent
+      // reaches the HUD. Both renderers use the same world-to-screen transform.
+      const top = (height * .32 - offsetY) / scale;
+      const bottom = (height * .72 - offsetY) / scale - p.h;
+      const ahead = p.y + Math.min(0, p.vy) * .10;
+      let targetY = this.camera.y;
+      if (ahead - targetY < top) targetY = ahead - top;
+      if (p.y - targetY > bottom) targetY = p.y - bottom;
+      targetY = clamp(targetY, -HEIGHT, Math.max(0, this.level.height - 900));
+      this.camera.y += (targetY - this.camera.y) * (snap ? 1 : 1 - Math.exp(-9 * dt));
     }
     updatePlatforms(dt) {
       for (const p of this.platforms) {
@@ -1274,7 +1288,7 @@
       }
       const visibleWidth=this.renderer.worldWidth||WIDTH;
       this.camera.x=clamp(p.x-visibleWidth*.36,0,Math.max(0,this.level.width-visibleWidth));
-      if (this.level.place?.kind === 'ascent') this.camera.y=clamp(p.y-HEIGHT*.52,0,Math.max(0,this.level.height-HEIGHT));
+      this.camera.y = 0; this.followCamera(0, true);
       this.mode='playing';this.input.reset();this.burst(p.x+16,p.y+23,26,'#d7e8b9',150,'spark');this.emit('mode',this.mode);
     }
     complete() {

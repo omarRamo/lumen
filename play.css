@@ -219,3 +219,25 @@ html.lumen-touch body .hud .song-icon { width:48px; height:48px; min-height:48px
 
 .touch-guide { display:none; }
 .lumen-touch .touch-guide { display:block; font-size:12px; line-height:1.5; margin:12px 0; }
+
+/* A finish is a small celebration, with the next garden always in reach. */
+body .complete-card, body .song-panel-result {
+  width:min(480px,100%); max-height:100%; padding:24px; text-align:center;
+  display:flex; flex-direction:column; align-items:stretch; gap:12px;
+}
+body .complete-card h2, body .song-panel-result h2 { margin:0; font-size:clamp(23px,4vw,34px); line-height:1.15; }
+body .complete-card p, body .song-panel-result p { margin:0; font-size:14px; }
+body .complete-card .result-stars { margin:0; font-size:42px; line-height:1.1; }
+body .complete-card .modal-actions, body .song-panel-result .song-dialog-actions { margin:0; display:grid; gap:8px; }
+body .complete-card .button, body .song-panel-result .song-button { min-height:48px; padding:10px 14px; font-size:15px; }
+body .result-secondary-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+body .song-panel-result .song-pause-echoes { display:flex; margin:0; min-height:52px; }
+body .song-panel-result .song-echo { transform:scale(.8); }
+.finish-time { font-variant-numeric:tabular-nums; color:var(--ink); }
+@media(max-height:500px) and (orientation:landscape) {
+  body .complete-card, body .song-panel-result { padding:14px 22px; gap:6px; width:min(440px,100%); }
+  body .complete-card h2, body .song-panel-result h2 { font-size:23px; }
+  body .complete-card .result-stars { font-size:32px; }
+  body .song-panel-result .song-pause-echoes { height:42px; min-height:42px; }
+  body .song-panel-result .song-echo { transform:scale(.65); }
+}

@@ -9,46 +9,28 @@
   <script>
 (function (global) {
   'use strict';
-  const CHOICES = Object.freeze(['system', 'light', 'dark']);
+  // A single authored palette: legacy night/system choices cannot recolor the game.
   const listeners = new Set();
-  const media = global.matchMedia?.('(prefers-color-scheme: dark)');
-  let preference = 'system', current = 'light';
-
-  function normalize(value) { return CHOICES.includes(value) ? value : 'system'; }
-  function resolve(value, systemDark = !!media?.matches) {
-    const choice = normalize(value);
-    return choice === 'system' ? (systemDark ? 'dark' : 'light') : choice;
-  }
-  function apply(value = preference) {
-    preference = normalize(value);
-    const previous = current;
-    current = resolve(preference);
+  function normalize() { return 'light'; }
+  function apply() {
     if (global.document) {
-      global.document.documentElement.dataset.appearance = current;
-      global.document.documentElement.style.colorScheme = current;
+      global.document.documentElement.dataset.appearance = 'light';
+      global.document.documentElement.style.colorScheme = 'light';
       const meta = global.document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.content = current === 'dark' ? '#162f31' : '#93c2df';
+      if (meta) meta.content = '#93c2df';
     }
-    for (const listener of listeners) listener(current, previous);
-    return current;
+    for (const listener of listeners) listener('light', 'light');
+    return 'light';
   }
-  function onChange(listener) { listeners.add(listener); return () => listeners.delete(listener); }
-  function controls(selected = preference) {
-    const translate = source => global.LumenI18n?.t(source) || source;
-    const options = [['system', 'Système', 'monitor'], ['light', 'Clair', 'sun'], ['dark', 'Sombre', 'moon']];
-    return `<div class="appearance-options" role="group" aria-label="${translate('Apparence')}">` + options.map(([value, label, icon]) =>
-      `<button type="button" data-appearance="${value}" aria-pressed="${selected === value}">${global.LumenIcons?.[icon] || ''}<span>${translate(label)}</span></button>`).join('') + '</div>';
-  }
-  const systemChanged = () => { if (preference === 'system') apply(); };
-  if (media?.addEventListener) media.addEventListener('change', systemChanged);
-  else media?.addListener?.(systemChanged);
   global.LumenAppearance = {
-    CHOICES, normalize, resolve, apply, onChange, controls,
-    get current() { return current; },
-    get preference() { return preference; }
+    CHOICES: Object.freeze(['light']), normalize, resolve: normalize, apply,
+    onChange(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+    controls() { return ''; },
+    get current() { return 'light'; }, get preference() { return 'light'; }
   };
   apply();
 })(typeof window !== 'undefined' ? window : globalThis);
+
 </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E">
   <style>
@@ -1212,6 +1194,28 @@ html.lumen-touch body .hud .song-icon { width:48px; height:48px; min-height:48px
 .touch-guide { display:none; }
 .lumen-touch .touch-guide { display:block; font-size:12px; line-height:1.5; margin:12px 0; }
 
+/* A finish is a small celebration, with the next garden always in reach. */
+body .complete-card, body .song-panel-result {
+  width:min(480px,100%); max-height:100%; padding:24px; text-align:center;
+  display:flex; flex-direction:column; align-items:stretch; gap:12px;
+}
+body .complete-card h2, body .song-panel-result h2 { margin:0; font-size:clamp(23px,4vw,34px); line-height:1.15; }
+body .complete-card p, body .song-panel-result p { margin:0; font-size:14px; }
+body .complete-card .result-stars { margin:0; font-size:42px; line-height:1.1; }
+body .complete-card .modal-actions, body .song-panel-result .song-dialog-actions { margin:0; display:grid; gap:8px; }
+body .complete-card .button, body .song-panel-result .song-button { min-height:48px; padding:10px 14px; font-size:15px; }
+body .result-secondary-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+body .song-panel-result .song-pause-echoes { display:flex; margin:0; min-height:52px; }
+body .song-panel-result .song-echo { transform:scale(.8); }
+.finish-time { font-variant-numeric:tabular-nums; color:var(--ink); }
+@media(max-height:500px) and (orientation:landscape) {
+  body .complete-card, body .song-panel-result { padding:14px 22px; gap:6px; width:min(440px,100%); }
+  body .complete-card h2, body .song-panel-result h2 { font-size:23px; }
+  body .complete-card .result-stars { font-size:32px; }
+  body .song-panel-result .song-pause-echoes { height:42px; min-height:42px; }
+  body .song-panel-result .song-echo { transform:scale(.65); }
+}
+
 </style>
 </head>
 <body>
@@ -1262,7 +1266,6 @@ html.lumen-touch body .hud .song-icon { width:48px; height:48px; min-height:48px
       <div class="hud-right"><button class="song-icon" data-command="help" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button><div class="collect-counter" title="Notes réunies"><span data-icon="music"></span><strong id="coin-count">00</strong></div><div class="collect-counter" title="Souvenirs de l’île"><span data-icon="feather"></span><strong id="star-count">0 / 3</strong></div><button class="song-icon" data-command="pause" aria-label="Mettre en pause" title="Mettre en pause"><span data-icon="pause"></span></button></div>
     </section>
     <div id="run-clock" class="run-clock hidden" aria-label="Chronomètre de la course"><span>CONTRE-LA-MONTRE</span><strong id="clock-time">0:00.0</strong><small id="clock-best">PREMIÈRE COURSE</small></div>
-    <div id="power-indicator" class="power-indicator hidden"><span id="power-icon">✦</span><div><div class="power-heading"><strong id="power-name"></strong><span id="power-time"></span></div><span id="power-description"></span><div class="power-track"><i id="power-fill"></i></div></div></div>
     <div id="dialogue" class="dialogue hidden" role="status" aria-live="polite"><div class="dialogue-portrait" aria-hidden="true"><span id="dialogue-mark">✦</span></div><div class="dialogue-body"><div class="dialogue-who"><strong id="dialogue-name"></strong><span id="dialogue-role"></span></div><p id="dialogue-line"></p><div class="dialogue-dots" id="dialogue-dots" aria-hidden="true"></div></div></div>
     <div id="quest-banner" class="quest-banner hidden" role="status"><span class="quest-mark" aria-hidden="true">✧</span><div><strong id="quest-title"></strong><span id="quest-progress"></span></div></div>
     <div id="level-hint" class="level-hint hidden"></div>
@@ -1286,7 +1289,6 @@ html.lumen-touch body .hud .song-icon { width:48px; height:48px; min-height:48px
     <section id="help-screen" class="screen modal-screen" aria-labelledby="help-title"><div class="modal-card help-card"><button class="close-button" data-command="close-help" aria-label="Fermer les commandes">×</button><div class="eyebrow">LE PETIT GUIDE DU GARDIEN</div><h2 id="help-title">Suivez votre élan.</h2><p class="touch-guide">Glisse le pouce entre les flèches. Maintiens une direction pour courir, et Sauter pour planer.</p><div class="controls-grid"><div><span>Se déplacer</span><span><kbd>←</kbd><kbd>→</kbd> ou <kbd>Q</kbd><kbd>D</kbd></span></div><div><span>Sauter / nager</span><span><kbd>ESPACE</kbd> ou <kbd>Z</kbd><kbd>↑</kbd></span></div><div><span>Courir</span><kbd>MAJ</kbd></div><div><span>Glisser</span><span><kbd>↓</kbd> en courant</span></div><div><span>Utiliser un pouvoir</span><span><kbd>X</kbd> ou <kbd>J</kbd></span></div><div><span>Pause / reprendre</span><span><kbd>ÉCHAP</kbd> ou <kbd>P</kbd></span></div><div><span>Recommencer / son</span><span><kbd>R</kbd> / <kbd>M</kbd></span></div><div><span>Autres claviers</span><span><kbd>A</kbd><kbd>D</kbd> · <kbd>W</kbd> saut</span></div></div><p class="help-tip">Un appui bref fait un petit saut. Maintenez la touche pour sauter plus haut. Sautez sur les créatures pour les étourdir. Les lanternes mémorisent votre passage.</p><p class="gamepad-guide"><span aria-hidden="true">⊕</span><span><strong>À la manette</strong> · Stick ou croix pour avancer · A / B pour sauter · X pour le pouvoir · Gâchette / épaule droite pour courir · Bas pour glisser · Start pour la pause.</span></p><div class="power-guide"><div><span class="power-badge bloom">✺</span><strong>Fleur solaire</strong><p>Tirez des graines de lumière avec X.</p></div><div><span class="power-badge breeze">≋</span><strong>Plume d’azur</strong><p>Sautez une seconde fois dans les airs.</p></div><div><span class="power-badge comet">✦</span><strong>Cœur comète</strong><p>X déclenche une ruée protectrice.</p></div><div><span class="power-badge echo">♧</span><strong>Grelot d’écho</strong><p>X révèle les plateformes cachées pendant 4 secondes.</p></div></div><div class="settings-block"><div class="eyebrow">CONFORT ET ACCESSIBILITÉ</div><div class="settings-grid">
       <div class="setting"><span>Main dominante</span><div class="seg" role="group" aria-label="Main dominante"><button data-setting="leftHanded" data-value="false" aria-pressed="true">Droitier</button><button data-setting="leftHanded" data-value="true" aria-pressed="false">Gaucher</button></div></div>
       <label class="setting language-setting" for="classic-language"><span>Langue</span><select id="classic-language" data-language-select></select></label>
-      <div class="setting appearance-row"><span>Apparence</span><div data-appearance-control></div></div>
       <label class="setting classic-mix-row" for="classic-music"><span>Musique</span><input id="classic-music" type="range" min="0" max="100" data-audio-setting="musicVolume"><output id="classic-music-value"></output></label>
       <label class="setting classic-mix-row" for="classic-effects"><span>Effets sonores</span><input id="classic-effects" type="range" min="0" max="100" data-audio-setting="effectsVolume"><output id="classic-effects-value"></output></label>
       <label class="setting classic-mix-row" for="classic-ambience"><span>Ambiance</span><input id="classic-ambience" type="range" min="0" max="100" data-audio-setting="ambienceVolume"><output id="classic-ambience-value"></output></label>
@@ -1295,7 +1297,13 @@ html.lumen-touch body .hud .song-icon { width:48px; height:48px; min-height:48px
       <div class="setting"><span>Secousses et flashs</span><div class="seg" role="group" aria-label="Effets d’écran"><button data-setting="reducedEffects" data-value="false" aria-pressed="true">Normaux</button><button data-setting="reducedEffects" data-value="true" aria-pressed="false">Atténués</button></div></div>
     </div><p class="settings-note">Sur écran tactile, maintenir une direction déclenche la course toute seule : le chemin principal ne demande jamais plus de deux doigts.</p></div><p class="power-guide-note">Chaque pouvoir est temporaire : sa jauge clignote durant les 5 dernières secondes. Un grelot se relance avec X tant que vous le portez.</p><button class="button primary" data-command="close-help">C’est parti <span>→</span></button></div></section>
 
-    <section id="complete-screen" class="screen modal-screen" aria-labelledby="complete-title"><div class="modal-card complete-card"><div class="eyebrow" id="complete-eyebrow">UNE LUMIÈRE DE PLUS</div><h2 id="complete-title">Le jardin s’éveille.</h2><p id="complete-subtitle"></p><div class="achievement-row"><div id="result-medal" class="result-medal bronze"><span class="medal-emblem" aria-hidden="true">✦</span><span><small>MÉDAILLE OBTENUE</small><strong id="result-medal-name">Bronze</strong></span></div><div class="result-fragments"><div id="result-stars" class="result-stars">✧ ✧ ✧</div><small id="result-star-label">FRAGMENTS DE LUNE</small></div></div><div class="results"><div class="result-time-cell"><span id="result-mode-label">TEMPS DU VOYAGE</span><strong id="result-time">0:00.0</strong></div><div><span>NOTES</span><strong id="result-coins">0</strong></div><div><span>ENNEMIS VAINCUS</span><strong id="result-enemies">0</strong></div><div><span>DÉGÂTS REÇUS</span><strong id="result-damage">0</strong></div><div><span id="result-best-label">OBJECTIF OR</span><strong id="result-best">—</strong></div></div><p id="result-record" class="result-record hidden" role="status">✦ Nouveau record personnel</p><p id="complete-note" class="complete-note"></p><p id="result-medal-hint" class="result-medal-hint"></p><div class="modal-actions"><button class="button primary" id="next-button" data-command="next">Le prochain jardin <span>→</span></button><div class="result-secondary-actions"><button class="button secondary" data-command="replay">Rejouer <span>↻</span></button><button class="button secondary" data-command="map">L’atlas <span>✧</span></button></div></div></div></section>
+    <section id="complete-screen" class="screen modal-screen" aria-labelledby="complete-title"><div class="modal-card complete-card">
+      <div id="result-stars" class="result-stars" role="img"></div>
+      <h2 id="complete-title">Le jardin s’éveille.</h2><p id="complete-subtitle"></p>
+      <p id="result-time" class="finish-time hidden"></p>
+      <div class="modal-actions"><button class="button primary" id="next-button" data-command="next">Continuer le voyage <span>→</span></button>
+        <div class="result-secondary-actions"><button class="button secondary" data-command="replay">Rejouer <span>↻</span></button><button class="button secondary" data-command="map">L’atlas <span>✧</span></button></div>
+      </div></div></section>
     <div id="touch-controls" class="touch-controls hidden" aria-label="Commandes tactiles"><div class="touch-move"><button data-touch="left" aria-label="Aller à gauche">←</button><button data-touch="right" aria-label="Aller à droite">→</button></div><div class="touch-actions"><button data-touch="down" class="touch-minor" aria-label="Glisser">↓</button><button data-touch="action" class="touch-action" aria-label="Appeler, résonance">✦</button><button data-touch="jump" class="touch-jump" aria-label="Sauter">↑</button></div></div>
     <section id="dream-screen" class="screen modal-screen" aria-labelledby="dream-title"><div class="modal-card dream-card"><span class="modal-symbol">☾</span><div class="eyebrow">LES RÊVES NOMADES</div><h2 id="dream-title">Chaque nuit invente un chemin.</h2><p>Cinq salles, une carte à embranchements, un gardien au bout. Une nuit dure une dizaine de minutes et s’enregistre au refuge.</p>
       <div class="seed-row"><label for="seed-input">GRAINE DE LA NUIT</label><div class="seed-field"><input id="seed-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="lune-fleur-onde-3"><button class="seed-dice" id="seed-dice" type="button" aria-label="Tirer une graine au hasard">⚄</button></div><small id="seed-note">Laissez vide pour une nuit inédite. Notez la graine pour la rejouer à l’identique.</small></div>
@@ -2571,7 +2579,7 @@ window.LumenI18n.add([
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto', appearance: 'system', musicVolume: .8, effectsVolume: .9, ambienceVolume: .6 },
+      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto', appearance: 'light', musicVolume: .8, effectsVolume: .9, ambienceVolume: .6 },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -2650,7 +2658,7 @@ window.LumenI18n.add([
       profile.settings.songStyle = raw.settings.songStyle === 'flow' ? 'flow' : 'gentle';
       profile.settings.volume = clamp(finite(raw.settings.volume, .35), 0, 1);
       profile.settings.language = ['en', 'fr', 'es', 'ar', 'zh'].includes(raw.settings.language) ? raw.settings.language : 'auto';
-      profile.settings.appearance = ['light', 'dark'].includes(raw.settings.appearance) ? raw.settings.appearance : 'system';
+      profile.settings.appearance = 'light';
       for (const [channel, fallback] of [['musicVolume', .8], ['effectsVolume', .9], ['ambienceVolume', .6]]) {
         profile.settings[channel] = clamp(finite(raw.settings[channel], fallback), 0, 1);
       }
@@ -2885,7 +2893,7 @@ window.LumenI18n.add([
         if (!Number.isFinite(value)) return false;
         value = clamp(value, 0, 1);
       }
-      this.profile.settings[name] = value;
+      this.profile.settings[name] = name === 'appearance' ? 'light' : value;
       this.save();
       return true;
     }
@@ -4681,6 +4689,67 @@ window.LumenI18n.add([
     levels.splice(levels.findIndex(level => level.key === end), 0, definition);
   }
 
+  // Second movements: real jumps and resting terraces, not stretched terrain.
+  // Each biome has its own silhouette (offset, width, elevation above the shore).
+  const onward = {
+    meadow: [[0,380,0],[480,360,60],[940,340,140],[1380,400,70],[1880,450,0],[2430,340,80],[2870,420,160],[3390,550,0]],
+    cavern: [[0,360,0],[460,380,80],[940,330,160],[1370,410,80],[1880,430,0],[2410,360,60],[2870,420,140],[3390,550,0]],
+    tide: [[0,400,0],[500,350,40],[950,350,120],[1400,380,60],[1880,420,0],[2400,370,70],[2870,420,140],[3390,550,0]],
+    sky: [[0,360,0],[460,380,80],[940,340,160],[1380,400,240],[1880,440,160],[2420,350,80],[2870,420,160],[3390,550,0]],
+    forge: [[0,390,0],[490,350,70],[940,340,140],[1380,400,70],[1880,450,0],[2430,340,80],[2870,420,160],[3390,550,0]],
+    frost: [[0,400,0],[500,340,60],[940,340,140],[1380,400,60],[1880,440,0],[2420,350,80],[2870,420,160],[3390,550,0]],
+    secret: [[0,380,0],[480,360,80],[940,340,160],[1380,400,80],[1880,450,0],[2430,340,70],[2870,420,140],[3390,550,0]],
+    eclipse: [[0,380,0],[480,360,70],[940,340,140],[1380,400,70],[1880,450,0],[2430,340,80],[2870,420,160],[3390,550,0]],
+    shaft: [[0,380,0],[480,360,60],[940,340,100],[1380,400,40],[1880,450,0],[2430,340,60],[2870,420,100],[3390,550,0]]
+  };
+  for (const level of levels) {
+    if (level.hub || level.key === 'prairies-aurore') continue;
+    const ascent = level.place?.kind === 'ascent';
+    const start = level.final ? 3050 : ascent ? 810 : level.width - 80;
+    const shore = ascent ? 210 : 600;
+    const route = onward[level.theme] || onward.meadow;
+    level.originalWidth = level.width;
+    if (level.final) {
+      // Insert before the guardian; retain the entire quiet final arena.
+      for (const group of ['platforms','enemies','collectibles','checkpoints','hazards','secrets','hints']) {
+        for (const object of level[group] || []) {
+          for (const field of ['x','minX','maxX']) if (object[field] >= start) object[field] += 3940;
+        }
+      }
+      level.width += 3940; level.exit.x += 3940;
+    } else {
+      level.width = start + 3940;
+      level.exit.x = level.width - 150; level.exit.y = shore - 100;
+    }
+    level.medalTargets.gold += 55; level.medalTargets.silver += 85;
+    level.continuation = { start, end: start + 3940, route: [] };
+    for (const [i, [x, width, rise]] of route.entries()) {
+      const surface = shore - rise;
+      const platform = ground(start + x, width, surface);
+      if (ascent) platform.h = 40; // The upper canopy must not wall off the original climb.
+      level.platforms.push(platform);
+      level.collectibles.push(...coins(start + x + 45, surface - 48, 7, (width - 90) / 6));
+      const point = { x: start + x + width * .55, surfaceY: surface };
+      level.continuation.route.push(point);
+      if (level.place) level.place.pilot.push(point);
+      if ([0,4,7].includes(i)) {
+        level.checkpoints.push(checkpoint(start + x + 95, surface));
+        level.collectibles.push(item('heart', start + x + 155, surface - 45));
+      }
+    }
+    // An optional balcony, reached in two gentle steps from the middle terrace.
+    const balconyY = shore - route[4][2];
+    level.platforms.push(ledge(start + 1950, balconyY - 85, 150, level.theme === 'frost' ? 'ice' : 'solid'),
+      ledge(start + 2110, balconyY - 170, 180, level.theme === 'forge' ? 'conveyor' : 'solid', { direction: 1, speed: 45 }));
+    level.collectibles.push(...coins(start + 1970, balconyY - 130, 3), ...coins(start + 2140, balconyY - 210, 4));
+    if (!level.final) Object.assign(level.collectibles.filter(c => c.type === 'star').at(-1), { x: start + 2200, y: balconyY - 218 });
+    level.secrets.push(secret(start + 2080, balconyY - 260, 220, 120));
+    if (!ascent) level.enemies.push(enemy('swarm', start + 2200, balconyY - 245, start + 2110, start + 2300));
+    const finish = { x: level.exit.x + 25, surfaceY: shore };
+    level.continuation.route.push(finish);
+    if (level.place) level.place.pilot.push(finish);
+  }
+
   // Static definitions are never mutated by the simulation. Creating a stage
   // restores collected objects, crumbling platforms and enemy state cleanly.
   window.LUMEN_LEVELS = levels;
@@ -4805,6 +4874,36 @@ window.LumenI18n.add([
       ]
     }
   ];
+
+  // The first island remains a short introduction. The next two open into
+  // a second archipelago: climb, glide, a sheltered grove, then one last voice.
+  for (const [index, island] of ISLANDS.entries()) {
+    if (!index) continue;
+    const start = island.width - 80;
+    const terraces = index === 1
+      ? [[0,450,600],[560,360,520],[1030,380,440],[1520,380,360],[2010,430,440],[2550,430,520],[3090,480,600],[3680,600,600]]
+      : [[0,420,600],[540,370,510],[1030,370,420],[1520,380,330],[2020,430,420],[2570,400,510],[3090,480,600],[3680,600,600]];
+    island.originalWidth = island.width;
+    island.width = start + 4280;
+    island.medalTargets.gold += 80; island.medalTargets.silver += 115;
+    island.continuation = { start, route: [] };
+    for (const [i, [x, width, y]] of terraces.entries()) {
+      island.platforms.push(ground(start + x, width, y));
+      island.collectibles.push(...notes(start + x + 35, y - 50, 8, (width - 70) / 7));
+      island.continuation.route.push([start + x + width * .55, y]);
+      if ([0,4,7].includes(i)) island.checkpoints.push({ x: start + x + 100, y });
+      if ([0,3,6].includes(i)) island.scenery.push({ type: i === 3 ? 'arch' : 'tree', x: start + x + width * .65, y, size: i === 3 ? 1.4 : .9 });
+    }
+    const third = island.lights[2];
+    Object.assign(third, { x: start + 3280, y: 440 });
+    island.platforms.push(ledge(start + 3190, 495, 240));
+    Object.assign(island.collectibles.filter(c => c.type === 'star').at(-1), { x: start + 3350, y: 395 });
+    island.continuation.route.splice(7, 0, [start + 3280,495,third.id], [start + 3350,415]);
+    island.continuation.route.push([island.width - 130,600]);
+    island.wind.push({ x: start + 1910, y: 260, w: 100, h: 410 });
+    island.wakeables.push({ type: 'bloom', x: start + 2160, y: terraces[4][2] - 15, id: island.key + '-bosquet' },
+      { type: 'chime', x: start + 1600, y: terraces[3][2] - 60, id: island.key + '-carillon' });
+  }
 
   function create(index, style = 'gentle') {
     if (!Number.isInteger(index) || !ISLANDS[index]) return null;
@@ -7262,11 +7361,11 @@ window.LumenI18n.add([
     const scale = portrait ? renderer.width / 510 : Math.max(.64, renderer.height / 790);
     renderer.scale = scale; renderer.worldWidth = renderer.width / scale;
     renderer.offsetX = 0; renderer.offsetY = renderer.height * (portrait ? .72 : renderer.height < 500 ? .69 : .79) - 600 * scale;
-    renderer.cameraX = game.camera.x; renderer.cameraY = 0;
+    renderer.cameraX = game.camera.x; renderer.cameraY = game.camera.y;
     ctx.setTransform(renderer.dpr, 0, 0, renderer.dpr, 0, 0); ctx.globalAlpha = 1;
     background(renderer, game, palette, time);
     ctx.save(); ctx.translate(0, renderer.offsetY); ctx.scale(scale, scale);
-    ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, 0);
+    ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, -game.camera.y);
     const visible = (x, width = 0, margin = 150) => x + width > game.camera.x - margin && x < game.camera.x + renderer.worldWidth + margin;
     for (const current of game.song.wind) {
       if (!visible(current.x, current.w)) continue;
@@ -7381,11 +7480,7 @@ window.LumenI18n.add([
         .12 + index * .2 + Math.sin(time + index) * .015, index % 3 ? palette.leaf : palette.lightLeaf);
       ctx.restore();
     }
-    if (renderer.height < 520 && renderer.width > renderer.height) {
-      const haze = ctx.createLinearGradient(0, 0, 0, 145);
-      haze.addColorStop(0, palette.sky[0]); haze.addColorStop(.6, palette.sky[0] + 'd9'); haze.addColorStop(1, palette.sky[0] + '00');
-      ctx.fillStyle = haze; ctx.fillRect(0, 0, renderer.width, 145);
-    }
+
     const grain = sprite(renderer, 'grain', 160, 160, paint => {
       for (let index = 0; index < 1200; index++) {
         paint.fillStyle = index % 2 ? '#ffffff0a' : '#15515607';
@@ -7689,7 +7784,7 @@ window.LumenI18n.add([
         vulnerable:false, hitFlash:0, facing:-1, state:'sleep', vx:0, vy:0, attack:0, activated:false, homeX:data.width - 650,
         stage:1,flashTimer:0,arenaLeft:data.width-1400,arenaRight:data.width-180,arenaActive:false,arenaWarn:0,rainMarkers:[] } : null;
       this.camera = { x:clamp(data.spawn.x - 300, 0, Math.max(0, data.width - WIDTH)), y:0, shake:0 };
-      if (data.place?.kind === 'ascent') this.camera.y = clamp(data.spawn.y - HEIGHT * .52, 0, Math.max(0, data.height - HEIGHT));
+      this.followCamera(0, true);
       this.place = window.LumenPlaces?.create(this) || null;
       this.input.reset(); this.audio.setTheme(data.theme);this.audio.setDanger?.(0);this.audio.setBossPhase?.(0);
       this.audio.setScene?.(data.song?.index ?? -1);
@@ -8013,13 +8108,27 @@ window.LumenI18n.add([
         else if (this.session === 'expedition' && this.run) this.completeRoom();
         else this.complete();
       }
-      const visibleWidth = this.renderer.worldWidth || WIDTH;
-      const target = clamp(this.player.x - visibleWidth * .36 + this.player.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
-      this.camera.x += (target - this.camera.x) * (1 - Math.exp(-5 * dt));
-      if (this.level.place?.kind === 'ascent') {
-        const vertical = clamp(this.player.y - HEIGHT * .52, 0, Math.max(0, this.level.height - HEIGHT));
-        this.camera.y += (vertical - this.camera.y) * (1 - Math.exp(-5 * dt));
-      } else this.camera.y = 0;
+      this.followCamera(dt);
+    }
+    followCamera(dt, snap = false) {
+      const r = this.renderer, p = this.player;
+      const width = r.width || WIDTH, height = r.height || HEIGHT;
+      const portrait = width < height;
+      const scale = portrait ? width / 510 : Math.max(.64, height / 790);
+      const offsetY = height * (portrait ? .72 : height < 500 ? .69 : .79) - 600 * scale;
+      const visibleWidth = width / scale;
+      const targetX = clamp(p.x - visibleWidth * .36 + p.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
+      this.camera.x += (targetX - this.camera.x) * (snap ? 1 : 1 - Math.exp(-5 * dt));
+      // Quiet middle band for ordinary jumps; look up before a spring or ascent
+      // reaches the HUD. Both renderers use the same world-to-screen transform.
+      const top = (height * .32 - offsetY) / scale;
+      const bottom = (height * .72 - offsetY) / scale - p.h;
+      const ahead = p.y + Math.min(0, p.vy) * .10;
+      let targetY = this.camera.y;
+      if (ahead - targetY < top) targetY = ahead - top;
+      if (p.y - targetY > bottom) targetY = p.y - bottom;
+      targetY = clamp(targetY, -HEIGHT, Math.max(0, this.level.height - 900));
+      this.camera.y += (targetY - this.camera.y) * (snap ? 1 : 1 - Math.exp(-9 * dt));
     }
     updatePlatforms(dt) {
       for (const p of this.platforms) {
@@ -8675,7 +8784,7 @@ window.LumenI18n.add([
       }
       const visibleWidth=this.renderer.worldWidth||WIDTH;
       this.camera.x=clamp(p.x-visibleWidth*.36,0,Math.max(0,this.level.width-visibleWidth));
-      if (this.level.place?.kind === 'ascent') this.camera.y=clamp(p.y-HEIGHT*.52,0,Math.max(0,this.level.height-HEIGHT));
+      this.camera.y = 0; this.followCamera(0, true);
       this.mode='playing';this.input.reset();this.burst(p.x+16,p.y+23,26,'#d7e8b9',150,'spark');this.emit('mode',this.mode);
     }
     complete() {
@@ -9185,7 +9294,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       const settings = game.progress.settings;
       content = title('À TON RYTHME', 'Un peu de confort') +
         `<p class="touch-guide">Glisse le pouce entre les flèches. Maintiens une direction pour courir, et Sauter pour planer.</p><label class="song-settings-row" for="song-language"><span>Langue</span><select id="song-language" data-language-select>${I18n.languageOptions()}</select></label>
-        <div class="song-settings-row appearance-row"><span>Apparence</span>${global.LumenAppearance.controls(settings.appearance)}</div>
         <div class="song-settings-row"><span>Le voyage</span>${styleSwitch()}</div>
         <label class="song-settings-row song-range-row" for="song-volume"><span>Volume</span><input id="song-volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" data-song-pref="volume"><output id="song-volume-value">${Math.round(settings.volume * 100)} %</output></label>
         ${[['musicVolume','Musique','music'],['effectsVolume','Effets sonores','sparkles'],['ambienceVolume','Ambiance','wind']].map(([setting,label,glyph])=>`<label class="song-settings-row song-range-row song-mix-row" for="song-${setting}"><span>${icon(glyph)}<span>${translate(label)}</span></span><input id="song-${setting}" type="range" min="0" max="100" value="${Math.round(settings[setting]*100)}" data-song-pref="${setting}"><output id="song-${setting}-value">${Math.round(settings[setting]*100)} %</output></label>`).join('')}
@@ -9199,16 +9307,13 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         `<p class="song-dialog-sub">Cette île recommencera. Les îles achevées restent acquises.</p><div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-apply-style">${icon('rotate-ccw')} ${escape(translate('Partir en {style}', { style: translate(pendingStyle === 'flow' ? 'Élan' : 'Balade') }))}</button><button class="song-button" data-command="song-close">Annuler</button></div>`;
     } else if (pane === 'result' && lastResult) {
       const result = lastResult;
-      content = `<div class="song-result-mark">${icon(result.final ? 'sun' : 'sparkles')}</div>` +
-        title(result.final ? 'LES NEUF VOIX SONT RÉUNIES' : 'UNE ÎLE A RETROUVÉ SA VOIX', result.final ? 'Le ciel se souvient.' : 'Ensemble, on va plus haut.') +
-        `<p class="song-dialog-sub">${result.final ? 'Auralis reprend son voyage. Il emporte un peu de vous.' : escape(game.level.name)}</p>
-        <div class="song-pause-echoes">${echoes()}</div><div class="song-results">
-        <div><span>NOTES</span><strong>${result.coins}</strong></div><div><span>PLUS BEL ÉLAN</span><strong>×${result.combo}</strong></div>
-        <div><span>SOUVENIRS</span><strong>${result.stars} / 3</strong></div><div><span>${result.timed ? 'CHRONO' : 'VOYAGE'}</span><strong>${clock(result.time)}</strong></div></div>
-        ${result.timed && result.record ? '<p class="song-record">' + icon('trophy') + ' Nouveau record personnel</p>' : ''}
+      content = `<div class="song-pause-echoes">${echoes()}</div>` +
+        `<h2 id="song-panel-title">${translate(result.final ? 'Le ciel se souvient.' : 'Ensemble, on va plus haut.')}</h2>
+        <p class="song-dialog-sub">${escape(translate(game.level.name))}</p>
+        ${result.timed ? `<p class="finish-time">${result.record ? '✦ ' : ''}${clock(result.time)}</p>` : ''}
         <div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-next">Continuer le voyage ${icon('arrow-right')}</button>
-        <button class="song-button" data-command="song-atlas">${icon('map')} L’atlas des lumières</button>
-        <button class="song-text-button" data-command="song-retry">${icon('rotate-ccw')} Rejouer cette île</button></div>`;
+        <div class="result-secondary-actions"><button class="song-button" data-command="song-retry">Rejouer ${icon('rotate-ccw')}</button>
+        <button class="song-button" data-command="song-atlas">L’atlas ${icon('map')}</button></div></div>`;
     }
     panel.innerHTML = closeButton + content;
     I18n.translateDOM(panel);
@@ -9448,13 +9553,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   const I18n = window.LumenI18n;
   const translate = (source, values) => I18n.t(source, values);
   const screens = ['home','map','pause','help','complete','dream','route'];
-  const powerInfo = {
-    bloom:{name:'Fleur solaire',hint:'X / J · Graines de lumière',icon:'✺'},
-    breeze:{name:'Plume d’azur',hint:'Un second saut dans les airs',icon:'≋'},
-    comet:{name:'Cœur comète',hint:'X / J · Ruée protectrice',icon:'✦'},
-    echo:{name:'Grelot d’écho',hint:'X / J · Révéler les chemins · 4 s',icon:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22h16l-3-5v-5a5 5 0 0 0-10 0v5Z" fill="currentColor"/><path d="M14 25a2 2 0 0 0 4 0M16 5V3M4 14l2 1M28 14l-2 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'}
-  };
-  const medals={bronze:'Bronze',silver:'Argent',gold:'Or'};
   let game, toastTimer, introTimer, damageTimer, helpPrevious='home', transitioning=false, lastHud='', lastHint='', uiTime=0, selectedRunMode='explore';
   let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='';
   let routeChoice=null, routeUpgrade=null, lastRoute=null, lastResult=null, lastToast=null;
@@ -9477,13 +9575,13 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (mode === 'map') {
       document.body.classList.remove('in-game');
       showScreen('map'); renderMap();
-      for (const id of ['hud','run-clock','level-hint','power-indicator','boss-hud','dialogue','quest-banner','touch-controls']) $(id).classList.add('hidden');
+      for (const id of ['hud','run-clock','level-hint','boss-hud','dialogue','quest-banner','touch-controls']) $(id).classList.add('hidden');
       $('chapter-intro').classList.remove('show'); return;
     }
     if (game.song) {
       document.body.classList.add('in-game'); showScreen(null);
       if (mode !== 'playing') { clearTimeout(toastTimer); $('toast').classList.remove('show'); }
-      for (const id of ['hud', 'run-clock', 'level-hint', 'power-indicator', 'boss-hud', 'dialogue', 'quest-banner']) $(id).classList.add('hidden');
+      for (const id of ['hud', 'run-clock', 'level-hint', 'boss-hud', 'dialogue', 'quest-banner']) $(id).classList.add('hidden');
       $('chapter-intro').classList.remove('show');
       return;
     }
@@ -9523,7 +9621,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     else if (mode==='help') { if(window.LumenTouch?.enabled)$('help-title').textContent='Réglages'; showScreen('help'); }
     else if (mode==='complete'||mode==='ending') showScreen('complete');
     else showScreen(null);
-    if (mode!=='playing') {$('level-hint').classList.add('hidden');$('power-indicator').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
+    if (mode!=='playing') {$('level-hint').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
     I18n.translateDOM($('app'));
   }
   /** Le dialogue s'ouvre en approchant, avance seul, et se ferme en s'éloignant.
@@ -9727,14 +9825,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       $('run-clock').classList.toggle('clock-paused',game.mode==='paused'||game.mode==='help');
     }
     if(game.mode!=='playing')return;
-    $('power-indicator').classList.toggle('hidden',!p.power);
-    if(p.power&&powerInfo[p.power]) {
-      const info=powerInfo[p.power];$('power-icon').innerHTML=info.icon;$('power-name').textContent=translate(info.name);$('power-description').textContent=translate(info.hint);
-      $('power-fill').style.width=Math.max(0,Math.min(100,p.powerTime/(p.powerDuration||35)*100))+'%';
-      $('power-time').textContent=translate('{seconds} s',{seconds:Math.ceil(Math.max(0,p.powerTime))});
-      $('power-indicator').classList.toggle('expiring',p.powerTime<=5);
-      $('power-indicator').dataset.power=p.power;
-    }
     const b=game.boss;
     $('boss-hud').classList.toggle('hidden',!b||!b.activated||b.hp<=0);
     if(b&&b.activated&&b.hp>0) {
@@ -9781,23 +9871,13 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
   function completed(result) {
     lastResult=result;
-    $('complete-eyebrow').textContent=result.final?'LES JARDINS SE SOUVIENDRONT DE VOUS':'UNE LUMIÈRE DE PLUS';
-    $('complete-title').textContent=result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.';
-    $('complete-subtitle').textContent=result.final?translate('Lumen a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
+    $('complete-title').textContent=translate(result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.');
+    $('complete-subtitle').textContent=translate(game.level.name);
     const total=game.level.collectibles.filter(c=>c.type==='star').length;
-    const medal=medals[result.medal]?result.medal:'bronze';
-    const targets=game.level.medalTargets;
-    const best=game.recordFor(result.index)?.bestTimedTime;
-    $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total});
-    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);
-    $('result-enemies').textContent=result.enemiesDefeated||0;$('result-damage').textContent=result.damageTaken||0;
-    $('result-medal').className='result-medal '+medal;$('result-medal-name').textContent=medals[medal];
-    $('result-mode-label').textContent=result.timed?'CONTRE-LA-MONTRE':'TEMPS DU VOYAGE';
-    $('result-best-label').textContent=result.timed?'MEILLEUR CHRONO':'OBJECTIF OR';
-    $('result-best').textContent=result.timed&&Number.isFinite(best)?timeLabel(best,true):targets?timeLabel(targets.gold):'—';
-    $('result-record').classList.toggle('hidden',!result.record||!result.timed);
-    $('complete-note').textContent=result.secrets?translate('Passages secrets découverts : {count} · +{bonus} points',{count:result.secrets,bonus:I18n.number(result.bonus)}):translate('+{bonus} points de fin de chapitre',{bonus:I18n.number(result.bonus)})+' · '+translate(result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !');
-    $('result-medal-hint').textContent=medal==='gold'?translate('Un voyage éclatant. Saurez-vous encore améliorer votre temps ?'):targets?translate('Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.',{time:timeLabel(targets.gold)}):translate('Chaque retour dans les jardins est une nouvelle aventure.');
+    $('result-stars').innerHTML=stars(result.stars,total);
+    $('result-stars').setAttribute('aria-label',translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total}));
+    $('result-time').classList.toggle('hidden',!result.timed);
+    $('result-time').textContent=result.timed?(result.record?'✦ ':'')+timeLabel(result.time,true):'';
     $('next-button').innerHTML=translate('Continuer le voyage')+' <span>→</span>';
     I18n.translateDOM($('complete-screen'));
   }
@@ -9889,12 +9969,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       game.renderer.draw(game,0);
     };
     window.LumenAppearance.onChange(refreshAppearance);
-    document.addEventListener('click',event=>{
-      const button=event.target.closest('[data-appearance]');if(!button)return;
-      game.store.setSetting('appearance',button.dataset.appearance);
-      window.LumenAppearance.apply(button.dataset.appearance);
-      game.audio.sfx('menu');
-    });
     const refreshLanguage=()=>{
       document.title=translate('LUMEN · Le Chant des îles');
       const description='LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.';
@@ -9902,7 +9976,6 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       I18n.translateDOM($('app'));
       document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+escape(translate('{count} CHAPITRES À EXPLORER',{count:window.LUMEN_LEVELS.filter(level=>!level.hub).length}));
       document.querySelectorAll('[data-language-select]').forEach(select=>{select.innerHTML=I18n.languageOptions();select.value=game.progress.settings.language;});
-      document.querySelectorAll('[data-appearance-control]').forEach(container=>{container.innerHTML=window.LumenAppearance.controls(game.progress.settings.appearance);});
       lastHud='';lastHint='';updateSound();
       if(lastToast&&$('toast').classList.contains('show'))$('toast').textContent=translate(lastToast.message,typeof lastToast.values==='function'?lastToast.values():lastToast.values);
       if(!game.song){

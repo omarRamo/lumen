@@ -314,13 +314,13 @@ test('Island three moves one echo along existing ledges, pauses it and rescues i
   }
 });
 
-test('Island ideas do not add notes, distance, platforms or another mechanic to the first island', () => {
+test('The introduction stays short while the following islands gain substantial routes', () => {
   const { window } = environment();
   const islands = window.LumenSong.ISLANDS;
-  assert.deepEqual(Array.from(islands, island => island.width), [4200, 4700, 5100]);
-  assert.deepEqual(Array.from(islands, island => island.collectibles.filter(item => item.type === 'coin').length), [73, 82, 90]);
-  assert.deepEqual(Array.from(islands, island => island.platforms.filter(platform => platform.type === 'ground').length), [4, 5, 5]);
-  assert.deepEqual(Array.from(islands, island => island.platforms.filter(platform => platform.type !== 'ground').length), [9, 12, 13]);
+  assert.deepEqual(Array.from(islands, island => island.width), [4200, 8900, 9300]);
+  assert.deepEqual(Array.from(islands, island => island.collectibles.filter(item => item.type === 'coin').length), [73, 146, 154]);
+  assert.deepEqual(Array.from(islands, island => island.platforms.filter(platform => platform.type === 'ground').length), [4, 13, 13]);
+  assert.deepEqual(Array.from(islands, island => island.platforms.filter(platform => platform.type !== 'ground').length), [9, 13, 14]);
   assert.deepEqual(Array.from(islands, island => island.wind.filter(current => current.respondsToCall).length), [0, 1, 0]);
   assert.deepEqual(Array.from(islands, island => island.lights.filter(echo => echo.roam).length), [0, 0, 1]);
 });
@@ -562,7 +562,7 @@ test('Denied storage and malformed save data do not prevent play', () => {
 
 test('Boss wakes, alternates telegraph/leap/volley/recovery, and enters phase two', () => {
   const game = fresh(FINAL_INDEX); game.enemies = []; game.hazards = []; game.collectibles = []; game.checkpoints = [];
-  place(game, 3500); game.player.invuln = 100;
+  place(game, game.level.width - 1300); game.player.invuln = 100;
   const seen = new Set();
   for (let i = 0; i < 1600; i++) { tick(game, DT); seen.add(game.boss.state); }
   for (const state of ['wake', 'telegraph', 'leap', 'recover', 'volley']) assert.ok(seen.has(state), 'Missing ' + state);
@@ -619,6 +619,10 @@ test('Historical dry routes retain their physical walking-jump solutions after s
     // et ont leurs propres contrôles de franchissabilité plus haut.
     'verger-qui-reve': [0, 2], 'coeur-eclipse': [0, 1, 2, 3]
   };
+  // Follow the inserted finale through its new terraces to the original arena.
+  const final = DEFINITIONS[FINAL_INDEX];
+  paths['coeur-eclipse'] = [0, 1, 2, ...final.continuation.route.slice(0,8).map(point =>
+    final.platforms.findIndex(p => p.type === 'ground' && point.x >= p.x && point.x < p.x + p.w && point.surfaceY === p.y)), 3];
   const failures = [];
   for (const [stage, route] of Object.entries(paths)) {
     for (let n = 0; n < route.length - 1; n++) {

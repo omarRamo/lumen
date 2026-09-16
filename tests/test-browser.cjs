@@ -110,39 +110,35 @@ async function test(name, run) {
     await context.close();
   });
 
-  await test('Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions', async () => {
+  await test('La palette claire reste stable avec les anciens réglages et le système sombre', async () => {
     for(const source of [false,true]){
       const {page,context,errors}=await open('bureau',null,{song:true,source,colorScheme:'dark'});
       await page.waitForFunction(()=>window.lumen.frames>=2);
-      assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'dark');
-      assert.equal(await page.evaluate(()=>window.lumen.progress.settings.appearance),'system');
+      assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
+      assert.equal(await page.evaluate(()=>window.lumen.progress.settings.appearance),'light');
       await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+      assert.equal(await page.locator('#song-panel [data-appearance]').count(),0);
       const before=await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed]));
-      await page.locator('#song-panel [data-appearance="light"]').click();
-      assert.equal(await page.locator('#song-panel [data-appearance="light"]').getAttribute('aria-pressed'),'true');
       await page.emulateMedia({colorScheme:'light'});await page.emulateMedia({colorScheme:'dark'});
       assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
       assert.equal(await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed])),before);
+      await page.evaluate(()=>{const key='lumen.gardens.v3';const save=JSON.parse(localStorage.getItem(key)||'{}');save.settings={...save.settings,appearance:'dark'};localStorage.setItem(key,JSON.stringify(save));});
       await page.reload();await page.waitForFunction(()=>window.lumen?.song);
       assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
-      await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
-      await page.locator('#song-panel [data-appearance="system"]').click();
-      await page.waitForFunction(()=>window.LumenAppearance.current==='dark');
-      await page.emulateMedia({colorScheme:'light'});await page.waitForFunction(()=>window.LumenAppearance.current==='light');
-      await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>window.LumenAppearance.current==='dark');
-      assert.equal(await page.evaluate(()=>window.lumen.audio._night),true);
+      assert.equal(await page.evaluate(()=>window.lumen.progress.settings.appearance),'light');
       assert.deepEqual(errors,[]);await context.close();
     }
   });
 
-  await test('Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau', async () => {
+  await test('La palette reste lisible sous les deux apparences système, sur mobile et bureau', async () => {
     for(const view of ['bureau','portrait','paysage','compact','large']){
       const {page,context,errors}=await open(view,null,{song:true});
       await page.waitForFunction(()=>window.lumen.frames>=2);
       const readings={};
       for(const appearance of ['light','dark']){
         await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
-        await page.locator('#song-panel [data-appearance="'+appearance+'"]').click();
+        await page.emulateMedia({colorScheme:appearance});
+        assert.equal(await page.evaluate(()=>LumenAppearance.current),'light');
         const contrast=await page.evaluate(()=>{
           const panel=getComputedStyle(document.getElementById('song-panel'));
           const luminance=color=>{
@@ -169,13 +165,13 @@ async function test(name, run) {
         assert.ok(readings[appearance].colors>45,'Canvas is too uniform: '+view+' '+appearance+' '+JSON.stringify(readings[appearance]));
         await page.screenshot({path:path.join(shots,'appearance-'+appearance+'-'+view+'.png')});
       }
-      assert.ok(readings.dark.brightness<readings.light.brightness*.85,view+' night should reduce background luminance');
-      assert.notEqual(readings.dark.key,readings.light.key);
+      assert.equal(readings.dark.key,readings.light.key,view+' must keep its authored palette');
       assert.deepEqual(errors,[]);await context.close();
     }
     const {page,context,errors}=await open('portrait',null,{song:true,locale:'ar-SA',colorScheme:'dark'});
     await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
-    assert.equal(await page.locator('#song-panel [data-appearance="dark"]').textContent(),'داكن');
+    assert.equal(await page.locator('#song-panel [data-appearance]').count(),0);
+    assert.equal(await page.evaluate(()=>LumenAppearance.current),'light');
     await page.screenshot({path:path.join(shots,'appearance-dark-arabic-settings.png')});
     assert.deepEqual(errors,[]);await context.close();
   });
@@ -319,12 +315,12 @@ async function test(name, run) {
     assert.deepEqual(errors,[]);await context.close();
   });
 
-  await test('Les réglages de thème et de son restent disponibles dans l’aventure classique', async () => {
+  await test('Les réglages de son restent disponibles dans l’aventure classique', async () => {
     const {page,context,errors}=await open('bureau',null,{colorScheme:'dark'});
     await page.locator('#masthead [data-command="help"]').click();
-    await page.locator('#help-screen [data-appearance="light"]').click();
+    assert.equal(await page.locator('#help-screen [data-appearance]').count(),0);
     assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
-    await page.locator('#help-screen [data-appearance="dark"]').click();
+
     await page.locator('#classic-music').fill('35');
     assert.equal(await page.evaluate(()=>window.lumen.audio.mix.music),.35);
     await page.screenshot({path:path.join(shots,'appearance-dark-classic-settings.png')});

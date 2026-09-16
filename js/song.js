@@ -109,6 +109,36 @@
     }
   ];
 
+  // The first island remains a short introduction. The next two open into
+  // a second archipelago: climb, glide, a sheltered grove, then one last voice.
+  for (const [index, island] of ISLANDS.entries()) {
+    if (!index) continue;
+    const start = island.width - 80;
+    const terraces = index === 1
+      ? [[0,450,600],[560,360,520],[1030,380,440],[1520,380,360],[2010,430,440],[2550,430,520],[3090,480,600],[3680,600,600]]
+      : [[0,420,600],[540,370,510],[1030,370,420],[1520,380,330],[2020,430,420],[2570,400,510],[3090,480,600],[3680,600,600]];
+    island.originalWidth = island.width;
+    island.width = start + 4280;
+    island.medalTargets.gold += 80; island.medalTargets.silver += 115;
+    island.continuation = { start, route: [] };
+    for (const [i, [x, width, y]] of terraces.entries()) {
+      island.platforms.push(ground(start + x, width, y));
+      island.collectibles.push(...notes(start + x + 35, y - 50, 8, (width - 70) / 7));
+      island.continuation.route.push([start + x + width * .55, y]);
+      if ([0,4,7].includes(i)) island.checkpoints.push({ x: start + x + 100, y });
+      if ([0,3,6].includes(i)) island.scenery.push({ type: i === 3 ? 'arch' : 'tree', x: start + x + width * .65, y, size: i === 3 ? 1.4 : .9 });
+    }
+    const third = island.lights[2];
+    Object.assign(third, { x: start + 3280, y: 440 });
+    island.platforms.push(ledge(start + 3190, 495, 240));
+    Object.assign(island.collectibles.filter(c => c.type === 'star').at(-1), { x: start + 3350, y: 395 });
+    island.continuation.route.splice(7, 0, [start + 3280,495,third.id], [start + 3350,415]);
+    island.continuation.route.push([island.width - 130,600]);
+    island.wind.push({ x: start + 1910, y: 260, w: 100, h: 410 });
+    island.wakeables.push({ type: 'bloom', x: start + 2160, y: terraces[4][2] - 15, id: island.key + '-bosquet' },
+      { type: 'chime', x: start + 1600, y: terraces[3][2] - 60, id: island.key + '-carillon' });
+  }
+
   function create(index, style = 'gentle') {
     if (!Number.isInteger(index) || !ISLANDS[index]) return null;
     const island = JSON.parse(JSON.stringify(ISLANDS[index]));

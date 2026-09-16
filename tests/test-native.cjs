@@ -38,6 +38,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(config.ios, { scheme: 'LUMEN', contentInset: 'never', scrollEnabled: false,
     limitsNavigationsToAppBoundDomains: true, backgroundColor: '#dce6d5' });
   const plist = read('ios/App/App/Info.plist');
+  assert.match(plist, /<key>UIUserInterfaceStyle<\/key>\s*<string>Light<\/string>/);
   for (const [name, value] of Object.entries({ CADisableMinimumFrameDurationOnPhone: true, UIStatusBarHidden: true,
     UIViewControllerBasedStatusBarAppearance: false, UIRequiresFullScreen: true, ITSAppUsesNonExemptEncryption: false })) {
     assert.match(plist, new RegExp(`<key>${name}</key>\\s*<${value}/>`));

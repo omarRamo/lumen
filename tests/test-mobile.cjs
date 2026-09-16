@@ -69,6 +69,20 @@ async function pauseAndSettings(page,view,song) {
   await page.locator(close).tap();
   assert.equal(await page.evaluate(()=>lumen.mode),'playing');
 }
+async function finishScreen(page,view,song) {
+  // Display fixture only. Actual completion is covered by the input-only pilots.
+  await page.evaluate(song=>{
+    if(song){lumen.song.lights.forEach(e=>e.found=true);lumen.song.count=3;}
+    lumen.levelStars=3;lumen.complete();lumen.emit('frame',.1);
+  },song);
+  const panel=song?'#song-panel':'.complete-card';
+  await page.locator(panel).waitFor({state:'visible'});
+  await targets(page,`${panel} button`,view);
+  assert.ok(await page.locator(panel).evaluate(n=>n.scrollHeight<=n.clientHeight+1),'Completion must fit without scrolling');
+  assert.equal(await page.locator(`${panel} .results,${panel} .song-results`).count(),0);
+  await page.locator(`${panel} [data-command="${song?'song-retry':'replay'}"]`).tap();
+  await page.waitForFunction(()=>lumen.mode==='playing');
+}
 async function close(run) {
   assert.deepEqual(run.errors,[]);assert.deepEqual(run.external,[]);await run.context.close();
 }
@@ -79,9 +93,13 @@ async function close(run) {
       const run=await open(view,language),{page}=run;
       await targets(page,'#touch-controls button',view);
       await pauseAndSettings(page,view,true);
+      await finishScreen(page,view,true);
       await page.evaluate(()=>lumen.start(0));
       await targets(page,'#touch-controls button',view);
       await pauseAndSettings(page,view,false);
+      await finishScreen(page,view,false);
+      assert.equal(await page.locator("#power-indicator").count(),0);
+      assert.equal(await page.evaluate(()=>LumenAppearance.current),"light");
       await page.evaluate(()=>lumen.showMap());
       for(const act of [1,2,3]) {
         await page.locator(`[data-journey-act="${act}"]`).tap();
@@ -93,7 +111,29 @@ async function close(run) {
           assert.equal(await page.locator('#map-screen').evaluate(n=>n.scrollTop),0,'Selecting a level must not scroll the atlas');
         }
       }
-      await close(run);passed++;console.log('PASS '+engine+' '+view.name+' '+language+': safe areas, pause, settings, all stages');
+      await close(run);passed++;console.log('PASS '+engine+' '+view.name+' '+language+': safe areas, pause, settings, compact finishes, all stages');
+    }
+    {
+      const run=await open(views[0]),{page}=run;
+      await page.addScriptTag({path:path.join(__dirname,'song-pilot.cjs')});
+      const camera=await page.evaluate(()=>{
+        lumen.running=false;
+        const pilot=LumenSongPilot.create(lumen),r=lumen.renderer;
+        let highest=Infinity,nearestHUD=Infinity,maxStep=0,previous=lumen.camera.y;
+        for(let frame=0;frame<120*180&&lumen.mode==='playing';frame++) {
+          pilot.step();lumen.update(1/120);lumen.input.clearFrame();
+          const y=r.offsetY+(lumen.player.y-lumen.camera.y)*r.scale;
+          highest=Math.min(highest,lumen.player.y);nearestHUD=Math.min(nearestHUD,y);
+          maxStep=Math.max(maxStep,Math.abs(lumen.camera.y-previous)*r.scale);previous=lumen.camera.y;
+        }
+        r.draw(lumen,0);
+        return {mode:lumen.mode,highest,nearestHUD,maxStep,cameraY:r.cameraY,expected:lumen.camera.y};
+      });
+      assert.equal(camera.mode,'complete');assert.ok(camera.highest<200,JSON.stringify(camera));
+      assert.ok(camera.nearestHUD>views[0].height*.20,JSON.stringify(camera));
+      assert.ok(camera.maxStep<7,JSON.stringify(camera));
+      assert.equal(camera.cameraY,camera.expected,'Song renderer must apply vertical camera');
+      await close(run);passed++;console.log('PASS '+engine+' continuous vertical camera through a real island run');
     }
     const run=await open(views[0]),{page}=run;
     assert.equal(await page.evaluate(()=>lumen.renderer.dpr),1.5);

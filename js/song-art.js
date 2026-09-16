@@ -248,11 +248,11 @@
     const scale = portrait ? renderer.width / 510 : Math.max(.64, renderer.height / 790);
     renderer.scale = scale; renderer.worldWidth = renderer.width / scale;
     renderer.offsetX = 0; renderer.offsetY = renderer.height * (portrait ? .72 : renderer.height < 500 ? .69 : .79) - 600 * scale;
-    renderer.cameraX = game.camera.x; renderer.cameraY = 0;
+    renderer.cameraX = game.camera.x; renderer.cameraY = game.camera.y;
     ctx.setTransform(renderer.dpr, 0, 0, renderer.dpr, 0, 0); ctx.globalAlpha = 1;
     background(renderer, game, palette, time);
     ctx.save(); ctx.translate(0, renderer.offsetY); ctx.scale(scale, scale);
-    ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, 0);
+    ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, -game.camera.y);
     const visible = (x, width = 0, margin = 150) => x + width > game.camera.x - margin && x < game.camera.x + renderer.worldWidth + margin;
     for (const current of game.song.wind) {
       if (!visible(current.x, current.w)) continue;
@@ -367,11 +367,7 @@
         .12 + index * .2 + Math.sin(time + index) * .015, index % 3 ? palette.leaf : palette.lightLeaf);
       ctx.restore();
     }
-    if (renderer.height < 520 && renderer.width > renderer.height) {
-      const haze = ctx.createLinearGradient(0, 0, 0, 145);
-      haze.addColorStop(0, palette.sky[0]); haze.addColorStop(.6, palette.sky[0] + 'd9'); haze.addColorStop(1, palette.sky[0] + '00');
-      ctx.fillStyle = haze; ctx.fillRect(0, 0, renderer.width, 145);
-    }
+
     const grain = sprite(renderer, 'grain', 160, 160, paint => {
       for (let index = 0; index < 1200; index++) {
         paint.fillStyle = index % 2 ? '#ffffff0a' : '#15515607';

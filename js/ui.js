@@ -5,13 +5,6 @@
   const I18n = window.LumenI18n;
   const translate = (source, values) => I18n.t(source, values);
   const screens = ['home','map','pause','help','complete','dream','route'];
-  const powerInfo = {
-    bloom:{name:'Fleur solaire',hint:'X / J · Graines de lumière',icon:'✺'},
-    breeze:{name:'Plume d’azur',hint:'Un second saut dans les airs',icon:'≋'},
-    comet:{name:'Cœur comète',hint:'X / J · Ruée protectrice',icon:'✦'},
-    echo:{name:'Grelot d’écho',hint:'X / J · Révéler les chemins · 4 s',icon:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22h16l-3-5v-5a5 5 0 0 0-10 0v5Z" fill="currentColor"/><path d="M14 25a2 2 0 0 0 4 0M16 5V3M4 14l2 1M28 14l-2 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'}
-  };
-  const medals={bronze:'Bronze',silver:'Argent',gold:'Or'};
   let game, toastTimer, introTimer, damageTimer, helpPrevious='home', transitioning=false, lastHud='', lastHint='', uiTime=0, selectedRunMode='explore';
   let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='';
   let routeChoice=null, routeUpgrade=null, lastRoute=null, lastResult=null, lastToast=null;
@@ -34,13 +27,13 @@
     if (mode === 'map') {
       document.body.classList.remove('in-game');
       showScreen('map'); renderMap();
-      for (const id of ['hud','run-clock','level-hint','power-indicator','boss-hud','dialogue','quest-banner','touch-controls']) $(id).classList.add('hidden');
+      for (const id of ['hud','run-clock','level-hint','boss-hud','dialogue','quest-banner','touch-controls']) $(id).classList.add('hidden');
       $('chapter-intro').classList.remove('show'); return;
     }
     if (game.song) {
       document.body.classList.add('in-game'); showScreen(null);
       if (mode !== 'playing') { clearTimeout(toastTimer); $('toast').classList.remove('show'); }
-      for (const id of ['hud', 'run-clock', 'level-hint', 'power-indicator', 'boss-hud', 'dialogue', 'quest-banner']) $(id).classList.add('hidden');
+      for (const id of ['hud', 'run-clock', 'level-hint', 'boss-hud', 'dialogue', 'quest-banner']) $(id).classList.add('hidden');
       $('chapter-intro').classList.remove('show');
       return;
     }
@@ -80,7 +73,7 @@
     else if (mode==='help') { if(window.LumenTouch?.enabled)$('help-title').textContent='Réglages'; showScreen('help'); }
     else if (mode==='complete'||mode==='ending') showScreen('complete');
     else showScreen(null);
-    if (mode!=='playing') {$('level-hint').classList.add('hidden');$('power-indicator').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
+    if (mode!=='playing') {$('level-hint').classList.add('hidden');$('boss-hud').classList.add('hidden');$('dialogue').classList.add('hidden');$('quest-banner').classList.add('hidden');}
     I18n.translateDOM($('app'));
   }
   /** Le dialogue s'ouvre en approchant, avance seul, et se ferme en s'éloignant.
@@ -284,14 +277,6 @@
       $('run-clock').classList.toggle('clock-paused',game.mode==='paused'||game.mode==='help');
     }
     if(game.mode!=='playing')return;
-    $('power-indicator').classList.toggle('hidden',!p.power);
-    if(p.power&&powerInfo[p.power]) {
-      const info=powerInfo[p.power];$('power-icon').innerHTML=info.icon;$('power-name').textContent=translate(info.name);$('power-description').textContent=translate(info.hint);
-      $('power-fill').style.width=Math.max(0,Math.min(100,p.powerTime/(p.powerDuration||35)*100))+'%';
-      $('power-time').textContent=translate('{seconds} s',{seconds:Math.ceil(Math.max(0,p.powerTime))});
-      $('power-indicator').classList.toggle('expiring',p.powerTime<=5);
-      $('power-indicator').dataset.power=p.power;
-    }
     const b=game.boss;
     $('boss-hud').classList.toggle('hidden',!b||!b.activated||b.hp<=0);
     if(b&&b.activated&&b.hp>0) {
@@ -338,23 +323,13 @@
   }
   function completed(result) {
     lastResult=result;
-    $('complete-eyebrow').textContent=result.final?'LES JARDINS SE SOUVIENDRONT DE VOUS':'UNE LUMIÈRE DE PLUS';
-    $('complete-title').textContent=result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.';
-    $('complete-subtitle').textContent=result.final?translate('Lumen a rendu sa lumière au Veilleur. Au-dessus des jardins, la lune brille à nouveau. Le voyage continue dans les petits chemins encore inexplorés.'):translate('{name} · Chapitre terminé',{name:translate(game.level.name)});
+    $('complete-title').textContent=translate(result.final?'Même la lune avait besoin de vous.':'Le jardin s’éveille.');
+    $('complete-subtitle').textContent=translate(game.level.name);
     const total=game.level.collectibles.filter(c=>c.type==='star').length;
-    const medal=medals[result.medal]?result.medal:'bronze';
-    const targets=game.level.medalTargets;
-    const best=game.recordFor(result.index)?.bestTimedTime;
-    $('result-stars').innerHTML=stars(result.stars,total);$('result-star-label').textContent=translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total});
-    $('result-coins').textContent=result.coins;$('result-time').textContent=timeLabel(result.time,true);
-    $('result-enemies').textContent=result.enemiesDefeated||0;$('result-damage').textContent=result.damageTaken||0;
-    $('result-medal').className='result-medal '+medal;$('result-medal-name').textContent=medals[medal];
-    $('result-mode-label').textContent=result.timed?'CONTRE-LA-MONTRE':'TEMPS DU VOYAGE';
-    $('result-best-label').textContent=result.timed?'MEILLEUR CHRONO':'OBJECTIF OR';
-    $('result-best').textContent=result.timed&&Number.isFinite(best)?timeLabel(best,true):targets?timeLabel(targets.gold):'—';
-    $('result-record').classList.toggle('hidden',!result.record||!result.timed);
-    $('complete-note').textContent=result.secrets?translate('Passages secrets découverts : {count} · +{bonus} points',{count:result.secrets,bonus:I18n.number(result.bonus)}):translate('+{bonus} points de fin de chapitre',{bonus:I18n.number(result.bonus)})+' · '+translate(result.stars<total?'Les jardins cachent encore quelques lumières.':'Tous les fragments sont réunis !');
-    $('result-medal-hint').textContent=medal==='gold'?translate('Un voyage éclatant. Saurez-vous encore améliorer votre temps ?'):targets?translate('Pour l’or : 3 fragments · 1 dégât maximum · {time} ou moins.',{time:timeLabel(targets.gold)}):translate('Chaque retour dans les jardins est une nouvelle aventure.');
+    $('result-stars').innerHTML=stars(result.stars,total);
+    $('result-stars').setAttribute('aria-label',translate('{count} / {total} FRAGMENTS DE LUNE',{count:result.stars,total}));
+    $('result-time').classList.toggle('hidden',!result.timed);
+    $('result-time').textContent=result.timed?(result.record?'✦ ':'')+timeLabel(result.time,true):'';
     $('next-button').innerHTML=translate('Continuer le voyage')+' <span>→</span>';
     I18n.translateDOM($('complete-screen'));
   }
@@ -446,12 +421,6 @@
       game.renderer.draw(game,0);
     };
     window.LumenAppearance.onChange(refreshAppearance);
-    document.addEventListener('click',event=>{
-      const button=event.target.closest('[data-appearance]');if(!button)return;
-      game.store.setSetting('appearance',button.dataset.appearance);
-      window.LumenAppearance.apply(button.dataset.appearance);
-      game.audio.sfx('menu');
-    });
     const refreshLanguage=()=>{
       document.title=translate('LUMEN · Le Chant des îles');
       const description='LUMEN — Le Chant des îles. Prends ton envol, retrouve les neuf voix du ciel et réveille un archipel. Une aventure originale, jouable au clavier, au tactile et à la manette, même hors ligne.';
@@ -459,7 +428,6 @@
       I18n.translateDOM($('app'));
       document.querySelector('.home-meta>span:first-child').innerHTML='<i class="meta-dot"></i> '+escape(translate('{count} CHAPITRES À EXPLORER',{count:window.LUMEN_LEVELS.filter(level=>!level.hub).length}));
       document.querySelectorAll('[data-language-select]').forEach(select=>{select.innerHTML=I18n.languageOptions();select.value=game.progress.settings.language;});
-      document.querySelectorAll('[data-appearance-control]').forEach(container=>{container.innerHTML=window.LumenAppearance.controls(game.progress.settings.appearance);});
       lastHud='';lastHint='';updateSound();
       if(lastToast&&$('toast').classList.contains('show'))$('toast').textContent=translate(lastToast.message,typeof lastToast.values==='function'?lastToast.values():lastToast.values);
       if(!game.song){

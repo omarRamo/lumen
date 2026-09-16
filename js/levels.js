@@ -901,6 +901,67 @@
     levels.splice(levels.findIndex(level => level.key === end), 0, definition);
   }
 
+  // Second movements: real jumps and resting terraces, not stretched terrain.
+  // Each biome has its own silhouette (offset, width, elevation above the shore).
+  const onward = {
+    meadow: [[0,380,0],[480,360,60],[940,340,140],[1380,400,70],[1880,450,0],[2430,340,80],[2870,420,160],[3390,550,0]],
+    cavern: [[0,360,0],[460,380,80],[940,330,160],[1370,410,80],[1880,430,0],[2410,360,60],[2870,420,140],[3390,550,0]],
+    tide: [[0,400,0],[500,350,40],[950,350,120],[1400,380,60],[1880,420,0],[2400,370,70],[2870,420,140],[3390,550,0]],
+    sky: [[0,360,0],[460,380,80],[940,340,160],[1380,400,240],[1880,440,160],[2420,350,80],[2870,420,160],[3390,550,0]],
+    forge: [[0,390,0],[490,350,70],[940,340,140],[1380,400,70],[1880,450,0],[2430,340,80],[2870,420,160],[3390,550,0]],
+    frost: [[0,400,0],[500,340,60],[940,340,140],[1380,400,60],[1880,440,0],[2420,350,80],[2870,420,160],[3390,550,0]],
+    secret: [[0,380,0],[480,360,80],[940,340,160],[1380,400,80],[1880,450,0],[2430,340,70],[2870,420,140],[3390,550,0]],
+    eclipse: [[0,380,0],[480,360,70],[940,340,140],[1380,400,70],[1880,450,0],[2430,340,80],[2870,420,160],[3390,550,0]],
+    shaft: [[0,380,0],[480,360,60],[940,340,100],[1380,400,40],[1880,450,0],[2430,340,60],[2870,420,100],[3390,550,0]]
+  };
+  for (const level of levels) {
+    if (level.hub || level.key === 'prairies-aurore') continue;
+    const ascent = level.place?.kind === 'ascent';
+    const start = level.final ? 3050 : ascent ? 810 : level.width - 80;
+    const shore = ascent ? 210 : 600;
+    const route = onward[level.theme] || onward.meadow;
+    level.originalWidth = level.width;
+    if (level.final) {
+      // Insert before the guardian; retain the entire quiet final arena.
+      for (const group of ['platforms','enemies','collectibles','checkpoints','hazards','secrets','hints']) {
+        for (const object of level[group] || []) {
+          for (const field of ['x','minX','maxX']) if (object[field] >= start) object[field] += 3940;
+        }
+      }
+      level.width += 3940; level.exit.x += 3940;
+    } else {
+      level.width = start + 3940;
+      level.exit.x = level.width - 150; level.exit.y = shore - 100;
+    }
+    level.medalTargets.gold += 55; level.medalTargets.silver += 85;
+    level.continuation = { start, end: start + 3940, route: [] };
+    for (const [i, [x, width, rise]] of route.entries()) {
+      const surface = shore - rise;
+      const platform = ground(start + x, width, surface);
+      if (ascent) platform.h = 40; // The upper canopy must not wall off the original climb.
+      level.platforms.push(platform);
+      level.collectibles.push(...coins(start + x + 45, surface - 48, 7, (width - 90) / 6));
+      const point = { x: start + x + width * .55, surfaceY: surface };
+      level.continuation.route.push(point);
+      if (level.place) level.place.pilot.push(point);
+      if ([0,4,7].includes(i)) {
+        level.checkpoints.push(checkpoint(start + x + 95, surface));
+        level.collectibles.push(item('heart', start + x + 155, surface - 45));
+      }
+    }
+    // An optional balcony, reached in two gentle steps from the middle terrace.
+    const balconyY = shore - route[4][2];
+    level.platforms.push(ledge(start + 1950, balconyY - 85, 150, level.theme === 'frost' ? 'ice' : 'solid'),
+      ledge(start + 2110, balconyY - 170, 180, level.theme === 'forge' ? 'conveyor' : 'solid', { direction: 1, speed: 45 }));
+    level.collectibles.push(...coins(start + 1970, balconyY - 130, 3), ...coins(start + 2140, balconyY - 210, 4));
+    if (!level.final) Object.assign(level.collectibles.filter(c => c.type === 'star').at(-1), { x: start + 2200, y: balconyY - 218 });
+    level.secrets.push(secret(start + 2080, balconyY - 260, 220, 120));
+    if (!ascent) level.enemies.push(enemy('swarm', start + 2200, balconyY - 245, start + 2110, start + 2300));
+    const finish = { x: level.exit.x + 25, surfaceY: shore };
+    level.continuation.route.push(finish);
+    if (level.place) level.place.pilot.push(finish);
+  }
+
   // Static definitions are never mutated by the simulation. Creating a stage
   // restores collected objects, crumbling platforms and enemy state cleanly.
   window.LUMEN_LEVELS = levels;

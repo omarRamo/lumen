@@ -114,7 +114,8 @@ for(const stableKey of ['vergers-vent','galerie-echos']){
 {
   const g=create(FINAL);
   // The only placement is the permitted arena checkpoint initialization.
-  Object.assign(g.player,{x:3404,y:552});g.checkpoint={x:3404,y:552};
+  const arenaOffset=g.level.width-4800;
+  Object.assign(g.player,{x:3404+arenaOffset,y:552});g.checkpoint={x:3404+arenaOffset,y:552};
   let jumpUntil=0,lastJump=-10,lastState='',changes=[];
   for(let frame=0;frame<120*180&&g.mode!=='ending'&&g.mode!=='gameover';frame++){
     const b=g.boss,p=g.player;
@@ -127,10 +128,10 @@ for(const stableKey of ['vergers-vent','galerie-echos']){
         if(b.vulnerable){target=b.x+b.w/2-p.w/2;}
         else if(b.state==='leap'){
           const remaining=(-b.vy+Math.sqrt(b.vy*b.vy+2*1550*(470-b.y)))/1550;
-          const landing=Math.max(3470,Math.min(4540,b.x+b.vx*remaining));
+          const landing=Math.max(3470+arenaOffset,Math.min(4540+arenaOffset,b.x+b.vx*remaining));
           target=p.x<landing+b.w/2?landing-155:landing+b.w+125;
         }else target=p.x<b.x+b.w/2?b.x-180:b.x+b.w+155;
-        target=Math.max(3430,Math.min(4650,target));
+        target=Math.max(3430+arenaOffset,Math.min(4650+arenaOffset,target));
         movement(g,target);
         const danger=g.projectiles.some(s=>!s.friendly&&Math.abs(s.x-(p.x+16))<125&&s.y>p.y-20&&s.y<p.y+p.h+20&&s.vx*(p.x-s.x)>0);
         const close=Math.abs(p.x+p.w/2-(b.x+b.w/2))<175;
