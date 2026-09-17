@@ -124,7 +124,7 @@
     byId('song-shell').inert = !!pane;
     byId('touch-controls').inert = !!pane;
     byId('game').tabIndex = pane ? -1 : 0;
-    byId('touch-controls').classList.toggle('hidden', mode !== 'playing');
+    byId('touch-controls').classList.toggle('hidden', mode !== 'playing' || !global.LumenTouch?.enabled);
     if (pane) renderPanel(); else renderedPane = null;
     lastHud = ''; update(.1); applyPreferences();
   }

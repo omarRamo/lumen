@@ -40,10 +40,6 @@ body .hud .collect-counter { display: flex; align-items: center; gap: 7px; }
 body .hud .collect-counter strong { font: 500 15px var(--font); font-variant-numeric: tabular-nums; white-space: nowrap; }
 body .hud svg { display: block; width: 18px; height: 18px; }
 body .hud .song-icon { width: 34px; height: 34px; }
-body .touch-controls button svg { width: 22px; height: 22px; flex-shrink: 0; }
-body:not(.song-playing) .touch-controls button { display: flex; align-items: center; justify-content: center; background: var(--lumen-glass); color: var(--lumen-ink); border-color: var(--lumen-line); }
-body:not(.song-playing) .touch-controls .touch-jump { background: var(--lumen-strong); color: var(--lumen-on-strong); }
-body:not(.song-playing) .touch-controls .touch-action { background: var(--lumen-coral); color: #453b3c; }
 body .chapter-pill { display: flex; align-items: center; gap: 10px; position: static; transform: none; min-width: 0; max-width: 340px; justify-self: center; text-align: left; background: var(--lumen-glass); padding: 8px 12px; border-radius: 8px; box-shadow: none; border: 0; }
 body .hud [hidden] { display: none !important; }
 body .chapter-pill>span { font: 500 22px var(--serif); color: var(--lumen-muted); }
@@ -152,27 +148,6 @@ body.song-playing #game { outline: none; touch-action: none; }
 .song-combo small { display: block; font-size: 9px; font-weight: 600; margin-top: 4px; }
 .song-combo-track { width: 80px; height: 3px; margin: 8px auto 0; background: #ffffff70; border-radius: 3px; overflow: hidden; }
 .song-combo-track i { display: block; height: 100%; background: #b06a4b; transform-origin: left center; transition: transform .1s linear; }
-body.song-playing .touch-controls {
-  display: flex; position: absolute; bottom: max(28px, env(safe-area-inset-bottom)); top: auto;
-  left: 50%; right: auto; width: auto; transform: translateX(-50%); gap: 32px; z-index: 11;
-  pointer-events: none; opacity: 1; padding: 0;
-}
-body.song-playing .touch-move, body.song-playing .touch-actions { display: flex; align-items: center; gap: 9px; }
-body.song-playing .touch-controls button {
-  display: flex; align-items: center; justify-content: center;
-  width: calc(49px * var(--touch-scale, 1)); height: calc(49px * var(--touch-scale, 1));
-  min-width: 0; border: 1px solid #eafcdd82; border-radius: 50%;
-  background: #f3fce226; color: #eff9dd; backdrop-filter: blur(8px);
-  box-shadow: 0 3px 0 #214c5126; touch-action: none; pointer-events: auto;
-  transition: background .12s, transform .12s;
-}
-body.song-playing .touch-controls button:hover { background: #f3fce252; }
-body.song-playing .touch-controls svg { width: 22px; height: 22px; }
-body.song-playing .touch-controls .touch-jump { width: calc(62px * var(--touch-scale, 1)); height: calc(62px * var(--touch-scale, 1)); background: #e6f3ce; border-color: #faffdf; color: #306564; }
-body.song-playing .touch-controls .touch-action { background: #f0bf89; color: #6c533b; border-color: #ffe1a2; }
-body.song-playing .touch-controls [data-touch="down"] { display: none; }
-body.song-playing .touch-controls button.held { transform: translateY(3px) scale(.95); background: #ffffffb3; color: #265e60; box-shadow: none; }
-body.song-playing.left-handed .touch-controls { flex-direction: row-reverse; }
 body.song-playing .toast {
   font-family: Outfit, sans-serif; font-size: 13px; letter-spacing: 0; background: #f7fbe9ec; color: #325b58;
   top: 28%; bottom: auto; padding: 12px 21px; border: 1px solid #ffffffb5; border-radius: 8px;
@@ -273,10 +248,6 @@ body.song-playing .toast {
   .song-combo { top: 227px; left: 23px; transform: none; text-align: left; min-width: 90px; }
   .song-combo strong { font-size: 30px; }
   .song-combo-track { margin-left: 0; }
-  body.song-playing .touch-controls { left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px)); transform: none; width: auto; justify-content: space-between; gap: 16px; }
-  body.song-playing .touch-controls button { width: calc(51px * var(--touch-scale, 1)); height: calc(51px * var(--touch-scale, 1)); }
-  body.song-playing .touch-controls .touch-jump { width: calc(65px * var(--touch-scale, 1)); height: calc(65px * var(--touch-scale, 1)); }
-  body.song-playing .touch-controls .touch-move, body.song-playing .touch-controls .touch-actions { gap: 8px; }
   body.song-playing .toast { top: 34%; font-size: 12px; }
   .song-overlay { padding: 16px; }
   .song-panel { padding: 42px 23px 25px; }
@@ -300,9 +271,6 @@ body.song-playing .toast {
   .song-brand img { display: none; }
   .song-notes { gap: 8px; right: 16px; }
   .song-notes>span { gap: 4px; }
-  body.song-playing .touch-controls { left: 14px; right: 14px; }
-  body.song-playing .touch-controls button { width: calc(44px * var(--touch-scale, 1)); height: calc(44px * var(--touch-scale, 1)); }
-  body.song-playing .touch-controls .touch-jump { width: calc(53px * var(--touch-scale, 1)); height: calc(53px * var(--touch-scale, 1)); }
 }
 @media (max-height: 520px) and (orientation: landscape) {
   .song-header { top: max(12px, env(safe-area-inset-top)); left: 20px; right: 20px; }
@@ -322,9 +290,6 @@ body.song-playing .toast {
   .song-chorus { left: 50%; bottom: 20px; transform: translateX(-50%); }
   .song-chorus-label { display: none; }
   .song-mode { display: none; }
-  body.song-playing .touch-controls { left: max(22px, env(safe-area-inset-left)); right: max(22px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); transform: none; justify-content: space-between; width: auto; }
-  body.song-playing .touch-controls button { width: calc(47px * var(--touch-scale, 1)); height: calc(47px * var(--touch-scale, 1)); }
-  body.song-playing .touch-controls .touch-jump { width: calc(56px * var(--touch-scale, 1)); height: calc(56px * var(--touch-scale, 1)); }
   .song-combo { top: 75px; left: 50%; transform: translateX(-50%); text-align: center; }
   .song-combo strong { font-size: 24px; }
   .song-overlay { padding: 13px; }
@@ -459,7 +424,6 @@ html:is([lang="ar"], [lang^="zh"]) :is(.song-objective h2, .song-welcome p, .son
 .star-count, .card-stars, .result-stars, #clock-time, #result-time, #result-best, #seed-input, kbd {
   direction: ltr; unicode-bidi: isolate;
 }
-.touch-controls, .touch-move, .touch-actions { direction: ltr; }
 html[dir="rtl"] .song-brand, html[dir="rtl"] .song-island { text-align: right; }
 html[dir="rtl"] .song-objective { left: auto; right: 37px; text-align: right; }
 html[dir="rtl"] .song-notes { left: 34px; right: auto; }
