@@ -550,7 +550,7 @@ async function test(name, run) {
     await page.getByRole('switch', { name: 'Mouvements réduits' }).check();
     await page.getByRole('switch', { name: 'Commandes pour gaucher' }).check();
     await page.locator('#song-volume').fill('61');
-    await page.locator('#song-touch-size').fill('130');
+    await page.locator('#song-touch-size').fill('2');
     await page.screenshot({ path: path.join(shots, 'chant-reglages.png') });
     await page.getByRole('button', { name: 'Revenir au ciel' }).click();
     await page.reload(); await page.waitForFunction(() => window.lumen?.song);
@@ -701,7 +701,7 @@ async function test(name, run) {
       await page.screenshot({ path: path.join(shots, 'chant-' + view + '.png') });
       if (view === 'portrait' || view === 'compact') {
         await page.getByRole('button', { name: 'Réglages', exact: true }).click();
-        await page.locator('#song-touch-size').fill('130');
+        await page.locator('#song-touch-size').fill('2');
         await page.getByRole('button', { name: 'Revenir au ciel' }).click();
         assert.equal(await page.evaluate(() => [...document.querySelectorAll('[data-touch]:not([data-touch="down"])')].every(button => {
           const rect = button.getBoundingClientRect(); return rect.x >= 0 && rect.right <= innerWidth;

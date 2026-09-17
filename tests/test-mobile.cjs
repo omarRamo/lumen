@@ -51,6 +51,33 @@ async function targets(page,selector,view,{overlap=true}={}) {
   assert.deepEqual(result.bad,[],view.name+' '+selector);
   if(overlap)assert.deepEqual(result.pairs,[],view.name+' overlapping controls');
 }
+async function controlGeometry(page,view) {
+  for(const scale of [.85,1,1.3])for(const left of [false,true]) {
+    await page.evaluate(({scale,left})=>{
+      lumen.store.setSetting('touchScale',scale);lumen.store.setSetting('leftHanded',left);
+      document.documentElement.style.setProperty('--touch-scale',scale);
+      document.body.classList.toggle('left-handed',left);
+    },{scale,left});
+    await targets(page,'#touch-controls button',view);
+    const measured=await page.evaluate(()=>[...document.querySelectorAll('[data-touch]')].filter(n=>n.getClientRects().length).map(n=>{
+      const r=n.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y-3);
+      return {action:n.dataset.touch,width:r.width,height:r.height,extra:!!hit&&n.contains(hit)};
+    }));
+    for(const item of measured){
+      const size=({left:88,right:88,jump:96,action:80,down:48})[item.action];
+      const expected=item.action==='down'?48:Math.max(48,size*scale);
+      assert.ok(Math.abs(item.width-expected)<.1&&Math.abs(item.height-expected)<.1,JSON.stringify({view,scale,left,item}));
+      assert.ok(item.extra,'Missing 4px hit margin: '+item.action);
+    }
+    const pos=await page.evaluate(()=>{
+      const r=document.querySelector('.touch-controls').getBoundingClientRect(),m=document.querySelector('.touch-move').getBoundingClientRect();
+      return {left:r.left,right:innerWidth-r.right,bottom:innerHeight-r.bottom,moveLeft:m.left,moveRight:innerWidth-m.right};
+    });
+    assert.equal(pos.left,view.side+12);assert.equal(pos.right,view.side+12);assert.equal(pos.bottom,view.bottom+20);
+    assert.ok(Math.abs((left?pos.moveRight:pos.moveLeft)-(view.side+12))<1);
+  }
+  await page.evaluate(()=>{lumen.store.setSetting('touchScale',1);lumen.store.setSetting('leftHanded',false);document.documentElement.style.setProperty('--touch-scale',1);document.body.classList.remove('left-handed');});
+}
 async function pauseAndSettings(page,view,song) {
   const header=song?'.song-header':'#hud';
   await targets(page,`${header} button`,view);
@@ -108,12 +135,12 @@ async function close(run) {
   try {
     for(const view of views)for(const language of ['fr','ar']) {
       const run=await open(view,language),{page}=run;
-      await targets(page,'#touch-controls button',view);
+      await controlGeometry(page,view);
       await pauseAndSettings(page,view,true);
       await finishScreen(page,view,true);
       await exhaustedLives(page,view,true);
       await page.evaluate(()=>lumen.start(0));
-      await targets(page,'#touch-controls button',view);
+      await controlGeometry(page,view);
       await pauseAndSettings(page,view,false);
       await finishScreen(page,view,false);
       await exhaustedLives(page,view,false);

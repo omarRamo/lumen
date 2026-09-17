@@ -75,7 +75,7 @@
         <button class="song-text-button sound-preview" data-command="sound-preview">${icon('headphones')} Écouter LUMEN</button>
         <label class="song-settings-row" for="song-reduced"><span>Mouvements réduits</span><input id="song-reduced" type="checkbox" role="switch" data-song-pref="reducedEffects" ${settings.reducedEffects ? 'checked' : ''}></label>
         <label class="song-settings-row" for="song-left"><span>Commandes pour gaucher</span><input id="song-left" type="checkbox" role="switch" data-song-pref="leftHanded" ${settings.leftHanded ? 'checked' : ''}></label>
-        <label class="song-settings-row song-range-row" for="song-touch-size"><span>Taille des commandes</span><input id="song-touch-size" type="range" min="85" max="130" step="5" value="${Math.round(settings.touchScale * 100)}" data-song-pref="touchScale"><output id="song-touch-size-value">${Math.round(settings.touchScale * 100)} %</output></label>
+        <label class="song-settings-row song-range-row" for="song-touch-size"><span>Taille des commandes</span><input id="song-touch-size" type="range" min="0" max="2" step="1" value="${[.85,1,1.3].indexOf(settings.touchScale) < 0 ? 1 : [.85,1,1.3].indexOf(settings.touchScale)}" data-song-pref="touchScale"><output id="song-touch-size-value">${Math.round(settings.touchScale * 100)} %</output></label>
         <button class="song-button song-primary" data-command="song-close">${icon('check')} Revenir au ciel</button>`;
     } else if (pane === 'confirm-style') {
       content = title('UN NOUVEAU DÉPART', 'Changer de rythme ?') +
@@ -235,9 +235,9 @@
     byId('song-overlay').addEventListener('click', event => { if (event.target === byId('song-overlay') && game.mode === 'paused') close(); });
     document.addEventListener('input', event => {
       const control = event.target.closest('[data-song-pref]'); if (!control) return;
-      const setting = control.dataset.songPref, value = control.type === 'checkbox' ? control.checked : Number(control.value) / 100;
+      const setting = control.dataset.songPref, value = control.type === 'checkbox' ? control.checked : setting === 'touchScale' ? [.85,1,1.3][Number(control.value)] : Number(control.value) / 100;
       game.store.setSetting(setting, value); applyPreferences();
-      if (control.type === 'range') byId(control.id + '-value').textContent = control.value + ' %';
+      if (control.type === 'range') byId(control.id + '-value').textContent = Math.round(value * 100) + ' %';
     });
     document.addEventListener('keydown', event => {
       if (event.key !== 'Tab' || byId('song-overlay').hidden) return;
