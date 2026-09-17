@@ -269,3 +269,18 @@ body .song-panel-gameover h2{font-size:clamp(24px,4vw,32px);margin:6px 0 12px}
 body .song-panel-gameover .song-kicker:empty{display:none}
 body .song-panel-gameover .song-dialog-sub{margin:8px 0 16px;font-size:14px}
 body .song-panel-gameover .song-button{min-height:48px;padding:10px 16px}
+
+/* Match the native LaunchScreen: system 36pt mark at the exact screen centre. */
+.title-screen { position:absolute; inset:0; z-index:100; background:#dce6d5; color:#306b67; }
+.title-screen[hidden] { display:none; }
+#title-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); margin:0; white-space:nowrap; font:500 36px/1.25 -apple-system,BlinkMacSystemFont,sans-serif; letter-spacing:0; }
+.title-invitation { position:absolute; top:calc(50% + 34px); left:var(--play-left); right:var(--play-right); display:flex; flex-direction:column; align-items:center; gap:10px; }
+.title-invitation p { margin:0; font-size:16px; }
+#boot-progress { appearance:none; height:3px; width:180px; border:0; border-radius:4px; overflow:hidden; background:#306b6720; }
+#boot-progress::-webkit-progress-bar { background:#306b6720; }
+#boot-progress::-webkit-progress-value { background:#306b67; }
+#boot-progress::-moz-progress-bar { background:#306b67; }
+#title-enter { min-height:56px; min-width:220px; justify-content:center; font-size:17px; border-radius:28px; padding:10px 24px; }
+#title-enter:disabled { opacity:.45; }
+body.booting #app > :not(.title-screen) { visibility:hidden!important; }
+@media(max-height:360px){ .title-invitation { gap:6px; top:calc(50% + 26px); } .title-invitation p{font-size:14px;} }

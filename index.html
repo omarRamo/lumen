@@ -13,8 +13,12 @@
   <link rel="stylesheet" href="journey.css">
   <link rel="stylesheet" href="play.css">
 </head>
-<body>
+<body class="booting">
   <main id="app" aria-label="LUMEN, jeu de plateforme">
+    <section id="title-screen" class="title-screen" aria-labelledby="title-brand">
+      <h1 id="title-brand" translate="no">✦ LUMEN</h1>
+      <div class="title-invitation"><p>Le Chant des îles</p><progress id="boot-progress" max="4" value="0" aria-label="Chargement"></progress><button id="title-enter" class="button primary" disabled>Commencer</button></div>
+    </section>
     <canvas id="game" tabindex="0" aria-label="Monde de Lumen. Flèches ou Q D pour avancer, Espace pour sauter et planer, X pour chanter, Échap pour mettre en pause."></canvas>
     <div id="vignette" aria-hidden="true"></div>
     <header class="masthead" id="masthead">
@@ -139,6 +143,7 @@
   <script src="js/journey-ui.js"></script>
   <script src="js/song-ui.js"></script>
   <script src="js/touch.js"></script>
+  <script src="js/boot.js"></script>
   <script src="js/ui.js"></script>
 </body>
 </html>

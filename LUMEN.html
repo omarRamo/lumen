@@ -1185,10 +1185,29 @@ body .song-panel-gameover .song-kicker:empty{display:none}
 body .song-panel-gameover .song-dialog-sub{margin:8px 0 16px;font-size:14px}
 body .song-panel-gameover .song-button{min-height:48px;padding:10px 16px}
 
+/* Match the native LaunchScreen: system 36pt mark at the exact screen centre. */
+.title-screen { position:absolute; inset:0; z-index:100; background:#dce6d5; color:#306b67; }
+.title-screen[hidden] { display:none; }
+#title-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); margin:0; white-space:nowrap; font:500 36px/1.25 -apple-system,BlinkMacSystemFont,sans-serif; letter-spacing:0; }
+.title-invitation { position:absolute; top:calc(50% + 34px); left:var(--play-left); right:var(--play-right); display:flex; flex-direction:column; align-items:center; gap:10px; }
+.title-invitation p { margin:0; font-size:16px; }
+#boot-progress { appearance:none; height:3px; width:180px; border:0; border-radius:4px; overflow:hidden; background:#306b6720; }
+#boot-progress::-webkit-progress-bar { background:#306b6720; }
+#boot-progress::-webkit-progress-value { background:#306b67; }
+#boot-progress::-moz-progress-bar { background:#306b67; }
+#title-enter { min-height:56px; min-width:220px; justify-content:center; font-size:17px; border-radius:28px; padding:10px 24px; }
+#title-enter:disabled { opacity:.45; }
+body.booting #app > :not(.title-screen) { visibility:hidden!important; }
+@media(max-height:360px){ .title-invitation { gap:6px; top:calc(50% + 26px); } .title-invitation p{font-size:14px;} }
+
 </style>
 </head>
-<body>
+<body class="booting">
   <main id="app" aria-label="LUMEN, jeu de plateforme">
+    <section id="title-screen" class="title-screen" aria-labelledby="title-brand">
+      <h1 id="title-brand" translate="no">✦ LUMEN</h1>
+      <div class="title-invitation"><p>Le Chant des îles</p><progress id="boot-progress" max="4" value="0" aria-label="Chargement"></progress><button id="title-enter" class="button primary" disabled>Commencer</button></div>
+    </section>
     <canvas id="game" tabindex="0" aria-label="Monde de Lumen. Flèches ou Q D pour avancer, Espace pour sauter et planer, X pour chanter, Échap pour mettre en pause."></canvas>
     <div id="vignette" aria-hidden="true"></div>
     <header class="masthead" id="masthead">
@@ -1903,6 +1922,8 @@ window.LumenI18n.add([
   <script>
 /* LUMEN — messages du voyage commun, conservés dans les cinq langues. */
 window.LumenI18n.add([
+  ['Commencer', 'Begin', 'Comenzar', 'ابدأ', '开始'],
+  ['Chargement', 'Loading', 'Cargando', 'جارٍ التحميل', '加载中'],
   ['La colonne des saisons', 'The column of seasons', 'La columna de las estaciones', 'عمود الفصول', '四季之柱'],
   ['Le ciel se rejoint un palier à la fois.', 'Reach the sky one ledge at a time.', 'Alcanza el cielo un rellano a la vez.', 'يُبلغ السماء مصطبةً بعد أخرى.', '一层一层，走向天空。'],
   ['Remonte le jardin suspendu jusqu’à sa couronne.', 'Climb the hanging garden to its crown.', 'Sube por el jardín colgante hasta su corona.', 'اصعد الحديقة المعلّقة حتى تاجها.', '攀上悬空花园的顶冠。'],
@@ -2550,7 +2571,7 @@ window.LumenI18n.add([
       chapters: {},
       bonusUnlocked: false,
       finished: false,
-      settings: { muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto', appearance: 'light', musicVolume: .8, effectsVolume: .9, ambienceVolume: .6 },
+      settings: { titleSeen: false, muted: false, touchScale: 1, leftHanded: false, reducedEffects: false, songStyle: 'gentle', volume: .35, language: 'auto', appearance: 'light', musicVolume: .8, effectsVolume: .9, ambienceVolume: .6 },
       hub: { quests: {}, transformations: [] },
       codex: { creatures: [], phenomena: [] },
       expedition: null,
@@ -2622,6 +2643,7 @@ window.LumenI18n.add([
     profile.finished = !!raw.finished;
 
     if (isObject(raw.settings)) {
+      profile.settings.titleSeen = !!raw.settings.titleSeen;
       profile.settings.muted = !!raw.settings.muted;
       profile.settings.touchScale = clamp(finite(raw.settings.touchScale, 1), .8, 1.6);
       profile.settings.leftHanded = !!raw.settings.leftHanded;
@@ -5254,12 +5276,20 @@ window.LumenI18n.add([
       if (this.ctx && this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : this._volume, this.ctx.currentTime, .035);
     }
 
+    async prepare() {
+      try {
+        if (!this.ctx) this._init();
+        if (this.ctx?.state === 'running') await this.ctx.suspend();
+        return !!this.ctx;
+      } catch (_) { return false; } // Audio is optional; the game still opens.
+    }
+
     /** Call this directly from a click, keydown or pointerdown handler. */
     async unlock() {
       try {
         if (!this.ctx) this._init();
         if (!this.ctx) return false;
-        if (this.ctx.state === 'suspended') await this.ctx.resume();
+        if (['suspended','interrupted'].includes(this.ctx.state)) await this.ctx.resume();
         this.unlocked = this.ctx.state === 'running';
         if (this.unlocked) {
           this._next = Math.max(this._next, this.ctx.currentTime + .07);
@@ -8019,7 +8049,7 @@ window.LumenI18n.add([
       if (this.mode !== 'paused') return;
       this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
     }
-    /** The map is a destination requested by the player, never a startup gate.
+    /** The atlas is the entry menu and the destination requested by the player.
      * A song or campaign stays resumable; leaving an expedition keeps its
      * established session isolation rules. */
     showMap() {
@@ -9145,7 +9175,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
 
   function render(options = {}) {
-    if (!game || game.mode !== 'map') { stopBackdrop(); return; }
+    if (!game || (game.mode !== 'map' && !options.preload)) { stopBackdrop(); return; }
     model = global.LumenJourney.describe(game);
     if (options.enter) {
       newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
@@ -9159,7 +9189,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     }
     animateBirth = !!options.enter && newLights.size > 0;
     renderSky(); renderDetails(); renderTotals(); animateBirth = false;
-    startBackdrop();
+    if (!options.preload) startBackdrop();
     $('journey-announcement').textContent = announcement;
     global.LumenI18n.translateDOM($('map-screen'));
     if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));
@@ -9589,6 +9619,45 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
 
 </script>
   <script>
+/* A deliberate first gesture: iOS audio is unlocked here, before the atlas.
+ * Do not replace this button with an automatic timeout or a decorative splash. */
+(function (global) {
+  'use strict';
+  const started = performance.now(), steps = new Set();
+  const screen = document.getElementById('title-screen');
+  const button = document.getElementById('title-enter');
+  let game, ready = false;
+  const mark = name => { steps.add(name); document.getElementById('boot-progress').value = steps.size; };
+  const siblings = () => [...screen.parentElement.children].filter(node => node !== screen);
+  siblings().forEach(node => { node.inert = true; });
+  function enter() {
+    if (!ready || screen.hidden) return;
+    game.store.setSetting('titleSeen', true);
+    game.audio.unlock(); // Must remain synchronous with this user gesture.
+    screen.hidden = true; document.body.classList.remove('booting');
+    siblings().forEach(node => { node.inert = false; });
+    game.showMap(); game.journeyReturn = null;
+  }
+  async function prepare(instance) {
+    game = instance; game.mode = 'title'; game.input.reset(); game.audio.pause();
+    mark('save'); // Native mirror and synchronous SaveStore have both been read.
+    await Promise.all([
+      (document.fonts?.ready || Promise.resolve()).then(() => mark('fonts')),
+      game.audio.prepare().then(() => mark('audio'))
+    ]);
+    global.LumenJourneyUI.render({ preload:true }); mark('atlas');
+    const returning = game.progress.settings.titleSeen || Object.keys(game.progress.chapters).length > 0 || game.progress.codex.creatures.length > 0;
+    button.textContent = global.LumenI18n.t(returning ? 'Continuer' : 'Commencer');
+    await new Promise(resolve => setTimeout(resolve, Math.max(0, 1200 - (performance.now() - started))));
+    ready = true; button.disabled = false;
+    button.focus({preventScroll:true});
+  }
+  button.addEventListener('click', enter);
+  global.LumenBoot = { prepare, enter, get ready(){return ready;}, get elapsed(){return performance.now()-started;}, get steps(){return [...steps];} };
+})(window);
+
+</script>
+  <script>
 /* All menus and HUD live in the DOM: crisp text, keyboard focus and touch controls. */
 (async () => {
   'use strict';
@@ -9745,6 +9814,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     toastTimer=setTimeout(()=>$('toast').classList.remove('show'),window.LumenTouch?.enabled?2000:3800);
   }
   function transition(fn) {
+    if (game.mode === 'title') { if (['confirm','start'].includes(action)) window.LumenBoot.enter(); return; }
     if (transitioning) return;
     transitioning=true;$('transition').classList.add('show');game.input.reset();
     setTimeout(()=>{fn();$('transition').classList.remove('show');transitioning=false;},320);
@@ -9755,6 +9825,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     game.start(index,{timed:mode==='timed'});
   }
   function command(action) {
+    if (game.mode === 'title') { if (['confirm','start'].includes(action)) window.LumenBoot.enter(); return; }
     if (transitioning) return;
     if(action==='sound-preview'){
       game.audio.unlock().then(()=>game.audio.audition());return;
@@ -10045,9 +10116,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
     refreshLanguage();
     refreshAppearance();
-    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(0);
-    else showMode('home');
-    updateSound();game.beginLoop();
+    showMode(null); updateSound();game.beginLoop();
+    await window.LumenBoot.prepare(game);
   } catch(error) {
     console.error(error);$('error-notice').hidden=false;$('error-notice').textContent=translate('Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : {error}',{error:error.message});
   }

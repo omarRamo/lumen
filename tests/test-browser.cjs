@@ -17,6 +17,7 @@ const { pathToFileURL } = require('node:url');
 const chromium = require('playwright')[process.env.LUMEN_BROWSER || 'chromium'];
 const browserTools = require('../tools/browser.cjs');
 const capture = require('../tools/capture.cjs');
+const entry = require('./browser-entry.cjs');
 
 const root = path.resolve(__dirname, '..');
 const shots = path.join(root, 'work', 'shots');
@@ -63,6 +64,9 @@ async function test(name, run) {
     }, JSON.stringify(profile));
     const url = options.source ? pathToFileURL(path.join(root, 'index.html')).href : PAGE;
     await page.goto(url + (options.song ? '' : '?classic'));
+    await entry.enter(page,{legacy:!options.song});
+    const reload=page.reload.bind(page);
+    page.reload=async(...args)=>{const result=await reload(...args);await entry.enter(page,{legacy:new URL(page.url()).searchParams.has('classic')});return result;};
     await page.waitForFunction(song => window.lumen && window.lumen.mode === (song ? 'playing' : 'home'), !!options.song, { timeout: 20000 });
     return { page, context, errors };
   }
@@ -97,6 +101,7 @@ async function test(name, run) {
       } };
     });
     await page.goto(PAGE);
+    await entry.enter(page);
     await page.waitForFunction(() => window.lumen?.frames >= 2);
     assert.equal(await page.evaluate(() => window.lumen.progress.finished), true);
     assert.equal(await page.evaluate(() => window.lumen.progress.settings.volume), .17);
@@ -285,7 +290,7 @@ async function test(name, run) {
 
   await test('Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient', async () => {
     const {page,context,errors}=await open('portrait',null,{song:true});
-    assert.equal(await page.evaluate(()=>window.lumen.audio.ctx),null,'No audio context before a gesture.');
+    assert.ok(await page.evaluate(()=>window.lumen.audio.ctx&&window.lumen.audio.unlocked),'Title gesture unlocks the prepared context.');
     await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
     await page.locator('#song-musicVolume').fill('25');await page.locator('#song-effectsVolume').fill('70');await page.locator('#song-ambienceVolume').fill('40');
     await page.locator('#song-panel [data-command="sound-preview"]').click();
@@ -478,7 +483,7 @@ async function test(name, run) {
     assert.equal(codes[0], codes[1]); assert.deepEqual(errors, []); await context.close();
   });
 
-  await test('Le Chant démarre directement, avec ses ressources locales et un canvas animé', async () => {
+  await test('Le Chant se lance depuis l’atlas, avec ses ressources locales et un canvas animé', async () => {
     for (const source of [false, true]) {
       const { page, context, errors } = await open('bureau', null, { song: true, source });
       const requests = [];
@@ -621,7 +626,7 @@ async function test(name, run) {
       await enterPlace(page, 'chant-petits-matins');
       await page.waitForFunction(() => window.lumen.song?.index === 0 && window.lumen.mode === 'playing');
       assert.equal(await page.evaluate(key => JSON.stringify(window.lumen.store.chapter(key)), played.key), played.record);
-      await page.reload(); await page.waitForFunction(() => window.lumen?.song?.index === 0);
+      await page.reload(); if(await page.evaluate(()=>lumen.mode==='title'))await entry.enter(page); await page.waitForFunction(() => window.lumen?.song?.index === 0);
       assert.equal(await page.evaluate(key => JSON.stringify(window.lumen.store.chapter(key)), played.key), played.record);
       assert.deepEqual(errors, []);
       console.log('      parcours ' + (source ? 'source' : 'portable') + ' : ' + played.jumps + ' sauts, ' + played.notes +
@@ -1107,6 +1112,7 @@ async function test(name, run) {
     assert.equal(firstVersion.finished, true);
     assert.equal(firstVersion.addedChapter, true);
     await page.goto(PAGE);
+    await entry.enter(page);
     await page.waitForFunction(() => window.lumen?.song?.index === 0);
     assert.deepEqual(await page.evaluate(() => window.lumen.store.chapter('coeur-eclipse')), firstVersion.finale);
     await page.evaluate(() => {
@@ -1114,7 +1120,7 @@ async function test(name, run) {
       profile.hub = { quests: { 'premier-souffle': 'done' }, transformations: ['coupole-allumee'] };
       localStorage.setItem('lumen.gardens.v3', JSON.stringify(profile));
     });
-    await page.reload(); await page.waitForFunction(() => window.lumen?.song?.index === 0);
+    await page.reload(); if(await page.evaluate(()=>lumen.mode==='title'))await entry.enter(page); await page.waitForFunction(() => window.lumen?.song?.index === 0);
     const thirdVersion = await page.evaluate(() => ({ finale: window.lumen.store.chapter('coeur-eclipse'),
       quest: window.lumen.store.questState('premier-souffle'), transformations: window.lumen.progress.hub.transformations,
       allowed: window.lumen.canEnterDreams().allowed, legacy: !!localStorage.getItem('lumen.gardens.v1') }));

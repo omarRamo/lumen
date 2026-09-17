@@ -1,5 +1,7 @@
 /* LUMEN — messages du voyage commun, conservés dans les cinq langues. */
 window.LumenI18n.add([
+  ['Commencer', 'Begin', 'Comenzar', 'ابدأ', '开始'],
+  ['Chargement', 'Loading', 'Cargando', 'جارٍ التحميل', '加载中'],
   ['La colonne des saisons', 'The column of seasons', 'La columna de las estaciones', 'عمود الفصول', '四季之柱'],
   ['Le ciel se rejoint un palier à la fois.', 'Reach the sky one ledge at a time.', 'Alcanza el cielo un rellano a la vez.', 'يُبلغ السماء مصطبةً بعد أخرى.', '一层一层，走向天空。'],
   ['Remonte le jardin suspendu jusqu’à sa couronne.', 'Climb the hanging garden to its crown.', 'Sube por el jardín colgante hasta su corona.', 'اصعد الحديقة المعلّقة حتى تاجها.', '攀上悬空花园的顶冠。'],

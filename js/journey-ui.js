@@ -189,7 +189,7 @@
   }
 
   function render(options = {}) {
-    if (!game || game.mode !== 'map') { stopBackdrop(); return; }
+    if (!game || (game.mode !== 'map' && !options.preload)) { stopBackdrop(); return; }
     model = global.LumenJourney.describe(game);
     if (options.enter) {
       newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
@@ -203,7 +203,7 @@
     }
     animateBirth = !!options.enter && newLights.size > 0;
     renderSky(); renderDetails(); renderTotals(); animateBirth = false;
-    startBackdrop();
+    if (!options.preload) startBackdrop();
     $('journey-announcement').textContent = announcement;
     global.LumenI18n.translateDOM($('map-screen'));
     if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));

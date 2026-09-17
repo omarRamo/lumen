@@ -26,6 +26,12 @@ async function open(view,language='fr',native=true) {
     localStorage.setItem('lumen.gardens.v3',JSON.stringify({schema:3,settings:{muted:true,language,appearance:language==='ar'?'dark':'light'}}));
   },{native,language});
   await page.goto(pathToFileURL(path.join(root,'LUMEN.html')).href);
+  await page.waitForFunction(()=>window.LumenBoot?.ready);
+  assert.ok(await page.evaluate(()=>LumenBoot.elapsed)>=1200);
+  assert.deepEqual(await page.evaluate(()=>LumenBoot.steps.sort()),['atlas','audio','fonts','save']);
+  assert.equal(await page.evaluate(()=>lumen.mode),'title');
+  assert.equal(await page.locator('#touch-controls').isVisible(),false);
+  await require('./browser-entry.cjs').enter(page);
   await page.waitForFunction(()=>window.lumen?.frames>2);
   await page.evaluate(()=>document.fonts.ready);
   await page.addStyleTag({content:`:root{--play-left:${view.side}px;--play-right:${view.side}px;--play-bottom:${view.bottom}px;}`});

@@ -125,12 +125,20 @@
       if (this.ctx && this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : this._volume, this.ctx.currentTime, .035);
     }
 
+    async prepare() {
+      try {
+        if (!this.ctx) this._init();
+        if (this.ctx?.state === 'running') await this.ctx.suspend();
+        return !!this.ctx;
+      } catch (_) { return false; } // Audio is optional; the game still opens.
+    }
+
     /** Call this directly from a click, keydown or pointerdown handler. */
     async unlock() {
       try {
         if (!this.ctx) this._init();
         if (!this.ctx) return false;
-        if (this.ctx.state === 'suspended') await this.ctx.resume();
+        if (['suspended','interrupted'].includes(this.ctx.state)) await this.ctx.resume();
         this.unlocked = this.ctx.state === 'running';
         if (this.unlocked) {
           this._next = Math.max(this._next, this.ctx.currentTime + .07);

@@ -34,6 +34,9 @@ async function open({ view = 'desktop', source = true, language = 'fr', appearan
     Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [window.testPad] });
   }, { language, reduced });
   await page.goto(pathToFileURL(path.join(root, source ? 'index.html' : 'LUMEN.html')).href);
+  await require('./browser-entry.cjs').enter(page);
+  const reload=page.reload.bind(page);
+  page.reload=async(...args)=>{const result=await reload(...args);await require('./browser-entry.cjs').enter(page);return result;};
   await page.waitForFunction(() => window.lumen?.frames >= 2);
   await page.evaluate(() => document.fonts.ready);
   return { page, context, errors, external };

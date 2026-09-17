@@ -493,7 +493,7 @@
       if (this.mode !== 'paused') return;
       this.mode = 'playing'; this.input.reset(); this.audio.resume(); this.lastFrame = 0; this.emit('mode', this.mode);
     }
-    /** The map is a destination requested by the player, never a startup gate.
+    /** The atlas is the entry menu and the destination requested by the player.
      * A song or campaign stays resumable; leaving an expedition keeps its
      * established session isolation rules. */
     showMap() {

@@ -16,3 +16,7 @@ Le conteneur était à 70 px des côtés et 29 px du bas. La classe manquante n�
 ## Commandes après correction
 
 Les deux modes utilisent 88 × 88 px pour chaque direction, 96 × 96 pour le saut, 80 × 80 pour l’action. Les trois crans sont 85 %, 100 %, 130 %. Marges : safe area latérale + 12 px, basse + 20 px ; contact étendu de 4 px autour des dessins. La glissade passe au-dessus des actions pour conserver l’espace entre les pouces. Sur le web en portrait étroit, les commandes s’empilent ; aucun bouton n’est rapetissé. Gaucher et RTL gardent les directions physiques. La physique et les tolérances de saut restent identiques.
+
+## Une porte d’entrée
+
+La marque système à 36 px et le fond sauge reprennent le launch screen natif, au même centre. La barre compte quatre opérations terminées : lecture de la sauvegarde (miroir natif compris), polices, préparation audio, atlas construit. Le contexte reste suspendu jusqu’au bouton ; ce geste déverrouille explicitement l’audio iOS. Aucune musique ne joue pendant le chargement. Sans Web Audio, la préparation se termine en mode silencieux. Au moins 1,2 seconde de titre, puis l’atlas, même avec `?classic`. Aucun lancement automatique de lieu.

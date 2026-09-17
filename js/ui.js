@@ -154,6 +154,7 @@
     toastTimer=setTimeout(()=>$('toast').classList.remove('show'),window.LumenTouch?.enabled?2000:3800);
   }
   function transition(fn) {
+    if (game.mode === 'title') { if (['confirm','start'].includes(action)) window.LumenBoot.enter(); return; }
     if (transitioning) return;
     transitioning=true;$('transition').classList.add('show');game.input.reset();
     setTimeout(()=>{fn();$('transition').classList.remove('show');transitioning=false;},320);
@@ -164,6 +165,7 @@
     game.start(index,{timed:mode==='timed'});
   }
   function command(action) {
+    if (game.mode === 'title') { if (['confirm','start'].includes(action)) window.LumenBoot.enter(); return; }
     if (transitioning) return;
     if(action==='sound-preview'){
       game.audio.unlock().then(()=>game.audio.audition());return;
@@ -454,9 +456,8 @@
     window.addEventListener('languagechange',()=>{if(game.progress.settings.language==='auto')I18n.setLanguage('auto');});
     refreshLanguage();
     refreshAppearance();
-    if (window.LumenSong && !new URLSearchParams(window.location.search).has('classic')) game.startSong(0);
-    else showMode('home');
-    updateSound();game.beginLoop();
+    showMode(null); updateSound();game.beginLoop();
+    await window.LumenBoot.prepare(game);
   } catch(error) {
     console.error(error);$('error-notice').hidden=false;$('error-notice').textContent=translate('Le jardin n’a pas pu se réveiller. Ouvrez index.html dans un navigateur récent, et vérifiez que le dossier js est présent à côté du fichier. Détail : {error}',{error:error.message});
   }
