@@ -594,7 +594,7 @@
     "rows": [
       {
         "type": "ground",
-        "contrasted": 935,
+        "contrasted": 932,
         "fingerprint": -2052338143
       },
       {
@@ -609,17 +609,17 @@
       },
       {
         "type": "spring",
-        "contrasted": 885,
+        "contrasted": 680,
         "fingerprint": 735729585
       },
       {
         "type": "crumble",
-        "contrasted": 847,
+        "contrasted": 846,
         "fingerprint": 1069481927
       },
       {
         "type": "echo",
-        "contrasted": 889,
+        "contrasted": 864,
         "fingerprint": 108100872
       },
       {
@@ -1280,12 +1280,12 @@
     "rows": [
       {
         "type": "ground",
-        "contrasted": 940,
+        "contrasted": 937,
         "fingerprint": -805297801
       },
       {
         "type": "solid",
-        "contrasted": 939,
+        "contrasted": 938,
         "fingerprint": 326008383
       },
       {
@@ -1300,17 +1300,17 @@
       },
       {
         "type": "crumble",
-        "contrasted": 932,
+        "contrasted": 988,
         "fingerprint": -1614371433
       },
       {
         "type": "echo",
-        "contrasted": 986,
+        "contrasted": 1008,
         "fingerprint": 1727839613
       },
       {
         "type": "vanish",
-        "contrasted": 919,
+        "contrasted": 871,
         "fingerprint": -2088683793
       },
       {

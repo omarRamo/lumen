@@ -31,7 +31,18 @@ async function open(view,language='fr',native=true) {
   assert.deepEqual(await page.evaluate(()=>LumenBoot.steps.sort()),['atlas','audio','fonts','save']);
   assert.equal(await page.evaluate(()=>lumen.mode),'title');
   assert.equal(await page.locator('#touch-controls').isVisible(),false);
-  await require('./browser-entry.cjs').enter(page);
+  await page.addStyleTag({content:`:root{--play-left:${view.side}px;--play-right:${view.side}px;--play-bottom:${view.bottom}px;}`});
+  await targets(page,'#title-enter',view);
+  await require('./browser-entry.cjs').enter(page,{play:false});
+  await targets(page,'#journey-continue,[data-journey-settings]',view);
+  const next=await page.evaluate(()=>LumenJourney.next(lumen).id);
+  const marker=await page.locator('.journey-region.is-current .journey-lumen').evaluate(n=>{
+    const r=n.getBoundingClientRect();return {id:n.dataset.currentPlace,x:r.x+r.width/2};
+  });
+  assert.equal(marker.id,next);assert.ok(Math.abs(marker.x-view.width/2)<2,JSON.stringify(marker));
+  assert.ok(await page.locator('#journey-continue').evaluate(n=>n.getBoundingClientRect().height>=56));
+  await page.locator('#journey-continue').tap();
+  await page.waitForFunction(next=>lumen.mode==='playing'&&lumen.level.key===next,next);
   await page.waitForFunction(()=>window.lumen?.frames>2);
   await page.evaluate(()=>document.fonts.ready);
   await page.addStyleTag({content:`:root{--play-left:${view.side}px;--play-right:${view.side}px;--play-bottom:${view.bottom}px;}`});
@@ -39,7 +50,7 @@ async function open(view,language='fr',native=true) {
 }
 async function targets(page,selector,view,{overlap=true}={}) {
   const result=await page.evaluate(({selector,side,bottom})=>{
-    const nodes=[...document.querySelectorAll(selector)].filter(n=>n.getClientRects().length&&!n.closest('[hidden],.hidden'));
+    const nodes=[...document.querySelectorAll(selector)].filter(n=>n.getClientRects().length&&!n.closest('[hidden],.hidden') && (!n.closest('.journey-region') || (()=>{const r=n.getBoundingClientRect(),p=n.closest('.journey-region').getBoundingClientRect();return r.left>=p.left&&r.right<=p.right;})()));
     const rects=nodes.map(n=>({id:n.dataset.place||n.dataset.command||n.dataset.touch||n.textContent.trim(),r:n.getBoundingClientRect().toJSON(),n}));
     const bad=[],pairs=[];
     for(const {id,r,n} of rects) {
@@ -92,14 +103,7 @@ async function pauseAndSettings(page,view,song) {
   await page.locator(pause).waitFor({state:'visible'});
   await targets(page,`${pause} button`,view);
   await page.locator(`${pause} [data-command="resume"]`).tap();
-  await page.locator(`${header} [data-command="${song?'song-settings':'help'}"]`).tap();
-  const panel=page.locator(song?'#song-panel':'.help-card');
-  const close=song?'#song-panel > .song-icon[data-command="song-close"]':'.help-card > .close-button[data-command="close-help"]';
-  await page.locator(close).waitFor({state:'visible'});
-  await targets(page,close,view);
-  await panel.evaluate(n=>{n.scrollTop=n.scrollHeight;});
-  await targets(page,close,view);
-  await page.locator(close).tap();
+  assert.equal(await page.locator(`${header} [data-command="help"], ${header} [data-command="song-settings"]`).count(),0);
   assert.equal(await page.evaluate(()=>lumen.mode),'playing');
 }
 async function finishScreen(page,view,song) {
@@ -153,13 +157,40 @@ async function close(run) {
       assert.equal(await page.locator("#power-indicator").count(),0);
       assert.equal(await page.evaluate(()=>LumenAppearance.current),"light");
       await page.evaluate(()=>lumen.showMap());
+      await targets(page,'#journey-continue,[data-journey-settings]',view);
+      const current=await page.evaluate(()=>LumenJourney.next(lumen).id);
+      assert.equal(await page.locator('.journey-lumen').getAttribute('data-current-place'),current);
+      await page.locator('[data-journey-settings]').tap();
+      await targets(page,'#song-panel > .song-icon[data-command="song-close"]',view);
+      await page.locator('#song-panel').evaluate(n=>n.scrollTop=n.scrollHeight);
+      await targets(page,'#song-panel > .song-icon[data-command="song-close"]',view);
+      await page.locator('#song-panel > .song-icon[data-command="song-close"]').tap();
+      assert.equal(await page.evaluate(()=>lumen.mode),'map');
+      // Un appui ouvre la fiche, un second lance. La fiche vient du bas mais ne
+      // recouvre jamais le quai : « Continuer » reste visible et touchable.
+      await page.locator(`[data-place="${current}"]`).tap();
+      await page.locator('#journey-details').waitFor({state:'visible'});
+      const sheet=await page.evaluate(()=>{
+        const card=document.getElementById('journey-details').getBoundingClientRect();
+        const dock=document.getElementById('journey-continue').getBoundingClientRect();
+        const launch=document.querySelector('#journey-details [data-journey-launch]').getBoundingClientRect();
+        return {covers:card.bottom>dock.top+1,height:launch.height,inView:launch.top>=0&&launch.bottom<=innerHeight,
+          hit:document.elementFromPoint(launch.x+launch.width/2,launch.y+launch.height/2)?.closest('[data-journey-launch]')!==null};
+      });
+      assert.equal(sheet.covers,false,view.name+' : la fiche recouvre le quai de départ');
+      assert.ok(sheet.inView&&sheet.hit,JSON.stringify(sheet));
+      assert.ok(sheet.height>=56,JSON.stringify(sheet));
+      await page.locator(`[data-place="${current}"]`).tap();
+      await page.waitForFunction(key=>lumen.mode==='playing'&&lumen.level.key===key,current);
+      await page.evaluate(()=>lumen.showMap());
       for(const act of [1,2,3]) {
         await page.locator(`[data-journey-act="${act}"]`).tap();
         await targets(page,'#map-screen button',view);
         const nodes=await page.locator('.journey-region.is-current [data-place]').evaluateAll(ns=>ns.map(n=>n.dataset.place));
         for(const id of nodes) {
           await page.locator(`[data-place="${id}"]`).tap();
-          await targets(page,'[data-journey-launch],[data-journey-requirement]',view);
+          await targets(page,'#journey-details [data-journey-launch],#journey-details [data-journey-requirement],#journey-continue',view);
+          await page.locator('[data-journey-sky]').tap();
           assert.equal(await page.locator('#map-screen').evaluate(n=>n.scrollTop),0,'Selecting a level must not scroll the atlas');
         }
       }

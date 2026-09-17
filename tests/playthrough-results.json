@@ -4,7 +4,7 @@
     "mode": "complete",
     "seconds": 7.49,
     "deaths": 0,
-    "lives": 6,
+    "lives": 3,
     "hp": 3,
     "coins": 41,
     "maxX": 3720.5,
@@ -56,47 +56,47 @@
   {
     "test": "chapter 12 (Les vergers du vent) exercised by a naive bot",
     "mode": "complete",
-    "seconds": 17.92,
+    "seconds": 29.98,
     "deaths": 0,
-    "lives": 6,
-    "maxX": 5580.6,
-    "width": 5760,
+    "lives": 3,
+    "maxX": 9439.3,
+    "width": 9620,
     "lanternsLit": 1,
-    "coins": 50,
+    "coins": 103,
     "enemiesDefeated": 0,
     "damageTaken": 2,
     "sleepersWoken": 0,
-    "swarmsHunting": 2,
+    "swarmsHunting": 3,
     "swarmsScattered": 0,
     "ok": true
   },
   {
     "test": "chapter 13 (La galerie des échos) exercised by a naive bot",
     "mode": "complete",
-    "seconds": 19.04,
-    "deaths": 0,
-    "lives": 6,
-    "maxX": 5820.4,
-    "width": 6000,
+    "seconds": 34.01,
+    "deaths": 1,
+    "lives": 2,
+    "maxX": 9678.5,
+    "width": 9860,
     "lanternsLit": 1,
-    "coins": 43,
+    "coins": 102,
     "enemiesDefeated": 2,
-    "damageTaken": 3,
+    "damageTaken": 4,
     "sleepersWoken": 1,
-    "swarmsHunting": 2,
+    "swarmsHunting": 3,
     "swarmsScattered": 2,
     "ok": true
   },
   {
     "test": "chapitre « Le verger qui rêve » terminé au clavier, Résonance comprise",
     "mode": "complete",
-    "seconds": 17.57,
-    "deaths": 2,
-    "lives": 3,
-    "maxX": 4319.7,
-    "width": 4500,
-    "coins": 22,
-    "stars": 1,
+    "seconds": 35.04,
+    "deaths": 3,
+    "lives": 2,
+    "maxX": 8180,
+    "width": 8360,
+    "coins": 71,
+    "stars": 2,
     "wakeablesUsed": 11,
     "wakeablesTotal": 11,
     "chimeRelays": 1,
@@ -106,12 +106,12 @@
   {
     "test": "arena checkpoint to boss victory and final exit, unpowered inputs only",
     "mode": "ending",
-    "seconds": 13.52,
+    "seconds": 13.54,
     "deaths": 0,
-    "lives": 5,
-    "hp": 3,
+    "lives": 3,
+    "hp": 2,
     "bossHp": 0,
-    "playerX": 4618.7,
+    "playerX": 8559.1,
     "changes": [
       {
         "time": 0,
@@ -159,13 +159,13 @@
         "time": 10.62,
         "state": "recover",
         "bossHp": 2,
-        "playerHp": 3
+        "playerHp": 2
       },
       {
-        "time": 11.45,
+        "time": 11.47,
         "state": "defeated",
         "bossHp": 0,
-        "playerHp": 3
+        "playerHp": 2
       }
     ]
   },
@@ -211,20 +211,20 @@
     "island": 2,
     "style": "gentle",
     "mode": "complete",
-    "seconds": 16,
-    "notes": 36,
+    "seconds": 29.5,
+    "notes": 68,
     "stars": 3,
     "echoes": 3,
     "falls": 0,
-    "bestCombo": 36,
-    "waypoint": 17,
+    "bestCombo": 68,
+    "waypoint": 28,
     "target": [
-      4590,
+      8770,
       600
     ],
     "player": {
-      "x": 4573,
-      "y": 426
+      "x": 8686,
+      "y": 554
     },
     "calls": 3,
     "maxInputs": 2,
@@ -235,19 +235,19 @@
     "island": 3,
     "style": "gentle",
     "mode": "complete",
-    "seconds": 16.5,
-    "notes": 36,
+    "seconds": 29.7,
+    "notes": 74,
     "stars": 3,
     "echoes": 3,
     "falls": 0,
-    "bestCombo": 36,
-    "waypoint": 19,
+    "bestCombo": 74,
+    "waypoint": 30,
     "target": [
-      4980,
+      9170,
       600
     ],
     "player": {
-      "x": 4885,
+      "x": 9086,
       "y": 554
     },
     "calls": 3,
@@ -283,20 +283,20 @@
     "island": 2,
     "style": "flow",
     "mode": "complete",
-    "seconds": 16.1,
-    "notes": 36,
+    "seconds": 29.7,
+    "notes": 68,
     "stars": 3,
     "echoes": 3,
     "falls": 0,
-    "bestCombo": 31,
-    "waypoint": 17,
+    "bestCombo": 34,
+    "waypoint": 28,
     "target": [
-      4590,
+      8770,
       600
     ],
     "player": {
-      "x": 4565,
-      "y": 426
+      "x": 8685,
+      "y": 554
     },
     "calls": 3,
     "maxInputs": 2,
@@ -307,19 +307,19 @@
     "island": 3,
     "style": "flow",
     "mode": "complete",
-    "seconds": 16.8,
-    "notes": 38,
+    "seconds": 30.1,
+    "notes": 74,
     "stars": 3,
     "echoes": 3,
     "falls": 0,
-    "bestCombo": 27,
-    "waypoint": 19,
+    "bestCombo": 45,
+    "waypoint": 30,
     "target": [
-      4980,
+      9170,
       600
     ],
     "player": {
-      "x": 4883,
+      "x": 9084,
       "y": 554
     },
     "calls": 3,
@@ -331,27 +331,27 @@
     "key": "dos-du-songe",
     "kind": "ride",
     "mode": "complete",
-    "seconds": 23.8,
+    "seconds": 36.46,
     "deaths": 0,
-    "lives": 5,
+    "lives": 4,
     "hp": 3,
-    "coins": 19,
-    "stars": 1,
-    "calls": 24,
-    "jumps": 7,
-    "waypoint": 2,
-    "waypoints": 3,
-    "maxX": 3052,
+    "coins": 69,
+    "stars": 0,
+    "calls": 41,
+    "jumps": 16,
+    "waypoint": 12,
+    "waypoints": 13,
+    "maxX": 6776,
     "minY": 222,
     "metrics": {
       "carriedDistance": 1444.7916666666463
     },
     "player": {
-      "x": 3019,
+      "x": 6778,
       "y": 554
     },
     "checkpoint": {
-      "x": 2544,
+      "x": 4979,
       "y": 552
     },
     "trace": [
@@ -450,6 +450,62 @@
         "waypoint": 2,
         "standing": null,
         "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 2960,
+        "y": 554,
+        "waypoint": 3,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 3567,
+        "y": 494,
+        "waypoint": 4,
+        "standing": 9,
+        "state": null
+      },
+      {
+        "t": 28.1,
+        "x": 4209,
+        "y": 398,
+        "waypoint": 6,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 30.1,
+        "x": 4851,
+        "y": 376,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 32.1,
+        "x": 5493,
+        "y": 474,
+        "waypoint": 8,
+        "standing": 13,
+        "state": null
+      },
+      {
+        "t": 34.1,
+        "x": 6136,
+        "y": 394,
+        "waypoint": 10,
+        "standing": 14,
+        "state": null
+      },
+      {
+        "t": 36.1,
+        "x": 6674,
+        "y": 554,
+        "waypoint": 12,
+        "standing": 15,
+        "state": null
       }
     ],
     "initial": {
@@ -466,28 +522,28 @@
     "key": "astre-a-guider",
     "kind": "escort",
     "mode": "complete",
-    "seconds": 28.64,
+    "seconds": 41.06,
     "deaths": 0,
-    "lives": 5,
+    "lives": 3,
     "hp": 3,
-    "coins": 5,
+    "coins": 55,
     "stars": 0,
-    "calls": 39,
-    "jumps": 2,
-    "waypoint": 0,
-    "waypoints": 2,
-    "maxX": 2948,
-    "minY": 432,
+    "calls": 55,
+    "jumps": 11,
+    "waypoint": 11,
+    "waypoints": 12,
+    "maxX": 6778,
+    "minY": 272,
     "metrics": {
       "flowersWoken": 7,
       "escortArrived": true
     },
     "player": {
-      "x": 2949,
+      "x": 6781,
       "y": 554
     },
     "checkpoint": {
-      "x": 2174,
+      "x": 4979,
       "y": 552
     },
     "trace": [
@@ -610,6 +666,54 @@
         "waypoint": 0,
         "standing": "ground",
         "state": null
+      },
+      {
+        "t": 30.1,
+        "x": 3380,
+        "y": 443,
+        "waypoint": 3,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 32.1,
+        "x": 4022,
+        "y": 394,
+        "waypoint": 4,
+        "standing": 8,
+        "state": null
+      },
+      {
+        "t": 34.1,
+        "x": 4664,
+        "y": 474,
+        "waypoint": 6,
+        "standing": 9,
+        "state": null
+      },
+      {
+        "t": 36.1,
+        "x": 5306,
+        "y": 464,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 38.1,
+        "x": 5949,
+        "y": 414,
+        "waypoint": 8,
+        "standing": 12,
+        "state": null
+      },
+      {
+        "t": 40.1,
+        "x": 6490,
+        "y": 363,
+        "waypoint": 10,
+        "standing": null,
+        "state": null
       }
     ],
     "initial": {
@@ -626,28 +730,28 @@
     "key": "pont-des-veilleurs",
     "kind": "chain",
     "mode": "complete",
-    "seconds": 9.45,
+    "seconds": 21.94,
     "deaths": 0,
-    "lives": 5,
+    "lives": 3,
     "hp": 3,
-    "coins": 23,
+    "coins": 73,
     "stars": 1,
-    "calls": 13,
-    "jumps": 7,
-    "waypoint": 3,
-    "waypoints": 4,
-    "maxX": 2817,
+    "calls": 29,
+    "jumps": 16,
+    "waypoint": 13,
+    "waypoints": 14,
+    "maxX": 6678,
     "minY": 212,
     "metrics": {
       "chainWakes": 3,
       "bridgeDistance": 552.0000000000008
     },
     "player": {
-      "x": 2819,
+      "x": 6681,
       "y": 554
     },
     "checkpoint": {
-      "x": 384,
+      "x": 4879,
       "y": 552
     },
     "trace": [
@@ -690,6 +794,54 @@
         "waypoint": 3,
         "standing": null,
         "state": null
+      },
+      {
+        "t": 10,
+        "x": 3003,
+        "y": 433,
+        "waypoint": 4,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 3612,
+        "y": 474,
+        "waypoint": 6,
+        "standing": 11,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 4255,
+        "y": 298,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 4897,
+        "y": 554,
+        "waypoint": 8,
+        "standing": 14,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 5539,
+        "y": 494,
+        "waypoint": 10,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 6182,
+        "y": 309,
+        "waypoint": 11,
+        "standing": null,
+        "state": null
       }
     ],
     "initial": {
@@ -706,28 +858,28 @@
     "key": "riviere-sans-lune",
     "kind": "river",
     "mode": "complete",
-    "seconds": 13.62,
+    "seconds": 26.04,
     "deaths": 0,
     "lives": 5,
     "hp": 3,
-    "coins": 15,
+    "coins": 65,
     "stars": 0,
-    "calls": 18,
-    "jumps": 4,
-    "waypoint": 7,
-    "waypoints": 8,
-    "maxX": 3817,
-    "minY": 432,
+    "calls": 34,
+    "jumps": 13,
+    "waypoint": 17,
+    "waypoints": 18,
+    "maxX": 7678,
+    "minY": 292,
     "metrics": {
       "beaconsLit": 3,
       "riverRestored": true
     },
     "player": {
-      "x": 3819,
+      "x": 7680,
       "y": 554
     },
     "checkpoint": {
-      "x": 3154,
+      "x": 5879,
       "y": 552
     },
     "trace": [
@@ -752,7 +904,7 @@
         "x": 1052,
         "y": 554,
         "waypoint": 2,
-        "standing": 11,
+        "standing": 22,
         "state": null
       },
       {
@@ -776,7 +928,7 @@
         "x": 2698,
         "y": 554,
         "waypoint": 5,
-        "standing": 13,
+        "standing": 24,
         "state": null
       },
       {
@@ -785,6 +937,54 @@
         "y": 554,
         "waypoint": 7,
         "standing": 2,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 3952,
+        "y": 467,
+        "waypoint": 8,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 4584,
+        "y": 514,
+        "waypoint": 10,
+        "standing": 11,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 5227,
+        "y": 312,
+        "waypoint": 11,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 5869,
+        "y": 554,
+        "waypoint": 12,
+        "standing": 14,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 6511,
+        "y": 484,
+        "waypoint": 14,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 7153,
+        "y": 336,
+        "waypoint": 15,
+        "standing": null,
         "state": null
       }
     ],
@@ -802,29 +1002,29 @@
     "key": "colonne-des-saisons",
     "kind": "ascent",
     "mode": "complete",
-    "seconds": 15.05,
+    "seconds": 27.53,
     "deaths": 0,
-    "lives": 5,
+    "lives": 3,
     "hp": 3,
-    "coins": 22,
-    "stars": 2,
-    "calls": 20,
-    "jumps": 14,
-    "waypoint": 12,
-    "waypoints": 13,
-    "maxX": 1467,
-    "minY": 152,
+    "coins": 73,
+    "stars": 1,
+    "calls": 36,
+    "jumps": 23,
+    "waypoint": 22,
+    "waypoints": 23,
+    "maxX": 4565,
+    "minY": -58,
     "metrics": {
-      "climbed": 1602.4305555555554,
-      "peakY": 151.5694444444445
+      "climbed": 1812.4305555555554,
+      "peakY": -58.43055555555547
     },
     "player": {
-      "x": 669,
+      "x": 4568,
       "y": 164
     },
     "checkpoint": {
-      "x": 244,
-      "y": 1752
+      "x": 2769,
+      "y": 162
     },
     "trace": [
       {
@@ -890,6 +1090,54 @@
         "waypoint": 11,
         "standing": 12,
         "state": null
+      },
+      {
+        "t": 16,
+        "x": 988,
+        "y": 164,
+        "waypoint": 14,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 1631,
+        "y": -9,
+        "waypoint": 15,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 2273,
+        "y": 124,
+        "waypoint": 16,
+        "standing": 18,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 2915,
+        "y": 164,
+        "waypoint": 18,
+        "standing": 19,
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 3558,
+        "y": -5,
+        "waypoint": 19,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 4181,
+        "y": 16,
+        "waypoint": 20,
+        "standing": null,
+        "state": null
       }
     ],
     "initial": {
@@ -906,28 +1154,28 @@
     "key": "pluie-de-lumiere",
     "kind": "rain",
     "mode": "complete",
-    "seconds": 20.58,
+    "seconds": 33.02,
     "deaths": 0,
-    "lives": 5,
-    "hp": 2,
-    "coins": 25,
+    "lives": 3,
+    "hp": 3,
+    "coins": 75,
     "stars": 1,
-    "calls": 27,
-    "jumps": 11,
-    "waypoint": 12,
-    "waypoints": 13,
-    "maxX": 2967,
-    "minY": 322,
+    "calls": 44,
+    "jumps": 20,
+    "waypoint": 22,
+    "waypoints": 23,
+    "maxX": 6826,
+    "minY": 272,
     "metrics": {
       "rainGrown": 8,
       "rainLandings": 8
     },
     "player": {
-      "x": 2968,
+      "x": 6828,
       "y": 554
     },
     "checkpoint": {
-      "x": 1614,
+      "x": 5029,
       "y": 552
     },
     "trace": [
@@ -1017,6 +1265,54 @@
         "y": 554,
         "waypoint": 12,
         "standing": 2,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 3425,
+        "y": 447,
+        "waypoint": 14,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 4068,
+        "y": 394,
+        "waypoint": 15,
+        "standing": 16,
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 4710,
+        "y": 474,
+        "waypoint": 17,
+        "standing": 17,
+        "state": null
+      },
+      {
+        "t": 28.1,
+        "x": 5353,
+        "y": 467,
+        "waypoint": 18,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 30.1,
+        "x": 5995,
+        "y": 414,
+        "waypoint": 19,
+        "standing": 20,
+        "state": null
+      },
+      {
+        "t": 32.1,
+        "x": 6538,
+        "y": 363,
+        "waypoint": 21,
+        "standing": null,
         "state": null
       }
     ],

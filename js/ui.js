@@ -171,8 +171,8 @@
       game.audio.unlock().then(()=>game.audio.audition());return;
     }
     if(!['sound','pause','start','confirm'].includes(action))game.audio.sfx('menu');
-    if (window.LumenJourneyUI?.handle(action)) return;
     if (window.LumenSongUI?.handle(action)) return;
+    if (window.LumenJourneyUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
     }

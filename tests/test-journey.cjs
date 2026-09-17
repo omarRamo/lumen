@@ -76,6 +76,8 @@ test('State fixture: act completion opens the following rest island; collecting 
   assert.equal(game.isSongUnlocked(1), true);
   game.level = window.LUMEN_LEVELS.find(level => level.key === 'lagon-lucioles');
   assert.equal(game.nextJourneyPlace().id, 'chant-recifs-ciel');
+  game.store.recordChapter('chant-recifs-ciel', {stars:0,time:80});
+  game.store.unlock('archipels-zephyr');
   game.level = window.LumenSong.ISLANDS[1];
   assert.equal(game.nextJourneyPlace().id, 'archipels-zephyr');
 });

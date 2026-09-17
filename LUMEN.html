@@ -1018,121 +1018,87 @@ body .touch-controls .touch-minor { position:absolute; left:0; bottom:calc(96px 
   .lumen-touch .song-objective { display:none; }
   .lumen-touch .hud-right .collect-counter { display:none; }
 }
-/* The atlas is a destination screen: a living archipelago with a fixed departure dock. */
-body #map-screen.journey-map { padding:var(--play-top) var(--play-right) var(--play-bottom) var(--play-left); overflow:hidden; }
-body #map-screen.journey-map.active { display:grid; grid-template-rows:56px minmax(0,1fr); gap:12px; }
+/* The atlas is a menu: a horizontal path, a fixed departure dock, a bottom sheet. */
+body #map-screen.journey-map { padding:var(--play-top) var(--play-right) calc(var(--play-bottom) + 68px) var(--play-left); overflow:hidden; }
+body #map-screen.journey-map.active { display:grid; grid-template-rows:48px minmax(0,1fr); gap:8px; }
 .journey-backdrop, body.journey-reduced .journey-backdrop { opacity:1; filter:none; transform:none; }
-.journey-map::before { background:linear-gradient(90deg,var(--journey-veil-top),transparent 40%,var(--journey-veil-top)); opacity:.35; }
-.journey-map .journey-header { width:100%; max-width:none; margin:0; gap:12px; }
-.journey-brand h2 { font-size:24px; }
+.journey-map::before { opacity:.2; }
+.journey-map .journey-header { width:100%; max-width:none; margin:0; gap:8px; display:flex; }
+.journey-brand h2 { font-size:22px; }
 .journey-brand>div>span { display:none; }
-.journey-header-actions .journey-button { min-width:48px; }
-.journey-map>.journey-intro, .journey-map>#journey-totals, .journey-map .journey-legend,
-.journey-map>.journey-footer, .journey-map>.journey-mobile-codex { display:none!important; }
-.journey-main { display:grid; grid-template-columns:minmax(0,1fr) 270px; align-items:stretch; min-height:0; width:100%; max-width:1500px; margin:0 auto; gap:24px; }
-.journey-view { display:grid; grid-template-rows:48px minmax(0,1fr); gap:4px; min-height:0; }
+.journey-header-actions { gap:8px; }
+.journey-header-actions .journey-button { min-width:48px; min-height:48px; padding:8px 14px; }
+.journey-settings svg { width:24px;height:24px; }
+.journey-map>.journey-intro, .journey-map>#journey-totals, .journey-map .journey-legend, .journey-map>.journey-footer, .journey-map>.journey-mobile-codex { display:none!important; }
+.journey-main { display:block; min-height:0; width:100%; max-width:none; margin:0; }
+.journey-view { display:grid; grid-template-rows:48px minmax(0,1fr); gap:0; height:100%; }
 .journey-act-nav { display:flex; gap:8px; justify-content:center; width:min(400px,100%); margin:0 auto; }
 .journey-act-nav button { flex:1; min-width:48px; min-height:48px; border:1px solid var(--journey-line); background:var(--journey-paper); color:var(--journey-ink); border-radius:24px; font-size:13px; }
 .journey-act-nav button[aria-pressed=true] { background:var(--journey-ink); color:var(--journey-bg); }
-.journey-sky { display:grid; grid-template-rows:minmax(0,1fr) 56px; grid-template-columns:1fr; min-height:0; }
+.journey-sky { display:block; min-height:0; }
 .journey-sky::before { display:none; }
-.journey-region { display:none; min-height:0; }
-.journey-region.is-current { display:grid; grid-template-rows:32px minmax(0,1fr); }
-.journey-region-title { padding:0; min-height:0; }
-.journey-region-title span { display:none; }
-.journey-region-title h3 { font-size:18px; margin:5px 0 0; text-shadow:0 1px 10px var(--journey-paper); }
-.journey-constellation { height:100%; min-height:0; width:100%; max-width:none; margin:0; }
-.journey-lines { inset:0; }
-.journey-lines polyline { stroke-width:2; opacity:.8; filter:none; stroke-dasharray:2 7; }
-.journey-lines-tall { display:none; }
-.journey-map .journey-node { width:80px; height:72px; border-radius:22px; }
-.journey-map .journey-node.island { width:86px; height:76px; }
+.journey-region { display:none; }
+.journey-region.is-current { display:block; height:100%; min-height:0; overflow-x:auto; overflow-y:hidden; direction:ltr; padding-inline:max(0px,calc(50% - 80px)); scrollbar-width:thin; overscroll-behavior:contain; touch-action:pan-x; }
+.journey-constellation { position:relative; height:100%; min-height:0; width:max(100%,var(--route-width)); max-width:none; margin:0; }
+.journey-lines { inset:0; width:100%;height:100%; }
+.journey-lines polyline { stroke-width:2; opacity:.65; filter:none; stroke-dasharray:3 6; }
+.journey-map .journey-node, .journey-map .journey-node.island { width:72px;height:60px;border-radius:22px;left:var(--x);top:var(--y); }
 .journey-node.island::before { display:none; }
 .journey-node:hover, .journey-node.is-selected { background:transparent; }
-.journey-node.is-selected::after { inset:-2px; border:2px solid var(--journey-star); border-radius:26px; background:var(--journey-paper); opacity:.25; z-index:-1; }
-.journey-islet { position:absolute; width:126px; height:90px; left:50%; top:42%; transform:translate(-50%,-50%); overflow:visible; pointer-events:none; }
-.journey-node.is-selected .journey-islet { animation:journey-float 3s ease-in-out infinite; }
-.journey-node.is-locked .journey-islet { --islet-grass:#90a6a0; --islet-leaf:#718b87; --islet-flower:#a6b7b2; opacity:.65; }
-[data-act="2"] { --islet-grass:#bed888; --islet-leaf:#7fa99b; --islet-flower:#f2bd75; }
-[data-act="3"] { --islet-grass:#d6bfdf; --islet-leaf:#a89abf; --islet-flower:#f4cca4; --islet-rock:#665c7c; }
-.journey-node .journey-core { position:absolute; bottom:4px; left:6px; z-index:1; background:var(--journey-paper); }
-.journey-node.stage:not(.is-lit) .journey-core { width:14px; height:14px; }
-.journey-node.is-lit .journey-core { width:27px; height:27px; font-size:27px; }
-.journey-node.island .journey-core { width:28px; height:28px; font-size:24px; }
-.journey-node .journey-node-number { left:auto; right:5px; top:auto; bottom:2px; transform:none; padding:2px 5px; border-radius:12px; font-size:12px; font-weight:600; color:var(--journey-ink); background:var(--journey-paper); }
-.journey-node .journey-node-name, .journey-node .journey-new-label { display:none; }
-.journey-orbit { display:none; }
-.journey-node.is-new::before { content:'✧'; position:absolute; right:-4px; top:-10px; color:var(--journey-star); }
-.journey-light-count { top:-8px; left:3px; }
-.journey-refuges { grid-column:auto; min-height:0; height:56px; margin:0; border-top:0; display:flex; justify-content:center; gap:12px; }
-.journey-refuges-label { display:none; }
-.journey-refuges .journey-node { position:relative; left:auto; top:auto; transform:none; width:calc(50% - 8px); max-width:210px; height:48px; border:1px solid var(--journey-line); border-radius:24px; background:var(--journey-paper); }
-.journey-refuges .journey-islet, .journey-refuges .journey-core, .journey-refuges .journey-light-count { display:none; }
-.journey-refuges .journey-node-name { display:block; position:static; transform:none; width:auto; font-size:12px; padding:4px 8px; }
-.journey-details, [dir=rtl] .journey-details { min-height:0; position:relative; top:auto; border:1px solid var(--journey-line); padding:20px; border-radius:24px; background:var(--journey-paper); align-self:center; max-height:100%; overflow:auto; display:flex; flex-direction:column; gap:10px; }
-.journey-map .journey-details .journey-mobile-detail-back, .journey-detail-emblem, .journey-description, .journey-new-note, .journey-optional-note { display:none!important; }
-.journey-details h3 { font-size:25px; margin:0; max-width:none; }
-.journey-details .journey-kicker { font-size:10px; }
-.journey-state { font-size:11px; }
-.journey-collectibles { margin:0; gap:8px; }
-.journey-collectibles small { font-size:9px; }
-.journey-run-mode { margin:0; border-radius:20px; padding:0; gap:4px; border:0; }
-.journey-run-mode button { border-radius:15px; border:1px solid var(--journey-line); }
-.journey-run-mode button[aria-pressed=true] { border-color:var(--journey-ink); }
-.journey-details .journey-lock-note { margin:0; }
-.journey-map>.journey-codex { position:fixed; z-index:10; inset:var(--play-top) var(--play-right) var(--play-bottom) var(--play-left); max-width:850px; max-height:700px; margin:auto; overflow:auto; box-shadow:0 0 0 100vmax #142c35cc; border-radius:24px; padding:20px; }
-.journey-codex-heading { position:sticky; top:-20px; z-index:1; padding:12px 0; background:var(--journey-paper); }
-.journey-codex .journey-totals { margin:12px 0 24px; flex-wrap:wrap; }
-.journey-codex .journey-voices { grid-template-columns:repeat(3,1fr); gap:36px 20px; }
-@keyframes journey-float { 50% { transform:translate(-50%,calc(-50% - 5px)); } }
-body.reduced-effects .journey-islet, body.journey-reduced .journey-islet { animation:none!important; }
-@media(prefers-reduced-motion:reduce) { .journey-islet { animation:none!important; } }
-@media (max-height:540px) and (orientation:landscape) {
-  body #map-screen.journey-map.active { grid-template-rows:48px minmax(0,1fr); gap:4px; }
-  .journey-brand h2 { font-size:20px; }
-  .journey-main { grid-template-columns:minmax(0,1fr) 220px; gap:12px; }
-  .journey-region.is-current { grid-template-rows:24px minmax(0,1fr); }
-  .journey-region-title h3 { font-size:14px; margin:2px 0; }
-  .journey-details, [dir=rtl] .journey-details { padding:12px; gap:6px; }
-  .journey-details h3 { font-size:20px; }
-  .journey-details .journey-kicker, .journey-details .journey-collectibles, .journey-details .journey-state { display:none; }
-  .journey-map .journey-node, .journey-map .journey-node.island { width:60px; height:52px; }
-  .journey-islet { width:96px; height:69px; }
-  .journey-node .journey-core { bottom:0; }
-  .journey-header-actions .journey-button { font-size:11px; padding:8px 12px; }
-}
-@media(max-width:600px) and (orientation:landscape) {
-  .journey-main { grid-template-columns:minmax(0,1fr) 175px; gap:8px; }
-  .journey-brand h2 { font-size:15px; }
-  .journey-brand img { display:none; }
-  .journey-header-actions { gap:4px; }
-  .journey-header-actions .journey-button { max-width:95px; padding:6px; font-size:10px; }
-  .journey-region-title { display:none; }
-  .journey-region.is-current { grid-template-rows:minmax(0,1fr); }
-  .journey-map .journey-node, .journey-map .journey-node.island { width:48px; height:48px; }
-  .journey-islet { width:78px; height:56px; }
-  .journey-details h3 { font-size:17px; }
-}
-@media(max-width:760px) and (orientation:portrait) {
-  body #map-screen.journey-map.active { grid-template-rows:48px minmax(0,1fr); gap:6px; }
-  .journey-brand h2 { font-size:18px; }
-  .journey-header-actions .journey-button { font-size:10px; max-width:90px; padding:6px 8px; }
-  .journey-header-actions #journey-codex-button { display:flex; }
-  .journey-brand img { display:none; }
-  .journey-main { display:grid; grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; gap:4px; }
-  .journey-lines-wide { display:none; }.journey-lines-tall { display:block; }
-  .journey-region.is-current { grid-template-rows:28px minmax(0,1fr); }
-  .journey-region-title h3 { font-size:16px; }
-  .journey-node { left:var(--px); top:var(--py); }
-  .journey-details, [dir=rtl] .journey-details { padding:12px; gap:6px; }
-  .journey-details .journey-kicker, .journey-details .journey-state, .journey-details .journey-collectibles { display:none; }
-  .journey-details h3 { font-size:20px; }
-  .journey-codex h3 { font-size:18px; }
-  .journey-map .journey-node, .journey-map .journey-node.island { width:64px; height:52px; }
-  .journey-islet { width:96px; height:69px; }
-}
-
-.journey-map .journey-refuges .journey-node { width:calc(50% - 8px); max-width:210px; height:48px; }
+.journey-node.is-selected::after { inset:-2px; border:2px solid var(--journey-star); border-radius:26px; background:var(--journey-paper); opacity:.25;z-index:-1; }
+.journey-islet { position:absolute;width:126px;height:90px;left:50%;top:42%;transform:translate(-50%,-50%);overflow:visible;pointer-events:none; }
+.journey-node.is-current-place .journey-islet { animation:journey-float 3s ease-in-out infinite; }
+.journey-node.is-locked .journey-islet { --islet-grass:#90a6a0;--islet-leaf:#718b87;--islet-flower:#a6b7b2;opacity:.65; }
+[data-act="2"] { --islet-grass:#bed888;--islet-leaf:#7fa99b;--islet-flower:#f2bd75; }
+[data-act="3"] { --islet-grass:#d6bfdf;--islet-leaf:#a89abf;--islet-flower:#f4cca4; }
+.journey-node .journey-core { position:absolute;bottom:4px;left:6px;z-index:1;background:var(--journey-paper); }
+.journey-node.stage:not(.is-lit) .journey-core { width:14px;height:14px; }
+.journey-node.is-lit .journey-core { width:27px;height:27px;font-size:27px; }
+.journey-node.island .journey-core { width:28px;height:28px;font-size:24px; }
+.journey-node .journey-node-number { left:auto;right:5px;top:auto;bottom:2px;transform:none;padding:2px 5px;border-radius:12px;font-size:12px;font-weight:600;color:var(--journey-ink);background:var(--journey-paper); }
+.journey-node .journey-node-name,.journey-node .journey-new-label,.journey-orbit { display:none; }
+.journey-light-count { top:-8px;left:3px; }
+.journey-lock { position:absolute;right:0;top:-5px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--journey-paper);color:var(--journey-ink); }
+.journey-lock svg { width:17px;height:17px; }
+.journey-lumen { position:absolute;left:0;top:0;width:36px;height:44px;z-index:3;pointer-events:none; }
+.journey-header .journey-refuges { display:flex;gap:8px;margin:0 auto 0 0;padding:0;border:0;min-height:0; }
+.journey-map .journey-refuges .journey-node { position:relative;left:auto;top:auto;transform:none;width:56px;height:48px;border:1px solid var(--journey-line);border-radius:24px;background:var(--journey-paper); }
+.journey-refuges .journey-islet,.journey-refuges .journey-light-count { display:none; }
+.journey-refuges .journey-core { position:static;background:none!important;font-size:24px!important; }
+.journey-refuges .journey-lock { top:3px;right:3px;width:18px;height:18px; }
+.journey-map>.journey-dock { position:absolute;bottom:var(--play-bottom);left:var(--play-left);right:var(--play-right);z-index:6; }
+#journey-continue { width:100%;min-height:56px;justify-content:center;font-size:17px;padding:10px 16px;border-radius:28px; }
+.journey-map .journey-details, [dir=rtl] .journey-map .journey-details { position:fixed;z-index:7;bottom:calc(var(--play-bottom) + 68px);top:auto;left:var(--play-left);right:var(--play-right);width:auto;max-width:640px;max-height:calc(100% - var(--play-top) - var(--play-bottom) - 126px);min-height:0;margin:0 auto;padding:12px 16px;border:1px solid var(--journey-line);border-radius:24px;background:var(--journey-paper);box-shadow:0 -5px 30px #234b4f20;overflow:auto;display:flex;flex-direction:column;gap:8px; }
+.journey-details[hidden] { display:none!important; }
+.journey-map .journey-details .journey-mobile-detail-back { display:block;position:absolute;right:8px;top:8px;min-width:48px;min-height:48px;padding:8px;font-size:12px; }
+.journey-details h3 { font-size:22px;margin:0;padding-right:80px;max-width:none;min-height:48px;display:flex;align-items:center; }
+.journey-details .journey-detail-emblem,.journey-details .journey-description,.journey-details .journey-kicker,.journey-details .journey-state,.journey-details .journey-collectibles,.journey-details .journey-new-note,.journey-details .journey-optional-note { display:none!important; }
+.journey-details .journey-run-mode { display:flex;margin:0;gap:8px;border:0;padding:0; }
+.journey-run-mode button { min-height:48px;border-radius:24px; }
+.journey-details [data-journey-launch],.journey-details [data-journey-requirement] { min-height:56px;justify-content:center;border-radius:24px; }
+.journey-details .journey-lock-note { margin:0;font-size:13px; }
+.journey-map>.journey-codex { position:fixed;z-index:10;inset:var(--play-top) var(--play-right) var(--play-bottom) var(--play-left);max-width:850px;max-height:700px;margin:auto;overflow:auto;box-shadow:0 0 0 100vmax #142c35cc;border-radius:24px;padding:20px; }
+.journey-codex-heading { position:sticky;top:-20px;z-index:1;padding:12px 0;background:var(--journey-paper); }
+.journey-codex .journey-totals { margin:12px 0 24px;flex-wrap:wrap; }
+.journey-codex .journey-voices { grid-template-columns:repeat(3,1fr);gap:36px 20px; }
+@keyframes journey-float { 50% { transform:translate(-50%,calc(-50% - 4px)); } }
+body.reduced-effects .journey-islet,body.journey-reduced .journey-islet { animation:none!important; }
+@media(prefers-reduced-motion:reduce){ .journey-islet{animation:none!important;} }
+/* L'en-tête ne déborde jamais : chaque bloc peut rétrécir, les libellés
+   s'effacent avant que la ligne ne pousse l'atlas hors de l'écran. */
+.journey-map .journey-header { align-items:center; min-width:0; overflow:hidden; }
+.journey-map .journey-header>* { min-width:0; }
+.journey-brand { flex:0 1 auto; overflow:hidden; }
+.journey-header .journey-refuges { flex:0 1 auto; overflow:hidden; }
+.journey-header-actions { flex:0 0 auto; }
+.journey-header-actions .journey-button { gap:6px; }
+.journey-header-actions .journey-button svg { width:22px; height:22px; flex:none; }
+.journey-button-label { white-space:nowrap; }
+@media(max-width:900px){ .journey-header-actions .journey-button-label{display:none;} .journey-header-actions .journey-button{padding:8px;min-width:48px;} }
+@media(max-width:760px){ .journey-brand h2{font-size:18px;} .journey-brand img{display:none;} }
+@media(max-width:420px){ .journey-brand{display:none;} .journey-header .journey-refuges{gap:4px;} .journey-map .journey-refuges .journey-node{width:48px;} }
+@media(max-height:400px){ .journey-details .journey-run-mode{position:absolute;right:80px;top:12px;} .journey-details .journey-run-mode button{font-size:11px;padding:6px;} .journey-details h3{padding-right:260px;font-size:18px;} }
+body .song-mode { display:none; }
 html.lumen-touch .song-chorus { transform:none; left:var(--play-left); right:auto; }
 .lumen-touch .power-description { display:none; }
 .lumen-touch .quest-banner { max-width:240px; font-size:12px; padding:7px 12px; }
@@ -1200,6 +1166,10 @@ body .song-panel-gameover .song-button{min-height:48px;padding:10px 16px}
 body.booting #app > :not(.title-screen) { visibility:hidden!important; }
 @media(max-height:360px){ .title-invitation { gap:6px; top:calc(50% + 26px); } .title-invitation p{font-size:14px;} }
 
+.journey-map [hidden] { display:none!important; }
+
+.song-panel-settings .song-button { min-height:48px; }
+
 </style>
 </head>
 <body class="booting">
@@ -1220,7 +1190,7 @@ body.booting #app > :not(.title-screen) { visibility:hidden!important; }
         <button class="song-brand" data-command="song-atlas" aria-label="LUMEN, ouvrir l’archipel"><span class="life-badge"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="43" height="49"><strong id="song-life-count">×3</strong></span><span><strong>LUMEN</strong><small>LE CHANT DES ÎLES</small></span></button>
         <nav aria-label="Menu du voyage">
           <button class="song-icon" data-command="song-atlas" aria-label="L’archipel" title="L’archipel"><span data-icon="map"></span></button>
-          <button class="song-icon" data-command="song-settings" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button>
+          
           <button class="song-icon" id="song-sound" data-command="sound" aria-label="Couper le son" title="Couper le son" aria-pressed="true"><span data-icon="volume-2"></span></button>
           <button class="song-icon" id="song-fullscreen" data-command="song-fullscreen" aria-label="Plein écran" title="Plein écran"><span data-icon="maximize"></span></button>
           <button class="song-icon song-pause" data-command="pause" aria-label="Pause" title="Pause"><span data-icon="pause"></span></button>
@@ -1251,7 +1221,7 @@ body.booting #app > :not(.title-screen) { visibility:hidden!important; }
     <section id="hud" class="hud hidden" aria-label="Informations de jeu">
       <div class="hud-left"><span class="life-badge"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="Lumen" width="29" height="35"><strong id="life-count">×3</strong></span><div id="hearts" class="hearts" aria-label="Santé"></div></div>
       <div class="chapter-pill"><span id="chapter-number">01</span><div><small id="chapter-caption">LES JARDINS DE LA LUNE</small><strong id="chapter-name">L’éveil des jardins</strong></div></div>
-      <div class="hud-right"><button class="song-icon" data-command="help" aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button><div class="collect-counter" title="Notes réunies"><span data-icon="music"></span><strong id="coin-count">00</strong></div><div class="collect-counter" title="Souvenirs de l’île"><span data-icon="feather"></span><strong id="star-count">0 / 3</strong></div><button class="song-icon" data-command="pause" aria-label="Mettre en pause" title="Mettre en pause"><span data-icon="pause"></span></button></div>
+      <div class="hud-right"><div class="collect-counter" title="Notes réunies"><span data-icon="music"></span><strong id="coin-count">00</strong></div><div class="collect-counter" title="Souvenirs de l’île"><span data-icon="feather"></span><strong id="star-count">0 / 3</strong></div><button class="song-icon" data-command="pause" aria-label="Mettre en pause" title="Mettre en pause"><span data-icon="pause"></span></button></div>
     </section>
     <div id="run-clock" class="run-clock hidden" aria-label="Chronomètre de la course"><span>CONTRE-LA-MONTRE</span><strong id="clock-time">0:00.0</strong><small id="clock-best">PREMIÈRE COURSE</small></div>
     <div id="dialogue" class="dialogue hidden" role="status" aria-live="polite"><div class="dialogue-portrait" aria-hidden="true"><span id="dialogue-mark">✦</span></div><div class="dialogue-body"><div class="dialogue-who"><strong id="dialogue-name"></strong><span id="dialogue-role"></span></div><p id="dialogue-line"></p><div class="dialogue-dots" id="dialogue-dots" aria-hidden="true"></div></div></div>
@@ -1262,17 +1232,18 @@ body.booting #app > :not(.title-screen) { visibility:hidden!important; }
     <div id="chapter-intro" class="chapter-intro"><span id="intro-number"></span><h2 id="intro-name"></h2><p id="intro-subtitle"></p></div>
 
     <section id="map-screen" class="screen map-screen journey-map" aria-labelledby="map-title">
-      <header class="journey-header"><div class="journey-brand"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="29" height="38"><div><span>L’ATLAS DES LUMIÈRES</span><h2 id="map-title">L’archipel</h2></div></div><div class="journey-header-actions"><button class="journey-button" id="journey-codex-button" data-journey-codex="toggle">Le carnet des créatures</button><button class="journey-button" data-journey-back>Reprendre le voyage <span aria-hidden="true">↗</span></button></div></header>
+      <header class="journey-header"><div class="journey-brand"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2076%22%3E%3Cpath%20fill%3D%22%23306b67%22%20d%3D%22M17%2036C1%2029%206%209%207%202c16%203%2022%2015%2025%2022C39%2010%2047%204%2057%202c5%2022-4%2029-11%2035Z%22%2F%3E%3Cpath%20fill%3D%22%2398d4b5%22%20d%3D%22M18%2028%2012%209l15%2021m10%200L53%209l-7%2021%22%2F%3E%3Cpath%20fill%3D%22%23438278%22%20d%3D%22M17%2045h30l3%2020q-18%2013-36%200Z%22%2F%3E%3Cpath%20fill%3D%22%23fff4d6%22%20d%3D%22M7%2035c2-17%2045-19%2051%200%209%2025-55%2030-51%200Z%22%2F%3E%3Cellipse%20cx%3D%2223%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cellipse%20cx%3D%2241%22%20cy%3D%2237%22%20rx%3D%223%22%20ry%3D%225%22%20fill%3D%22%23285358%22%2F%3E%3Cpath%20fill%3D%22%23eb9a7d%22%20d%3D%22M18%2052q14%205%2029-2l-1%207-27%202-12%209-5-8Z%22%2F%3E%3Cpath%20fill%3D%22%23e2b568%22%20d%3D%22m32%2023%202%205%205%202-5%202-2%205-2-5-5-2%205-2Z%22%2F%3E%3C%2Fsvg%3E" alt="" width="29" height="38"><div><span>L’ATLAS DES LUMIÈRES</span><h2 id="map-title">L’archipel</h2></div></div><div id="journey-refuges" class="journey-refuges" role="group" aria-label="En dehors du chemin"></div><div class="journey-header-actions"><button class="journey-button journey-settings" data-command="song-settings" data-journey-settings aria-label="Réglages" title="Réglages"><span data-icon="settings-2"></span></button><button class="journey-button" id="journey-codex-button" data-journey-codex="toggle" aria-label="Le carnet des créatures" title="Le carnet des créatures"><span data-icon="feather"></span><span class="journey-button-label">Le carnet des créatures</span></button><button class="journey-button" data-journey-back aria-label="Reprendre le voyage" title="Reprendre le voyage"><span data-icon="arrow-up-right"></span><span class="journey-button-label">Reprendre le voyage</span></button></div></header>
       <p class="journey-intro">Trois îles pour souffler. Entre elles, des jardins à réveiller.</p>
       <div id="journey-totals" class="journey-totals" aria-label="Votre progression"></div>
       <div class="journey-main"><div class="journey-view"><nav class="journey-act-nav" aria-label="Changer de constellation"><button data-journey-act="1" aria-pressed="true">Acte I</button><button data-journey-act="2" aria-pressed="false">Acte II</button><button data-journey-act="3" aria-pressed="false">Acte III</button></nav><div id="journey-sky" class="journey-sky"></div><div class="journey-legend"><span>○ Lumière en sommeil</span><span>✦ Lumière retrouvée</span><span>◇ Facultatif</span></div></div><aside id="journey-details" class="journey-details" aria-labelledby="journey-place-title"></aside></div>
       <button class="journey-button journey-mobile-codex" data-journey-codex="toggle">Le carnet des créatures</button>
+      <div class="journey-dock"><button id="journey-continue" class="journey-button journey-primary"></button></div>
       <section id="journey-codex" class="journey-codex" hidden></section>
       <footer class="journey-footer"><span>Flèches : parcourir · Entrée / A : choisir · Échap / B : revenir</span><span>Votre progression est sauvegardée automatiquement sur cet appareil.</span></footer>
       <p id="journey-announcement" class="journey-live" role="status" aria-live="polite"></p>
     </section>
 
-    <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><p id="remaining-lives"></p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="text-button" data-command="help">Voir les commandes</button></div></div></section>
+    <section id="pause-screen" class="screen modal-screen" aria-labelledby="pause-title"><div class="modal-card pause-card"><span class="modal-symbol">☾</span><div class="eyebrow">UNE PETITE RESPIRATION</div><h2 id="pause-title">Le monde peut attendre.</h2><p>Votre lumière sera toujours là.</p><p id="remaining-lives"></p><div class="modal-actions"><button class="button primary" data-command="resume">Reprendre le voyage <span>→</span></button><button class="button secondary" data-command="retry">Recommencer le chapitre <span>↻</span></button><button class="button secondary" data-command="map">L’atlas des chapitres <span>✧</span></button><button class="song-icon" data-command="sound" aria-label="Activer ou couper le son"><span data-icon="volume-2"></span></button></div></div></section>
 
     <section id="help-screen" class="screen modal-screen" aria-labelledby="help-title"><div class="modal-card help-card"><button class="close-button" data-command="close-help" aria-label="Fermer les commandes">×</button><div class="eyebrow">LE PETIT GUIDE DU GARDIEN</div><h2 id="help-title">Suivez votre élan.</h2><p class="touch-guide">Glisse le pouce entre les flèches. Maintiens une direction pour courir, et Sauter pour planer.</p><div class="controls-grid"><div><span>Se déplacer</span><span><kbd>←</kbd><kbd>→</kbd> ou <kbd>Q</kbd><kbd>D</kbd></span></div><div><span>Sauter / nager</span><span><kbd>ESPACE</kbd> ou <kbd>Z</kbd><kbd>↑</kbd></span></div><div><span>Courir</span><kbd>MAJ</kbd></div><div><span>Glisser</span><span><kbd>↓</kbd> en courant</span></div><div><span>Utiliser un pouvoir</span><span><kbd>X</kbd> ou <kbd>J</kbd></span></div><div><span>Pause / reprendre</span><span><kbd>ÉCHAP</kbd> ou <kbd>P</kbd></span></div><div><span>Recommencer / son</span><span><kbd>R</kbd> / <kbd>M</kbd></span></div><div><span>Autres claviers</span><span><kbd>A</kbd><kbd>D</kbd> · <kbd>W</kbd> saut</span></div></div><p class="help-tip">Un appui bref fait un petit saut. Maintenez la touche pour sauter plus haut. Sautez sur les créatures pour les étourdir. Les lanternes mémorisent votre passage.</p><p class="gamepad-guide"><span aria-hidden="true">⊕</span><span><strong>À la manette</strong> · Stick ou croix pour avancer · A / B pour sauter · X pour le pouvoir · Gâchette / épaule droite pour courir · Bas pour glisser · Start pour la pause.</span></p><div class="power-guide"><div><span class="power-badge bloom">✺</span><strong>Fleur solaire</strong><p>Tirez des graines de lumière avec X.</p></div><div><span class="power-badge breeze">≋</span><strong>Plume d’azur</strong><p>Sautez une seconde fois dans les airs.</p></div><div><span class="power-badge comet">✦</span><strong>Cœur comète</strong><p>X déclenche une ruée protectrice.</p></div><div><span class="power-badge echo">♧</span><strong>Grelot d’écho</strong><p>X révèle les plateformes cachées pendant 4 secondes.</p></div></div><div class="settings-block"><div class="eyebrow">CONFORT ET ACCESSIBILITÉ</div><div class="settings-grid">
       <div class="setting"><span>Main dominante</span><div class="seg" role="group" aria-label="Main dominante"><button data-setting="leftHanded" data-value="false" aria-pressed="true">Droitier</button><button data-setting="leftHanded" data-value="true" aria-pressed="false">Gaucher</button></div></div>
@@ -1922,6 +1893,8 @@ window.LumenI18n.add([
   <script>
 /* LUMEN — messages du voyage commun, conservés dans les cinq langues. */
 window.LumenI18n.add([
+  ['Acte {number}', 'Act {number}', 'Acto {number}', 'الفصل {number}', '第 {number} 幕'],
+  ['Continuer — {name}', 'Continue — {name}', 'Continuar — {name}', 'متابعة — {name}', '继续 — {name}'],
   ['Commencer', 'Begin', 'Comenzar', 'ابدأ', '开始'],
   ['Chargement', 'Loading', 'Cargando', 'جارٍ التحميل', '加载中'],
   ['La colonne des saisons', 'The column of seasons', 'La columna de las estaciones', 'عمود الفصول', '四季之柱'],
@@ -5138,9 +5111,6 @@ window.LumenI18n.add([
   function next(game) {
     const model = describe(game);
     const route = model.places.filter(place => !place.optional && place.kind !== 'dreams' && place.kind !== 'hub');
-    const current = game.level?.key;
-    const index = route.findIndex(place => place.id === current);
-    if (index >= 0 && index + 1 < route.length) return route[index + 1];
     return route.find(place => place.unlocked && !place.completed) || route[0] || null;
   }
 
@@ -8995,6 +8965,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   const acts = ['Le premier souffle', 'Les chemins du ciel', 'Jusqu’à la lune'];
   const medals = { bronze:'Bronze', silver:'Argent', gold:'Or' };
   let game, helpers, model, selectedId, selectedAct = 1, runMode = 'explore', codexOpen = false;
+  let detailsOpen=false, walkingFrom=null;
   let newLights = new Map(), announcement = '', visible = false, animateBirth = false;
   const glyph = kind => kind === 'island' ? '☾' : kind === 'hub' ? '⌂' : kind === 'dreams' ? '≋' : '✦';
   const state = place => place.completed ? 'Lumière retrouvée' : place.unlocked ? 'À explorer' : 'Lumière en sommeil';
@@ -9025,8 +8996,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       const type = light.kind.split('-')[0];
       return `<i class="journey-award ${esc(type)}" data-light="${esc(light.id)}" style="--dx:${Math.cos(angle)*radius}px;--dy:${Math.sin(angle)*radius}px"></i>`;
     }).join('');
-    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%;--px:${px}%;--py:${py}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
-      ${miniature(place)}
+    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${place.id===global.LumenJourney.next(game)?.id ? ' is-current-place' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%;--px:${px}%;--py:${py}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
+      ${miniature(place)}${!place.unlocked ? `<span class="journey-lock" aria-hidden="true">${global.LumenIcons['lock-keyhole']}</span>` : ''}
       <span class="journey-orbit" aria-hidden="true">${orbit}</span><span class="journey-core" aria-hidden="true">${place.completed ? '✦' : glyph(place.kind)}</span>
       <span class="journey-node-number" aria-hidden="true">${place.kind === 'stage' ? String(number).padStart(2,'0') + (place.optional ? ' ◇' : '') : ''}</span>
       ${earned ? `<span class="journey-light-count" aria-hidden="true">${earned}</span>` : ''}
@@ -9039,23 +9010,14 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     const places = model.places.filter(place => place.act === act && !['hub','dreams'].includes(place.kind));
     const island = places.find(place => place.kind === 'island');
     const stages = places.filter(place => place.kind === 'stage');
-    // Two rows on landscape, two columns on portrait: every destination stays in view.
-    const count = stages.length + 1, columns = Math.ceil(count / 2), rows = Math.ceil(count / 2);
-    const points = Array.from({length:count}, (_,i) => {
-      const row = Math.floor(i / columns), col = row ? columns - 1 - i % columns : i % columns;
-      return { x:12 + col * 76 / Math.max(1,columns-1), y:row ? 73 : 26,
-        px:i % 2 ? 74 : 26, py:13 + Math.floor(i/2) * 74 / Math.max(1,rows-1) };
-    });
-    const coords = points.map(point => `${point.x},${point.y}`).join(' ');
-    const portrait = points.map(point => `${point.px},${point.py}`).join(' ');
-    return `<section class="journey-region${act === selectedAct ? ' is-current' : ''}" data-act="${act}" aria-label="${text('Acte {act}', { act:['I','II','III'][act-1] })}">
-      <div class="journey-region-title"><span>${text('Acte {act}', {act:['I','II','III'][act-1]})}</span><h3>${text(acts[act-1])}</h3></div>
-      <div class="journey-constellation" style="--region-height:${Math.max(370, stages.length * 62 + 140)}px">
-        <svg class="journey-lines journey-lines-wide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
-        <svg class="journey-lines journey-lines-tall" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${portrait}"/></svg>
-        ${island ? node(island, points[0].x, points[0].y, 0, points[0].px, points[0].py) : ''}
-        ${stages.map((place, index) => node(place, points[index+1].x, points[index+1].y, model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1, points[index+1].px, points[index+1].py)).join('')}
-      </div></section>`;
+    const route=[island,...stages].filter(Boolean), width=route.length*160;
+    const points=route.map((_,i)=>({x:(80+i*160)/width*100,y:56+Math.sin(i*Math.PI/2)*8}));
+    const coords=points.map(p=>`${p.x},${p.y}`).join(' ');
+    return `<section class="journey-region${act===selectedAct?' is-current':''}" data-act="${act}" aria-label="${text('Acte {number}',{number:act})}"><div class="journey-constellation" style="--route-width:${width}px">
+      <svg class="journey-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
+      ${route.map((place,i)=>node(place,points[i].x,points[i].y,model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1)).join('')}
+      ${route.some(p=>p.id===global.LumenJourney.next(game)?.id)?`<img class="journey-lumen" data-current-place="${esc(global.LumenJourney.next(game).id)}" alt="Lumen">`:''}
+    </div></section>`;
   }
 
   /* ── Le ciel de la carte ────────────────────────────────────────────────
@@ -9137,19 +9099,24 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
 
   function renderSky() {
-    $('journey-sky').innerHTML = [1,2,3].map(region).join('') +
-      `<section class="journey-refuges" aria-label="${text('En dehors du chemin')}"><span class="journey-refuges-label">${text('En dehors du chemin')}</span>${model.places.filter(place => ['hub','dreams'].includes(place.kind)).map((place,index)=>node(place,index ? 70 : 30,45,0)).join('')}</section>`;
+    $('journey-sky').innerHTML = [1,2,3].map(region).join('');
+    $('journey-refuges').innerHTML=model.places.filter(place=>['hub','dreams'].includes(place.kind)).map(place=>node(place,0,0,0)).join('');
+    const next=global.LumenJourney.next(game), button=$('journey-continue');
+    button.textContent=t('Continuer — {name}',{name:t(next.name)});button.dataset.journeyContinue=next.id;
+    $('journey-sky').querySelectorAll('.journey-lumen').forEach(image=>{image.src=document.querySelector('.journey-brand img').src;});
+    $('map-screen').querySelector('[data-journey-back]').hidden = !game.journeyReturn || ['title','home'].includes(game.journeyReturn.mode);
     document.querySelectorAll('[data-journey-act]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.journeyAct) === selectedAct)));
   }
 
   function selected() { return model.places.find(place => place.id === selectedId) || model.places[0]; }
   function renderDetails() {
     const place = selected();
+    $('journey-details').hidden=!detailsOpen;
     if (!place) return;
     const timed = ['stage','island'].includes(place.kind);
     const requirement = model.places.find(candidate => candidate.id === place.requirementId);
     const title = place.completed ? 'Revenir dans ce lieu' : 'Entrer dans ce lieu';
-    $('journey-details').innerHTML = `<button class="journey-button journey-mobile-detail-back" data-journey-sky>${text('Revenir à la constellation')}</button><div class="journey-detail-emblem ${place.kind}${place.completed ? ' is-lit' : ''}" aria-hidden="true">${glyph(place.kind)}<i></i></div>
+    $('journey-details').innerHTML = `<button class="journey-button journey-mobile-detail-back" data-journey-sky>${text('Fermer')}</button><div class="journey-detail-emblem ${place.kind}${place.completed ? ' is-lit' : ''}" aria-hidden="true">${glyph(place.kind)}<i></i></div>
       <span class="journey-kicker">${text(kindLabel(place))}${place.optional ? ' · ' + text('Facultatif') : ''}</span>
       <h3 id="journey-place-title">${text(place.name)}</h3><p class="journey-description">${text(place.subtitle || '')}</p>
       <div class="journey-state${place.completed ? ' is-lit' : ''}"><span aria-hidden="true">${place.completed ? '✦' : place.unlocked ? '○' : '◇'}</span>${text(state(place))}</div>
@@ -9179,10 +9146,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     model = global.LumenJourney.describe(game);
     if (options.enter) {
       newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
-      // Several victories can wait while the player uses Next. Show the
-      // place just left, especially when mobile displays only one act.
-      if (newLights.size) selectedId = newLights.has(game.level?.key) ? game.level.key : [...newLights.keys()].at(-1);
-      if (!selectedId || !model.places.some(place=>place.id===selectedId)) selectedId = game.level?.key || model.places[0]?.id;
+      walkingFrom=[...newLights].filter(([id,lights])=>lights.includes(id+':completed')).map(([id])=>id).at(-1)||null;
+      selectedId=global.LumenJourney.next(game)?.id || model.places[0]?.id; detailsOpen=false;
       const initial = selected();
       if (initial.act) selectedAct = initial.act;
       announcement = newLights.size ? t('Une lumière de plus dans votre ciel.') + ' ' + t(initial.name) : '';
@@ -9192,21 +9157,42 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (!options.preload) startBackdrop();
     $('journey-announcement').textContent = announcement;
     global.LumenI18n.translateDOM($('map-screen'));
-    if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));
+    requestAnimationFrame(()=>{ positionLumen(!!options.enter);if(options.enter)focusPlace(selectedId,false); });
   }
-  function focusPlace(id) {
+  function focusPlace(id,open=true) {
     const place = model.places.find(candidate=>candidate.id===id);
     if (!place) return;
     if (place.act && place.act !== selectedAct) { selectedAct = place.act; renderSky(); }
-    selectedId = id;
-    $('journey-sky').querySelectorAll('[data-place]').forEach(button=>{
+    selectedId = id; detailsOpen=open;
+    $('map-screen').querySelectorAll('[data-place]').forEach(button=>{
       button.classList.toggle('is-selected', button.dataset.place === id);
       button.setAttribute('aria-pressed', String(button.dataset.place === id));
     });
     renderDetails();
-    const button = [...$('journey-sky').querySelectorAll('[data-place]')].find(element=>element.dataset.place===id);
+    const button = [...$('map-screen').querySelectorAll('[data-place]')].find(element=>element.dataset.place===id);
     button?.focus({preventScroll:true});
-    button?.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
+    centerPlace(button);
+    positionLumen(false);
+  }
+  function centerPlace(button) {
+    const region=button?.closest('.journey-region');if(!region)return;
+    region.scrollLeft=button.offsetLeft+button.parentElement.offsetLeft-region.clientWidth/2;
+  }
+  function positionLumen(walk) {
+    const sprite=$('journey-sky').querySelector('.is-current .journey-lumen');if(!sprite)return;
+    const node=$('journey-sky').querySelector(`[data-place="${sprite.dataset.currentPlace}"]`);
+    const point=n=>({x:n.offsetLeft-18,y:n.offsetTop-63});
+    const end=point(node), transform=p=>`translate(${p.x}px,${p.y}px)`;
+    sprite.style.transform=transform(end);
+    const reduced=game.progress.settings.reducedEffects||matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(walk&&walkingFrom&&!reduced) {
+      const route=[...node.parentElement.querySelectorAll('[data-place]')];
+      const from=route.findIndex(n=>n.dataset.place===walkingFrom),to=route.indexOf(node);
+      let points=from>=0?route.slice(Math.min(from,to),Math.max(from,to)+1).map(point):[{x:0,y:end.y},end];
+      if(from>to)points.reverse();
+      if(points.length>1)sprite.animate(points.map(p=>({transform:transform(p)})),{duration:1200,easing:'ease-in-out'});
+    }
+    if(walk)walkingFrom=null;
   }
   function focusables() {
     return [...$(codexOpen ? 'journey-codex' : 'map-screen').querySelectorAll('button:not(:disabled), [tabindex="0"]')].filter(element=>element.getClientRects().length && !element.closest('[hidden]'));
@@ -9227,6 +9213,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
   }
   function back() {
     if (codexOpen) { codexOpen=false;renderTotals();focusCodexButton();return; }
+    if(detailsOpen){detailsOpen=false;renderDetails();return;}
+    if(!game.journeyReturn)return;
     if (game.returnFromJourneyMap) game.returnFromJourneyMap();
     else helpers.transition(()=>game.song ? game.startSong(game.song.index) : game.start(game.levelIndex));
   }
@@ -9246,19 +9234,21 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     $('map-screen').addEventListener('click',event=>{
       const button=event.target.closest('button');if(!button)return;
       if(button.dataset.place) {
+        const place=model.places.find(p=>p.id===button.dataset.place);
+        if(detailsOpen&&selectedId===place.id&&place.unlocked){game.audio.unlock();helpers.transition(()=>game.openJourneyPlace(place.id,{timed:runMode==='timed'}));return;}
         focusPlace(button.dataset.place);
         const action = $('journey-details').querySelector('[data-journey-launch], [data-journey-requirement]');
         action?.focus({preventScroll:true});
 
       }
       if(button.dataset.journeyAct) {
-        selectedAct=Number(button.dataset.journeyAct);renderSky();startBackdrop();
-        const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id);
+        selectedAct=Number(button.dataset.journeyAct);detailsOpen=false;renderSky();startBackdrop();
+        const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id,false);
       }
       if(button.dataset.journeyRequirement) focusPlace(button.dataset.journeyRequirement);
       if(button.dataset.journeyMode) {runMode=button.dataset.journeyMode;renderDetails();$('journey-details').querySelector(`[data-journey-mode="${runMode}"]`)?.focus();}
-      if(button.dataset.journeyLaunch) {
-        const id=button.dataset.journeyLaunch;
+      if(button.dataset.journeyLaunch || button.dataset.journeyContinue) {
+        const id=button.dataset.journeyLaunch || button.dataset.journeyContinue;
         game.audio.unlock();helpers.transition(()=>game.openJourneyPlace(id,{timed:runMode==='timed',style:runMode==='timed'?'flow':'gentle'}));
       }
       if(button.hasAttribute('data-journey-codex')) {
@@ -9267,10 +9257,10 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         else focusCodexButton();
       }
       if(button.hasAttribute('data-journey-back'))back();
-      if(button.hasAttribute('data-journey-sky'))focusPlace(selectedId);
+      if(button.hasAttribute('data-journey-sky'))focusPlace(selectedId,false);
     });
     document.addEventListener('keydown',event=>{
-      if(game.mode!=='map')return;
+      if(game.mode!=='map'||$('map-screen').inert)return;
       const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[event.key];
       if(direction){event.preventDefault();event.stopImmediatePropagation();navigate(direction);}
       else if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();back();}
@@ -9317,11 +9307,12 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     });
   }
   function changeStyle(style) {
+    if (game.mode === 'map') { game.store.setSetting('songStyle',style); renderedPane=null;renderPanel();return; }
     if (style === game.song?.style) return;
     pendingStyle = style; open('confirm-style');
   }
   function open(name) {
-    if (!game.song) return;
+    if (!game.song && game.mode !== 'map') return;
     if (byId('song-overlay').hidden) returnFocus = document.activeElement;
     pane = name; renderedPane = null;
     if (game.mode === 'playing') game.pause();
@@ -9338,7 +9329,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     return `<div class="song-dialog-heading"><span class="song-kicker">${kicker}</span><h2 id="song-panel-title">${heading}</h2></div>`;
   }
   function styleSwitch() {
-    return `<div class="song-segment" role="group" aria-label="Rythme de l’aventure"><button data-song-style="gentle" aria-pressed="${game.song.style === 'gentle'}">${icon('leaf')} Balade</button><button data-song-style="flow" aria-pressed="${game.song.style === 'flow'}">${icon('wind')} Élan</button></div>`;
+    return `<div class="song-segment" role="group" aria-label="Rythme de l’aventure"><button data-song-style="gentle" aria-pressed="${(game.song?.style || game.progress.settings.songStyle) === 'gentle'}">${icon('leaf')} Balade</button><button data-song-style="flow" aria-pressed="${(game.song?.style || game.progress.settings.songStyle) === 'flow'}">${icon('wind')} Élan</button></div>`;
   }
   function renderPanel() {
     const panel = byId('song-panel');
@@ -9353,7 +9344,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <div class="song-dialog-actions"><button class="song-button song-primary" data-command="resume">${icon('play')} Reprendre le vol</button>
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
-        <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
+        <div class="song-pause-tools">${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
     } else if (pane === 'gameover') {
       content = title('', 'Une lumière renaîtra.') +
         `<p class="song-dialog-sub">Repartez du début avec 3 vies.</p>
@@ -9370,7 +9361,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
         <label class="song-settings-row" for="song-reduced"><span>Mouvements réduits</span><input id="song-reduced" type="checkbox" role="switch" data-song-pref="reducedEffects" ${settings.reducedEffects ? 'checked' : ''}></label>
         <label class="song-settings-row" for="song-left"><span>Commandes pour gaucher</span><input id="song-left" type="checkbox" role="switch" data-song-pref="leftHanded" ${settings.leftHanded ? 'checked' : ''}></label>
         <label class="song-settings-row song-range-row" for="song-touch-size"><span>Taille des commandes</span><input id="song-touch-size" type="range" min="0" max="2" step="1" value="${[.85,1,1.3].indexOf(settings.touchScale) < 0 ? 1 : [.85,1,1.3].indexOf(settings.touchScale)}" data-song-pref="touchScale"><output id="song-touch-size-value">${Math.round(settings.touchScale * 100)} %</output></label>
-        <button class="song-button song-primary" data-command="song-close">${icon('check')} Revenir au ciel</button>`;
+        <button class="song-button song-primary" data-command="song-close">${icon('check')} L’atlas</button>`;
     } else if (pane === 'confirm-style') {
       content = title('UN NOUVEAU DÉPART', 'Changer de rythme ?') +
         `<p class="song-dialog-sub">Cette île recommencera. Les îles achevées restent acquises.</p><div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-apply-style">${icon('rotate-ccw')} ${escape(translate('Partir en {style}', { style: translate(pendingStyle === 'flow' ? 'Élan' : 'Balade') }))}</button><button class="song-button" data-command="song-close">Annuler</button></div>`;
@@ -9401,7 +9392,10 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (!game) return;
     const actionLabel = document.querySelector('[data-touch="action"] small');
     if (actionLabel) { actionLabel.textContent = game.song ? 'Chanter' : 'Agir'; I18n.translateDOM(actionLabel.parentNode); }
-    const active = !!game.song && game.mode !== 'map';
+    const settingsOnMap = game.mode === 'map' && ['settings','confirm-style'].includes(pane);
+    byId('map-screen').inert = settingsOnMap;
+    const active = !!game.song && !['map','title'].includes(game.mode);
+    if(settingsOnMap) { byId('song-shell').hidden=true;byId('touch-controls').classList.add('hidden');byId('song-overlay').hidden=false;renderPanel();return; }
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
     if (welcomeJourney !== game.song) { welcomeJourney = game.song; welcomeVisible = game.song?.index === 0; }
@@ -9461,6 +9455,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     if (action === 'song-return') {
       helpers.transition(() => game.startSong(returnIsland)); return true;
     }
+    if (action === 'song-settings' && game.mode === 'map') {open('settings');return true;}
+    if (['song-close','close-help','pause','menu-back','journey-back'].includes(action) && game.mode === 'map' && pane) {close();return true;}
     if (!game.song) return false;
     if (action === 'sound') {
       game.audio.unlock(); game.store.setSetting('muted', game.audio.toggle());
@@ -9519,7 +9515,7 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
     document.addEventListener('keydown', unlockSound);
     document.addEventListener('click', event => {
       const style = event.target.closest('[data-song-style]');
-      if (style && game.song) changeStyle(style.dataset.songStyle);
+      if (style && (game.song || game.mode === 'map')) changeStyle(style.dataset.songStyle);
       const touch = event.target.closest('[data-touch]');
       if (touch && event.detail === 0 && game.mode === 'playing') {
         const action = touch.dataset.touch; game.input.virtual(action, true, 'keyboard-control');
@@ -9831,8 +9827,8 @@ window.LumenIcons = {"map":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"cu
       game.audio.unlock().then(()=>game.audio.audition());return;
     }
     if(!['sound','pause','start','confirm'].includes(action))game.audio.sfx('menu');
-    if (window.LumenJourneyUI?.handle(action)) return;
     if (window.LumenSongUI?.handle(action)) return;
+    if (window.LumenJourneyUI?.handle(action)) return;
     if (action==='sound') {
       game.audio.unlock();game.store.setSetting('muted',game.audio.toggle());updateSound();return;
     }

@@ -112,9 +112,6 @@
   function next(game) {
     const model = describe(game);
     const route = model.places.filter(place => !place.optional && place.kind !== 'dreams' && place.kind !== 'hub');
-    const current = game.level?.key;
-    const index = route.findIndex(place => place.id === current);
-    if (index >= 0 && index + 1 < route.length) return route[index + 1];
     return route.find(place => place.unlocked && !place.completed) || route[0] || null;
   }
 

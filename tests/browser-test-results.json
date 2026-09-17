@@ -1,13 +1,21 @@
 {
-  "passed": 29,
+  "passed": 31,
   "failed": 0,
   "checks": [
     {
-      "name": "Le thème suit le système, respecte un choix manuel et le conserve dans les deux éditions",
+      "name": "Le démarrage natif attend le miroir, masque le plein écran et écoute le cycle de vie",
       "passed": true
     },
     {
-      "name": "Les palettes jour et nuit restent lisibles et les matières sont rendues sur mobile et bureau",
+      "name": "L’écran de titre tient 1,2 s, montre un progrès réel et mène à l’atlas, jamais à un jardin",
+      "passed": true
+    },
+    {
+      "name": "La palette claire reste stable avec les anciens réglages et le système sombre",
+      "passed": true
+    },
+    {
+      "name": "La palette reste lisible sous les deux apparences système, sur mobile et bureau",
       "passed": true
     },
     {
@@ -23,7 +31,7 @@
       "passed": true
     },
     {
-      "name": "Les réglages de thème et de son restent disponibles dans l’aventure classique",
+      "name": "Les réglages de son restent disponibles dans l’aventure classique",
       "passed": true
     },
     {
@@ -51,7 +59,7 @@
       "passed": true
     },
     {
-      "name": "Le Chant démarre directement, avec ses ressources locales et un canvas animé",
+      "name": "Le Chant se lance depuis l’atlas, avec ses ressources locales et un canvas animé",
       "passed": true
     },
     {

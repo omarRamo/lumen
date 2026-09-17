@@ -47,7 +47,7 @@
       "passed": true
     },
     {
-      "name": "Island ideas do not add notes, distance, platforms or another mechanic to the first island",
+      "name": "The introduction stays short while the following islands gain substantial routes",
       "passed": true
     },
     {
@@ -91,7 +91,7 @@
       "passed": true
     },
     {
-      "name": "Coins/stars/heart collect once; forty coins award exactly one extra life",
+      "name": "Coins/stars/heart collect once; notes do not refill chapter lives",
       "passed": true
     },
     {

@@ -45,6 +45,7 @@ async function map(page) {
   await page.evaluate(() => window.lumen.showMap());
   await page.waitForSelector('#map-screen.active');
   await page.waitForFunction(() => document.activeElement?.hasAttribute('data-place'));
+  await page.waitForFunction(()=>getComputedStyle(document.getElementById('map-screen')).opacity==='1');
 }
 async function pressPad(page, index) {
   await page.evaluate(index => {
@@ -158,19 +159,25 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
       }
     });
 
-    await test('[état forcé] Plusieurs succès en attente ouvrent la constellation du lieu tout juste quitté', async () => {
+    await test('[état forcé] Plusieurs succès en attente : l’atlas s’ouvre sur le lieu à jouer, pas sur celui qu’on quitte', async () => {
       const run = await open({ view: 'portrait' }), { page } = run;
       await page.evaluate(() => {
         const game = window.lumen;
         game.store.recordChapter('chant-petits-matins', { stars: 1 }); game.saveProgress();
-        game.store.unlock('verger-qui-reve');
-        game.start(window.LUMEN_LEVELS.findIndex(level => level.key === 'verger-qui-reve'));
         game.store.recordChapter('verger-qui-reve', { stars: 2 }); game.saveProgress();
       });
       await map(page);
-      assert.equal(await page.evaluate(() => document.activeElement.dataset.place), 'verger-qui-reve');
-      assert.equal(await page.locator('.journey-region.is-current').getAttribute('data-act'), '3');
+      // Le contrat de l'itération 11 : à l'ouverture, l'atlas est cadré sur le
+      // lieu que « Continuer » lancerait — c'est là que se tient Lumen.
+      const target = await page.evaluate(() => window.LumenJourney.next(window.lumen).id);
+      assert.equal(await page.evaluate(() => document.activeElement.dataset.place), target);
+      assert.equal(await page.locator('.journey-lumen').getAttribute('data-current-place'), target);
+      assert.equal(await page.locator('#journey-continue').getAttribute('data-journey-continue'), target);
+      assert.equal(await page.locator('.journey-region.is-current').getAttribute('data-act'),
+        String(await page.evaluate(id => window.LumenJourney.describe(window.lumen).places.find(place => place.id === id).act, target)));
+      // Les lumières gagnées restent annoncées sur leur propre nœud.
       assert.equal(await page.locator('[data-place="chant-petits-matins"].is-new').count(), 1);
+      assert.equal(await page.locator('[data-place="verger-qui-reve"].is-new').count(), 1);
       await clean(run);
     });
 
@@ -225,7 +232,7 @@ async function clean(run) { assert.deepEqual(run.errors, []); assert.deepEqual(r
         for (const act of [1, 2, 3]) {
           await page.locator('[data-journey-act="' + act + '"]').click();
           const layout = await page.evaluate(() => {
-            const elements = [...document.querySelectorAll('#map-screen button')].filter(element => element.getClientRects().length);
+            const elements = [...document.querySelectorAll('#map-screen button')].filter(element => {if(!element.getClientRects().length)return false;const region=element.closest('.journey-region');if(!region)return true;const r=element.getBoundingClientRect(),box=region.getBoundingClientRect();return r.left>=box.left&&r.right<=box.right;});
             const rects = elements.map(element => ({ key: element.dataset.place || element.textContent.trim(), ...element.getBoundingClientRect().toJSON() }));
             const pairs = [];
             for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) {

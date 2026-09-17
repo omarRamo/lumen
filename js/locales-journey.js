@@ -1,5 +1,7 @@
 /* LUMEN — messages du voyage commun, conservés dans les cinq langues. */
 window.LumenI18n.add([
+  ['Acte {number}', 'Act {number}', 'Acto {number}', 'الفصل {number}', '第 {number} 幕'],
+  ['Continuer — {name}', 'Continue — {name}', 'Continuar — {name}', 'متابعة — {name}', '继续 — {name}'],
   ['Commencer', 'Begin', 'Comenzar', 'ابدأ', '开始'],
   ['Chargement', 'Loading', 'Cargando', 'جارٍ التحميل', '加载中'],
   ['La colonne des saisons', 'The column of seasons', 'La columna de las estaciones', 'عمود الفصول', '四季之柱'],

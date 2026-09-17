@@ -23,11 +23,12 @@
     });
   }
   function changeStyle(style) {
+    if (game.mode === 'map') { game.store.setSetting('songStyle',style); renderedPane=null;renderPanel();return; }
     if (style === game.song?.style) return;
     pendingStyle = style; open('confirm-style');
   }
   function open(name) {
-    if (!game.song) return;
+    if (!game.song && game.mode !== 'map') return;
     if (byId('song-overlay').hidden) returnFocus = document.activeElement;
     pane = name; renderedPane = null;
     if (game.mode === 'playing') game.pause();
@@ -44,7 +45,7 @@
     return `<div class="song-dialog-heading"><span class="song-kicker">${kicker}</span><h2 id="song-panel-title">${heading}</h2></div>`;
   }
   function styleSwitch() {
-    return `<div class="song-segment" role="group" aria-label="Rythme de l’aventure"><button data-song-style="gentle" aria-pressed="${game.song.style === 'gentle'}">${icon('leaf')} Balade</button><button data-song-style="flow" aria-pressed="${game.song.style === 'flow'}">${icon('wind')} Élan</button></div>`;
+    return `<div class="song-segment" role="group" aria-label="Rythme de l’aventure"><button data-song-style="gentle" aria-pressed="${(game.song?.style || game.progress.settings.songStyle) === 'gentle'}">${icon('leaf')} Balade</button><button data-song-style="flow" aria-pressed="${(game.song?.style || game.progress.settings.songStyle) === 'flow'}">${icon('wind')} Élan</button></div>`;
   }
   function renderPanel() {
     const panel = byId('song-panel');
@@ -59,7 +60,7 @@
         <div class="song-dialog-actions"><button class="song-button song-primary" data-command="resume">${icon('play')} Reprendre le vol</button>
         <button class="song-button" data-command="song-retry">${icon('rotate-ccw')} Recommencer l’île</button>
         <button class="song-button" data-command="song-atlas">${icon('map')} L’archipel</button></div>
-        <div class="song-pause-tools">${roundButton('song-settings', 'Réglages', 'settings-2')}${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
+        <div class="song-pause-tools">${roundButton('sound', game.audio.muted ? 'Activer le son' : 'Couper le son', game.audio.muted ? 'volume-x' : 'volume-2')}</div>`;
     } else if (pane === 'gameover') {
       content = title('', 'Une lumière renaîtra.') +
         `<p class="song-dialog-sub">Repartez du début avec 3 vies.</p>
@@ -76,7 +77,7 @@
         <label class="song-settings-row" for="song-reduced"><span>Mouvements réduits</span><input id="song-reduced" type="checkbox" role="switch" data-song-pref="reducedEffects" ${settings.reducedEffects ? 'checked' : ''}></label>
         <label class="song-settings-row" for="song-left"><span>Commandes pour gaucher</span><input id="song-left" type="checkbox" role="switch" data-song-pref="leftHanded" ${settings.leftHanded ? 'checked' : ''}></label>
         <label class="song-settings-row song-range-row" for="song-touch-size"><span>Taille des commandes</span><input id="song-touch-size" type="range" min="0" max="2" step="1" value="${[.85,1,1.3].indexOf(settings.touchScale) < 0 ? 1 : [.85,1,1.3].indexOf(settings.touchScale)}" data-song-pref="touchScale"><output id="song-touch-size-value">${Math.round(settings.touchScale * 100)} %</output></label>
-        <button class="song-button song-primary" data-command="song-close">${icon('check')} Revenir au ciel</button>`;
+        <button class="song-button song-primary" data-command="song-close">${icon('check')} L’atlas</button>`;
     } else if (pane === 'confirm-style') {
       content = title('UN NOUVEAU DÉPART', 'Changer de rythme ?') +
         `<p class="song-dialog-sub">Cette île recommencera. Les îles achevées restent acquises.</p><div class="song-dialog-actions"><button class="song-button song-primary" data-command="song-apply-style">${icon('rotate-ccw')} ${escape(translate('Partir en {style}', { style: translate(pendingStyle === 'flow' ? 'Élan' : 'Balade') }))}</button><button class="song-button" data-command="song-close">Annuler</button></div>`;
@@ -107,7 +108,10 @@
     if (!game) return;
     const actionLabel = document.querySelector('[data-touch="action"] small');
     if (actionLabel) { actionLabel.textContent = game.song ? 'Chanter' : 'Agir'; I18n.translateDOM(actionLabel.parentNode); }
-    const active = !!game.song && game.mode !== 'map';
+    const settingsOnMap = game.mode === 'map' && ['settings','confirm-style'].includes(pane);
+    byId('map-screen').inert = settingsOnMap;
+    const active = !!game.song && !['map','title'].includes(game.mode);
+    if(settingsOnMap) { byId('song-shell').hidden=true;byId('touch-controls').classList.add('hidden');byId('song-overlay').hidden=false;renderPanel();return; }
     document.body.classList.toggle('song-playing', active);
     byId('song-shell').hidden = !active;
     if (welcomeJourney !== game.song) { welcomeJourney = game.song; welcomeVisible = game.song?.index === 0; }
@@ -167,6 +171,8 @@
     if (action === 'song-return') {
       helpers.transition(() => game.startSong(returnIsland)); return true;
     }
+    if (action === 'song-settings' && game.mode === 'map') {open('settings');return true;}
+    if (['song-close','close-help','pause','menu-back','journey-back'].includes(action) && game.mode === 'map' && pane) {close();return true;}
     if (!game.song) return false;
     if (action === 'sound') {
       game.audio.unlock(); game.store.setSetting('muted', game.audio.toggle());
@@ -225,7 +231,7 @@
     document.addEventListener('keydown', unlockSound);
     document.addEventListener('click', event => {
       const style = event.target.closest('[data-song-style]');
-      if (style && game.song) changeStyle(style.dataset.songStyle);
+      if (style && (game.song || game.mode === 'map')) changeStyle(style.dataset.songStyle);
       const touch = event.target.closest('[data-touch]');
       if (touch && event.detail === 0 && game.mode === 'playing') {
         const action = touch.dataset.touch; game.input.virtual(action, true, 'keyboard-control');

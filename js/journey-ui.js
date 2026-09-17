@@ -9,6 +9,7 @@
   const acts = ['Le premier souffle', 'Les chemins du ciel', 'Jusqu’à la lune'];
   const medals = { bronze:'Bronze', silver:'Argent', gold:'Or' };
   let game, helpers, model, selectedId, selectedAct = 1, runMode = 'explore', codexOpen = false;
+  let detailsOpen=false, walkingFrom=null;
   let newLights = new Map(), announcement = '', visible = false, animateBirth = false;
   const glyph = kind => kind === 'island' ? '☾' : kind === 'hub' ? '⌂' : kind === 'dreams' ? '≋' : '✦';
   const state = place => place.completed ? 'Lumière retrouvée' : place.unlocked ? 'À explorer' : 'Lumière en sommeil';
@@ -39,8 +40,8 @@
       const type = light.kind.split('-')[0];
       return `<i class="journey-award ${esc(type)}" data-light="${esc(light.id)}" style="--dx:${Math.cos(angle)*radius}px;--dy:${Math.sin(angle)*radius}px"></i>`;
     }).join('');
-    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%;--px:${px}%;--py:${py}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
-      ${miniature(place)}
+    return `<button type="button" class="journey-node ${place.kind}${place.completed ? ' is-lit' : ''}${!place.unlocked ? ' is-locked' : ''}${place.id===global.LumenJourney.next(game)?.id ? ' is-current-place' : ''}${fresh ? ' is-new' : ''}${fresh && animateBirth ? ' birth' : ''}${place.id === selectedId ? ' is-selected' : ''}" data-place="${esc(place.id)}" data-lit="${place.completed}" style="--x:${x}%;--y:${y}%;--px:${px}%;--py:${py}%" aria-label="${esc(label)}" aria-pressed="${place.id === selectedId}">
+      ${miniature(place)}${!place.unlocked ? `<span class="journey-lock" aria-hidden="true">${global.LumenIcons['lock-keyhole']}</span>` : ''}
       <span class="journey-orbit" aria-hidden="true">${orbit}</span><span class="journey-core" aria-hidden="true">${place.completed ? '✦' : glyph(place.kind)}</span>
       <span class="journey-node-number" aria-hidden="true">${place.kind === 'stage' ? String(number).padStart(2,'0') + (place.optional ? ' ◇' : '') : ''}</span>
       ${earned ? `<span class="journey-light-count" aria-hidden="true">${earned}</span>` : ''}
@@ -53,23 +54,14 @@
     const places = model.places.filter(place => place.act === act && !['hub','dreams'].includes(place.kind));
     const island = places.find(place => place.kind === 'island');
     const stages = places.filter(place => place.kind === 'stage');
-    // Two rows on landscape, two columns on portrait: every destination stays in view.
-    const count = stages.length + 1, columns = Math.ceil(count / 2), rows = Math.ceil(count / 2);
-    const points = Array.from({length:count}, (_,i) => {
-      const row = Math.floor(i / columns), col = row ? columns - 1 - i % columns : i % columns;
-      return { x:12 + col * 76 / Math.max(1,columns-1), y:row ? 73 : 26,
-        px:i % 2 ? 74 : 26, py:13 + Math.floor(i/2) * 74 / Math.max(1,rows-1) };
-    });
-    const coords = points.map(point => `${point.x},${point.y}`).join(' ');
-    const portrait = points.map(point => `${point.px},${point.py}`).join(' ');
-    return `<section class="journey-region${act === selectedAct ? ' is-current' : ''}" data-act="${act}" aria-label="${text('Acte {act}', { act:['I','II','III'][act-1] })}">
-      <div class="journey-region-title"><span>${text('Acte {act}', {act:['I','II','III'][act-1]})}</span><h3>${text(acts[act-1])}</h3></div>
-      <div class="journey-constellation" style="--region-height:${Math.max(370, stages.length * 62 + 140)}px">
-        <svg class="journey-lines journey-lines-wide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
-        <svg class="journey-lines journey-lines-tall" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${portrait}"/></svg>
-        ${island ? node(island, points[0].x, points[0].y, 0, points[0].px, points[0].py) : ''}
-        ${stages.map((place, index) => node(place, points[index+1].x, points[index+1].y, model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1, points[index+1].px, points[index+1].py)).join('')}
-      </div></section>`;
+    const route=[island,...stages].filter(Boolean), width=route.length*160;
+    const points=route.map((_,i)=>({x:(80+i*160)/width*100,y:56+Math.sin(i*Math.PI/2)*8}));
+    const coords=points.map(p=>`${p.x},${p.y}`).join(' ');
+    return `<section class="journey-region${act===selectedAct?' is-current':''}" data-act="${act}" aria-label="${text('Acte {number}',{number:act})}"><div class="journey-constellation" style="--route-width:${width}px">
+      <svg class="journey-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${coords}"/></svg>
+      ${route.map((place,i)=>node(place,points[i].x,points[i].y,model.places.filter(p=>p.kind==='stage').findIndex(p=>p.id===place.id)+1)).join('')}
+      ${route.some(p=>p.id===global.LumenJourney.next(game)?.id)?`<img class="journey-lumen" data-current-place="${esc(global.LumenJourney.next(game).id)}" alt="Lumen">`:''}
+    </div></section>`;
   }
 
   /* ── Le ciel de la carte ────────────────────────────────────────────────
@@ -151,19 +143,24 @@
   }
 
   function renderSky() {
-    $('journey-sky').innerHTML = [1,2,3].map(region).join('') +
-      `<section class="journey-refuges" aria-label="${text('En dehors du chemin')}"><span class="journey-refuges-label">${text('En dehors du chemin')}</span>${model.places.filter(place => ['hub','dreams'].includes(place.kind)).map((place,index)=>node(place,index ? 70 : 30,45,0)).join('')}</section>`;
+    $('journey-sky').innerHTML = [1,2,3].map(region).join('');
+    $('journey-refuges').innerHTML=model.places.filter(place=>['hub','dreams'].includes(place.kind)).map(place=>node(place,0,0,0)).join('');
+    const next=global.LumenJourney.next(game), button=$('journey-continue');
+    button.textContent=t('Continuer — {name}',{name:t(next.name)});button.dataset.journeyContinue=next.id;
+    $('journey-sky').querySelectorAll('.journey-lumen').forEach(image=>{image.src=document.querySelector('.journey-brand img').src;});
+    $('map-screen').querySelector('[data-journey-back]').hidden = !game.journeyReturn || ['title','home'].includes(game.journeyReturn.mode);
     document.querySelectorAll('[data-journey-act]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.journeyAct) === selectedAct)));
   }
 
   function selected() { return model.places.find(place => place.id === selectedId) || model.places[0]; }
   function renderDetails() {
     const place = selected();
+    $('journey-details').hidden=!detailsOpen;
     if (!place) return;
     const timed = ['stage','island'].includes(place.kind);
     const requirement = model.places.find(candidate => candidate.id === place.requirementId);
     const title = place.completed ? 'Revenir dans ce lieu' : 'Entrer dans ce lieu';
-    $('journey-details').innerHTML = `<button class="journey-button journey-mobile-detail-back" data-journey-sky>${text('Revenir à la constellation')}</button><div class="journey-detail-emblem ${place.kind}${place.completed ? ' is-lit' : ''}" aria-hidden="true">${glyph(place.kind)}<i></i></div>
+    $('journey-details').innerHTML = `<button class="journey-button journey-mobile-detail-back" data-journey-sky>${text('Fermer')}</button><div class="journey-detail-emblem ${place.kind}${place.completed ? ' is-lit' : ''}" aria-hidden="true">${glyph(place.kind)}<i></i></div>
       <span class="journey-kicker">${text(kindLabel(place))}${place.optional ? ' · ' + text('Facultatif') : ''}</span>
       <h3 id="journey-place-title">${text(place.name)}</h3><p class="journey-description">${text(place.subtitle || '')}</p>
       <div class="journey-state${place.completed ? ' is-lit' : ''}"><span aria-hidden="true">${place.completed ? '✦' : place.unlocked ? '○' : '◇'}</span>${text(state(place))}</div>
@@ -193,10 +190,8 @@
     model = global.LumenJourney.describe(game);
     if (options.enter) {
       newLights = new Map((game.consumeJourneyLights?.() || []).map(item=>[item.id,item.lights]));
-      // Several victories can wait while the player uses Next. Show the
-      // place just left, especially when mobile displays only one act.
-      if (newLights.size) selectedId = newLights.has(game.level?.key) ? game.level.key : [...newLights.keys()].at(-1);
-      if (!selectedId || !model.places.some(place=>place.id===selectedId)) selectedId = game.level?.key || model.places[0]?.id;
+      walkingFrom=[...newLights].filter(([id,lights])=>lights.includes(id+':completed')).map(([id])=>id).at(-1)||null;
+      selectedId=global.LumenJourney.next(game)?.id || model.places[0]?.id; detailsOpen=false;
       const initial = selected();
       if (initial.act) selectedAct = initial.act;
       announcement = newLights.size ? t('Une lumière de plus dans votre ciel.') + ' ' + t(initial.name) : '';
@@ -206,21 +201,42 @@
     if (!options.preload) startBackdrop();
     $('journey-announcement').textContent = announcement;
     global.LumenI18n.translateDOM($('map-screen'));
-    if (options.enter) requestAnimationFrame(()=>focusPlace(selectedId));
+    requestAnimationFrame(()=>{ positionLumen(!!options.enter);if(options.enter)focusPlace(selectedId,false); });
   }
-  function focusPlace(id) {
+  function focusPlace(id,open=true) {
     const place = model.places.find(candidate=>candidate.id===id);
     if (!place) return;
     if (place.act && place.act !== selectedAct) { selectedAct = place.act; renderSky(); }
-    selectedId = id;
-    $('journey-sky').querySelectorAll('[data-place]').forEach(button=>{
+    selectedId = id; detailsOpen=open;
+    $('map-screen').querySelectorAll('[data-place]').forEach(button=>{
       button.classList.toggle('is-selected', button.dataset.place === id);
       button.setAttribute('aria-pressed', String(button.dataset.place === id));
     });
     renderDetails();
-    const button = [...$('journey-sky').querySelectorAll('[data-place]')].find(element=>element.dataset.place===id);
+    const button = [...$('map-screen').querySelectorAll('[data-place]')].find(element=>element.dataset.place===id);
     button?.focus({preventScroll:true});
-    button?.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
+    centerPlace(button);
+    positionLumen(false);
+  }
+  function centerPlace(button) {
+    const region=button?.closest('.journey-region');if(!region)return;
+    region.scrollLeft=button.offsetLeft+button.parentElement.offsetLeft-region.clientWidth/2;
+  }
+  function positionLumen(walk) {
+    const sprite=$('journey-sky').querySelector('.is-current .journey-lumen');if(!sprite)return;
+    const node=$('journey-sky').querySelector(`[data-place="${sprite.dataset.currentPlace}"]`);
+    const point=n=>({x:n.offsetLeft-18,y:n.offsetTop-63});
+    const end=point(node), transform=p=>`translate(${p.x}px,${p.y}px)`;
+    sprite.style.transform=transform(end);
+    const reduced=game.progress.settings.reducedEffects||matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(walk&&walkingFrom&&!reduced) {
+      const route=[...node.parentElement.querySelectorAll('[data-place]')];
+      const from=route.findIndex(n=>n.dataset.place===walkingFrom),to=route.indexOf(node);
+      let points=from>=0?route.slice(Math.min(from,to),Math.max(from,to)+1).map(point):[{x:0,y:end.y},end];
+      if(from>to)points.reverse();
+      if(points.length>1)sprite.animate(points.map(p=>({transform:transform(p)})),{duration:1200,easing:'ease-in-out'});
+    }
+    if(walk)walkingFrom=null;
   }
   function focusables() {
     return [...$(codexOpen ? 'journey-codex' : 'map-screen').querySelectorAll('button:not(:disabled), [tabindex="0"]')].filter(element=>element.getClientRects().length && !element.closest('[hidden]'));
@@ -241,6 +257,8 @@
   }
   function back() {
     if (codexOpen) { codexOpen=false;renderTotals();focusCodexButton();return; }
+    if(detailsOpen){detailsOpen=false;renderDetails();return;}
+    if(!game.journeyReturn)return;
     if (game.returnFromJourneyMap) game.returnFromJourneyMap();
     else helpers.transition(()=>game.song ? game.startSong(game.song.index) : game.start(game.levelIndex));
   }
@@ -260,19 +278,21 @@
     $('map-screen').addEventListener('click',event=>{
       const button=event.target.closest('button');if(!button)return;
       if(button.dataset.place) {
+        const place=model.places.find(p=>p.id===button.dataset.place);
+        if(detailsOpen&&selectedId===place.id&&place.unlocked){game.audio.unlock();helpers.transition(()=>game.openJourneyPlace(place.id,{timed:runMode==='timed'}));return;}
         focusPlace(button.dataset.place);
         const action = $('journey-details').querySelector('[data-journey-launch], [data-journey-requirement]');
         action?.focus({preventScroll:true});
 
       }
       if(button.dataset.journeyAct) {
-        selectedAct=Number(button.dataset.journeyAct);renderSky();startBackdrop();
-        const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id);
+        selectedAct=Number(button.dataset.journeyAct);detailsOpen=false;renderSky();startBackdrop();
+        const place=model.places.find(candidate=>candidate.act===selectedAct);if(place)focusPlace(place.id,false);
       }
       if(button.dataset.journeyRequirement) focusPlace(button.dataset.journeyRequirement);
       if(button.dataset.journeyMode) {runMode=button.dataset.journeyMode;renderDetails();$('journey-details').querySelector(`[data-journey-mode="${runMode}"]`)?.focus();}
-      if(button.dataset.journeyLaunch) {
-        const id=button.dataset.journeyLaunch;
+      if(button.dataset.journeyLaunch || button.dataset.journeyContinue) {
+        const id=button.dataset.journeyLaunch || button.dataset.journeyContinue;
         game.audio.unlock();helpers.transition(()=>game.openJourneyPlace(id,{timed:runMode==='timed',style:runMode==='timed'?'flow':'gentle'}));
       }
       if(button.hasAttribute('data-journey-codex')) {
@@ -281,10 +301,10 @@
         else focusCodexButton();
       }
       if(button.hasAttribute('data-journey-back'))back();
-      if(button.hasAttribute('data-journey-sky'))focusPlace(selectedId);
+      if(button.hasAttribute('data-journey-sky'))focusPlace(selectedId,false);
     });
     document.addEventListener('keydown',event=>{
-      if(game.mode!=='map')return;
+      if(game.mode!=='map'||$('map-screen').inert)return;
       const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[event.key];
       if(direction){event.preventDefault();event.stopImmediatePropagation();navigate(direction);}
       else if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();back();}

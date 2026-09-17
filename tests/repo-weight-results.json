@@ -1,12 +1,16 @@
 {
-  "ranAt": "2026-09-15T22:59:40.950Z",
+  "ranAt": "2026-09-17T23:26:04.972Z",
   "budgets": {
     "images": 6291456,
     "total": 12582912
   },
-  "total": 3,
+  "total": 4,
   "failed": 0,
   "checks": [
+    {
+      "name": "L’icône iOS reste légère",
+      "passed": true
+    },
     {
       "name": "Aucune capture n’entre dans le dépôt dans un format qui pèse six fois son poids",
       "passed": true

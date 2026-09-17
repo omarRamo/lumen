@@ -71,6 +71,21 @@ async function test(name, run) {
     return { page, context, errors };
   }
 
+  async function openSettings(page) {
+    if(await page.evaluate(()=>lumen.mode!=='map')) {
+      await page.locator('#song-shell .song-icon[data-command="song-atlas"]').click();
+      await page.waitForFunction(()=>lumen.mode==='map');
+    }
+    await page.locator('[data-journey-settings]').click();
+    await page.locator('#song-panel').waitFor({state:'visible'});
+  }
+  async function closeSettings(page) {
+    await page.locator('#song-panel [data-command="song-close"]').first().click();
+    assert.equal(await page.evaluate(()=>lumen.mode),'map');
+    await page.locator('[data-journey-back]').click();
+    if(await page.evaluate(()=>lumen.mode==='map'))await page.locator('[data-journey-back]').click();
+    await page.waitForFunction(()=>lumen.mode!=='map');
+  }
   // Le joueur choisit une lumière puis son action ; le mobile change de
   // constellation explicitement. Aucun accès n'est accordé par ce helper.
   async function enterPlace(page, key) {
@@ -115,13 +130,53 @@ async function test(name, run) {
     await context.close();
   });
 
+  await test('L’écran de titre tient 1,2 s, montre un progrès réel et mène à l’atlas, jamais à un jardin', async () => {
+    // Jalon 2. Le bouton n'est pas un décor : c'est le geste utilisateur qui
+    // débloque l'audio iOS, et la seule porte vers la carte.
+    for (const returning of [false, true]) {
+      const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, locale: 'fr-FR' });
+      const page = await context.newPage(), errors = [];
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+      if (returning) await page.addInitScript(text => { try { localStorage.setItem('lumen.gardens.v3', text); } catch (_) {} },
+        JSON.stringify({ schema: 3, settings: { titleSeen: true }, chapters: { 'prairies-aurore': { completed: true, stars: 1, time: 90 } }, unlocked: ['prairies-aurore', 'cathedrale-racines'] }));
+      // On note l'instant EXACT où l'écran se déverrouille, pas l'instant où le test regarde.
+      await page.addInitScript(() => {
+        const watch = () => { if (window.LumenBoot?.ready) { window.__readyAt = window.LumenBoot.elapsed; return; } requestAnimationFrame(watch); };
+        requestAnimationFrame(watch);
+      });
+      await page.goto(PAGE);
+      await page.waitForFunction(() => typeof window.__readyAt === 'number');
+      const boot = await page.evaluate(() => ({ readyAt: window.__readyAt, steps: window.LumenBoot.steps.sort(),
+        label: document.getElementById('title-enter').textContent.trim(),
+        progress: document.getElementById('boot-progress').value, mode: window.lumen.mode }));
+      assert.ok(boot.readyAt >= 1200, 'L’écran de titre a clignoté : ' + Math.round(boot.readyAt) + ' ms.');
+      assert.ok(boot.readyAt < 15000, 'L’écran de titre s’éternise : ' + Math.round(boot.readyAt) + ' ms.');
+      // Le progrès est réel : quatre étapes réellement franchies, pas une animation.
+      assert.deepEqual(boot.steps, ['atlas', 'audio', 'fonts', 'save']);
+      assert.equal(boot.progress, 4);
+      assert.equal(boot.label, returning ? 'Continuer' : 'Commencer');
+      assert.equal(boot.mode, 'title');
+      assert.equal(await page.locator('#map-screen.active').count(), 0);
+      await page.locator('#title-enter').click();
+      await page.waitForFunction(() => window.lumen.mode === 'map');
+      // Jamais titre → jardin : la carte est le seul passage.
+      assert.equal(await page.evaluate(() => window.lumen.mode), 'map');
+      assert.equal(await page.locator('#title-screen').isVisible(), false);
+      assert.equal(await page.evaluate(() => window.lumen.audio.unlocked), true, 'Ce premier appui doit débloquer l’audio.');
+      assert.equal(await page.evaluate(() => window.lumen.progress.settings.titleSeen), true);
+      await page.screenshot({ path: path.join(shots, 'titre-' + (returning ? 'continuer' : 'commencer') + '.png') });
+      assert.deepEqual(errors, []); await context.close();
+    }
+  });
+
   await test('La palette claire reste stable avec les anciens réglages et le système sombre', async () => {
     for(const source of [false,true]){
       const {page,context,errors}=await open('bureau',null,{song:true,source,colorScheme:'dark'});
       await page.waitForFunction(()=>window.lumen.frames>=2);
       assert.equal(await page.evaluate(()=>window.LumenAppearance.current),'light');
       assert.equal(await page.evaluate(()=>window.lumen.progress.settings.appearance),'light');
-      await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+      await openSettings(page);
       assert.equal(await page.locator('#song-panel [data-appearance]').count(),0);
       const before=await page.evaluate(()=>JSON.stringify([window.lumen.player,window.lumen.song,window.lumen.elapsed]));
       await page.emulateMedia({colorScheme:'light'});await page.emulateMedia({colorScheme:'dark'});
@@ -141,7 +196,7 @@ async function test(name, run) {
       await page.waitForFunction(()=>window.lumen.frames>=2);
       const readings={};
       for(const appearance of ['light','dark']){
-        await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+        await openSettings(page);
         await page.emulateMedia({colorScheme:appearance});
         assert.equal(await page.evaluate(()=>LumenAppearance.current),'light');
         const contrast=await page.evaluate(()=>{
@@ -156,7 +211,7 @@ async function test(name, run) {
         assert.ok(contrast>=4.5,view+' '+appearance+' contrast '+contrast);
         assert.equal(await page.locator('#song-panel').evaluate(panel=>panel.scrollWidth<=panel.clientWidth+1),true);
         if(view==='bureau'||view==='portrait')await page.screenshot({path:path.join(shots,'appearance-'+appearance+'-'+view+'-settings.png')});
-        await page.locator('#song-panel [data-command="song-close"]').first().click();
+        await closeSettings(page);
         readings[appearance]=await page.evaluate(()=>{
           const game=window.lumen;game.renderer.draw(game,0);
           const canvas=game.canvas,pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
@@ -174,7 +229,7 @@ async function test(name, run) {
       assert.deepEqual(errors,[]);await context.close();
     }
     const {page,context,errors}=await open('portrait',null,{song:true,locale:'ar-SA',colorScheme:'dark'});
-    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+    await openSettings(page);
     assert.equal(await page.locator('#song-panel [data-appearance]').count(),0);
     assert.equal(await page.evaluate(()=>LumenAppearance.current),'light');
     await page.screenshot({path:path.join(shots,'appearance-dark-arabic-settings.png')});
@@ -291,11 +346,11 @@ async function test(name, run) {
   await test('Le mixage est mémorisé, la démonstration se joue en pause et les sons se nettoient', async () => {
     const {page,context,errors}=await open('portrait',null,{song:true});
     assert.ok(await page.evaluate(()=>window.lumen.audio.ctx&&window.lumen.audio.unlocked),'Title gesture unlocks the prepared context.');
-    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+    await openSettings(page);
     await page.locator('#song-musicVolume').fill('25');await page.locator('#song-effectsVolume').fill('70');await page.locator('#song-ambienceVolume').fill('40');
     await page.locator('#song-panel [data-command="sound-preview"]').click();
     await page.waitForFunction(()=>window.lumen.audio.unlocked&&[...window.lumen.audio._voices].some(voice=>voice.bus==='preview'));
-    assert.equal(await page.evaluate(()=>window.lumen.mode),'paused');
+    assert.equal(await page.evaluate(()=>window.lumen.mode),'map');
     const audible=await page.evaluate(async()=>{
       const audio=window.lumen.audio,analyser=audio.ctx.createAnalyser();analyser.fftSize=2048;audio.master.connect(analyser);
       // Observe actual output across audio quanta; a single wall-clock sample
@@ -353,7 +408,7 @@ async function test(name, run) {
       const state = await page.evaluate(() => ({ language: window.LumenI18n.language,
         preference: window.lumen.progress.settings.language, lang: document.documentElement.lang, dir: document.documentElement.dir,
         name: document.getElementById('song-island-name').textContent, title: document.title,
-        settings: document.querySelector('#song-shell .song-icon[data-command="song-settings"]').getAttribute('aria-label') }));
+        settings: document.querySelector('[data-journey-settings]').getAttribute('aria-label') }));
       assert.equal(state.language, language); assert.equal(state.preference, 'auto');
       assert.equal(state.lang, language === 'zh' ? 'zh-Hans' : language);
       assert.equal(state.dir, language === 'ar' ? 'rtl' : 'ltr'); assert.equal(state.name, name);
@@ -382,7 +437,7 @@ async function test(name, run) {
   await test('Changer de langue conserve la partie et le focus, et le choix survit au rechargement', async () => {
     const { page, context, errors } = await open('portrait', null, { song: true, locale: 'fr-FR' });
     await page.locator('#game').focus(); await page.keyboard.down('ArrowRight'); await page.waitForTimeout(180); await page.keyboard.up('ArrowRight');
-    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+    await openSettings(page);
     const before = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, elapsed: window.lumen.elapsed, key: window.lumen.level.key, chapters: JSON.stringify(window.lumen.progress.chapters) }));
     for (const language of ['es', 'ar', 'zh', 'en', 'fr', 'ar']) {
       await page.locator('#song-language').selectOption(language);
@@ -395,7 +450,7 @@ async function test(name, run) {
     }
     await page.reload(); await page.waitForFunction(() => window.lumen?.song);
     assert.equal(await page.evaluate(() => window.LumenI18n.language), 'ar');
-    await page.locator('#song-shell .song-icon[data-command="song-settings"]').click();
+    await openSettings(page);
     await page.locator('#song-language').selectOption('auto');
     assert.equal(await page.evaluate(() => window.LumenI18n.language), 'fr');
     await page.evaluate(() => {
@@ -551,20 +606,24 @@ async function test(name, run) {
     await page.screenshot({ path: path.join(shots, 'chant-atlas.png') });
     await page.locator('[data-journey-back]').click();
     await page.waitForFunction(() => window.lumen.song && window.lumen.mode === 'playing');
-    await page.getByRole('button', { name: 'Réglages', exact: true }).click();
+    await openSettings(page);
     await page.getByRole('switch', { name: 'Mouvements réduits' }).check();
     await page.getByRole('switch', { name: 'Commandes pour gaucher' }).check();
     await page.locator('#song-volume').fill('61');
     await page.locator('#song-touch-size').fill('2');
     await page.screenshot({ path: path.join(shots, 'chant-reglages.png') });
-    await page.getByRole('button', { name: 'Revenir au ciel' }).click();
+    await closeSettings(page);
     await page.reload(); await page.waitForFunction(() => window.lumen?.song);
     const settings = await page.evaluate(() => ({ ...window.lumen.progress.settings, volumeInAudio: window.lumen.audio.volume }));
     assert.equal(settings.volume, .61); assert.equal(settings.volumeInAudio, .61);
     assert.equal(settings.leftHanded, true); assert.equal(settings.touchScale, 1.3); assert.equal(settings.reducedEffects, true);
-    await page.getByRole('button', { name: 'Réglages', exact: true }).click();
+    await openSettings(page);
     await page.getByRole('button', { name: 'Élan', exact: true }).click();
-    await page.getByRole('button', { name: 'Partir en Élan' }).click();
+    assert.equal(await page.evaluate(()=>lumen.progress.settings.songStyle),'flow');
+    await page.locator('#song-panel [data-command="song-close"]').first().click();
+    await page.locator('[data-place="chant-petits-matins"]').click();
+    await page.locator('[data-journey-mode="timed"]').click();
+    await page.locator('[data-journey-launch="chant-petits-matins"]').click();
     await page.waitForFunction(() => window.lumen.song?.style === 'flow');
     assert.equal(await page.evaluate(() => window.lumen.runMode), 'timed');
     await page.waitForTimeout(400);
@@ -705,9 +764,9 @@ async function test(name, run) {
       assert.deepEqual(layout.outside, [], view + ' : commande hors écran'); assert.equal(layout.hero, true, view + ' : personnage mal cadré');
       await page.screenshot({ path: path.join(shots, 'chant-' + view + '.png') });
       if (view === 'portrait' || view === 'compact') {
-        await page.getByRole('button', { name: 'Réglages', exact: true }).click();
+        await openSettings(page);
         await page.locator('#song-touch-size').fill('2');
-        await page.getByRole('button', { name: 'Revenir au ciel' }).click();
+        await closeSettings(page);
         assert.equal(await page.evaluate(() => [...document.querySelectorAll('[data-touch]:not([data-touch="down"])')].every(button => {
           const rect = button.getBoundingClientRect(); return rect.x >= 0 && rect.right <= innerWidth;
         })), true);
@@ -723,7 +782,12 @@ async function test(name, run) {
     await page.evaluate(() => {
       for (const [action, pointerId] of [['right', 41], ['jump', 42]]) document.querySelector(`[data-touch="${action}"]`).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId, pointerType: 'touch' }));
     });
+    // La course s'engage après 380 ms de doigt posé — une durée d'horloge, pas
+    // de simulation. On attend les deux : le temps de jeu pour le déplacement,
+    // le temps réel pour la course, sinon la mesure arrive avant l'appui long.
+    const held = Date.now();
     await page.waitForFunction(elapsed => window.lumen.elapsed >= elapsed + .45, before.elapsed);
+    await page.waitForTimeout(Math.max(0, 450 - (Date.now() - held)));
     const after = await page.evaluate(() => ({ x: window.lumen.player.x, y: window.lumen.player.y, run: window.lumen.input.down('run') }));
     assert.ok(after.x > before.x + 80); assert.ok(after.y < before.y - 20); assert.equal(after.run, true);
     await page.evaluate(() => {

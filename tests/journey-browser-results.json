@@ -15,7 +15,7 @@
       "passed": true
     },
     {
-      "name": "[état forcé] Plusieurs succès en attente ouvrent la constellation du lieu tout juste quitté",
+      "name": "[état forcé] Plusieurs succès en attente : l’atlas s’ouvre sur le lieu à jouer, pas sur celui qu’on quitte",
       "passed": true
     },
     {
