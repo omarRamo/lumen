@@ -94,12 +94,23 @@ test('State fixture: a completed second island and five historical open chapters
   assert.equal(reloaded.game.store.chapter('chant-recifs-ciel').stars, 2);
 });
 
-test('State fixture: a legacy campaign frontier opens intervening islands without rewriting stable keys', () => {
+test('State fixture: a legacy frontier is migrated into stable keys, never derived at read time', () => {
   const { game } = world();
   game.store.unlock('vergers-vent');
+  // Plus aucune exception d'accès : tant que la frontière n'est pas migrée,
+  // un seul lieu tardif marqué ouvert n'ouvre rien en amont.
+  assert.equal(game.isSongUnlocked(1), false, 'a late key alone must not re-open an earlier island');
+  assert.equal(game.isUnlocked(game.indexOfKey('galerie-echos')), false, 'nor a later garden');
+  assert.equal(game.migrateJourneyFrontier(), true);
+  // Après migration, l'accès vient de clés écrites, pas d'une dérivation.
+  assert.equal(game.store.isUnlocked('chant-recifs-ciel'), true);
+  assert.equal(game.store.isUnlocked('dos-du-songe'), true);
   assert.equal(game.isSongUnlocked(1), true);
   assert.equal(game.isSongUnlocked(2), true);
-  assert.equal(game.store.isUnlocked('chant-recifs-ciel'), false, 'derived access should not require a migration');
+  // Et rien au-delà de la frontière : la migration n'invente pas de progrès.
+  assert.equal(game.store.isUnlocked('galerie-echos'), false);
+  assert.equal(game.isUnlocked(game.indexOfKey('galerie-echos')), false);
+  assert.equal(game.migrateJourneyFrontier(), false, 'the migration runs once and settles');
 });
 
 test('The real first-stage playthrough adds map light, queues its birth, and retains it after a full reload', () => {

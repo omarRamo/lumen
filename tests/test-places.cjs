@@ -139,7 +139,9 @@ test('Entering a new place after a lost expedition makes Retry restart that plac
   const { game } = environment();
   game.startExpedition(42); game.finishExpedition(false);
   assert.ok(game.lastRun);
-  game.store.unlock('dos-du-songe'); game.start(game.indexOfKey('dos-du-songe'));
+  // L'ordre du voyage décide seul de l'accès : on termine ce qui précède.
+  for (const key of ['prairies-aurore', 'cathedrale-racines']) game.store.recordChapter(key, { stars: 0, time: 60 });
+  game.start(game.indexOfKey('dos-du-songe'));
   assert.equal(game.session, 'campaign'); assert.equal(game.place.kind, 'ride');
   game.retry();
   assert.equal(game.session, 'campaign'); assert.equal(game.level.key, 'dos-du-songe');

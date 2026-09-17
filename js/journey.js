@@ -27,9 +27,9 @@
     if (!index || game.store.chapter(island.key)?.completed || game.store.isUnlocked(island.key)) return { allowed: true };
     const route = stages(game);
     const preceding = route.filter(item => item.act === index && !item.level.bonus);
-    // Existing players keep every island already reached, including profiles
-    // whose old numeric frontier has been migrated into stable unlocked keys.
-    if (route.some(item => item.act > index && !item.level.bonus && game.store.isUnlocked(item.level.key))) return { allowed: true };
+    // Une seule règle décide : tout l'acte précédent doit être terminé. Un lieu
+    // simplement « ouvert » plus loin n'ouvre plus l'île en amont — l'île déjà
+    // atteinte, elle, reste acquise par sa clé ou par son chapitre terminé.
     const missing = preceding.find(item => !game.store.chapter(item.level.key)?.completed);
     if (!missing && preceding.length) return { allowed: true };
     return { allowed: false, reason: 'Termine l’acte précédent pour rejoindre cette île.',
@@ -115,5 +115,9 @@
     return route.find(place => place.unlocked && !place.completed) || route[0] || null;
   }
 
-  global.LumenJourney = { ACT_ENDS, DREAMS_KEY, describe, places: game => describe(game).places, islandAccess, next };
+  /** La route requise, dans l'ordre, avec son acte : la seule table d'ordre du
+   *  voyage. Le moteur s'en sert pour migrer une frontière héritée. */
+  function route() { return stages().filter(item => !item.level.bonus); }
+
+  global.LumenJourney = { ACT_ENDS, DREAMS_KEY, describe, places: game => describe(game).places, islandAccess, next, route };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -175,8 +175,9 @@ const songPilot = require('./song-pilot.cjs');
 for (const style of ['gentle', 'flow']) {
   const game = create(0);
   // Fixture d'accès historique : ce contrôle joue la géométrie des trois îles.
-  // Les règles des actes sont vérifiées séparément par test-journey.cjs.
-  game.store.unlock('coeur-eclipse');
+  // Les règles des actes sont vérifiées séparément par test-order.cjs. La
+  // frontière héritée passe par la migration, comme au chargement d'un disque.
+  game.store.unlock('coeur-eclipse'); game.migrateJourneyFrontier();
   for (let index = 0; index < 3; index++) {
     if (!game.startSong(index, { style })) {
       results.push({ test: 'song island ' + (index + 1) + ' (' + style + ') unlocked by previous completion', ok: false });

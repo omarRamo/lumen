@@ -698,7 +698,9 @@ async function test(name, run) {
     // État forcé d'accès uniquement. Les échos, fragments et sorties sont joués.
     // Le parcours de progression neuf est couvert par test-journey.cjs.
     const { page, context, errors } = await open('bureau', null, { song: true });
-    await page.evaluate(() => { window.lumen.store.unlock('coeur-eclipse'); window.lumen.saveProgress(); });
+    // Frontière héritée, migrée comme au chargement d'un disque : l'accès vient
+    // de clés écrites, jamais d'une exception rejouée. Voir tests/test-order.cjs.
+    await page.evaluate(() => { window.lumen.store.unlock('coeur-eclipse'); window.lumen.migrateJourneyFrontier(); window.lumen.saveProgress(); });
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'song-pilot.cjs'), 'utf8') });
     const results = [];
     for (let index = 0; index < 3; index++) {
@@ -834,7 +836,7 @@ async function test(name, run) {
     const { page, context, errors } = await open();
     await page.evaluate(() => {
       const g = window.lumen, index = window.LUMEN_LEVELS.findIndex(l => l.key === 'verger-qui-reve');
-      g.store.unlock('verger-qui-reve'); g.start(index);
+      g.store.unlock('verger-qui-reve'); g.migrateJourneyFrontier(); g.start(index);
     });
     await page.waitForFunction(() => window.lumen.mode === 'playing' && window.lumen.level.key === 'verger-qui-reve');
     // Avant l'appel : le tremplin n'existe pas.

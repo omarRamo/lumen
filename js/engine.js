@@ -171,9 +171,33 @@
       this.storageAvailable = this.store.available;
       if (this.store.recovered) this.notify('Sauvegarde principale illisible : la copie de secours a été restaurée.');
       if (this.store.futureSchema) this.notify('Cette sauvegarde vient d’une version plus récente de LUMEN : elle est laissée intacte, et cette partie ne sera pas enregistrée.');
+      this.migrateJourneyFrontier();
       // `progress` reste exposé pour l'interface et les anciens tests ; la
       // vérité vit désormais dans le profil du magasin.
       return this.store.profile;
+    }
+    /** Migration, une fois pour toutes. Une frontière héritée — un seul lieu
+     *  tardif marqué ouvert, une campagne « finished » d'une ancienne version —
+     *  ouvrait jusqu'ici tout ce qui précède par une EXCEPTION d'accès rejouée
+     *  à chaque lecture. L'exception est supprimée ; ce que cette frontière
+     *  accordait est inscrit dans la sauvegarde, une fois, sous forme de clés
+     *  stables : chaque jardin requis jusqu'à la frontière, et chaque île de
+     *  repos que la frontière a dépassée. Non destructive : on n'ajoute que
+     *  des clés, on n'en retire aucune, et le schéma ne change pas. */
+    migrateJourneyFrontier() {
+      const required = window.LumenJourney?.route?.() || [];
+      const reached = item => this.store.isUnlocked(item.level.key) || !!this.store.chapter(item.level.key)?.completed;
+      let furthest = -1;
+      required.forEach((item, position) => { if (reached(item)) furthest = position; });
+      if (furthest < 0) return false;
+      let changed = false;
+      for (const item of required.slice(0, furthest + 1)) changed = this.store.unlock(item.level.key) || changed;
+      const frontierAct = required[furthest].act;
+      (window.LumenSong?.ISLANDS || []).forEach((island, index) => {
+        if (index && frontierAct > index) changed = this.store.unlock(island.key) || changed;
+      });
+      if (changed) this.store.save(this.store.profile);
+      return changed;
     }
     saveProgress() {
       if (!this.store) return;
@@ -184,20 +208,31 @@
           this.notify('Sauvegarde indisponible : la progression reste disponible pendant cette session.'); }
       }
     }
+    /** Le jardin requis qui précède immédiatement celui-ci, -1 pour le premier. */
+    requiredBefore(index) {
+      for (let earlier = index - 1; earlier >= 0; earlier--) {
+        const level = window.LUMEN_LEVELS[earlier];
+        if (!level.bonus && !level.hub) return earlier;
+      }
+      return -1;
+    }
+    /** UNE seule règle d'ordre : un jardin requis n'ouvre que lorsque le jardin
+     *  requis qui le précède est TERMINÉ. Rien n'ouvre plus « en masse » : un
+     *  lieu ouvert plus loin dans la liste n'ouvre plus ceux d'avant.
+     *  Deux exceptions, et deux seulement :
+     *  — un lieu déjà terminé ne se referme jamais, même hors séquence ;
+     *  — la frontière d'une sauvegarde reste valable là où elle suit l'ordre,
+     *    pour ne rien retirer à qui jouait avant cette règle. */
     isUnlocked(index) {
       if (index < 0 || index >= window.LUMEN_LEVELS.length) return false;
       const level = window.LUMEN_LEVELS[index];
       if (level.hub) return true;
-      if (this.store.isUnlocked(this.keyOf(index))) return true;
-      if (level.bonus) return !!this.progress.bonusUnlocked;
-      // Un chapitre inséré dans une campagne déjà parcourue ne doit pas
-      // apparaître verrouillé au milieu de chapitres ouverts : si un chapitre
-      // ultérieur l'est, celui-ci l'est aussi.
-      for (let later = index + 1; later < window.LUMEN_LEVELS.length; later++) {
-        if (window.LUMEN_LEVELS[later].bonus || window.LUMEN_LEVELS[later].hub) continue;
-        if (this.store.isUnlocked(this.keyOf(later))) return true;
-      }
-      return false;
+      if (this.store.chapter(this.keyOf(index))?.completed) return true;
+      if (level.bonus) return this.store.isUnlocked(this.keyOf(index)) || !!this.progress.bonusUnlocked;
+      const previous = this.requiredBefore(index);
+      if (previous < 0) return true;
+      if (this.store.chapter(this.keyOf(previous))?.completed) return true;
+      return this.store.isUnlocked(this.keyOf(index)) && this.isUnlocked(previous);
     }
     showHome() {
       this.leaveExpedition();
