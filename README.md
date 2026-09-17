@@ -25,18 +25,33 @@ repos, sans créature hostile : île 1 → acte I → île 2 → acte II → îl
 acte III → finale. L'observatoire et les Rêves nomades restent hors du chemin
 obligatoire. La quête de la coupole reste nécessaire pour entrer dans les Rêves.
 
-La carte s'ouvre uniquement sur demande, depuis le jeu, la pause ou une fin
-de lieu. Elle suspend une île ou un chapitre et permet de le reprendre.
-Choisir une lumière montre son nom, sa progression et, si elle dort encore,
-la condition qui l'ouvre. Les fragments et les détours restent facultatifs.
+**L'app ouvre sur un écran de titre, jamais sur un lieu.** Le titre affiche le
+chargement réel — sauvegarde, polices, audio, atlas — et un seul bouton,
+« Continuer » ou « Commencer » à la première ouverture. Ce premier appui est
+aussi le geste qui déverrouille l'audio sur iOS. Il mène à l'atlas, qui mène au
+jeu : jouer tient en deux appuis.
+
+**L'atlas est un menu déguisé en carte.** Un quai fixe en bas propose
+« Continuer — <lieu> » et lance directement le prochain lieu jouable, sans
+sélection préalable. Le chemin progresse toujours vers la droite et la carte
+s'ouvre cadrée sur le lieu courant, là où se tient Lumen. Trois états se
+distinguent sans lire : terminé, disponible, verrouillé avec son cadenas.
+
+La carte s'ouvre aussi depuis le jeu, la pause ou une fin de lieu. Elle suspend
+une île ou un chapitre et permet de le reprendre. Un appui sur une lumière
+montre son nom, sa progression et, si elle dort encore, la condition qui
+l'ouvre ; un second appui la lance. Les fragments et les détours restent facultatifs.
 Les succès ajoutent de petites lumières ; une partie moins réussie ne les
 retire jamais. Les passages secrets sont désormais mémorisés par stage.
 
 Sur téléphone, on change explicitement de constellation avec les boutons
 d'acte. Au clavier ou à la manette, les directions parcourent les lieux et
 les actions ; Entrée/A choisit, Échap/B revient. Un lieu verrouillé reste
-consultable. Les îles déjà terminées et les chapitres historiquement ouverts
-restent accessibles lors de cette nouvelle organisation.
+consultable. **Une seule règle décide de l'ordre** : un jardin requis n'ouvre que lorsque le
+jardin requis qui le précède est terminé, et une île de repos attend tout son
+acte. Un lieu déjà terminé ne se referme jamais, et la frontière d'une
+sauvegarde ancienne est migrée une fois en clés stables : les îles déjà
+atteintes et les chapitres historiquement ouverts restent accessibles.
 
 ![L'atlas commun et ses trois constellations](docs/iteration-09/captures/atlas-iphone.webp)
 
@@ -138,9 +153,14 @@ le saut normal. La porte fermée rappelle les trois fleurs avec des pictogrammes
 | Pause | Échap ou P | Pause | Start |
 | Recommencer / son | R / M | Menus | Menus non intégralement validés |
 
-Les commandes tactiles acceptent le glissement du pouce entre les directions
-et deux appuis simultanés. Les réglages et la pause restent dans les zones
-sûres de l'écran. Sur iOS natif, sélection, zoom accidentel et rebond sont bloqués.
+Les commandes tactiles mesurent 88 px pour les directions, 96 px pour le saut
+et 80 px pour l'action, multipliés par le cran de taille choisi (85 %, 100 %,
+130 %) et jamais sous 48 px. Une zone de contact invisible de 4 px entoure
+chaque bouton. Le pavé est ancré à la safe area + 12 px sur le côté et + 20 px
+au-dessus du bas. Elles acceptent le glissement du pouce entre les directions
+et deux appuis simultanés. **Les réglages vivent sur l'atlas**, pas dans les
+lieux : la pause d'un jardin ne garde que Reprendre, Recommencer, l'atlas et le
+son. Les réglages et la pause restent dans les zones sûres de l'écran. Sur iOS natif, sélection, zoom accidentel et rebond sont bloqués.
 Les panneaux de pouvoir sont supprimés ; une fin montre les souvenirs et les
 actions pour continuer, sans tableau de statistiques.
 
@@ -197,6 +217,8 @@ sûres, commandes simultanées, caméra, fins et défaite sans défilement.
 
 Le retour complet dans la rivière, les 16 prolongements dans les deux sens,
 les 40 vies ramassables et leur consommation font partie de `npm test`.
+`npm run test:order` prouve, acte par acte, qu'aucun lieu ne s'ouvre avant que
+le précédent soit terminé, et qu'une sauvegarde ancienne ne perd rien.
 Voir le [rapport de l'itération 11](docs/iteration-11/README.md).
 
 Sur un Mac avec Xcode, pour réinstaller sur son iPhone branché :
@@ -237,6 +259,7 @@ règles ; ils ne mesurent ni le plaisir, ni les FPS, ni la batterie sur appareil
 | [js/song-art.js](js/song-art.js) | Dessin unique de Lumen et composition du Chant. |
 | [js/renderer.js](js/renderer.js) | Jardins, coupole, créatures et Rêves. |
 | [js/song-ui.js](js/song-ui.js), [js/ui.js](js/ui.js) | HUD, résultats et menus du Chant et des jardins. |
+| [js/boot.js](js/boot.js) | Écran de titre, chargement réel et déverrouillage explicite de l'audio iOS. |
 | [js/save.js](js/save.js) | Contrat historique de stockage et migration défensive. |
 | [journey.css](journey.css), [song.css](song.css), [style.css](style.css) | Carte, interface commune et mises en page. Le tactile est dans `play.css`. |
 | [tools/build.cjs](tools/build.cjs) | Génération du portable, jamais édité à la main. |
