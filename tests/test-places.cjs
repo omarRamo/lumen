@@ -34,15 +34,16 @@ test('Six stable places add exactly two different decisions per act, each with f
   assert.equal(places.find(level => level.place.kind === 'river').secrets.length, 4);
 });
 
-test('Position fixture: the sleeper only travels when calmed, physically carries its rider, then waits', () => {
+test('Position fixture: the sleeper only travels when calmed, carries its rider away from the exit, then waits', () => {
   const { game } = load('dos-du-songe');
-  const deck = game.place.deck;
+  const deck = game.place.deck, config = game.level.place;
   const initial = deck.x;
+  assert.equal(initial, config.toX, 'Le dormeur attend au bout de l’île de départ.');
   tick(game, 1); assert.equal(deck.x, initial);
   position(game, deck.x + 90, deck.y - 46); tick(game, .05);
   assert.equal(game.player.standingPlatform, deck);
   call(game); tick(game, 2);
-  assert.ok(deck.x > initial + 150);
+  assert.ok(deck.x < initial - 150, 'L’aller part vers la gauche, loin de la sortie.');
   assert.ok(game.place.metrics.carriedDistance > 150);
   assert.equal(game.player.hp, 3);
   tick(game, 7); const stopped = deck.x; tick(game, 1);
@@ -50,7 +51,22 @@ test('Position fixture: the sleeper only travels when calmed, physically carries
   assert.equal(game.player.standingPlatform, deck);
   assert.equal(game.player.hp, 3);
   game.die(); tick(game, 2);
-  assert.equal(game.place.deck.x, game.level.place.fromX, 'a fall must not strand the mount across the void');
+  assert.equal(game.place.deck.x, config.toX, 'a fall from the departure island must bring the mount back to it');
+});
+
+test('The departure island is sealed by its cliff: the only way on is the ride out and the high road back', () => {
+  const { game } = load('dos-du-songe');
+  const cliff = game.platforms.find(p => p.type === 'ground' && p.x === 2900);
+  assert.ok(cliff && game.level.spawn.y + 46 - cliff.y >= 300, 'La falaise doit dépasser tout saut.');
+  // De vraies entrées : courir et sauter contre la falaise, longtemps.
+  game.input.virtual('right', true, 'test'); game.input.virtual('run', true, 'test');
+  for (let f = 0; f < 120 * 6; f++) {
+    game.input.virtual('jump', f % 60 < 30, 'test'); tick(game, DT);
+  }
+  game.input.virtual('right', false, 'test'); game.input.virtual('run', false, 'test'); game.input.virtual('jump', false, 'test');
+  assert.ok(game.player.x + game.player.w <= cliff.x + 1, 'Rien ne franchit la falaise depuis le bas : x = ' + game.player.x);
+  assert.ok(game.player.y + game.player.h > 500, 'Et rien n’y mène par-dessus.');
+  assert.equal(game.place.metrics.returnedHigh, false);
 });
 
 test('Position fixture: the little star is carried, not called — its light makes the footbridges, and without it they are gone', () => {

@@ -16,7 +16,10 @@
     if (config.kind === 'ride') {
       state.mount = game.enemies.find(enemy => enemy.mount);
       state.deck = game.platforms.find(platform => platform.placeRole === 'mount');
-      state.direction = 1; state.metrics.carriedDistance = 0;
+      // Un aller-retour peut commencer à l'autre bout : le dormeur attend alors
+      // à `toX` et part vers la gauche.
+      state.direction = config.startAt === 'to' ? -1 : 1; state.metrics.carriedDistance = 0;
+      if (config.returnAt) state.metrics.returnedHigh = false;
     }
     if (config.kind === 'escort') {
       // L'astre ne marche plus seul : on le prend, on le porte, on le pose.
@@ -79,6 +82,11 @@
       deck.dx = deck.x - old; deck.dy = 0;
       mount.x = deck.x; mount.y = deck.y + 3; mount.facing = state.direction;
       if (game.player.standingPlatform === deck) state.metrics.carriedDistance += Math.abs(deck.dx);
+      // Le retour par les hauteurs : avoir été porté, puis atteindre le haut
+      // de la falaise, là où l'île de départ ne mène jamais.
+      const back = config.returnAt, p = game.player;
+      if (back && !state.metrics.returnedHigh && state.metrics.carriedDistance > 800 &&
+        p.x + p.w / 2 >= back.x && p.y + p.h <= back.surfaceY + 6) state.metrics.returnedHigh = true;
     }
     if (state.kind === 'escort') carryBeforePhysics(game, state, config);
     if (state.kind === 'chain') {

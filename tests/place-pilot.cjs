@@ -44,7 +44,7 @@
         // qu'il commence sa traversée dans le sens de la marche. Le pilote lit
         // l'état visible du lieu, comme un joueur regarde le ciel.
         const cloudReady = !target.waitRain || game.place.clouds.some(cloud => cloud.stage === 'forming' && cloud.alpha > .8 && Math.abs(cloud.x - center) < 260);
-        const specialReady = target.ride ? game.place.deck.x >= game.level.place.toX - 90 : target.escort ? game.place.astre.arrived :
+        const specialReady = target.ride ? (target.ride === 'left' ? game.place.deck.x <= game.level.place.fromX + 90 : game.place.deck.x >= game.level.place.toX - 90) : target.escort ? game.place.astre.arrived :
           target.take ? game.place.astre.carried : cloudReady;
         if ((near && atHeight && (target.airborne || p.grounded) || bounced || (target.ride || target.escort) && specialReady) && specialReady && this.waypoint < route.length - 1) {
           this.waypoint++; target = route[this.waypoint];

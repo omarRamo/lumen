@@ -10,7 +10,9 @@ const root = path.resolve(__dirname, '..');
 const pilot = require('./place-pilot.cjs');
 const DT = 1 / 120;
 const CONTRACTS = {
-  ride: metrics => metrics.carriedDistance >= 800,
+  // Itération 13 : l'aller se fait sur le dos du dormeur, le retour par les
+  // hauteurs, jusqu'au sommet de la falaise que l'île de départ ne franchit pas.
+  ride: metrics => metrics.carriedDistance >= 800 && metrics.returnedHigh === true,
   // Itération 13 : l'astre se porte. Porté sur toute la descente, posé sur
   // des passerelles qui n'existent que dans sa lumière, puis rendu chez lui.
   escort: metrics => metrics.carriedDistance >= 2400 && metrics.lightLandings >= 4 && metrics.escortArrived === true,

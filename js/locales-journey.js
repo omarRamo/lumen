@@ -20,8 +20,8 @@ window.LumenI18n.add([
   ['Arrivé trop tard ? Attends sur la rive : le nuage repasse toujours.', 'Too late? Wait on the bank: the cloud always comes back.', '¿Llegaste tarde? Espera en la orilla: la nube siempre vuelve a pasar.', 'تأخرت؟ انتظر على الضفة: السحابة تعود دائمًا.', '来晚了？在岸边等一等：云朵总会再飘回来。'],
   ['Sur le dos d’un songe', 'On the back of a dream', 'A lomos de un sueño', 'على ظهر حلم', '梦之背上'],
   ['Le jardin voyage pendant que tu marches.', 'The garden travels as you walk.', 'El jardín viaja mientras caminas.', 'تسافر الحديقة وأنت تمشي.', '你在行走，花园也在旅行。'],
-  ['Appelle le grand dormeur et laisse-le porter le jardin.', 'Call the great sleeper and let it carry the garden.', 'Llama al gran durmiente y deja que lleve el jardín.', 'نادِ النائم الكبير ودعه يحمل الحديقة.', '呼唤沉睡的巨兽，让它驮起花园。'],
-  ['Le grand dormeur porte un jardin. Monte sur son dos, puis appelle-le.', 'The great sleeper carries a garden. Climb onto its back, then call to it.', 'El gran durmiente lleva un jardín. Sube a su lomo y llámalo.', 'يحمل النائم الكبير حديقة. اصعد على ظهره، ثم نادِه.', '沉睡的巨兽驮着一座花园。爬到它背上，再呼唤它。'],
+  ['Traverse le gouffre sur le dos du grand dormeur, puis reviens par les hauteurs.', 'Cross the chasm on the great sleeper’s back, then come back along the heights.', 'Cruza el abismo a lomos del gran durmiente y vuelve por las alturas.', 'اعبر الهوّة على ظهر النائم الكبير، ثم عُد عبر المرتفعات.', '骑在沉睡巨兽的背上越过深渊，再沿着高处返回。'],
+  ['Le grand dormeur t’emmène de l’autre côté du gouffre. Monte sur son dos, puis appelle-le.', 'The great sleeper takes you across the chasm. Climb onto its back, then call to it.', 'El gran durmiente te lleva al otro lado del abismo. Sube a su lomo y llámalo.', 'يأخذك النائم الكبير إلى الضفة الأخرى من الهوّة. اصعد على ظهره ثم نادِه.', '沉睡的巨兽会带你越过深渊。爬上它的背，再呼唤它。'],
   ['Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.', 'Another call extends its journey. You can hop off to find lights, then return.', 'Otra llamada prolonga su viaje. Puedes bajar a buscar luces y volver.', 'نداء آخر يطيل رحلته. يمكنك النزول للبحث عن الأضواء ثم العودة.', '再次呼唤可延长旅程。你可以跳下去寻找光芒，再回到它背上。'],
   ['Le petit astre égaré', 'The little lost star', 'El pequeño astro perdido', 'النجم الصغير التائه', '迷路的小星星'],
   ['Il éclaire le chemin de celui qui le porte.', 'It lights the way for whoever carries it.', 'Ilumina el camino de quien lo lleva.', 'يُنير الطريق لمن يحمله.', '谁带着它，它就为谁照亮道路。'],
@@ -88,5 +88,6 @@ window.LumenI18n.add([
   ['Découvre un passage secret dans les jardins.', 'Discover a secret path in the gardens.', 'Descubre un pasaje secreto en los jardines.', 'اكتشف ممرًا سريًا في الحدائق.', '在花园中发现一条秘密通道。'],
   ['Termine le jardin précédent pour ouvrir ce lieu.', 'Complete the preceding garden to open this place.', 'Completa el jardín anterior para abrir este lugar.', 'أكمل الحديقة السابقة لفتح هذا المكان.', '完成前一座花园即可开启此地。'],
   ['Les Rêves nomades', 'Wandering Dreams', 'Los Sueños Nómadas', 'الأحلام الرحّالة', '流浪梦境'],
-  ['Une nuit ne ressemble à aucune autre.', 'Every night is different.', 'Cada noche es diferente.', 'لا تشبه ليلةٌ أخرى.', '每一夜都不同。']
+  ['Une nuit ne ressemble à aucune autre.', 'Every night is different.', 'Cada noche es diferente.', 'لا تشبه ليلةٌ أخرى.', '每一夜都不同。'],
+  ['La falaise ne se franchit que par le haut. Le chemin du retour passe au-dessus du gouffre.', 'The cliff can only be crossed from above. The way back runs high over the chasm.', 'El acantilado solo se supera por arriba. El camino de vuelta pasa por encima del abismo.', 'لا يُعبَر الجرف إلا من الأعلى. طريق العودة يمرّ فوق الهوّة.', '悬崖只能从上方越过。回程的路高悬在深渊之上。'],
 ]);

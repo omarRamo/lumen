@@ -408,12 +408,12 @@
       },
       {
         "type": "moving",
-        "contrasted": 290,
+        "contrasted": 292,
         "fingerprint": 402347274
       },
       {
         "type": "spring",
-        "contrasted": 241,
+        "contrasted": 242,
         "fingerprint": 445951016
       },
       {
@@ -1089,12 +1089,12 @@
       },
       {
         "type": "solid",
-        "contrasted": 514,
+        "contrasted": 783,
         "fingerprint": 1606620943
       },
       {
         "type": "moving",
-        "contrasted": 858,
+        "contrasted": 860,
         "fingerprint": 2023662577
       },
       {
@@ -1104,7 +1104,7 @@
       },
       {
         "type": "crumble",
-        "contrasted": 846,
+        "contrasted": 763,
         "fingerprint": -2100505978
       },
       {
@@ -1114,7 +1114,7 @@
       },
       {
         "type": "vanish",
-        "contrasted": 678,
+        "contrasted": 864,
         "fingerprint": 565047370
       },
       {

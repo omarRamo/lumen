@@ -714,32 +714,48 @@
   // old key: older profiles keep their frontier through game.isUnlocked().
   const newPlaces = [
     {
+      // Itération 13 : un aller-retour. On part de l'île de droite, adossée à
+      // une falaise qu'aucun saut ne franchit ; le grand dormeur emmène vers
+      // la GAUCHE, loin de la sortie, au-dessus du gouffre. Là-bas, un
+      // escalier mène aux hauteurs, et c'est par elles qu'on revient —
+      // au-dessus du chemin qu'on vient de faire, jusqu'au sommet de la falaise.
       id: 12, key: 'dos-du-songe', journeyAct: 1, name: 'Sur le dos d’un songe',
       subtitle: 'Le jardin voyage pendant que tu marches.', theme: 'meadow', width: 3100, height: 900,
-      medalTargets: { gold: 75, silver: 120 }, spawn: { x: 100, y: 554 }, exit: exit(3100),
-      goal: 'Appelle le grand dormeur et laisse-le porter le jardin.',
-      place: { kind: 'ride', fromX: 500, toX: 2410, speed: 95,
-        pilot: [{ x: 610, surfaceY: 585, ride: true }, { x: 2640, surfaceY: 600 }, { x: 2960, surfaceY: 600 }],
+      medalTargets: { gold: 75, silver: 120 }, spawn: { x: 2700, y: 554 }, exit: exit(3100),
+      goal: 'Traverse le gouffre sur le dos du grand dormeur, puis reviens par les hauteurs.',
+      place: { kind: 'ride', fromX: 500, toX: 2410, speed: 95, startAt: 'to', returnAt: { x: 2900, surfaceY: 250 },
+        pilot: [{ x: 2560, surfaceY: 585, ride: 'left' }, { x: 205, surfaceY: 500 }, { x: 410, surfaceY: 410 },
+          { x: 645, surfaceY: 320 }, { x: 875, surfaceY: 300 }, { x: 1105, surfaceY: 260 }, { x: 1340, surfaceY: 300 },
+          { x: 1575, surfaceY: 270 }, { x: 1810, surfaceY: 300 }, { x: 2035, surfaceY: 260 }, { x: 2270, surfaceY: 290 },
+          { x: 2495, surfaceY: 250 }, { x: 2730, surfaceY: 240 }, { x: 3000, surfaceY: 250 }],
         captureMetric: { name: 'carriedDistance', min: 420 } },
-      platforms: [ground(0, 760), ground(2460, 640),
-        ledge(500, 585, 240, 'solid', { placeRole: 'mount' }),
-        ledge(1070, 490, 230), ledge(1280, 390, 240), ledge(1490, 490, 310),
-        ledge(2660, 485, 220), ledge(2850, 390, 180)],
-      enemies: [{ ...enemy('sleeper', 500, 660, 500, 2410), x: 500, y: 588, w: 240, h: 78, mount: true },
-        // Sur la route de la monture : l'essaim oblige à décider si l'on baisse
-        // la tête, si l'on saute, ou si l'on quitte le dos avant qu'il n'arrive.
+      platforms: [ground(0, 760), ground(2460, 440),
+        // La falaise : 350 px au-dessus de l'île de départ. Elle n'a qu'un
+        // accès, par le haut, au bout du chemin du retour.
+        ground(2900, 200, 250),
+        ledge(2410, 585, 240, 'solid', { placeRole: 'mount' }),
+        // Deux corniches basses, à portée du dos du dormeur pendant l'aller.
+        ledge(1100, 490, 180), ledge(1500, 480, 200),
+        // L'escalier de l'autre rive, puis la route des hauteurs.
+        ledge(120, 500, 170), ledge(330, 410, 160), ledge(560, 320, 170),
+        ledge(800, 300, 150), ledge(1030, 260, 150, 'crumble'), ledge(1260, 300, 160), ledge(1500, 270, 150, 'vanish'),
+        ledge(1730, 300, 160), ledge(1960, 260, 150), ledge(2190, 290, 160), ledge(2420, 250, 150), ledge(2650, 240, 160)],
+      enemies: [{ ...enemy('sleeper', 2410, 660, 500, 2410), x: 2410, y: 588, w: 240, h: 78, mount: true },
+        // Sur la route de l'aller : l'essaim oblige à choisir le moment où
+        // l'on reste accroupi sur le dos, ou celui où l'on saute.
         enemy('swarm', 1560, 430, 1400, 1760),
-        // À l'arrivée, un veilleur : descendre du songe n'est pas gratuit.
-        enemy('hopper', 2700, 600, 2560, 2900)],
-      collectibles: [...coins(235, 552, 6), ...arc(620, 525, 5), ...coins(1310, 345, 5),
-        // Le long du trajet de la monture : ce qu'on ramasse sans descendre.
-        ...arc(1500, 500, 6), ...coins(1880, 470, 5), ...arc(2120, 500, 5),
-        ...coins(2680, 443, 5),
-        item('star', 1140, 442), item('star', 1400, 340), item('star', 2930, 340), item('heart', 2500, 550)],
-      checkpoints: [checkpoint(350), checkpoint(2560)], hazards: [],
-      secrets: [secret(1290, 280, 210, 105)], wakeables: [],
-      hints: [{ x: 160, text: 'Le grand dormeur porte un jardin. Monte sur son dos, puis appelle-le.' },
-        { x: 650, text: 'Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.' }]
+        // À l'arrivée, un veilleur au pied de l'escalier : descendre du songe
+        // n'est pas gratuit.
+        enemy('hopper', 420, 600, 300, 700)],
+      collectibles: [...coins(2520, 552, 5), ...arc(2150, 540, 6), ...arc(1880, 540, 6), ...coins(1115, 445, 5),
+        ...arc(640, 540, 5), ...coins(140, 455, 4), ...coins(345, 365, 4),
+        ...arc(820, 262, 4), ...coins(1275, 255, 4), ...arc(1740, 262, 4), ...coins(2200, 245, 4), ...arc(2430, 212, 4), ...coins(2920, 205, 5),
+        item('star', 1600, 432), item('star', 1990, 212), item('star', 2730, 195), item('heart', 60, 550)],
+      checkpoints: [checkpoint(2560), checkpoint(60)], hazards: [],
+      secrets: [secret(1260, 170, 200, 90)], wakeables: [],
+      hints: [{ x: 2640, text: 'Le grand dormeur t’emmène de l’autre côté du gouffre. Monte sur son dos, puis appelle-le.' },
+        { x: 2080, text: 'Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.' },
+        { x: 420, text: 'La falaise ne se franchit que par le haut. Le chemin du retour passe au-dessus du gouffre.' }]
     },
     {
       // Itération 13 : on ne l'appelle plus, on le PORTE. Et le lieu descend.
