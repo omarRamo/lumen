@@ -105,7 +105,11 @@ async function test(name, run) {
     page.on('request', request => { if (!/^(file|data):/.test(request.url())) external.push(request.url()); });
     await page.addInitScript(() => {
       window.Capacitor = { isNativePlatform: () => true, Plugins: {
-        App: { addListener: async (_, listener) => { window.nativeState = listener; } },
+        // Le pont enregistre plusieurs écouteurs — cycle de vie et bouton « retour » :
+        // les garder par nom, sinon le dernier efface le premier.
+        App: { addListener: async (name, listener) => { (window.nativeListeners ??= {})[name] = listener;
+          if (name === 'appStateChange') window.nativeState = listener; },
+          minimizeApp: async () => { window.nativeMinimized = (window.nativeMinimized || 0) + 1; } },
         StatusBar: { hide: async () => {} },
         Filesystem: {
           readFile: () => new Promise(resolve => setTimeout(() => resolve({ data: JSON.stringify({

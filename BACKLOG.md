@@ -45,9 +45,14 @@ reportés attendent une décision explicite ; leur présence ici n'autorise pas
 3. **Évaluer la lisibilité perçue.** Reconnaître les huit plateformes, les six
    créatures, les dangers, la fin d'un pouvoir et les surfaces d'arrivée.
    Les seuils numériques ne remplacent pas ce test, notamment en basse vision.
-4. **Jouer sur matériel réel.** Safari iOS, Chrome Android, encoche, manette
+4. **Jouer sur matériel réel.** Safari iOS, WebView Android, encoche, manette
    physique, deux pouces, latence, chauffe, autonomie et interruptions.
    Tester la course automatique après 0,38 seconde avant de la changer.
+   Côté Android, l'itération 14 ne prouve que la mise en page et les règles :
+   ni FPS, ni chauffe, ni batterie, ni latence tactile, ni mixage au
+   haut-parleur, ni la WebView d'un constructeur particulier. Vérifier aussi
+   que la bande de 200 dp rendue au pouce suffit contre le geste « retour »,
+   et qu'une notification ne laisse pas les barres système en place.
 5. **Relire les cinq langues et écouter le mixage.** Relecture native, polices
    de substitution et RTL sur appareils réels ; casque, haut-parleurs mobiles,
    bruit ambiant et contrastes en extérieur.
@@ -103,7 +108,12 @@ reportés attendent une décision explicite ; leur présence ici n'autorise pas
 
 ## Distribution À Décider
 
-PWA, paquets mobiles, publication PC et boutiques restent à choisir et à
-produire. Coopération, atelier de chemins et défis quotidiens ne sont pas
-des fonctionnalités promises. Aucun backend, multijoueur ou nouveau chapitre
+L'APK Android et l'IPA iOS existent et sortent de GitHub Actions. Restent à
+choisir : la **publication en boutique** (Play Store, App Store), la PWA et le
+PC. Play exige un AAB signé par une clé de version, une fiche, une politique
+de confidentialité et une classification de contenu ; rien de tout cela n'est
+commencé, et l'APK actuel sert au test, pas à la publication.
+
+Coopération, atelier de chemins et défis quotidiens ne sont pas des
+fonctionnalités promises. Aucun backend, multijoueur ou nouveau chapitre
 n'est engagé par cette liste.

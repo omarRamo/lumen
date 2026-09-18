@@ -10,12 +10,14 @@ traverser, aucun compte, aucune connexion requise.
 
 Ouvrir [index.html](index.html), ou [LUMEN.html](LUMEN.html) pour l'édition
 autonome. Les deux fonctionnent en `file://`, sans serveur ni construction
-préalable. Sur iPhone et iPad, le projet **Capacitor 8** embarque le même jeu
-hors ligne dans une app plein écran. Il se lance depuis Xcode ; le workflow
-TestFlight est disponible pour un compte Apple Developer configuré.
+préalable. Sur iPhone, iPad et Android, le projet **Capacitor 8** embarque le
+même jeu hors ligne dans une app plein écran. iOS se lance depuis Xcode, avec
+un workflow TestFlight pour un compte Apple Developer configuré ; Android sort
+en APK depuis GitHub Actions, sans compte ni boutique.
 
-[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-13/README.md) ·
-[Installation iOS et TestFlight](docs/iteration-08/README.md)
+[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-14/README.md) ·
+[Installation iOS et TestFlight](docs/iteration-08/README.md) ·
+[APK Android](docs/iteration-14/README.md)
 
 ## Une Entrée, Plusieurs Destinations
 
@@ -194,10 +196,12 @@ Le stockage dépend du navigateur, de l'origine ou du chemin local. Déplacer
 le fichier ou changer de navigateur ne transfère pas automatiquement la
 progression. Un stockage refusé n'empêche pas de jouer, mais interdit sa
 conservation. Le joueur ou le système peut effacer les données du navigateur.
-Dans l'app iOS, un miroir dans les fichiers de l'app protège la sauvegarde
-contre une éviction du stockage WebKit. L'origine `capacitor://localhost`
-est gelée. Installer par-dessus l'app conserve la progression ; la désinstaller
-peut la supprimer. Il n'existe ni compte, ni serveur, ni synchronisation entre appareils.
+Dans les apps natives, un miroir dans les fichiers de l'app protège la
+sauvegarde contre une éviction du stockage de la WebView. Les deux origines
+sont gelées : `capacitor://localhost` sur iOS, `https://localhost` sur Android.
+Installer par-dessus l'app conserve la progression ; la désinstaller peut la
+supprimer — et un APK signé par une autre clé oblige à désinstaller d'abord.
+Il n'existe ni compte, ni serveur, ni synchronisation entre appareils.
 
 ## Construire, vérifier et installer
 
@@ -214,8 +218,10 @@ npm run test:places
 Le build produit `LUMEN.html` et `dist/index.html`, identiques et autonomes.
 `verify` couvre les suites de logique, stockage, rendu, audio, langues, poids,
 parcours et navigateur Chromium. WebKit exécute les mêmes suites navigateur.
-Les tests mobile couvrent six formats iPhone/iPad, français et arabe, zones
-sûres, commandes simultanées, caméra, fins et défaite sans défilement.
+Les tests mobile couvrent six formats iPhone/iPad et trois Android (Pixel,
+Galaxy, pliable), français et arabe, zones sûres, commandes simultanées,
+caméra, fins et défaite sans défilement, et le bouton « retour » d'Android.
+Chromium y tient lieu de WebView Android : c'est le même moteur.
 
 Le retour complet dans la rivière, les 16 prolongements dans les deux sens,
 les 40 vies ramassables et leur consommation font partie de `npm test`.
@@ -233,6 +239,40 @@ npx cap open ios
 Choisir **LUMEN → votre iPhone**, garder son équipe de signature, puis **⌘R**.
 Le test personnel par Xcode reste possible sans abonnement payant ; TestFlight
 nécessite l'adhésion. Ne pas désinstaller l'app pour la mettre à jour.
+
+### Installer sur un téléphone Android
+
+Le plus court ne demande rien à installer ici : **le workflow GitHub Actions
+construit l'APK** à chaque poussée sur `main` ou sur une branche
+`iteration-**`. Télécharger l'artefact `LUMEN-android-<run>`, décompresser,
+ouvrir le `.apk` sur le téléphone et autoriser la source. Avec un câble :
+
+```sh
+adb install -r LUMEN.apk
+```
+
+Sans secret de signature, l'APK est signé par la clé de débogage du runner :
+il s'installe et se joue, mais son empreinte change d'un run à l'autre, donc
+la mise à jour passe par une désinstallation. Poser les quatre secrets
+`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`
+et `ANDROID_KEY_PASSWORD` fait passer le workflow en APK de version, stable et
+réinstallable par-dessus.
+
+Pour construire ici, il faut un JDK 21 et le SDK Android. `npm run
+android:doctor` dit ce qui manque et la commande exacte, sans rien installer.
+Une fois le poste équipé :
+
+```sh
+npm run android:doctor   # ce qui manque, et comment le poser
+npm run android:apk      # APK de débogage dans android/app/build/outputs/apk
+npm run android:run      # construit et lance sur l'émulateur ou le téléphone
+```
+
+Le jeu vise Android 16 (`targetSdk 36`) et accepte Android 7 (`minSdk 24`),
+mais le vrai plancher est la **WebView 90** : elle se met à jour par le Play
+Store, donc tout téléphone des cinq dernières années la dépasse largement.
+Un seul APK universel couvre toutes les architectures. En paysage sur
+téléphone, libre de tourner sur tablette et pliable.
 
 ### Jouer sans notifications sur iOS
 
@@ -265,6 +305,8 @@ règles ; ils ne mesurent ni le plaisir, ni les FPS, ni la batterie sur appareil
 | [js/save.js](js/save.js) | Contrat historique de stockage et migration défensive. |
 | [journey.css](journey.css), [song.css](song.css), [style.css](style.css) | Carte, interface commune et mises en page. Le tactile est dans `play.css`. |
 | [tools/build.cjs](tools/build.cjs) | Génération du portable, jamais édité à la main. |
+| [js/platform.js](js/platform.js) | Frontière native commune : miroir de sauvegarde, pause, réveil, bouton « retour » d'Android. |
+| [android/](android/) | Coquille Android : paysage, bord-à-bord, encoche, et la bande du bas rendue au pouce. |
 
 ### Ajouter un lieu
 

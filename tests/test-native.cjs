@@ -9,10 +9,17 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const key = 'lumen.gardens.v3', backup = key + '.backup';
 function fixture({ native = true, values = {}, mirror = {}, diskError = false, wakeLock } = {}) {
   const data = new Map(Object.entries(values)), events = {}, timers = new Map(), writes = [], disk = { ...mirror };
-  let timerId = 0, listener, readCount = 0;
+  const listeners = {};
+  let timerId = 0, readCount = 0, minimized = 0;
   const localStorage = { getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, String(v)), removeItem: k => data.delete(k) };
-  const document = { hidden: false, documentElement: { classList: { add() {} } }, addEventListener: (name, fn) => { events[name] = fn; } };
-  const window = { localStorage, document, navigator: { wakeLock },
+  const dispatched = [];
+  // Le corps du document tient lieu d'élément : une vraie touche vise un élément,
+  // jamais le document, et les écouteurs du jeu appellent target.closest().
+  const body = { closest: () => null, dispatchEvent: event => { dispatched.push(event); return true; } };
+  const document = { hidden: false, body, activeElement: null, documentElement: { classList: { add() {} } },
+    addEventListener: (name, fn) => { events[name] = fn; } };
+  class KeyboardEvent { constructor(type, options) { Object.assign(this, { type }, options); } }
+  const window = { localStorage, document, navigator: { wakeLock }, KeyboardEvent,
     setTimeout(fn) { timers.set(++timerId, fn); return timerId; }, clearTimeout(id) { timers.delete(id); },
     Capacitor: { isNativePlatform: () => native, Plugins: {
       Filesystem: {
@@ -20,21 +27,23 @@ function fixture({ native = true, values = {}, mirror = {}, diskError = false, w
         async writeFile(options) { if (diskError) throw Error('disk'); writes.push(options); },
         async rename() { Object.assign(disk, JSON.parse(writes.at(-1).data)); }
       },
-      App: { addListener(name, fn) { assert.equal(name, 'appStateChange'); listener = fn; return Promise.resolve({ remove() {} }); } }
+      App: { addListener(name, fn) { listeners[name] = fn; return Promise.resolve({ remove() {} }); },
+        minimizeApp() { minimized++; return Promise.resolve(); } }
     } }
   };
   const context = vm.createContext({ window, console });
   vm.runInContext(read('js/platform.js'), context);
   vm.runInContext(read('js/save.js'), context);
   return { platform: window.LumenPlatform, SaveStore: window.LumenSave.SaveStore, localStorage, data, events, timers, writes, disk,
-    document, state: active => listener({ isActive: active }), reads: () => readCount };
+    document, state: active => listeners.appStateChange({ isActive: active }), back: () => listeners.backButton(),
+    dispatched, reads: () => readCount, minimized: () => minimized };
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
 (async () => {
   const config = JSON.parse(read('capacitor.config.json'));
   assert.equal(config.appId, 'com.omartrabelsi.lumen');
   assert.equal(config.appName, 'LUMEN'); assert.equal(config.webDir, 'dist');
-  assert.deepEqual(config.server, { iosScheme: 'capacitor' }); // origin is a save contract
+  assert.deepEqual(config.server, { iosScheme: 'capacitor', androidScheme: 'https' }); // origin is a save contract
   assert.deepEqual(config.ios, { scheme: 'LUMEN', contentInset: 'never', scrollEnabled: false,
     limitsNavigationsToAppBoundDomains: true, backgroundColor: '#dce6d5' });
   const plist = read('ios/App/App/Info.plist');
@@ -109,4 +118,19 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
   const rejected = fixture({ wakeLock: { request: async () => { throw Error('denied'); } } });
   game.mode = 'playing'; rejected.platform.attach(game); await tick();
   console.log('PASS native pause, audio recovery, wake-lock races, release, unsupported and denied APIs');
+
+  // Android n'a pas de touche Échap : son bouton « retour » emprunte la même route.
+  const android = fixture();
+  const shell = { mode: 'playing', on() {}, input: { reset() {} }, audio: { ctx: {}, pause() {} } };
+  android.platform.attach(shell); await tick();
+  android.back();
+  assert.deepEqual(android.dispatched.map(event => [event.type, event.key, event.code, event.bubbles, event.cancelable]),
+    [['keydown', 'Escape', 'Escape', true, true], ['keyup', 'Escape', 'Escape', true, true]]);
+  assert.equal(android.minimized(), 0, 'Une partie en cours ne rend pas la main au système');
+  shell.mode = 'map'; android.back();
+  assert.equal(android.dispatched.length, 4, 'L’atlas reçoit exactement la touche du clavier');
+  shell.mode = 'title'; android.back();
+  assert.equal(android.minimized(), 1, 'Au titre, le retour rend la main à Android');
+  assert.equal(android.dispatched.length, 4, 'Le titre ne simule aucune touche');
+  console.log('PASS Android back button: pause, atlas, and a title screen that hands the phone back');
 })().catch(error => { console.error(error); process.exitCode = 1; });

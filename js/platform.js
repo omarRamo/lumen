@@ -1,5 +1,6 @@
-/* Native boundary. Capacitor injects its bridge and plugin proxies in WKWebView;
- * the portable edition loads no SDK and retains its synchronous web storage. */
+/* Native boundary. Capacitor injects its bridge and plugin proxies in WKWebView
+ * and in Android's WebView alike; the portable edition loads no SDK and retains
+ * its synchronous web storage. Everything below is written once for both shells. */
 (function (global) {
   'use strict';
   const native = !!global.Capacitor?.isNativePlatform?.();
@@ -105,6 +106,20 @@
       void wake();
     });
     try { Promise.resolve(plugins?.App?.addListener('appStateChange', event => state(event.isActive))).catch(() => {}); } catch (_) {}
+    // Android : le bouton « retour » emprunte la route d'Échap, la seule qui connaisse
+    // l'atlas, la pause et les panneaux. Au titre, il rend la main au système.
+    try { Promise.resolve(plugins?.App?.addListener('backButton', () => {
+      if (game.mode === 'title') { try { void plugins?.App?.minimizeApp?.(); } catch (_) {} return; }
+      const Keyboard = global.KeyboardEvent;
+      if (!Keyboard) return;
+      const options = { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true };
+      // Viser l'élément actif, comme le ferait une vraie touche : des écouteurs
+      // lisent event.target.closest(), que le document ne sait pas faire.
+      const target = global.document.activeElement || global.document.body;
+      if (!target) return;
+      target.dispatchEvent(new Keyboard('keydown', options));
+      target.dispatchEvent(new Keyboard('keyup', options));
+    })).catch(() => {}); } catch (_) {}
     try { Promise.resolve(plugins?.StatusBar?.hide()).catch(() => {}); } catch (_) {}
     void wake();
   }

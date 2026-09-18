@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node tools/build.cjs",
-    "test": "node tests/test-ios-ci.cjs && node tests/test-native.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-order.cjs && node tests/test-places.cjs && node tests/playthrough.cjs && node tests/test-continuations.cjs && node tests/test-river-return.cjs && node tests/test-lives.cjs",
+    "test": "node tests/test-ios-ci.cjs && node tests/test-android-ci.cjs && node tests/test-native.cjs && node tests/test-android.cjs && node tests/test-repo-weight.cjs && node tests/test-density.cjs && node tests/test-appearance.cjs && node tests/test-audio.cjs && node tests/test-i18n.cjs && node tests/test-p0.cjs && node tests/test-engine.cjs && node tests/test-renderer.cjs && node tests/test-expedition.cjs && node tests/test-journey.cjs && node tests/test-order.cjs && node tests/test-places.cjs && node tests/playthrough.cjs && node tests/test-continuations.cjs && node tests/test-river-return.cjs && node tests/test-lives.cjs",
     "test:weight": "node tests/test-repo-weight.cjs",
     "test:density": "node tests/test-density.cjs",
     "test:appearance": "node tests/test-appearance.cjs",
@@ -27,9 +27,16 @@
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:assets": "node tools/ios-assets.cjs",
     "test:native": "npm run build && node tests/test-native.cjs",
+    "test:android": "node tests/test-android.cjs && node tests/test-android-ci.cjs",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:assets": "node tools/android-assets.cjs",
+    "android:doctor": "node tools/android-doctor.cjs",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "android:run": "npm run android:sync && npx cap run android",
     "test:mobile": "npm run build && node tests/test-mobile.cjs"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.2",
     "@capacitor/app": "^8.1.1",
     "@capacitor/cli": "^8.5.2",
     "@capacitor/core": "^8.5.2",

@@ -1,0 +1,68 @@
+apply plugin: 'com.android.application'
+
+// La CI injecte -Plumen.* ; une construction locale garde les valeurs de développement.
+def lumenVersionCode = (findProperty('lumen.versionCode') ?: '1') as Integer
+def lumenVersionName = findProperty('lumen.versionName') ?: '7.0.0'
+def lumenStoreFile = findProperty('lumen.storeFile')
+
+android {
+    namespace = "com.omartrabelsi.lumen"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.omartrabelsi.lumen"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode lumenVersionCode
+        versionName lumenVersionName
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        if (lumenStoreFile) {
+            release {
+                storeFile file(lumenStoreFile)
+                // Par l'environnement, jamais par -P : une propriété Gradle se relit
+                // dans « ps » et dans les traces d'erreur.
+                storePassword System.getenv('LUMEN_STORE_PASSWORD')
+                keyAlias System.getenv('LUMEN_KEY_ALIAS')
+                keyPassword System.getenv('LUMEN_KEY_PASSWORD')
+                // Exigé par Android 11+ ; v1 reste pour les rares appareils plus anciens.
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+            }
+        }
+    }
+    buildTypes {
+        release {
+            // Capacitor charge ses plugins par réflexion : R8 les effacerait.
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (lumenStoreFile) signingConfig signingConfigs.release
+        }
+    }
+    // Un seul APK universel : Capacitor n'embarque aucun binaire propre à une architecture.
+    packaging {
+        jniLibs { useLegacyPackaging false }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'

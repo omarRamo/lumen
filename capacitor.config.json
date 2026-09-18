@@ -9,5 +9,14 @@
     "limitsNavigationsToAppBoundDomains": true,
     "backgroundColor": "#dce6d5"
   },
-  "server": { "iosScheme": "capacitor" }
+  "android": {
+    "backgroundColor": "#dce6d5",
+    "zoomEnabled": false,
+    "allowMixedContent": false,
+    "captureInput": false,
+    "useLegacyBridge": false,
+    "minWebViewVersion": 90,
+    "loggingBehavior": "production"
+  },
+  "server": { "iosScheme": "capacitor", "androidScheme": "https" }
 }
