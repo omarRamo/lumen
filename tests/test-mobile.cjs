@@ -78,13 +78,17 @@ async function controlGeometry(page,view) {
     await targets(page,'#touch-controls button',view);
     const measured=await page.evaluate(()=>[...document.querySelectorAll('[data-touch]')].filter(n=>n.getClientRects().length).map(n=>{
       const r=n.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y-3);
-      return {action:n.dataset.touch,width:r.width,height:r.height,extra:!!hit&&n.contains(hit)};
+      const inset=parseFloat(getComputedStyle(n,'::before').insetBlockStart)||0;
+      return {action:n.dataset.touch,width:r.width,height:r.height,extra:!!hit&&n.contains(hit),ink:r.width-inset*2};
     }));
     for(const item of measured){
-      const size=({left:88,right:88,jump:96,action:80,down:48})[item.action];
-      const expected=item.action==='down'?48:Math.max(48,size*scale);
+      const size=({left:88,right:88,jump:96,action:80})[item.action];
+      assert.ok(size,'Unexpected touch control: '+item.action);
+      const expected=Math.max(48,size*scale);
       assert.ok(Math.abs(item.width-expected)<.1&&Math.abs(item.height-expected)<.1,JSON.stringify({view,scale,left,item}));
       assert.ok(item.extra,'Missing 4px hit margin: '+item.action);
+      // L'encre reste plus petite que la cible : le décor vit sous le pouce.
+      assert.ok(item.ink>0&&item.ink<item.width-12,'Ink must stay inside the target: '+JSON.stringify(item));
     }
     const pos=await page.evaluate(()=>{
       const r=document.querySelector('.touch-controls').getBoundingClientRect(),m=document.querySelector('.touch-move').getBoundingClientRect();

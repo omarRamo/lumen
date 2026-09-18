@@ -90,6 +90,7 @@ window.LumenI18n.add([
   ['À droite · D / →', 'Right · D / →', 'Derecha · D / →', 'يمين · D / →', '向右 · D / →'],
   ['Sauter, planer · Espace', 'Jump, glide · Space', 'Saltar, planear · Espacio', 'قفز وانزلاق في الهواء · المسافة', '跳跃、滑翔 · 空格键'],
   ['Chanter · X / J', 'Sing · X / J', 'Cantar · X / J', 'غناء · X / J', '歌唱 · X / J'],
+  ['Agir · X / J', 'Act · X / J', 'Actuar · X / J', 'تفاعل · X / J', '行动 · X / J'],
   ['Commandes tactiles', 'Touch controls', 'Controles táctiles', 'التحكم باللمس', '触屏操作'],
   ['Aller à gauche', 'Move left', 'Ir a la izquierda', 'التحرك يسارًا', '向左移动'],
   ['Aller à droite', 'Move right', 'Ir a la derecha', 'التحرك يمينًا', '向右移动'],

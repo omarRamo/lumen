@@ -769,7 +769,7 @@ async function test(name, run) {
         await openSettings(page);
         await page.locator('#song-touch-size').fill('2');
         await closeSettings(page);
-        assert.equal(await page.evaluate(() => [...document.querySelectorAll('[data-touch]:not([data-touch="down"])')].every(button => {
+        assert.equal(await page.evaluate(() => [...document.querySelectorAll('[data-touch]')].every(button => {
           const rect = button.getBoundingClientRect(); return rect.x >= 0 && rect.right <= innerWidth;
         })), true);
       }
@@ -1057,6 +1057,10 @@ async function test(name, run) {
     assert.ok(principaux.includes('left') && principaux.includes('right'), 'Direction absente.');
     assert.ok(principaux.includes('jump') && principaux.includes('action'), 'Saut ou action absent.');
     assert.ok(!principaux.includes('run'), 'La course ne doit plus occuper un bouton : elle vient du maintien.');
+    // La glissade n'ouvre aucun passage : elle ne mérite pas un cinquième
+    // bouton posé en travers du décor. Le clavier et la manette la gardent.
+    assert.ok(!principaux.includes('down'), 'La glissade ne doit plus occuper un bouton tactile.');
+    assert.deepEqual(principaux.slice().sort(), ['action', 'jump', 'left', 'right']);
 
     const centre = async role => { const r = await page.locator(`[data-touch=${role}]`).boundingBox(); return [r.x + r.width / 2, r.y + r.height / 2]; };
     const presser = async (role, id) => {

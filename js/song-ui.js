@@ -106,8 +106,11 @@
   }
   function sync() {
     if (!game) return;
-    const actionLabel = document.querySelector('[data-touch="action"] small');
-    if (actionLabel) { actionLabel.textContent = game.song ? 'Chanter' : 'Agir'; I18n.translateDOM(actionLabel.parentNode); }
+    const action = document.querySelector('[data-touch="action"]');
+    if (action) {
+      const label = translate(game.song ? 'Chanter · X / J' : 'Agir · X / J');
+      action.title = label; action.setAttribute('aria-label', label);
+    }
     const settingsOnMap = game.mode === 'map' && ['settings','confirm-style'].includes(pane);
     byId('map-screen').inert = settingsOnMap;
     const active = !!game.song && !['map','title'].includes(game.mode);
@@ -218,7 +221,9 @@
     document.querySelectorAll('[data-icon]').forEach(element => { element.innerHTML = icon(element.dataset.icon); });
     const glyphs = { left: 'arrow-left', right: 'arrow-right', jump: 'arrow-up-right', action: 'sparkles' };
     document.querySelectorAll('[data-touch]').forEach(button => {
-      if (glyphs[button.dataset.touch]) button.innerHTML = icon(glyphs[button.dataset.touch]) + (global.LumenTouch?.enabled && ['jump','action'].includes(button.dataset.touch) ? '<small>' + translate(button.dataset.touch === 'jump' ? 'Sauter' : 'Chanter') + '</small>' : '');
+      // Un glyphe seul : le nom de la commande vit dans son title et son
+      // aria-label, pas en travers du décor.
+      if (glyphs[button.dataset.touch]) button.innerHTML = icon(glyphs[button.dataset.touch]);
       const names = { left: 'À gauche · Q / A / ←', right: 'À droite · D / →', jump: 'Sauter, planer · Espace', action: 'Chanter · X / J' };
       if (names[button.dataset.touch]) button.title = translate(names[button.dataset.touch]);
     });
