@@ -1992,6 +1992,8 @@ window.LumenI18n.add([
   ['Les Rêves nomades', 'Wandering Dreams', 'Los Sueños Nómadas', 'الأحلام الرحّالة', '流浪梦境'],
   ['Une nuit ne ressemble à aucune autre.', 'Every night is different.', 'Cada noche es diferente.', 'لا تشبه ليلةٌ أخرى.', '每一夜都不同。'],
   ['La falaise ne se franchit que par le haut. Le chemin du retour passe au-dessus du gouffre.', 'The cliff can only be crossed from above. The way back runs high over the chasm.', 'El acantilado solo se supera por arriba. El camino de vuelta pasa por encima del abismo.', 'لا يُعبَر الجرف إلا من الأعلى. طريق العودة يمرّ فوق الهوّة.', '悬崖只能从上方越过。回程的路高悬在深渊之上。'],
+  ['Quand la rivière déborde, on nage lentement en bas ; les nénuphars portent plus vite, mais certains s’enfoncent.', 'When the river overflows, you swim slowly below; the lily pads carry you faster, but some sink.', 'Cuando el río se desborda, abajo se nada despacio; los nenúfares llevan más rápido, pero algunos se hunden.', 'حين يفيض النهر، تسبح ببطء في الأسفل؛ زنابق الماء تحملك أسرع، لكن بعضها يغوص.', '河水漫溢时，在低处只能慢慢游；睡莲载你更快，但有些会沉下去。'],
+  ['La rivière se souvient, et déborde.', 'The river remembers, and overflows.', 'El río recuerda, y se desborda.', 'يتذكّر النهر، فيفيض.', '河水想起了过往，漫过了河岸。'],
 ]);
 
 </script>
@@ -3635,6 +3637,11 @@ window.LumenI18n.add([
     if (config.kind === 'river') {
       state.light = 0; state.restored = false;
       state.metrics.beaconsLit = 0; state.metrics.riverRestored = false; game.exit.open = false;
+      if (config.flood) {
+        state.flooded = false; state.metrics.flooded = false; state.metrics.raftLandings = 0; state.lastLanding = null;
+        state.floodPlatforms = game.platforms.filter(platform => ['flood-bed', 'flood-raft'].includes(platform.placeRole));
+        for (const platform of state.floodPlatforms) platform.active = false;
+      }
     }
     if (config.kind === 'ascent') {
       state.peakY = game.player.y; state.metrics.climbed = 0; state.metrics.peakY = state.peakY;
@@ -3731,6 +3738,32 @@ window.LumenI18n.add([
     else if (t < rest + travel) { cloud.x = cloud.from + (cloud.to - cloud.from) * (t - rest) / travel; cloud.alpha = 1; cloud.stage = 'crossing'; }
     else { cloud.x = cloud.to; cloud.alpha = Math.max(0, 1 - (t - rest - travel) / fade); cloud.stage = 'fading'; }
   }
+  /** La crue. Déclenchée une fois, par le nombre de reflets rendus, et
+   *  jamais défaite : l'eau monte à sa vitesse, les radeaux montent avec
+   *  elle, et le lit du gouffre devient un fond où l'on nage au lieu d'un
+   *  vide où l'on tombe. */
+  function flood(game, state, rule, dt) {
+    if (!state.flooded && state.metrics.beaconsLit >= rule.after) {
+      state.flooded = true; state.metrics.flooded = true;
+      state.waterY = rule.from || 700;
+      for (const platform of state.floodPlatforms) platform.active = true;
+      game.audio.sfx('wakeBridge'); game.shake?.(4);
+      game.emit('toast', 'La rivière se souvient, et déborde.');
+    }
+    if (!state.flooded) return;
+    state.waterY = Math.max(rule.y, state.waterY - (rule.rise || 70) * dt);
+    game.level.water = { y: state.waterY, start: rule.start, end: rule.end };
+    for (const platform of state.floodPlatforms) {
+      if (platform.placeRole !== 'flood-raft') continue;
+      const old = platform.y;
+      // Un radeau flotte : tant que l'eau monte, il monte avec elle.
+      platform.y = Math.max(platform.baseY, state.waterY + 10);
+      platform.dy = platform.y - old;
+    }
+    const landing = game.player.standingPlatform;
+    if (landing?.placeRole === 'flood-raft' && landing !== state.lastLanding) state.metrics.raftLandings++;
+    state.lastLanding = landing;
+  }
   /** La distance d'un point au rectangle d'une plateforme. */
   function reachOf(platform, x, y) {
     const dx = Math.max(platform.x - x, 0, x - platform.x - platform.w);
@@ -3792,6 +3825,7 @@ window.LumenI18n.add([
         game.audio.sfx('victory'); game.emit('toast', 'La rivière se souvient de la lune.');
       }
       game.exit.open = state.restored;
+      if (config.flood) flood(game, state, config.flood, dt);
     }
     if (state.kind === 'ascent') {
       state.peakY = Math.min(state.peakY, game.player.y);
@@ -3862,7 +3896,11 @@ window.LumenI18n.add([
       state.astre.carried = true; state.astre.x = p.x + p.w / 2; state.astre.y = p.y - 24;
       p.burden = true; lightAround(state, game.level.place);
     }
-    // The river remembers its lit beacons:
+    if (state.kind === 'river' && state.floodPlatforms && !state.flooded) {
+      // Avant la crue, un radeau friable remis par la chute n'existe pas encore.
+      for (const platform of state.floodPlatforms) platform.active = false;
+    }
+    // The river remembers its lit beacons (and its flood):
     // a fall loses the traversal, never the work already done in this visit.
   }
   global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn, objective };
@@ -4705,14 +4743,26 @@ window.LumenI18n.add([
       subtitle: 'L’eau a oublié ce qu’elle reflétait.', theme: 'tide', width: 4000, height: 900,
       medalTargets: { gold: 110, silver: 170 }, spawn: { x: 100, y: 554 }, exit: { ...exit(4000), open: false },
       goal: 'Rends trois reflets à la rivière.',
+      // Itération 13 : le lieu change d'état en chemin. Au deuxième reflet
+      // rendu, la rivière se souvient et DÉBORDE : l'eau monte sur la dernière
+      // rive, la marche devient une nage lente, et des nénuphars montent avec
+      // elle — une route de radeaux, dont deux s'enfoncent sous le poids.
       place: { kind: 'river', beacons: ['riviere-source','riviere-reflet','riviere-lune'],
+        flood: { after: 2, y: 490, start: 2390, end: 3900, rise: 70 },
         pilot: [{ x: 585, surfaceY: 600, call: true }, { x: 770, surfaceY: 600, call: true }, { x: 1660, surfaceY: 600 },
-          { x: 1940, surfaceY: 600, call: true }, { x: 2240, surfaceY: 600, call: true }, { x: 3170, surfaceY: 600 },
-          { x: 3350, surfaceY: 600, call: true }, { x: 3870, surfaceY: 600 }],
+          { x: 1940, surfaceY: 600, call: true }, { x: 2240, surfaceY: 600, call: true }, { x: 2360, surfaceY: 600 },
+          { x: 2490, surfaceY: 500 }, { x: 2690, surfaceY: 500 }, { x: 2900, surfaceY: 500 }, { x: 3110, surfaceY: 500 },
+          { x: 3240, surfaceY: 475 }, { x: 3350, surfaceY: 500, call: true }, { x: 3560, surfaceY: 500 }, { x: 3760, surfaceY: 500 },
+          { x: 3870, surfaceY: 600 }],
         captureMetric: { name: 'beaconsLit', min: 3 } },
       platforms: [ground(0, 900), ground(1500, 880), ground(3040, 960),
         ledge(440, 480, 250), ledge(630, 375, 230), ledge(1690, 485, 240), ledge(1870, 375, 240, 'crumble'),
-        ledge(2090, 285, 230), ledge(3160, 475, 240), ledge(3440, 380, 250)],
+        ledge(2090, 285, 230), ledge(3160, 475, 240), ledge(3440, 380, 250),
+        // Ce qui n'existe qu'après la crue : le lit de la rivière sous le
+        // gouffre (on n'y tombe plus dans le vide, on y nage), et les radeaux.
+        { ...ground(2380, 660, 780), placeRole: 'flood-bed' },
+        ...[[2420, 'solid'], [2620, 'solid'], [2830, 'crumble'], [3040, 'solid'], [3280, 'crumble'], [3490, 'solid'], [3700, 'solid']]
+          .map(([x, type]) => ledge(x, 500, 140, type, { placeRole: 'flood-raft' }))],
       wakeables: [wake('bloom', 600, 575, { id: 'riviere-source' }),
         wake('chime', 820, 545, { id: 'riviere-relais-1' }), wake('chime', 980, 545, { id: 'riviere-relais-2' }),
         wake('chime', 1130, 545, { id: 'riviere-relais-3' }), wake('bridge', 1200, 600, { id: 'riviere-pont-1', span: 640 }),
@@ -4735,7 +4785,8 @@ window.LumenI18n.add([
       secrets: [secret(645, 270, 205, 108), secret(2100, 180, 215, 108), secret(3450, 275, 230, 108)],
       hints: [{ x: 170, text: 'Trois grandes corolles gardent les reflets perdus. Appelle-les pour rendre sa lune à la rivière.' },
         { x: 745, text: 'Le carillon relaie ton appel au-dessus de l’eau. Un chemin bas se dessine ; les reflets secrets sont plus haut.' },
-        { x: 1680, text: 'Le dormeur écoute lui aussi. Un appel suffit à en faire une marche tranquille.' }]
+        { x: 1680, text: 'Le dormeur écoute lui aussi. Un appel suffit à en faire une marche tranquille.' },
+        { x: 2330, text: 'Quand la rivière déborde, on nage lentement en bas ; les nénuphars portent plus vite, mais certains s’enfoncent.' }]
     }
   );
   newPlaces.push(
@@ -6629,11 +6680,32 @@ window.LumenI18n.add([
     if(kind(game)==='chain'&&object.placeRole==='living-bridge') { livingBridge(c,object,p,t);return true; }
     if(kind(game)==='rain'&&object.placeRole==='rain-step') { rainStep(c,object,p,t);return true; }
     if(kind(game)==='escort'&&object.placeRole==='astre-light') { lightStep(c,object,p,t);return true; }
+    if(kind(game)==='river'&&object.placeRole==='flood-raft') { lilyPad(c,object,p,t);return true; }
+    if(kind(game)==='river'&&object.placeRole==='flood-bed') { riverBed(c,object,p);return true; }
     return false;
   }
   function beforePlatforms(c,game,p,t,renderer) {
     if(kind(game)==='river')river(c,game,p,t,renderer);
     if(kind(game)==='rain')rainClouds(c,game,p,t);
+  }
+  /** Un nénuphar de la crue : une feuille large, fendue, posée sur l'eau.
+   *  Le friable a une fleur fermée et des bords bruns — il prévient. */
+  function lilyPad(c,object,p,t) {
+    if(object.active===false)return;
+    const {x,y,w}=object,soft=object.type==='crumble',sink=object.crumbleTimer>0?(.62-object.crumbleTimer)*14:0;
+    const cx=x+w/2,cy=y+6+sink+Math.sin(t*1.8+x)*1.5;
+    c.save();
+    oval(c,cx,cy+4,w*.54,11,'#1c4d5a55');
+    c.beginPath();c.ellipse(cx,cy,w*.52,10,0,.18,TAU-.18);c.lineTo(cx,cy);c.closePath();
+    c.fillStyle=soft?'#8fae78':'#6fae88';c.fill();
+    c.strokeStyle=soft?'#a67c4c':'#cfeedd';c.lineWidth=2;c.stroke();
+    for(let i=-2;i<=2;i++)stroke(c,[[cx,cy],[cx+i*w*.18,cy-4+Math.abs(i)*2]],'#ffffff40',1.2);
+    if(soft){oval(c,cx-w*.2,cy-6,6,5,'#e7b6c7');}else{star(c,cx+w*.22,cy-7,5,p.rim);}
+    c.restore();
+  }
+  function riverBed(c,object,p) {
+    if(object.active===false)return;
+    c.save();c.globalAlpha=.5;c.fillStyle=p.shade;c.fillRect(object.x,object.y,object.w,120);c.restore();
   }
   /** Une passerelle de lumière : éteinte, un pointillé et trois grains —
    *  la promesse d'un chemin, lisible de loin ; allumée, une dalle de verre

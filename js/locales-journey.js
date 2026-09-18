@@ -90,4 +90,6 @@ window.LumenI18n.add([
   ['Les Rêves nomades', 'Wandering Dreams', 'Los Sueños Nómadas', 'الأحلام الرحّالة', '流浪梦境'],
   ['Une nuit ne ressemble à aucune autre.', 'Every night is different.', 'Cada noche es diferente.', 'لا تشبه ليلةٌ أخرى.', '每一夜都不同。'],
   ['La falaise ne se franchit que par le haut. Le chemin du retour passe au-dessus du gouffre.', 'The cliff can only be crossed from above. The way back runs high over the chasm.', 'El acantilado solo se supera por arriba. El camino de vuelta pasa por encima del abismo.', 'لا يُعبَر الجرف إلا من الأعلى. طريق العودة يمرّ فوق الهوّة.', '悬崖只能从上方越过。回程的路高悬在深渊之上。'],
+  ['Quand la rivière déborde, on nage lentement en bas ; les nénuphars portent plus vite, mais certains s’enfoncent.', 'When the river overflows, you swim slowly below; the lily pads carry you faster, but some sink.', 'Cuando el río se desborda, abajo se nada despacio; los nenúfares llevan más rápido, pero algunos se hunden.', 'حين يفيض النهر، تسبح ببطء في الأسفل؛ زنابق الماء تحملك أسرع، لكن بعضها يغوص.', '河水漫溢时，在低处只能慢慢游；睡莲载你更快，但有些会沉下去。'],
+  ['La rivière se souvient, et déborde.', 'The river remembers, and overflows.', 'El río recuerda, y se desborda.', 'يتذكّر النهر، فيفيض.', '河水想起了过往，漫过了河岸。'],
 ]);

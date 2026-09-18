@@ -17,7 +17,9 @@ const CONTRACTS = {
   // des passerelles qui n'existent que dans sa lumière, puis rendu chez lui.
   escort: metrics => metrics.carriedDistance >= 2400 && metrics.lightLandings >= 4 && metrics.escortArrived === true,
   chain: metrics => metrics.chainWakes >= 3 && metrics.bridgeDistance >= 300,
-  river: metrics => metrics.beaconsLit >= 3 && metrics.riverRestored === true,
+  // Itération 13 : la rivière déborde en chemin, et la dernière rive se
+  // traverse sur les radeaux que la crue fait monter.
+  river: metrics => metrics.beaconsLit >= 3 && metrics.riverRestored === true && metrics.flooded === true && metrics.raftLandings >= 2,
   ascent: metrics => metrics.climbed >= 800,
   rain: metrics => metrics.rainGrown >= 3 && metrics.rainLandings >= 2
 };

@@ -163,6 +163,40 @@ test('Position fixture: all three river beacons require resonance and their tran
   assert.equal(game.place.restored, true); assert.equal(game.exit.open, true);
 });
 
+test('Position fixture: the river changes state on the way — the second reflection floods the last bank, for good', () => {
+  const { game } = load('riviere-sans-lune');
+  const rafts = game.platforms.filter(p => p.placeRole === 'flood-raft');
+  const bed = game.platforms.find(p => p.placeRole === 'flood-bed');
+  const said = []; game.on('toast', message => said.push(message));
+  assert.equal(game.level.water, undefined, 'Avant la crue, pas d’eau sur la rive.');
+  assert.ok(rafts.length >= 5 && rafts.every(r => !r.active) && !bed.active);
+  // Un seul reflet : rien ne bouge.
+  game.wokenOnce.add('riviere-source'); tick(game, .5);
+  assert.equal(game.place.flooded, false);
+  // Le deuxième : la rivière déborde. L'eau monte à sa vitesse, les radeaux avec.
+  game.wokenOnce.add('riviere-reflet'); tick(game, .2);
+  assert.equal(game.place.flooded, true); assert.ok(said.includes('La rivière se souvient, et déborde.'));
+  const rising = game.level.water.y; tick(game, 1);
+  assert.ok(game.level.water.y < rising, 'L’eau monte, elle n’apparaît pas d’un coup.');
+  tick(game, 4);
+  assert.equal(game.level.water.y, game.level.place.flood.y);
+  assert.ok(rafts.every(r => r.active && r.y === r.baseY), 'Les radeaux ont fini de monter.');
+  // La rive basse est sous l'eau : on y nage, on n'y saute plus.
+  position(game, 3300, 554); tick(game, .3);
+  assert.equal(game.player.wet, true);
+  // Le gouffre a désormais un fond : on y nage au lieu d'y tomber.
+  position(game, 2700, 600); tick(game, 3);
+  assert.equal(game.mode, 'playing'); assert.equal(game.player.standingPlatform, bed);
+  // Un radeau friable s'enfonce sous le poids.
+  const soft = rafts.find(r => r.type === 'crumble');
+  position(game, soft.x + 50, soft.y - 46); tick(game, 1.2);
+  assert.equal(soft.active, false, 'Un nénuphar friable s’enfonce.');
+  // Et une chute ne défait pas la crue.
+  game.die(); tick(game, 2);
+  assert.equal(game.place.flooded, true); assert.equal(game.level.water.y, game.level.place.flood.y);
+  assert.ok(rafts.filter(r => r.type !== 'crumble').every(r => r.active));
+});
+
 test('The tall garden starts alive below the old fixed screen and its camera follows world altitude', () => {
   const { game } = load('colonne-des-saisons');
   assert.ok(game.player.y > 830);

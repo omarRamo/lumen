@@ -833,14 +833,26 @@
       subtitle: 'L’eau a oublié ce qu’elle reflétait.', theme: 'tide', width: 4000, height: 900,
       medalTargets: { gold: 110, silver: 170 }, spawn: { x: 100, y: 554 }, exit: { ...exit(4000), open: false },
       goal: 'Rends trois reflets à la rivière.',
+      // Itération 13 : le lieu change d'état en chemin. Au deuxième reflet
+      // rendu, la rivière se souvient et DÉBORDE : l'eau monte sur la dernière
+      // rive, la marche devient une nage lente, et des nénuphars montent avec
+      // elle — une route de radeaux, dont deux s'enfoncent sous le poids.
       place: { kind: 'river', beacons: ['riviere-source','riviere-reflet','riviere-lune'],
+        flood: { after: 2, y: 490, start: 2390, end: 3900, rise: 70 },
         pilot: [{ x: 585, surfaceY: 600, call: true }, { x: 770, surfaceY: 600, call: true }, { x: 1660, surfaceY: 600 },
-          { x: 1940, surfaceY: 600, call: true }, { x: 2240, surfaceY: 600, call: true }, { x: 3170, surfaceY: 600 },
-          { x: 3350, surfaceY: 600, call: true }, { x: 3870, surfaceY: 600 }],
+          { x: 1940, surfaceY: 600, call: true }, { x: 2240, surfaceY: 600, call: true }, { x: 2360, surfaceY: 600 },
+          { x: 2490, surfaceY: 500 }, { x: 2690, surfaceY: 500 }, { x: 2900, surfaceY: 500 }, { x: 3110, surfaceY: 500 },
+          { x: 3240, surfaceY: 475 }, { x: 3350, surfaceY: 500, call: true }, { x: 3560, surfaceY: 500 }, { x: 3760, surfaceY: 500 },
+          { x: 3870, surfaceY: 600 }],
         captureMetric: { name: 'beaconsLit', min: 3 } },
       platforms: [ground(0, 900), ground(1500, 880), ground(3040, 960),
         ledge(440, 480, 250), ledge(630, 375, 230), ledge(1690, 485, 240), ledge(1870, 375, 240, 'crumble'),
-        ledge(2090, 285, 230), ledge(3160, 475, 240), ledge(3440, 380, 250)],
+        ledge(2090, 285, 230), ledge(3160, 475, 240), ledge(3440, 380, 250),
+        // Ce qui n'existe qu'après la crue : le lit de la rivière sous le
+        // gouffre (on n'y tombe plus dans le vide, on y nage), et les radeaux.
+        { ...ground(2380, 660, 780), placeRole: 'flood-bed' },
+        ...[[2420, 'solid'], [2620, 'solid'], [2830, 'crumble'], [3040, 'solid'], [3280, 'crumble'], [3490, 'solid'], [3700, 'solid']]
+          .map(([x, type]) => ledge(x, 500, 140, type, { placeRole: 'flood-raft' }))],
       wakeables: [wake('bloom', 600, 575, { id: 'riviere-source' }),
         wake('chime', 820, 545, { id: 'riviere-relais-1' }), wake('chime', 980, 545, { id: 'riviere-relais-2' }),
         wake('chime', 1130, 545, { id: 'riviere-relais-3' }), wake('bridge', 1200, 600, { id: 'riviere-pont-1', span: 640 }),
@@ -863,7 +875,8 @@
       secrets: [secret(645, 270, 205, 108), secret(2100, 180, 215, 108), secret(3450, 275, 230, 108)],
       hints: [{ x: 170, text: 'Trois grandes corolles gardent les reflets perdus. Appelle-les pour rendre sa lune à la rivière.' },
         { x: 745, text: 'Le carillon relaie ton appel au-dessus de l’eau. Un chemin bas se dessine ; les reflets secrets sont plus haut.' },
-        { x: 1680, text: 'Le dormeur écoute lui aussi. Un appel suffit à en faire une marche tranquille.' }]
+        { x: 1680, text: 'Le dormeur écoute lui aussi. Un appel suffit à en faire une marche tranquille.' },
+        { x: 2330, text: 'Quand la rivière déborde, on nage lentement en bas ; les nénuphars portent plus vite, mais certains s’enfoncent.' }]
     }
   );
   newPlaces.push(

@@ -373,11 +373,32 @@
     if(kind(game)==='chain'&&object.placeRole==='living-bridge') { livingBridge(c,object,p,t);return true; }
     if(kind(game)==='rain'&&object.placeRole==='rain-step') { rainStep(c,object,p,t);return true; }
     if(kind(game)==='escort'&&object.placeRole==='astre-light') { lightStep(c,object,p,t);return true; }
+    if(kind(game)==='river'&&object.placeRole==='flood-raft') { lilyPad(c,object,p,t);return true; }
+    if(kind(game)==='river'&&object.placeRole==='flood-bed') { riverBed(c,object,p);return true; }
     return false;
   }
   function beforePlatforms(c,game,p,t,renderer) {
     if(kind(game)==='river')river(c,game,p,t,renderer);
     if(kind(game)==='rain')rainClouds(c,game,p,t);
+  }
+  /** Un nénuphar de la crue : une feuille large, fendue, posée sur l'eau.
+   *  Le friable a une fleur fermée et des bords bruns — il prévient. */
+  function lilyPad(c,object,p,t) {
+    if(object.active===false)return;
+    const {x,y,w}=object,soft=object.type==='crumble',sink=object.crumbleTimer>0?(.62-object.crumbleTimer)*14:0;
+    const cx=x+w/2,cy=y+6+sink+Math.sin(t*1.8+x)*1.5;
+    c.save();
+    oval(c,cx,cy+4,w*.54,11,'#1c4d5a55');
+    c.beginPath();c.ellipse(cx,cy,w*.52,10,0,.18,TAU-.18);c.lineTo(cx,cy);c.closePath();
+    c.fillStyle=soft?'#8fae78':'#6fae88';c.fill();
+    c.strokeStyle=soft?'#a67c4c':'#cfeedd';c.lineWidth=2;c.stroke();
+    for(let i=-2;i<=2;i++)stroke(c,[[cx,cy],[cx+i*w*.18,cy-4+Math.abs(i)*2]],'#ffffff40',1.2);
+    if(soft){oval(c,cx-w*.2,cy-6,6,5,'#e7b6c7');}else{star(c,cx+w*.22,cy-7,5,p.rim);}
+    c.restore();
+  }
+  function riverBed(c,object,p) {
+    if(object.active===false)return;
+    c.save();c.globalAlpha=.5;c.fillStyle=p.shade;c.fillRect(object.x,object.y,object.w,120);c.restore();
   }
   /** Une passerelle de lumière : éteinte, un pointillé et trois grains —
    *  la promesse d'un chemin, lisible de loin ; allumée, une dalle de verre

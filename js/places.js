@@ -38,6 +38,11 @@
     if (config.kind === 'river') {
       state.light = 0; state.restored = false;
       state.metrics.beaconsLit = 0; state.metrics.riverRestored = false; game.exit.open = false;
+      if (config.flood) {
+        state.flooded = false; state.metrics.flooded = false; state.metrics.raftLandings = 0; state.lastLanding = null;
+        state.floodPlatforms = game.platforms.filter(platform => ['flood-bed', 'flood-raft'].includes(platform.placeRole));
+        for (const platform of state.floodPlatforms) platform.active = false;
+      }
     }
     if (config.kind === 'ascent') {
       state.peakY = game.player.y; state.metrics.climbed = 0; state.metrics.peakY = state.peakY;
@@ -134,6 +139,32 @@
     else if (t < rest + travel) { cloud.x = cloud.from + (cloud.to - cloud.from) * (t - rest) / travel; cloud.alpha = 1; cloud.stage = 'crossing'; }
     else { cloud.x = cloud.to; cloud.alpha = Math.max(0, 1 - (t - rest - travel) / fade); cloud.stage = 'fading'; }
   }
+  /** La crue. Déclenchée une fois, par le nombre de reflets rendus, et
+   *  jamais défaite : l'eau monte à sa vitesse, les radeaux montent avec
+   *  elle, et le lit du gouffre devient un fond où l'on nage au lieu d'un
+   *  vide où l'on tombe. */
+  function flood(game, state, rule, dt) {
+    if (!state.flooded && state.metrics.beaconsLit >= rule.after) {
+      state.flooded = true; state.metrics.flooded = true;
+      state.waterY = rule.from || 700;
+      for (const platform of state.floodPlatforms) platform.active = true;
+      game.audio.sfx('wakeBridge'); game.shake?.(4);
+      game.emit('toast', 'La rivière se souvient, et déborde.');
+    }
+    if (!state.flooded) return;
+    state.waterY = Math.max(rule.y, state.waterY - (rule.rise || 70) * dt);
+    game.level.water = { y: state.waterY, start: rule.start, end: rule.end };
+    for (const platform of state.floodPlatforms) {
+      if (platform.placeRole !== 'flood-raft') continue;
+      const old = platform.y;
+      // Un radeau flotte : tant que l'eau monte, il monte avec elle.
+      platform.y = Math.max(platform.baseY, state.waterY + 10);
+      platform.dy = platform.y - old;
+    }
+    const landing = game.player.standingPlatform;
+    if (landing?.placeRole === 'flood-raft' && landing !== state.lastLanding) state.metrics.raftLandings++;
+    state.lastLanding = landing;
+  }
   /** La distance d'un point au rectangle d'une plateforme. */
   function reachOf(platform, x, y) {
     const dx = Math.max(platform.x - x, 0, x - platform.x - platform.w);
@@ -195,6 +226,7 @@
         game.audio.sfx('victory'); game.emit('toast', 'La rivière se souvient de la lune.');
       }
       game.exit.open = state.restored;
+      if (config.flood) flood(game, state, config.flood, dt);
     }
     if (state.kind === 'ascent') {
       state.peakY = Math.min(state.peakY, game.player.y);
@@ -265,7 +297,11 @@
       state.astre.carried = true; state.astre.x = p.x + p.w / 2; state.astre.y = p.y - 24;
       p.burden = true; lightAround(state, game.level.place);
     }
-    // The river remembers its lit beacons:
+    if (state.kind === 'river' && state.floodPlatforms && !state.flooded) {
+      // Avant la crue, un radeau friable remis par la chute n'existe pas encore.
+      for (const platform of state.floodPlatforms) platform.active = false;
+    }
+    // The river remembers its lit beacons (and its flood):
     // a fall loses the traversal, never the work already done in this visit.
   }
   global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn, objective };
