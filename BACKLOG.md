@@ -34,9 +34,14 @@ reportés attendent une décision explicite ; leur présence ici n'autorise pas
 2. **Éprouver les deux idées des îles.** Observer si l'inversion du courant
    est comprise en la voyant une fois et si Nève invite à poursuivre ou
    intercepter, pas à attendre. Comparer Balade et Élan sans ajouter de notes.
-   Observer aussi les six nouveaux stages : comprendre la monture, accompagner
-   l'astre, renouveler le pont, relayer la rivière, lire la montée et déplacer
-   la pluie. Les parcours automatiques prouvent leur issue, pas leur plaisir.
+   Observer aussi les six nouveaux stages, tels que l'itération 13 les a
+   refaits : comprendre l'aller-retour du songe, porter et poser l'astre,
+   traverser le pont une fois la nuit tombée, lire la crue de la rivière, lire
+   la montée et suivre le rythme de la pluie. Régler à la main la vitesse du
+   nuage, la vie des pas, le saut chargé et la durée du chant usé. Les
+   parcours automatiques prouvent leur issue, pas leur plaisir.
+   Ensuite, la suite commune : les 3940 px générés à la fin de chaque stage ont
+   le même profil partout, et sont la prochaine source de répétition.
 3. **Évaluer la lisibilité perçue.** Reconnaître les huit plateformes, les six
    créatures, les dangers, la fin d'un pouvoir et les surfaces d'arrivée.
    Les seuils numériques ne remplacent pas ce test, notamment en basse vision.

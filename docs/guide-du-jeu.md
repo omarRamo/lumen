@@ -54,7 +54,17 @@ montre trois fleurs, dont celles déjà réveillées. Avoir `3/3` fragments ne
 remplace pas ce réveil. Il est possible de revenir depuis la dernière lanterne :
 une marche remonte la grande descente, et appeler les carillons réveille les
 ponts depuis l'une ou l'autre rive. Ils restent temporaires : rappelle-les
-avant de traverser s'ils se sont rendormis.
+avant de traverser s'ils se sont rendormis. Au deuxième reflet, la rivière
+déborde : on nage lentement sur la rive basse, et les nénuphars qui montent
+avec l'eau forment une route plus rapide — deux d'entre eux s'enfoncent.
+
+Dans **Le petit astre égaré / The little lost star**, l'astre se porte : appelle
+près de lui pour le prendre, appelle encore pour le poser. Sa lumière fait
+exister les passerelles ; chargé, tu sautes moins haut. **Sur le dos d'un
+songe**, le grand dormeur t'emmène loin de la sortie, et le retour passe par
+les hauteurs. **Le pont des veilleurs** s'use à mi-chemin : chaque veilleur ne
+réveille plus que ses voisins. **Là où pleut la lumière**, les nuages tiennent
+leur propre rythme : suis la pluie de près.
 
 ## Un voyage plus lisible
 

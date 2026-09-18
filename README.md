@@ -14,7 +14,7 @@ préalable. Sur iPhone et iPad, le projet **Capacitor 8** embarque le même jeu
 hors ligne dans une app plein écran. Il se lance depuis Xcode ; le workflow
 TestFlight est disponible pour un compte Apple Developer configuré.
 
-[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-12/README.md) ·
+[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-13/README.md) ·
 [Installation iOS et TestFlight](docs/iteration-08/README.md)
 
 ## Une Entrée, Plusieurs Destinations
@@ -101,12 +101,12 @@ départ ; aucun pouvoir temporaire n'est requis pour les terminer.
 
 | Acte | Nouveau lieu | Décision |
 | --- | --- | --- |
-| I | Sur le dos d'un songe | Voyager sur une créature apaisée, puis quitter son dos pour les détours. |
-| I | Le petit astre égaré | Éclairer la route devant un astre autonome, puis revenir le chercher. |
-| II | Le pont des veilleurs | Entretenir une chaîne de chants avant de s'engager sur son pont. |
-| II | La rivière sans lune | Relayer l'appel au-dessus de l'eau et retrouver trois reflets. |
+| I | Sur le dos d'un songe | Partir loin de la sortie sur le dos d'une créature, puis revenir par les hauteurs. |
+| I | Le petit astre égaré | Porter dans la descente un astre dont la lumière fait le chemin, et savoir quand le poser. |
+| II | Le pont des veilleurs | Réveiller une chaîne de chants, puis la traverser voisin par voisin quand la nuit l'use. |
+| II | La rivière sans lune | Retrouver trois reflets ; au deuxième, la rivière déborde et la fin se traverse autrement. |
 | III | La colonne des saisons | Monter de palier en palier, avec tremplins et plateformes mobiles. |
-| III | Là où pleut la lumière | Déplacer une pluie qui fait pousser des appuis temporaires. |
+| III | Là où pleut la lumière | Suivre le rythme d'une pluie qui fait pousser des pas éphémères. |
 
 Les lieux changent de composition : dos d'une créature, jardin nocturne,
 viaduc vivant, rivière de reflets, colonne verticale et jardin sous la pluie.
@@ -139,6 +139,8 @@ Dans **La rivière sans lune**, ce sont les trois grandes fleurs appelées par
 Résonance qui ouvrent la porte. Les fragments sont facultatifs. Les ponts se
 réveillent depuis les deux rives et les dernières terrasses se remontent avec
 le saut normal. La porte fermée rappelle les trois fleurs avec des pictogrammes.
+Au deuxième reflet rendu, la rivière déborde : la dernière rive se nage, ou se
+traverse sur les nénuphars que la crue fait monter.
 
 ## Commandes Et Réglages
 
@@ -219,7 +221,7 @@ Le retour complet dans la rivière, les 16 prolongements dans les deux sens,
 les 40 vies ramassables et leur consommation font partie de `npm test`.
 `npm run test:order` prouve, acte par acte, qu'aucun lieu ne s'ouvre avant que
 le précédent soit terminé, et qu'une sauvegarde ancienne ne perd rien.
-Voir le [rapport de l'itération 12](docs/iteration-12/README.md).
+Voir le [rapport de l'itération 13](docs/iteration-13/README.md).
 
 Sur un Mac avec Xcode, pour réinstaller sur son iPhone branché :
 
