@@ -14,7 +14,7 @@ préalable. Sur iPhone et iPad, le projet **Capacitor 8** embarque le même jeu
 hors ligne dans une app plein écran. Il se lance depuis Xcode ; le workflow
 TestFlight est disponible pour un compte Apple Developer configuré.
 
-[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-11/README.md) ·
+[Guide du jeu](docs/guide-du-jeu.md) · [Dernière itération](docs/iteration-12/README.md) ·
 [Installation iOS et TestFlight](docs/iteration-08/README.md)
 
 ## Une Entrée, Plusieurs Destinations
@@ -219,7 +219,7 @@ Le retour complet dans la rivière, les 16 prolongements dans les deux sens,
 les 40 vies ramassables et leur consommation font partie de `npm test`.
 `npm run test:order` prouve, acte par acte, qu'aucun lieu ne s'ouvre avant que
 le précédent soit terminé, et qu'une sauvegarde ancienne ne perd rien.
-Voir le [rapport de l'itération 11](docs/iteration-11/README.md).
+Voir le [rapport de l'itération 12](docs/iteration-12/README.md).
 
 Sur un Mac avec Xcode, pour réinstaller sur son iPhone branché :
 
