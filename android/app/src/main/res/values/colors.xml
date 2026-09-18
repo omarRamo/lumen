@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Le vert pâle de l'île des petits matins. Identique au fond iOS et au canvas. -->
+    <color name="lumen_background">#dce6d5</color>
+</resources>

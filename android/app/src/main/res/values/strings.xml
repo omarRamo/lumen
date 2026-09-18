@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LUMEN</string>
+    <string name="title_activity_main">LUMEN</string>
+    <string name="package_name">com.omartrabelsi.lumen</string>
+    <string name="custom_url_scheme">com.omartrabelsi.lumen</string>
+</resources>

@@ -7,13 +7,19 @@ const engine = process.env.LUMEN_BROWSER || 'chromium';
 const browserType = require('playwright')[engine];
 const browserTools = require('../tools/browser.cjs');
 const root = path.resolve(__dirname, '..');
+// Les quatre premiers sont des iPhone, les deux iPad, puis trois Android. En paysage,
+// la pastille d'un Android tombe sur un bord court ; ses barres sont masquées, donc
+// le bas retombe sur le plancher CSS de 12 px, sauf pliable où la pilule reste.
 const views = [
   {name:'iPhone Pro Max',width:956,height:440,side:62,bottom:21},
   {name:'iPhone landscape',width:844,height:390,side:47,bottom:21},
   {name:'iPhone SE',width:667,height:375,side:16,bottom:12},
   {name:'small landscape',width:568,height:320,side:16,bottom:12},
   {name:'iPad portrait',width:768,height:1024,side:16,bottom:21},
-  {name:'iPad landscape',width:1024,height:768,side:16,bottom:21}
+  {name:'iPad landscape',width:1024,height:768,side:16,bottom:21},
+  {name:'Android pastille',width:915,height:412,side:34,bottom:12},
+  {name:'Android compact',width:780,height:360,side:16,bottom:12},
+  {name:'Android pliable',width:841,height:701,side:16,bottom:24}
 ];
 let browser, passed=0;
 async function open(view,language='fr',native=true) {
@@ -22,7 +28,11 @@ async function open(view,language='fr',native=true) {
   page.on('pageerror',e=>errors.push(e.message));
   page.on('request',r=>{if(!/^(file|data):/.test(r.url()))external.push(r.url());});
   await page.addInitScript(({native,language})=>{
-    if(native)window.Capacitor={isNativePlatform:()=>true,Plugins:{}};
+    // Le pont d'Android retient ses écouteurs : le test peut appuyer sur « retour ».
+    if(native)window.Capacitor={isNativePlatform:()=>true,Plugins:{App:{
+      addListener(name,fn){(window.__bridge??={})[name]=fn;return Promise.resolve({remove(){}});},
+      minimizeApp(){window.__minimized=(window.__minimized||0)+1;return Promise.resolve();}
+    }}};
     localStorage.setItem('lumen.gardens.v3',JSON.stringify({schema:3,settings:{muted:true,language,appearance:language==='ar'?'dark':'light'}}));
   },{native,language});
   await page.goto(pathToFileURL(path.join(root,'LUMEN.html')).href);
@@ -184,7 +194,14 @@ async function close(run) {
       assert.equal(sheet.covers,false,view.name+' : la fiche recouvre le quai de départ');
       assert.ok(sheet.inView&&sheet.hit,JSON.stringify(sheet));
       assert.ok(sheet.height>=56,JSON.stringify(sheet));
-      await page.locator(`[data-place="${current}"]`).tap();
+      // Sur un écran court la fiche recouvre la lumière choisie : le second appui
+      // n'est plus possible au doigt, et le bouton de la fiche — déjà prouvé visible
+      // et touchable ci-dessus — devient le seul chemin. Prendre celui qui existe.
+      const exposed=await page.locator(`[data-place="${current}"]`).evaluate(n=>{
+        const r=n.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+        return !!hit&&(n.contains(hit)||hit===n);
+      });
+      await page.locator(exposed?`[data-place="${current}"]`:'#journey-details [data-journey-launch]').tap();
       await page.waitForFunction(key=>lumen.mode==='playing'&&lumen.level.key===key,current);
       await page.evaluate(()=>lumen.showMap());
       for(const act of [1,2,3]) {
@@ -261,6 +278,28 @@ async function close(run) {
     });
     assert.equal(draws.paused,1);assert.equal(draws.rotated,2);
     await close(run);passed++;console.log('PASS native gestures, simultaneous touch, cancellation, render budget');
+
+    // Android n'a pas de touche Échap. Son bouton « retour » doit ouvrir la pause,
+    // la refermer, reculer dans l'atlas, puis rendre le téléphone au titre.
+    {
+      const run=await open(views[6]),{page}=run;
+      const back=async()=>{await page.evaluate(()=>window.__bridge.backButton({canGoBack:false}));await page.waitForTimeout(60);};
+      assert.equal(await page.evaluate(()=>lumen.mode),'playing');
+      await back();assert.equal(await page.evaluate(()=>lumen.mode),'paused');
+      // open() laisse le jeu sur la première île : sa pause est le panneau du Chant.
+      await page.locator('#song-panel').waitFor({state:'visible'});
+      await back();assert.equal(await page.evaluate(()=>lumen.mode),'playing');
+      await page.evaluate(()=>lumen.showMap());
+      await page.locator(`[data-place="${await page.evaluate(()=>LumenJourney.next(lumen).id)}"]`).tap();
+      await page.locator('#journey-details').waitFor({state:'visible'});
+      await back();
+      assert.equal(await page.evaluate(()=>lumen.mode),'map','Le retour recule dans l’atlas, il n’en sort pas');
+      assert.equal(await page.evaluate(()=>window.__minimized||0),0,'Une partie ouverte garde le téléphone');
+      await page.evaluate(()=>{lumen.mode='title';});
+      await back();
+      assert.equal(await page.evaluate(()=>window.__minimized||0),1,'Au titre, le retour rend la main à Android');
+      await close(run);passed++;console.log('PASS Android back button through the real atlas, pause and title');
+    }
     const web=await open(views[0],'fr',false);
     assert.equal(await web.page.evaluate(()=>document.documentElement.classList.contains('lumen-native')),false);
     assert.ok(!(await web.page.locator('meta[name=viewport]').getAttribute('content')).includes('user-scalable'));

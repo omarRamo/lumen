@@ -1,0 +1,107 @@
+name: LUMEN · APK Android
+on:
+  push:
+    branches: [main, 'iteration-**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lumen-android-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    # Écriture seulement ici, et seulement pour attacher l'APK à sa release.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # Capacitor 8 et AGP 8.13 exigent un JDK 21.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - name: Choisir la voie sans afficher aucun secret
+        run: node tools/android-release.cjs --check
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - run: npm ci
+      # Chromium est le moteur de la WebView Android : c'est lui qui juge ici.
+      - run: npx playwright install chromium
+      - run: npm run verify
+      - run: npx cap sync android
+      - name: Construire l’APK
+        run: node tools/android-release.cjs --assemble
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Prouver la signature avant le téléphone
+        run: node tools/android-release.cjs --verify
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Conserver l’APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LUMEN-android-${{ github.run_number }}
+          path: android/app/build/outputs/apk/*/*.apk
+          if-no-files-found: error
+          retention-days: 14
+      # Un artefact d'Actions exige un compte GitHub pour être téléchargé, même
+      # sur un dépôt public, et il expire. Une pièce jointe de release, non :
+      # lien permanent, sans compte, sans frais. Le tag ne change jamais, donc
+      # l'adresse donnée à quelqu'un sert toujours la dernière construction.
+      - name: Publier l’APK derrière un lien libre
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          built=(android/app/build/outputs/apk/*/*.apk)
+          cp "${built[0]}" LUMEN.apk
+          notes=$(printf '%s\n' \
+            'APK de test, construit par GitHub Actions. Aucun compte requis pour le télécharger.' \
+            '' \
+            "Construction ${{ github.run_number }} · commit \`${{ github.sha }}\`" \
+            '' \
+            '**Installer.** Ouvrir le fichier sur le téléphone et autoriser l’installation' \
+            'depuis cette source. Android 7 minimum, et une WebView à jour (Chrome 90 ou plus),' \
+            'ce qui est le cas de tout téléphone des cinq dernières années.' \
+            '' \
+            '**Mettre à jour.** Tant qu’aucune clé de signature n’est configurée, chaque' \
+            'construction porte une empreinte différente : il faut désinstaller la' \
+            'précédente, ce qui efface la progression.')
+          gh release view android-test >/dev/null 2>&1 \
+            || gh release create android-test --prerelease --title 'LUMEN Android — dernière construction' --notes "$notes"
+          gh release edit android-test --notes "$notes"
+          gh release upload android-test LUMEN.apk --clobber
+      - name: Dire où le prendre
+        if: always()
+        run: |
+          {
+            echo '## APK LUMEN'
+            echo ''
+            echo 'Lien permanent, sans compte GitHub, toujours la dernière construction :'
+            echo ''
+            echo '<https://github.com/${{ github.repository }}/releases/download/android-test/LUMEN.apk>'
+            echo ''
+            echo 'Ou, câble branché :'
+            echo ''
+            echo '```sh'
+            echo 'adb install -r LUMEN.apk'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
