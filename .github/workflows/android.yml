@@ -12,6 +12,9 @@ jobs:
   android:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    # Écriture seulement ici, et seulement pour attacher l'APK à sa release.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -59,15 +62,44 @@ jobs:
           path: android/app/build/outputs/apk/*/*.apk
           if-no-files-found: error
           retention-days: 14
-      - name: Dire comment l’installer
+      # Un artefact d'Actions exige un compte GitHub pour être téléchargé, même
+      # sur un dépôt public, et il expire. Une pièce jointe de release, non :
+      # lien permanent, sans compte, sans frais. Le tag ne change jamais, donc
+      # l'adresse donnée à quelqu'un sert toujours la dernière construction.
+      - name: Publier l’APK derrière un lien libre
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          built=(android/app/build/outputs/apk/*/*.apk)
+          cp "${built[0]}" LUMEN.apk
+          notes=$(printf '%s\n' \
+            'APK de test, construit par GitHub Actions. Aucun compte requis pour le télécharger.' \
+            '' \
+            "Construction ${{ github.run_number }} · commit \`${{ github.sha }}\`" \
+            '' \
+            '**Installer.** Ouvrir le fichier sur le téléphone et autoriser l’installation' \
+            'depuis cette source. Android 7 minimum, et une WebView à jour (Chrome 90 ou plus),' \
+            'ce qui est le cas de tout téléphone des cinq dernières années.' \
+            '' \
+            '**Mettre à jour.** Tant qu’aucune clé de signature n’est configurée, chaque' \
+            'construction porte une empreinte différente : il faut désinstaller la' \
+            'précédente, ce qui efface la progression.')
+          gh release view android-test >/dev/null 2>&1 \
+            || gh release create android-test --prerelease --title 'LUMEN Android — dernière construction' --notes "$notes"
+          gh release edit android-test --notes "$notes"
+          gh release upload android-test LUMEN.apk --clobber
+      - name: Dire où le prendre
         if: always()
         run: |
           {
             echo '## APK LUMEN'
             echo ''
-            echo 'Télécharger **LUMEN-android-${{ github.run_number }}** dans les artefacts de ce run,'
-            echo 'décompresser, puis sur le téléphone : ouvrir le fichier `.apk` et autoriser'
-            echo 'l’installation depuis cette source. Ou, câble branché :'
+            echo 'Lien permanent, sans compte GitHub, toujours la dernière construction :'
+            echo ''
+            echo '<https://github.com/${{ github.repository }}/releases/download/android-test/LUMEN.apk>'
+            echo ''
+            echo 'Ou, câble branché :'
             echo ''
             echo '```sh'
             echo 'adb install -r LUMEN.apk'

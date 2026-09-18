@@ -108,6 +108,19 @@ Toute sortie d'erreur est masquée avant d'être affichée.
 `--verify` prouve, avant le téléphone, que l'APK porte une signature v2 :
 Android 11 et suivants refusent les autres.
 
+### Le lien qui se partage
+
+Un artefact d'Actions exige un compte GitHub pour être téléchargé — même sur
+un dépôt public — et disparaît au bout de 14 jours. Une pièce jointe de
+release, non. Le workflow attache donc l'APK à une prerelease au tag fixe
+`android-test`, écrasée à chaque construction : l'adresse ne change jamais et
+sert toujours la dernière.
+
+<https://github.com/omarRamo/lumen/releases/download/android-test/LUMEN.apk>
+
+C'est le seul endroit du workflow qui écrit dans le dépôt ; le droit
+`contents: write` est posé sur le job, pas sur le fichier.
+
 ---
 
 ## 4. Simuler depuis ce Mac

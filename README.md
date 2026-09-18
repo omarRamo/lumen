@@ -242,10 +242,18 @@ nécessite l'adhésion. Ne pas désinstaller l'app pour la mettre à jour.
 
 ### Installer sur un téléphone Android
 
-Le plus court ne demande rien à installer ici : **le workflow GitHub Actions
-construit l'APK** à chaque poussée sur `main` ou sur une branche
-`iteration-**`. Télécharger l'artefact `LUMEN-android-<run>`, décompresser,
-ouvrir le `.apk` sur le téléphone et autoriser la source. Avec un câble :
+Le plus court ne demande rien à installer, ni ici ni sur le téléphone qui le
+reçoit. **Le workflow GitHub Actions construit l'APK** à chaque poussée sur
+`main` ou sur une branche `iteration-**`, et le publie derrière une adresse
+qui ne change jamais :
+
+<https://github.com/omarRamo/lumen/releases/download/android-test/LUMEN.apk>
+
+Ce lien sert toujours la dernière construction et se partage tel quel : une
+pièce jointe de release se télécharge sans compte GitHub, contrairement à
+l'artefact du run, qui exige une connexion et expire au bout de 14 jours.
+Ouvrir le `.apk` sur le téléphone et autoriser l'installation depuis cette
+source. Avec un câble :
 
 ```sh
 adb install -r LUMEN.apk
