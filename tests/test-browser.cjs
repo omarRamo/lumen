@@ -1222,6 +1222,58 @@ async function test(name, run) {
       JSON.stringify({ mesures, note: 'Cadrage et bornes de particules seulement ; aucune mesure de performance.' }, null, 2));
   });
 
+  await test('Un lieu gardé annonce sa condition, et le pouce reçoit les aides qui ne nomment aucune touche', async () => {
+    const { page, context, errors } = await open('paysage');
+    // Le voyage garde son ordre : on termine ce qui précède avant d'entrer.
+    await page.evaluate(() => {
+      const target = window.lumen.indexOfKey('riviere-sans-lune');
+      for (const level of window.LUMEN_LEVELS.slice(0, target)) {
+        if (!level.hub) window.lumen.store.recordChapter(level.key, { stars: 0, time: 60 });
+      }
+      window.lumen.start(target);
+    });
+    await page.waitForFunction(() => window.lumen.mode === 'playing' && window.lumen.frames > 4);
+    await page.waitForFunction(() => !document.getElementById('quest-banner').classList.contains('hidden'));
+    const banner = await page.evaluate(() => ({
+      shown: !document.getElementById('quest-banner').classList.contains('hidden'),
+      title: document.getElementById('quest-title').textContent,
+      progress: document.getElementById('quest-progress').textContent,
+      done: document.getElementById('quest-banner').classList.contains('done')
+    }));
+    assert.equal(banner.shown, true, 'La condition de sortie doit être affichée en permanence.');
+    assert.equal(banner.title, 'Rends trois reflets à la rivière.');
+    assert.equal(banner.progress, 'Reflets rendus : 0 sur 3.');
+    assert.equal(banner.done, false);
+
+    // Une aide qui ne nomme pas de touche arrive en bulle sous le pouce ;
+    // celle qui en nomme une reste au clavier et ne s'affiche jamais ici.
+    await page.waitForFunction(() => !document.getElementById('chapter-intro').classList.contains('show'));
+    const bulle = await page.evaluate(async () => {
+      const hint = window.lumen.level.hints[1];
+      window.lumen.player.x = hint.x;
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return { texte: document.getElementById('toast').textContent,
+        visible: document.getElementById('toast').classList.contains('show'),
+        bandeau: document.getElementById('level-hint').classList.contains('hidden') };
+    });
+    assert.equal(bulle.visible, true, 'L’aide doit atteindre le joueur tactile.');
+    assert.ok(bulle.texte.includes('carillon'), bulle.texte);
+    assert.equal(bulle.bandeau, true, 'Le bandeau du clavier ne doit pas occuper le bas de l’écran.');
+
+    // Les trois reflets rendus : la sortie s'ouvre et le bandeau le dit.
+    const apres = await page.evaluate(async () => {
+      for (const id of window.lumen.level.place.beacons) window.lumen.wokenOnce.add(id);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return { ouverte: window.lumen.exit.open, progress: document.getElementById('quest-progress').textContent,
+        done: document.getElementById('quest-banner').classList.contains('done') };
+    });
+    assert.equal(apres.ouverte, true); assert.equal(apres.done, true);
+    assert.equal(apres.progress, 'La sortie s’ouvre.');
+    await page.screenshot({ path: path.join(shots, 'lieu-garde.png') });
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
   await browser.close();
   console.log('\n' + (checks.length - failed) + '/' + checks.length + ' contrôles navigateur réussis.');
   if(!filter)fs.writeFileSync(path.join(root, 'tests', 'browser-test-results.json'),

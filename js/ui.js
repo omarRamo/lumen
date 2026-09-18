@@ -6,6 +6,10 @@
   const translate = (source, values) => I18n.t(source, values);
   const screens = ['home','map','pause','help','complete','dream','route'];
   let game, toastTimer, introTimer, damageTimer, helpPrevious='home', transitioning=false, lastHud='', lastHint='', uiTime=0, selectedRunMode='explore';
+  // Ce qui se lit sur un clavier et nulle part ailleurs. Le test porte sur la
+  // phrase écrite, jamais sur sa traduction : le verdict reste le même partout.
+  const namesAKey=text=>/\b(?:X|J|Q|D|A|W|Z|S)\b|Espace|Maj|[←→↑↓]/.test(String(text));
+  const hintsSeen=new Set();
   let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='';
   let routeChoice=null, routeUpgrade=null, lastRoute=null, lastResult=null, lastToast=null;
   const timeLabel = (seconds, precise=false) => {
@@ -288,7 +292,7 @@
       $('boss-fill').style.width=b.hp/b.maxHp*100+'%';$('boss-phase').textContent=translate(b.phase===2?'PHASE II':'PHASE I');
       $('boss-tip').textContent=translate(b.vulnerable?'Sa couronne est ouverte ! Sautez dessus ou utilisez votre pouvoir.':b.state==='telegraph'?'Le Veilleur prépare son attaque. Gardez de l’espace.':'Évitez les orbes. Sautez par-dessus les ondes au sol.');
     }
-    const quest=game.level.quest;
+    const quest=game.level.quest,aim=window.LumenPlaces?.objective(game);
     if(quest) {
       const state=game.store.questState(quest.id);
       const done=quest.needs.filter(id=>game.wokenOnce.has(id)).length;
@@ -296,10 +300,26 @@
       $('quest-banner').classList.toggle('done',state==='done');
       $('quest-title').textContent=translate(quest.title);
       $('quest-progress').textContent=state==='done'?translate(quest.reward):`${translate(quest.summary)} · ${done} / ${quest.needs.length}`;
+    } else if(aim) {
+      // Un lieu dont la sortie attend quelque chose le dit tout du long : on ne
+      // découvre plus le verrou en arrivant devant le portail.
+      $('quest-banner').classList.remove('hidden');
+      $('quest-banner').classList.toggle('done',aim.done);
+      $('quest-title').textContent=translate(game.level.goal||'');
+      $('quest-progress').textContent=aim.done?translate('La sortie s’ouvre.'):translate(aim.text,aim.values);
     } else $('quest-banner').classList.add('hidden');
-    const hint=!window.LumenTouch?.enabled&&(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
-    $('level-hint').classList.toggle('hidden',!hint||$('chapter-intro').classList.contains('show'));
-    if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=translate(hint.text);}
+    const hint=(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
+    const introShowing=$('chapter-intro').classList.contains('show');
+    if(window.LumenTouch?.enabled) {
+      // Au pouce, l'aide passe en bulle : elle dit la même chose, puis s'efface
+      // au lieu d'occuper le bas de l'écran. Celles qui nomment une touche
+      // n'ont rien à lui apprendre et restent au clavier.
+      $('level-hint').classList.add('hidden');
+      if(hint&&!introShowing&&!namesAKey(hint.text)&&!hintsSeen.has(hint.text)){hintsSeen.add(hint.text);toast(hint.text);}
+    } else {
+      $('level-hint').classList.toggle('hidden',!hint||introShowing);
+      if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=translate(hint.text);}
+    }
   }
   function updateIntroText(level) {
     // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
@@ -317,7 +337,7 @@
     if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
     updateIntroText(level);
     $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),window.LumenTouch?.enabled?1100:2400);
-    lastHint='';lastHud='';
+    lastHint='';lastHud='';hintsSeen.clear();
     $('hud').classList.remove('heart-hit');
   }
   function healthImpact() {

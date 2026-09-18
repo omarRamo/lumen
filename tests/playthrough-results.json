@@ -522,7 +522,7 @@
     "key": "astre-a-guider",
     "kind": "escort",
     "mode": "complete",
-    "seconds": 41.06,
+    "seconds": 41.07,
     "deaths": 0,
     "lives": 3,
     "hp": 3,
@@ -678,7 +678,7 @@
       {
         "t": 32.1,
         "x": 4022,
-        "y": 394,
+        "y": 414,
         "waypoint": 4,
         "standing": 8,
         "state": null
@@ -686,7 +686,7 @@
       {
         "t": 34.1,
         "x": 4664,
-        "y": 474,
+        "y": 484,
         "waypoint": 6,
         "standing": 9,
         "state": null
@@ -702,15 +702,15 @@
       {
         "t": 38.1,
         "x": 5949,
-        "y": 414,
+        "y": 394,
         "waypoint": 8,
         "standing": 12,
         "state": null
       },
       {
         "t": 40.1,
-        "x": 6490,
-        "y": 363,
+        "x": 6487,
+        "y": 353,
         "waypoint": 10,
         "standing": null,
         "state": null
@@ -1154,7 +1154,7 @@
     "key": "pluie-de-lumiere",
     "kind": "rain",
     "mode": "complete",
-    "seconds": 33.02,
+    "seconds": 33.03,
     "deaths": 0,
     "lives": 3,
     "hp": 3,
@@ -1278,7 +1278,7 @@
       {
         "t": 24.1,
         "x": 4068,
-        "y": 394,
+        "y": 414,
         "waypoint": 15,
         "standing": 16,
         "state": null
@@ -1286,7 +1286,7 @@
       {
         "t": 26.1,
         "x": 4710,
-        "y": 474,
+        "y": 484,
         "waypoint": 17,
         "standing": 17,
         "state": null
@@ -1302,15 +1302,15 @@
       {
         "t": 30.1,
         "x": 5995,
-        "y": 414,
+        "y": 394,
         "waypoint": 19,
         "standing": 20,
         "state": null
       },
       {
         "t": 32.1,
-        "x": 6538,
-        "y": 363,
+        "x": 6535,
+        "y": 352,
         "waypoint": 21,
         "standing": null,
         "state": null

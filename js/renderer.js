@@ -103,6 +103,7 @@
       if (level.water) this.water(c, level.water, cameraX, t, p);
       c.restore();
       if (!placeBackground) this.foreground(c, t, cameraX, p, theme);
+      this.waypoint(c, game, p, t);
       if (game.flash && game.flash.life > 0) {
         c.save(); c.globalAlpha = Math.min(.24, (game.flash.life / (game.flash.maxLife || .35)) * .24);
         c.fillStyle = game.flash.color || '#fff2c9'; c.fillRect(0, 0, this.worldWidth, 720); c.restore();
@@ -408,6 +409,30 @@
       c.strokeStyle = col; c.lineWidth = 3; c.beginPath(); c.arc(0, -80, 10, -.6, Math.PI + .6); c.stroke();
       c.fillStyle = active ? '#9dd9b0' : '#b3c6b5'; c.beginPath(); c.moveTo(3, -67); c.bezierCurveTo(16, -73, 20, -63 + Math.sin(t * 4) * 4, 37, -69 + Math.sin(t * 4) * 4); c.lineTo(29, -56 + Math.sin(t * 4) * 2); c.lineTo(37, -48 + Math.sin(t * 4) * 3); c.bezierCurveTo(19, -43, 16, -58, 3, -51); c.fill(); star(c, 16, -60, 4, '#f1f5d9');
       if (active) { c.shadowColor = '#cfffcb'; c.shadowBlur = 12; ellipse(c, 0, -82, 4, 4, '#f5f8ce'); c.shadowBlur = 0; for (let i = 0; i < 4; i++) star(c, Math.sin(t + i * 1.5) * 18, -82 + Math.cos(t + i * 1.5) * 18, 2, '#ddf3bf'); }
+      c.restore();
+    }
+    /** Une balise au bord de l'écran quand ce que la sortie attend est sorti du
+     *  champ. Elle donne une direction, jamais un chemin : le trajet, les sauts
+     *  et les détours restent entiers. Elle disparaît dès que la chose est
+     *  visible, et n'existe pas du tout dans un lieu sans condition. */
+    waypoint(c, game, p, t) {
+      const aim = window.LumenPlaces?.objective?.(game);
+      if (!aim || aim.done || !aim.target || game.mode !== 'playing') return;
+      const margin = 42, x = aim.target.x - this.cameraX;
+      if (x > margin && x < this.worldWidth - margin) return;
+      const side = x <= margin ? -1 : 1;
+      const edge = side < 0 ? margin : this.worldWidth - margin;
+      const y = Math.max(130, Math.min(610, aim.target.y - this.cameraY));
+      const pulse = .74 + Math.sin(t * 3.4) * .26;
+      c.save(); c.translate(edge, y);
+      c.globalAlpha = .93;
+      rounded(c, -27, -17, 54, 34, 17, p.rim || '#f6f2dc');
+      c.strokeStyle = (p.dark || '#1d4147') + '3d'; c.lineWidth = 1.4;
+      c.beginPath(); c.roundRect(-27, -17, 54, 34, 17); c.stroke();
+      star(c, -side * 9, 0, 7.5, p.accent, t * .7);
+      c.globalAlpha = pulse;
+      c.strokeStyle = p.rock || '#3f6d70'; c.lineWidth = 3; c.lineCap = 'round'; c.lineJoin = 'round';
+      c.beginPath(); c.moveTo(side * 9, -7); c.lineTo(side * 16, 0); c.lineTo(side * 9, 7); c.stroke();
       c.restore();
     }
     portal(c, o, t, p) {

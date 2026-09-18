@@ -738,7 +738,7 @@
         item('star', 1140, 442), item('star', 1400, 340), item('star', 2930, 340), item('heart', 2500, 550)],
       checkpoints: [checkpoint(350), checkpoint(2560)], hazards: [],
       secrets: [secret(1290, 280, 210, 105)], wakeables: [],
-      hints: [{ x: 160, text: 'Le grand dormeur porte un jardin. Monte sur son dos, puis appelle avec X.' },
+      hints: [{ x: 160, text: 'Le grand dormeur porte un jardin. Monte sur son dos, puis appelle-le.' },
         { x: 650, text: 'Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.' }]
     },
     {
@@ -766,7 +766,7 @@
         ...coins(1700, 438, 4),
         ...coins(2070, 333, 4), ...coins(2520, 428, 4), item('star', 1170, 352), item('star', 2140, 323), item('star', 2610, 417), item('echo', 1900, 550)],
       checkpoints: [checkpoint(950), checkpoint(2190)], secrets: [secret(2035, 250, 210, 130)],
-      hints: [{ x: 180, text: 'Réveille les fleurs avec X. Le petit astre avance seulement dans leur lumière.' },
+      hints: [{ x: 180, text: 'Ton appel ouvre les fleurs. Le petit astre avance seulement dans leur lumière.' },
         { x: 980, text: 'Partir devant ouvre le chemin. Revenir près de l’astre lui évite d’attendre dans le noir.' }]
     }
   ];
@@ -894,7 +894,7 @@
         ...coins(1540, 445, 4), ...arc(2120, 525, 5),
         ...coins(2820, 446, 4), item('star', 355, 440), item('star', 1620, 440), item('star', 2920, 440)],
       secrets: [secret(1515, 385, 220, 110)],
-      hints: [{ x: 160, text: 'Appelle avec X : le nuage vient pleuvoir devant toi. Attends que le prochain pas ait poussé.' },
+      hints: [{ x: 160, text: 'Ton appel fait venir le nuage pleuvoir devant toi. Attends que le prochain pas ait poussé.' },
         { x: 1480, text: 'Les pas s’effacent sans pluie. Tu peux te retourner et rappeler le nuage pour revenir.' }]
     }
   );

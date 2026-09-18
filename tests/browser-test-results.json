@@ -1,5 +1,5 @@
 {
-  "passed": 31,
+  "passed": 32,
   "failed": 0,
   "checks": [
     {
@@ -124,6 +124,10 @@
     },
     {
       "name": "Aucun défilement horizontal et des particules bornées sur cinq formats",
+      "passed": true
+    },
+    {
+      "name": "Un lieu gardé annonce sa condition, et le pouce reçoit les aides qui ne nomment aucune touche",
       "passed": true
     }
   ]

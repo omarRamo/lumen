@@ -135,6 +135,58 @@ test('Position fixture: rain grows only where sent, warns, expires and can grow 
   assert.equal(steps[0].active, true);
 });
 
+test('A guarded place names what its exit is waiting for, and points at it once it is off screen', () => {
+  const { game, window } = load('riviere-sans-lune');
+  const objective = () => window.LumenPlaces.objective(game);
+  const lit = () => objective().values.done;
+  assert.equal(game.exit.open, false);
+  assert.equal(objective().done, false);
+  assert.equal(objective().text, 'Reflets rendus : {done} sur {total}.');
+  assert.deepEqual({ ...objective().values }, { done: 0, total: 3 });
+  // La cible désigne une balise éteinte, jamais la sortie ni un chemin.
+  const beacons = game.level.place.beacons;
+  assert.ok(beacons.includes(game.wakeables.find(w => w.x === objective().target.x).id));
+  for (const id of beacons) {
+    game.wokenOnce.add(id);
+    tick(game, DT);
+    assert.equal(lit(), beacons.indexOf(id) + 1);
+  }
+  assert.equal(objective().done, true);
+  assert.equal(objective().target, null, 'Rien à désigner quand plus rien ne manque.');
+  assert.equal(game.exit.open, true);
+});
+
+test('The little star reports how far it has walked, and its report never runs backwards', () => {
+  const { game, window } = load('astre-a-guider');
+  const objective = () => window.LumenPlaces.objective(game);
+  assert.equal(game.exit.open, false);
+  assert.equal(objective().values.done, 0);
+  const astre = game.place.astre, config = game.level.place;
+  astre.x = config.startX + (config.endX - config.startX) / 2;
+  assert.equal(objective().values.done, 50);
+  assert.deepEqual({ ...objective().target }, { x: astre.x, y: astre.y });
+  astre.x = config.endX; tick(game, DT);
+  assert.equal(objective().done, true);
+  assert.equal(objective().values.done, 100);
+  assert.equal(game.exit.open, true);
+});
+
+test('An ordinary place has nothing to announce, and a closed exit always says why', () => {
+  const { game, window } = load('pont-des-veilleurs');
+  assert.equal(window.LumenPlaces.objective(game), null, 'Un lieu sans condition ne doit rien afficher.');
+
+  const river = load('riviere-sans-lune');
+  const said = [];
+  river.game.on('toast', message => said.push(message));
+  // Arriver devant un portail fermé doit répondre, une fois, puis se taire.
+  position(river.game, river.game.exit.x + 10, river.game.exit.y + 40);
+  tick(river.game, .1);
+  assert.deepEqual(said, [river.game.level.goal]);
+  position(river.game, river.game.exit.x + 10, river.game.exit.y + 40);
+  tick(river.game, 1);
+  assert.equal(said.length, 1, 'Le rappel ne doit pas se répéter à chaque image.');
+});
+
 test('Entering a new place after a lost expedition makes Retry restart that place, not the old night', () => {
   const { game } = environment();
   game.startExpedition(42); game.finishExpedition(false);

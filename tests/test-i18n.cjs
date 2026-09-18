@@ -99,6 +99,13 @@ test('Place-specific completion messages have five translations', () => {
   assert.ok(messages.length >= 2);
   assert.deepEqual(messages.filter(message => !I18n.has(message)), []);
 });
+test('What a guarded place says about its closed exit has five translations', () => {
+  const source = fs.readFileSync(path.join(root, 'js', 'places.js'), 'utf8');
+  const messages = [...source.matchAll(/\btext:\s*'([^']+)'/g)].map(match => match[1]);
+  assert.ok(messages.length >= 2, 'Guarded places must state what they are still waiting for.');
+  assert.deepEqual(messages.filter(message => !I18n.has(message)), []);
+  assert.ok(I18n.has('La sortie s’ouvre.'));
+});
 test('The former hero name cannot return to sources, catalogs or the portable edition', () => {
   const formerName = new RegExp('\\b' + ['Ni', 'lo'].join('') + '\\b|' +
     String.fromCodePoint(0x646, 0x64a, 0x644, 0x648) + '|' + String.fromCodePoint(0x5c3c, 0x6d1b), 'i');

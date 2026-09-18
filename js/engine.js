@@ -312,6 +312,7 @@
       // attend sa quête). Ne l'ouvrir d'office que si elle ne s'est pas prononcée.
       this.exit = { w:70, h:100, ...data.exit,
         open: data.exit && data.exit.open !== undefined ? data.exit.open : !data.boss };
+      this.exitNudge = 0;
       this.restoreWorldState();
       this.projectiles = []; this.particles = []; this.floatingTexts = [];
       this.checkpoint = { x:data.spawn.x, y:data.spawn.y };
@@ -641,10 +642,17 @@
       this.updateCheckpoints(); this.updateSecrets(); this.updateCharacters(dt);
       this.updateDanger(dt);
       this.audio.updateWorld?.(this, dt);
+      this.exitNudge = Math.max(0, (this.exitNudge || 0) - dt);
       if (this.exit.open && overlap(this.player, this.exit)) {
         if (this.level.hub) { this.player.vx = 0; this.emit('portal', this.exit.leadsTo || 'map'); }
         else if (this.session === 'expedition' && this.run) this.completeRoom();
         else this.complete();
+      } else if (!this.exit.open && overlap(this.player, this.exit) && !this.exitNudge) {
+        // Un portail fermé qui ne dit rien se lit comme un bug. Celui-ci
+        // rappelle ce que le lieu attend encore, sans jamais dire où aller.
+        this.exitNudge = 5;
+        this.audio.sfx('wakeEnd'); this.emit('exit-closed', this.level);
+        if (this.level.goal) this.emit('toast', this.level.goal);
       }
       this.followCamera(dt);
     }

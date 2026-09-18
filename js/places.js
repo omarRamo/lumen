@@ -144,6 +144,36 @@
       state.lastLanding = landing;
     }
   }
+  /** Ce qui manque encore pour que le portail s'ouvre, dit en clair.
+   *
+   *  Un lieu gardé ne se lit pas dans son décor : on peut ramasser chaque note
+   *  d'un bout à l'autre et repartir sans avoir compris que la sortie attend
+   *  autre chose. Alors le lieu le dit lui-même — une phrase, un décompte, et
+   *  le point vers lequel regarder quand il est sorti de l'écran.
+   *
+   *  `target` n'est jamais une flèche vers la solution : c'est la position de
+   *  ce qui attend, que le joueur a déjà vu ou va voir. Le chemin pour y aller
+   *  reste entier. */
+  function objective(game) {
+    const state = game.place, config = game.level.place;
+    if (!state || !config || game.level.exit?.open !== false) return null;
+    const nearest = points => points.filter(Boolean)
+      .sort((a, b) => Math.abs(a.x - game.player.x) - Math.abs(b.x - game.player.x))[0] || null;
+    if (state.kind === 'escort') {
+      const span = Math.max(1, config.endX - config.startX);
+      const walked = Math.round(clamp((state.astre.x - config.startX) / span, 0, 1) * 100);
+      return { done: !!state.metrics.escortArrived, target: state.astre.arrived ? null : { x: state.astre.x, y: state.astre.y },
+        text: 'Le petit astre a fait {done} % du chemin.', values: { done: walked } };
+    }
+    if (state.kind === 'river') {
+      const missing = config.beacons.filter(id => !game.wokenOnce.has(id))
+        .map(id => game.wakeables.find(wakeable => wakeable.id === id));
+      return { done: !!state.metrics.riverRestored, target: nearest(missing),
+        text: 'Reflets rendus : {done} sur {total}.',
+        values: { done: state.metrics.beaconsLit, total: config.beacons.length } };
+    }
+    return null;
+  }
   function respawn(game) {
     const state = game.place;
     if (!state) return;
@@ -164,5 +194,5 @@
     // The escort waits where it is, and the river remembers its lit beacons:
     // a fall loses the traversal, never the work already done in this visit.
   }
-  global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn };
+  global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn, objective };
 })(typeof window !== 'undefined' ? window : globalThis);
