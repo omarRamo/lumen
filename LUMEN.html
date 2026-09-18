@@ -4540,7 +4540,7 @@ window.LumenI18n.add([
     },
     {
       id: 13, key: 'astre-a-guider', journeyAct: 1, name: 'Le petit astre égaré',
-      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'secret', width: 3100, height: 900,
+      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'dusk', width: 3100, height: 900,
       medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 554 }, exit: { ...exit(3100), open: false },
       goal: 'Éclaire le chemin du petit astre jusqu’à sa maison.',
       place: { kind: 'escort', startX: 250, starY: 550, endX: 2880, speed: 95, reach: 355,
@@ -4667,7 +4667,7 @@ window.LumenI18n.add([
     },
     {
       id: 17, key: 'pluie-de-lumiere', journeyAct: 3, name: 'Là où pleut la lumière',
-      subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'secret', width: 3150, height: 900,
+      subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'rain', width: 3150, height: 900,
       medalTargets: { gold: 105, silver: 170 }, spawn: { x: 100, y: 554 }, exit: exit(3150),
       goal: 'Guide la pluie devant toi pour faire pousser des pas temporaires.',
       place: { kind: 'rain', startX: 450, life: 8,
@@ -5802,6 +5802,17 @@ window.LumenI18n.add([
     // Un puits de racines, et non le ciel ouvert : l'écorce est proche, la
     // lumière vient d'en haut. Les trois bandes vont du fond sombre vers la
     // couronne ; `rootShaft` les fait glisser avec la montée.
+    // Deux lieux partageaient le ciel rose de `secret` : ils ont maintenant le
+    // leur. Un crépuscule bleu pour que le petit astre soit la chose la plus
+    // claire de l'écran, une averse verte et dorée pour la pluie de lumière.
+    dusk: { ...THEMES.sunset, sky: ['#5b7f9e', '#93aec0', '#f0d2ad'], sea: '#54848f',
+      far: '#7a95a3', middle: '#456f7e', rock: '#2f5566', shade: '#213e4d', facet: '#517483',
+      grass: '#9fcbbe', rim: '#f6edc3', leaf: '#2c5a5e', lightLeaf: '#6fa094', coral: '#f7cf8c',
+      stone: '#dcdcd2' },
+    rain: { ...THEMES.noon, sky: ['#8fb2a4', '#c2d8c2', '#f2ecca'], sea: '#7aa9a3',
+      far: '#94b0a8', middle: '#5b8a84', rock: '#3f6a68', shade: '#2b4e4f', facet: '#618d87',
+      grass: '#cbe3a8', rim: '#f7f3cc', leaf: '#2f6155', lightLeaf: '#83b58f', coral: '#f0b57c',
+      stone: '#e6e6d6' },
     shaft: { ...THEMES.dawn, sky: ['#dbe7c2', '#8ea78c', '#3e4f4a'], sea: '#3c4f4a',
       far: '#54655c', middle: '#495a51', rock: '#3a4a45', shade: '#25322f', facet: '#5b6f62',
       grass: '#c2dca0', rim: '#f2f6cf', leaf: '#33584a', lightLeaf: '#87ab7e', coral: '#eaa76e',
@@ -5823,6 +5834,14 @@ window.LumenI18n.add([
       rock: '#414859', shade: '#2c3443', facet: '#716e7f', grass: '#b6c99f', rim: '#f1e6b1', coral: '#f2b19e' },
     eclipse: { ...NIGHT_THEMES.dawn, sky: ['#152b33', '#355058', '#708883'], sea: '#38616b',
       rock: '#294550', shade: '#1c303c', facet: '#506c77', grass: '#96baa5', rim: '#e6dfb3', coral: '#e9b78d' },
+    dusk: { ...NIGHT_THEMES.sunset, sky: ['#1b3348', '#3a5568', '#8b7d78'], sea: '#2f5b67',
+      far: '#566f7c', middle: '#26495a', rock: '#22404e', shade: '#182e3a', facet: '#3f5f6d',
+      grass: '#84b3a9', rim: '#e7e0b8', leaf: '#2b4f56', lightLeaf: '#65917f', coral: '#f6cd93',
+      stone: '#b6c0be', cloud: '#7e97a4' },
+    rain: { ...NIGHT_THEMES.noon, sky: ['#1a3130', '#375550', '#7e9082'], sea: '#3a6b68',
+      far: '#65817a', middle: '#2f5754', rock: '#264946', shade: '#1a3534', facet: '#466a66',
+      grass: '#9dc796', rim: '#e4eec0', leaf: '#28534b', lightLeaf: '#6d9c7c', coral: '#eaae7c',
+      stone: '#bcc6b6', cloud: '#96ada0' },
     shaft: { ...NIGHT_THEMES.dawn, sky: ['#5e7563', '#33463f', '#131c1c'], sea: '#182220',
       far: '#25322d', middle: '#1f2b27', rock: '#1a2422', shade: '#101715', facet: '#2f3f37',
       grass: '#8fb47c', rim: '#d9e6b4', leaf: '#1e3a31', lightLeaf: '#5b7d60', coral: '#e0a173',

@@ -441,49 +441,49 @@
     "untouched": true
   },
   {
-    "theme": "secret",
+    "theme": "dusk",
     "placeKey": "astre-a-guider",
     "appearance": "light",
     "rows": [
       {
         "type": "ground",
         "contrasted": 288,
-        "fingerprint": -418627535
+        "fingerprint": 154513787
       },
       {
         "type": "solid",
         "contrasted": 288,
-        "fingerprint": -1576378895
+        "fingerprint": -1652238994
       },
       {
         "type": "moving",
-        "contrasted": 292,
-        "fingerprint": -613607880
+        "contrasted": 288,
+        "fingerprint": -459432289
       },
       {
         "type": "spring",
-        "contrasted": 240,
-        "fingerprint": -1691196638
+        "contrasted": 236,
+        "fingerprint": -867659294
       },
       {
         "type": "crumble",
-        "contrasted": 305,
-        "fingerprint": -169321490
+        "contrasted": 302,
+        "fingerprint": -327770631
       },
       {
         "type": "echo",
         "contrasted": 288,
-        "fingerprint": 1702360493
+        "fingerprint": 440217102
       },
       {
         "type": "vanish",
         "contrasted": 288,
-        "fingerprint": -682228334
+        "fingerprint": -1677698724
       },
       {
         "type": "conveyor",
-        "contrasted": 292,
-        "fingerprint": -11871378
+        "contrasted": 288,
+        "fingerprint": 1613929840
       }
     ],
     "distinct": 8,
@@ -637,49 +637,49 @@
     "untouched": true
   },
   {
-    "theme": "secret",
+    "theme": "rain",
     "placeKey": "pluie-de-lumiere",
     "appearance": "light",
     "rows": [
       {
         "type": "ground",
         "contrasted": 288,
-        "fingerprint": -418627535
+        "fingerprint": -748701108
       },
       {
         "type": "solid",
         "contrasted": 288,
-        "fingerprint": -1576378895
+        "fingerprint": -653688138
       },
       {
         "type": "moving",
         "contrasted": 292,
-        "fingerprint": -613607880
+        "fingerprint": -1697584022
       },
       {
         "type": "spring",
         "contrasted": 240,
-        "fingerprint": -1691196638
+        "fingerprint": -1025052763
       },
       {
         "type": "crumble",
-        "contrasted": 305,
-        "fingerprint": -169321490
+        "contrasted": 303,
+        "fingerprint": 1249013495
       },
       {
         "type": "echo",
         "contrasted": 288,
-        "fingerprint": 1702360493
+        "fingerprint": 673474178
       },
       {
         "type": "vanish",
         "contrasted": 288,
-        "fingerprint": -682228334
+        "fingerprint": 338214180
       },
       {
         "type": "conveyor",
-        "contrasted": 298,
-        "fingerprint": -11871378
+        "contrasted": 293,
+        "fingerprint": -381887183
       }
     ],
     "distinct": 8,
@@ -1127,49 +1127,49 @@
     "untouched": true
   },
   {
-    "theme": "secret",
+    "theme": "dusk",
     "placeKey": "astre-a-guider",
     "appearance": "dark",
     "rows": [
       {
         "type": "ground",
-        "contrasted": 932,
-        "fingerprint": 1810886263
+        "contrasted": 876,
+        "fingerprint": 258465039
       },
       {
         "type": "solid",
-        "contrasted": 932,
-        "fingerprint": 389826262
+        "contrasted": 859,
+        "fingerprint": -2112342409
       },
       {
         "type": "moving",
         "contrasted": 860,
-        "fingerprint": 1370698526
+        "fingerprint": 1865376524
       },
       {
         "type": "spring",
-        "contrasted": 938,
-        "fingerprint": -534956836
+        "contrasted": 949,
+        "fingerprint": -763515850
       },
       {
         "type": "crumble",
-        "contrasted": 846,
-        "fingerprint": 1558469122
+        "contrasted": 847,
+        "fingerprint": -1496085559
       },
       {
         "type": "echo",
         "contrasted": 864,
-        "fingerprint": 363379513
+        "fingerprint": -577851419
       },
       {
         "type": "vanish",
         "contrasted": 864,
-        "fingerprint": 1137431919
+        "fingerprint": -760183002
       },
       {
         "type": "conveyor",
         "contrasted": 854,
-        "fingerprint": -1299585493
+        "fingerprint": -704230392
       }
     ],
     "distinct": 8,
@@ -1323,49 +1323,49 @@
     "untouched": true
   },
   {
-    "theme": "secret",
+    "theme": "rain",
     "placeKey": "pluie-de-lumiere",
     "appearance": "dark",
     "rows": [
       {
         "type": "ground",
         "contrasted": 932,
-        "fingerprint": 1810886263
+        "fingerprint": -1472078613
       },
       {
         "type": "solid",
         "contrasted": 932,
-        "fingerprint": 389826262
+        "fingerprint": 1235135400
       },
       {
         "type": "moving",
         "contrasted": 860,
-        "fingerprint": 1370698526
+        "fingerprint": -768190994
       },
       {
         "type": "spring",
         "contrasted": 938,
-        "fingerprint": -534956836
+        "fingerprint": -1327928756
       },
       {
         "type": "crumble",
-        "contrasted": 846,
-        "fingerprint": 1558469122
+        "contrasted": 847,
+        "fingerprint": 344192248
       },
       {
         "type": "echo",
         "contrasted": 864,
-        "fingerprint": 363379513
+        "fingerprint": 1026593139
       },
       {
         "type": "vanish",
         "contrasted": 864,
-        "fingerprint": 1137431919
+        "fingerprint": 512995572
       },
       {
         "type": "conveyor",
         "contrasted": 854,
-        "fingerprint": -1299585493
+        "fingerprint": 331317475
       }
     ],
     "distinct": 8,

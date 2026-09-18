@@ -743,7 +743,7 @@
     },
     {
       id: 13, key: 'astre-a-guider', journeyAct: 1, name: 'Le petit astre égaré',
-      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'secret', width: 3100, height: 900,
+      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'dusk', width: 3100, height: 900,
       medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 554 }, exit: { ...exit(3100), open: false },
       goal: 'Éclaire le chemin du petit astre jusqu’à sa maison.',
       place: { kind: 'escort', startX: 250, starY: 550, endX: 2880, speed: 95, reach: 355,
@@ -870,7 +870,7 @@
     },
     {
       id: 17, key: 'pluie-de-lumiere', journeyAct: 3, name: 'Là où pleut la lumière',
-      subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'secret', width: 3150, height: 900,
+      subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'rain', width: 3150, height: 900,
       medalTargets: { gold: 105, silver: 170 }, spawn: { x: 100, y: 554 }, exit: exit(3150),
       goal: 'Guide la pluie devant toi pour faire pousser des pas temporaires.',
       place: { kind: 'rain', startX: 450, life: 8,
