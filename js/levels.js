@@ -803,14 +803,27 @@
   newPlaces.push(
     {
       id: 14, key: 'pont-des-veilleurs', journeyAct: 2, name: 'Le pont des veilleurs',
-      subtitle: 'Trois voix font tenir un seul chemin.', theme: 'cavern', width: 3000, height: 900,
+      subtitle: 'Quatre voix font tenir un seul chemin.', theme: 'cavern', width: 3000, height: 900,
       medalTargets: { gold: 70, silver: 115 }, spawn: { x: 100, y: 554 }, exit: exit(3000),
       goal: 'Réveille une chaîne vivante, puis choisis quand traverser.',
-      place: { kind: 'chain', wakeTime: 9, keepers: [{ x: 760, y: 550 }, { x: 1400, y: 550 }, { x: 2120, y: 550 }],
-        pilot: [{ x: 620, surfaceY: 600, call: true }, { x: 1350, surfaceY: 600, call: true }, { x: 2330, surfaceY: 600 }, { x: 2870, surfaceY: 600 }],
+      // Itération 13 : l'épreuve change à mi-chemin. Tant qu'on n'a pas
+      // atteint l'île du milieu, une seule voix réveille toute la chaîne. En y
+      // posant le pied, la nuit tombe : le chant faiblit, et chaque veilleur
+      // ne réveille plus que ses voisins. Chaque tablier ne tient que si les
+      // deux veilleurs qui le bordent chantent — la seconde travée se passe
+      // donc en deux fois, en s'arrêtant sur la pile où veille le troisième.
+      place: { kind: 'chain', wakeTime: 9,
+        keepers: [{ x: 760, y: 550 }, { x: 1400, y: 550 }, { x: 1880, y: 550 }, { x: 2240, y: 550 }],
+        wear: { atX: 1290, wakeTime: 7, falter: 1.2 },
+        pilot: [{ x: 620, surfaceY: 600, call: true }, { x: 1350, surfaceY: 600, call: true }, { x: 1880, surfaceY: 600, call: true },
+          { x: 2330, surfaceY: 600 }, { x: 2870, surfaceY: 600 }],
         captureMetric: { name: 'bridgeDistance', min: 200 } },
       platforms: [ground(0, 720), ground(1270, 310), ground(2180, 820),
-        ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge' }), ledge(1550, 600, 660, 'solid', { placeRole: 'living-bridge' }),
+        ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge', between: [0, 1] }),
+        ledge(1550, 600, 280, 'solid', { placeRole: 'living-bridge', between: [1, 2] }),
+        // La pile du milieu de la seconde travée : un appui sûr, et un veilleur.
+        ledge(1830, 600, 100, 'solid'),
+        ledge(1930, 600, 260, 'solid', { placeRole: 'living-bridge', between: [2, 3] }),
         ledge(390, 490, 210), ledge(1320, 485, 200), ledge(1480, 380, 230), ledge(2340, 480, 220), ledge(2590, 380, 230, 'vanish')],
       // Un veilleur endormi à côté du deuxième maillon : l'apaiser prolonge la
       // chaîne au lieu de la rompre — c'est la même onde qui sert aux deux.
@@ -826,7 +839,7 @@
         item('star', 480, 440), item('star', 1600, 333), item('star', 2700, 330)],
       secrets: [secret(1490, 275, 210, 108)],
       hints: [{ x: 180, text: 'Appelle un veilleur. Sa voix traverse toute la chaîne et le pont prend forme.' },
-        { x: 1350, text: 'Le pont tient tant que tous les veilleurs chantent. Rafraîchis leur chant avant de repartir.' }]
+        { x: 1350, text: 'La nuit use le chant : chaque veilleur ne réveille plus que ses voisins. Arrête-toi sur la pile pour appeler le suivant.' }]
     },
     {
       id: 15, key: 'riviere-sans-lune', journeyAct: 2, name: 'La rivière sans lune',

@@ -1932,10 +1932,10 @@ window.LumenI18n.add([
   ['Chargé, tu sautes moins haut. Pose-le près d’une corniche de lumière, puis saute sans lui.', 'Carrying it, you jump lower. Set it down near a ledge of light, then jump without it.', 'Cargado, saltas menos alto. Déjalo cerca de una cornisa de luz y salta sin él.', 'وأنت تحمله تقفز أقل ارتفاعًا. ضعه قرب حافة من الضوء، ثم اقفز من دونه.', '抱着它时跳得没那么高。把它放在光之檐旁，再空手跳上去。'],
   ['Le petit astre a retrouvé sa maison.', 'The little star has found its home.', 'El pequeño astro ha encontrado su hogar.', 'وجد النجم الصغير بيته.', '小星星找到家了。'],
   ['Le pont des veilleurs', 'The watchers’ bridge', 'El puente de los vigías', 'جسر الساهرين', '守望者之桥'],
-  ['Trois voix font tenir un seul chemin.', 'Three voices hold one path together.', 'Tres voces sostienen un solo camino.', 'ثلاثة أصوات تحمل دربًا واحدًا.', '三道声音，共同托起一条路。'],
+  ['Quatre voix font tenir un seul chemin.', 'Four voices hold one path together.', 'Cuatro voces sostienen un solo camino.', 'أربعة أصوات تحمل دربًا واحدًا.', '四道声音，撑起一条路。'],
   ['Réveille une chaîne vivante, puis choisis quand traverser.', 'Wake a living chain, then choose when to cross.', 'Despierta una cadena viva y elige cuándo cruzar.', 'أيقظ سلسلة حيّة، ثم اختر وقت العبور.', '唤醒相连的生灵，再选择过桥的时机。'],
   ['Appelle un veilleur. Sa voix traverse toute la chaîne et le pont prend forme.', 'Call a watcher. Its voice travels along the chain and the bridge takes shape.', 'Llama a un vigía. Su voz recorre toda la cadena y el puente toma forma.', 'نادِ أحد الساهرين. يسري صوته عبر السلسلة فيتشكّل الجسر.', '呼唤一位守望者。声音沿着伙伴传递，桥便会成形。'],
-  ['Le pont tient tant que tous les veilleurs chantent. Rafraîchis leur chant avant de repartir.', 'The bridge holds while every watcher sings. Renew their song before moving on.', 'El puente se mantiene mientras todos los vigías cantan. Renueva su canto antes de seguir.', 'يبقى الجسر ما دام جميع الساهرين يغنّون. جدّد غناءهم قبل المتابعة.', '所有守望者都在歌唱时，桥才会存在。出发前再唤起他们的歌声。'],
+  ['La nuit use le chant : chaque veilleur ne réveille plus que ses voisins. Arrête-toi sur la pile pour appeler le suivant.', 'Night wears the song thin: each watcher now wakes only its neighbours. Stop on the pillar to call the next one.', 'La noche desgasta el canto: cada vigía solo despierta a sus vecinos. Detente en el pilar para llamar al siguiente.', 'الليل يُضعف الغناء: لم يعد كل ساهر يوقظ إلا جيرانه. توقّف على الدعامة لتنادي التالي.', '夜色消磨了歌声：每位守望者只能唤醒身边的同伴。在桥墩上停一停，再呼唤下一位。'],
   ['La rivière sans lune', 'The moonless river', 'El río sin luna', 'النهر بلا قمر', '无月之河'],
   ['L’eau a oublié ce qu’elle reflétait.', 'The water has forgotten its reflection.', 'El agua ha olvidado lo que reflejaba.', 'نسي الماء ما كان يعكسه.', '河水忘记了曾经映照的景象。'],
   ['Rends trois reflets à la rivière.', 'Return three reflections to the river.', 'Devuelve tres reflejos al río.', 'أعد ثلاثة انعكاسات إلى النهر.', '将三道倒影归还河流。'],
@@ -1994,6 +1994,7 @@ window.LumenI18n.add([
   ['La falaise ne se franchit que par le haut. Le chemin du retour passe au-dessus du gouffre.', 'The cliff can only be crossed from above. The way back runs high over the chasm.', 'El acantilado solo se supera por arriba. El camino de vuelta pasa por encima del abismo.', 'لا يُعبَر الجرف إلا من الأعلى. طريق العودة يمرّ فوق الهوّة.', '悬崖只能从上方越过。回程的路高悬在深渊之上。'],
   ['Quand la rivière déborde, on nage lentement en bas ; les nénuphars portent plus vite, mais certains s’enfoncent.', 'When the river overflows, you swim slowly below; the lily pads carry you faster, but some sink.', 'Cuando el río se desborda, abajo se nada despacio; los nenúfares llevan más rápido, pero algunos se hunden.', 'حين يفيض النهر، تسبح ببطء في الأسفل؛ زنابق الماء تحملك أسرع، لكن بعضها يغوص.', '河水漫溢时，在低处只能慢慢游；睡莲载你更快，但有些会沉下去。'],
   ['La rivière se souvient, et déborde.', 'The river remembers, and overflows.', 'El río recuerda, y se desborda.', 'يتذكّر النهر، فيفيض.', '河水想起了过往，漫过了河岸。'],
+  ['La nuit tombe sur le pont. Le chant des veilleurs s’use.', 'Night falls on the bridge. The watchers’ song wears thin.', 'Cae la noche sobre el puente. El canto de los vigías se desgasta.', 'يحلّ الليل على الجسر. يضعف غناء الساهرين.', '夜幕落在桥上，守望者的歌声渐渐微弱。'],
 ]);
 
 </script>
@@ -3632,6 +3633,7 @@ window.LumenI18n.add([
     if (config.kind === 'chain') {
       state.keepers = config.keepers.map(keeper => ({ ...keeper, remaining: 0, pulse: 0 }));
       state.propagation = []; state.metrics.chainWakes = 0; state.metrics.bridgeDistance = 0;
+      state.worn = false; if (config.wear) { state.metrics.worn = false; state.metrics.wornWakes = 0; }
       for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) platform.active = false;
     }
     if (config.kind === 'river') {
@@ -3661,13 +3663,17 @@ window.LumenI18n.add([
   function wakeKeeper(game, state, index, propagate) {
     const keeper = state.keepers[index];
     if (!keeper) return;
-    if (keeper.remaining <= 0) state.metrics.chainWakes++;
-    keeper.remaining = game.level.place.wakeTime || 9;
+    const config = game.level.place;
+    if (keeper.remaining <= 0) { state.metrics.chainWakes++; if (state.worn) state.metrics.wornWakes++; }
+    keeper.remaining = (state.worn ? config.wear.wakeTime : config.wakeTime) || 9;
     keeper.pulse = .4;
     if (propagate) {
       // Each neighbour sings in turn. Refreshing any member renews the whole
       // chain once, rather than an exponentially repeating resonance loop.
-      state.propagation = state.keepers.map((_, next) => ({ index: next, delay: Math.abs(next - index) * .24 })).filter(item => item.index !== index);
+      // Usée par la nuit, la voix ne va plus qu'aux voisins immédiats.
+      const range = state.worn ? 1 : Infinity;
+      state.propagation = state.keepers.map((_, next) => ({ index: next, delay: Math.abs(next - index) * .24 }))
+        .filter(item => item.index !== index && Math.abs(item.index - index) <= range);
     }
     game.audio.sfx('wakeBridge');
   }
@@ -3701,10 +3707,23 @@ window.LumenI18n.add([
       }
       for (const event of state.propagation) { event.delay -= dt; if (event.delay <= 0) wakeKeeper(game, state, event.index, false); }
       state.propagation = state.propagation.filter(event => event.delay > 0);
+      // L'usure : poser le pied au-delà de la première travée — sur l'île du
+      // milieu ou ses corniches, n'importe quoi sauf un tablier — fait tomber
+      // la nuit. Le chant en cours faiblit, et ne se propage plus qu'aux voisins.
+      const p = game.player;
+      if (config.wear && !state.worn && p.standingPlatform && p.standingPlatform.placeRole !== 'living-bridge' &&
+        p.x + p.w / 2 >= config.wear.atX) {
+        state.worn = true; state.metrics.worn = true; state.propagation = [];
+        for (const keeper of state.keepers) keeper.remaining = Math.min(keeper.remaining, config.wear.falter || 1.2);
+        game.audio.sfx('wakeEnd'); game.emit('toast', 'La nuit tombe sur le pont. Le chant des veilleurs s’use.');
+      }
       const awake = state.keepers.every(keeper => keeper.remaining > 0);
       for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) {
-        platform.active = awake;
-        platform.warning = awake && state.keepers.some(keeper => keeper.remaining < 1.5);
+        // Un tablier tient tant que les deux veilleurs qui le bordent chantent.
+        const pair = platform.between ? platform.between.map(index => state.keepers[index]) : state.keepers;
+        const held = platform.between ? pair.every(keeper => keeper.remaining > 0) : awake;
+        platform.active = held;
+        platform.warning = held && pair.some(keeper => keeper.remaining < 1.5);
         if (game.player.standingPlatform === platform) state.metrics.bridgeDistance += Math.abs(game.player.vx) * dt;
       }
     }
@@ -4713,14 +4732,27 @@ window.LumenI18n.add([
   newPlaces.push(
     {
       id: 14, key: 'pont-des-veilleurs', journeyAct: 2, name: 'Le pont des veilleurs',
-      subtitle: 'Trois voix font tenir un seul chemin.', theme: 'cavern', width: 3000, height: 900,
+      subtitle: 'Quatre voix font tenir un seul chemin.', theme: 'cavern', width: 3000, height: 900,
       medalTargets: { gold: 70, silver: 115 }, spawn: { x: 100, y: 554 }, exit: exit(3000),
       goal: 'Réveille une chaîne vivante, puis choisis quand traverser.',
-      place: { kind: 'chain', wakeTime: 9, keepers: [{ x: 760, y: 550 }, { x: 1400, y: 550 }, { x: 2120, y: 550 }],
-        pilot: [{ x: 620, surfaceY: 600, call: true }, { x: 1350, surfaceY: 600, call: true }, { x: 2330, surfaceY: 600 }, { x: 2870, surfaceY: 600 }],
+      // Itération 13 : l'épreuve change à mi-chemin. Tant qu'on n'a pas
+      // atteint l'île du milieu, une seule voix réveille toute la chaîne. En y
+      // posant le pied, la nuit tombe : le chant faiblit, et chaque veilleur
+      // ne réveille plus que ses voisins. Chaque tablier ne tient que si les
+      // deux veilleurs qui le bordent chantent — la seconde travée se passe
+      // donc en deux fois, en s'arrêtant sur la pile où veille le troisième.
+      place: { kind: 'chain', wakeTime: 9,
+        keepers: [{ x: 760, y: 550 }, { x: 1400, y: 550 }, { x: 1880, y: 550 }, { x: 2240, y: 550 }],
+        wear: { atX: 1290, wakeTime: 7, falter: 1.2 },
+        pilot: [{ x: 620, surfaceY: 600, call: true }, { x: 1350, surfaceY: 600, call: true }, { x: 1880, surfaceY: 600, call: true },
+          { x: 2330, surfaceY: 600 }, { x: 2870, surfaceY: 600 }],
         captureMetric: { name: 'bridgeDistance', min: 200 } },
       platforms: [ground(0, 720), ground(1270, 310), ground(2180, 820),
-        ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge' }), ledge(1550, 600, 660, 'solid', { placeRole: 'living-bridge' }),
+        ledge(700, 600, 590, 'solid', { placeRole: 'living-bridge', between: [0, 1] }),
+        ledge(1550, 600, 280, 'solid', { placeRole: 'living-bridge', between: [1, 2] }),
+        // La pile du milieu de la seconde travée : un appui sûr, et un veilleur.
+        ledge(1830, 600, 100, 'solid'),
+        ledge(1930, 600, 260, 'solid', { placeRole: 'living-bridge', between: [2, 3] }),
         ledge(390, 490, 210), ledge(1320, 485, 200), ledge(1480, 380, 230), ledge(2340, 480, 220), ledge(2590, 380, 230, 'vanish')],
       // Un veilleur endormi à côté du deuxième maillon : l'apaiser prolonge la
       // chaîne au lieu de la rompre — c'est la même onde qui sert aux deux.
@@ -4736,7 +4768,7 @@ window.LumenI18n.add([
         item('star', 480, 440), item('star', 1600, 333), item('star', 2700, 330)],
       secrets: [secret(1490, 275, 210, 108)],
       hints: [{ x: 180, text: 'Appelle un veilleur. Sa voix traverse toute la chaîne et le pont prend forme.' },
-        { x: 1350, text: 'Le pont tient tant que tous les veilleurs chantent. Rafraîchis leur chant avant de repartir.' }]
+        { x: 1350, text: 'La nuit use le chant : chaque veilleur ne réveille plus que ses voisins. Arrête-toi sur la pile pour appeler le suivant.' }]
     },
     {
       id: 15, key: 'riviere-sans-lune', journeyAct: 2, name: 'La rivière sans lune',

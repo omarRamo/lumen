@@ -16,7 +16,9 @@ const CONTRACTS = {
   // Itération 13 : l'astre se porte. Porté sur toute la descente, posé sur
   // des passerelles qui n'existent que dans sa lumière, puis rendu chez lui.
   escort: metrics => metrics.carriedDistance >= 2400 && metrics.lightLandings >= 4 && metrics.escortArrived === true,
-  chain: metrics => metrics.chainWakes >= 3 && metrics.bridgeDistance >= 300,
+  // Itération 13 : la chaîne s'use en chemin, et il faut la réveiller encore
+  // une fois usée, voisin par voisin.
+  chain: metrics => metrics.chainWakes >= 3 && metrics.bridgeDistance >= 300 && metrics.worn === true && metrics.wornWakes >= 1,
   // Itération 13 : la rivière déborde en chemin, et la dernière rive se
   // traverse sur les radeaux que la crue fait monter.
   river: metrics => metrics.beaconsLit >= 3 && metrics.riverRestored === true && metrics.flooded === true && metrics.raftLandings >= 2,

@@ -136,18 +136,44 @@ test('Position fixture: going ahead without the star is a fall, and a fall alway
   assert.equal(game.exit.open, false);
 });
 
-test('Position fixture: the bridge needs every creature, relays once, expires and can always be recalled', () => {
+test('Position fixture: before the night, one voice wakes the whole chain; it relays once, expires and can always be recalled', () => {
   const { game } = load('pont-des-veilleurs');
   const platforms = game.platforms.filter(platform => platform.placeRole === 'living-bridge');
   assert.ok(platforms.every(platform => !platform.active));
   position(game, 650, 554); call(game); tick(game, .9);
-  assert.equal(game.place.metrics.chainWakes, 3);
+  assert.equal(game.place.metrics.chainWakes, 4);
   assert.ok(platforms.every(platform => platform.active));
   assert.equal(game.place.propagation.length, 0);
   tick(game, 9); assert.ok(platforms.every(platform => !platform.active));
   call(game); tick(game, .9);
   assert.ok(platforms.every(platform => platform.active));
-  assert.equal(game.place.metrics.chainWakes, 6);
+  assert.equal(game.place.metrics.chainWakes, 8);
+  assert.equal(game.place.worn, false);
+});
+
+test('Position fixture: past the first span the night falls — the song falters, reaches only neighbours, and the second span takes two calls', () => {
+  const { game } = load('pont-des-veilleurs');
+  const [first, second, third] = game.platforms.filter(platform => platform.placeRole === 'living-bridge');
+  const pillar = game.platforms.find(platform => platform.type === 'solid' && platform.x === 1830);
+  const said = []; game.on('toast', message => said.push(message));
+  position(game, 650, 554); call(game); tick(game, .9);
+  assert.ok(first.active && second.active && third.active);
+  // Traverser la première travée, poser le pied sur l'île du milieu.
+  position(game, 1360, 554); tick(game, .1);
+  assert.equal(game.place.worn, true); assert.ok(said.some(message => message.startsWith('La nuit tombe')));
+  tick(game, 1.4);
+  assert.ok(!first.active && !second.active && !third.active, 'Le chant en cours a faibli.');
+  // Depuis l'île, la voix ne va plus qu'aux voisins : la seconde moitié reste noire.
+  call(game); tick(game, .9);
+  assert.equal(second.active, true, 'La première moitié de la seconde travée répond…');
+  assert.equal(third.active, false, '…mais la voix n’atteint plus le veilleur de l’autre rive.');
+  // Sur la pile, le veilleur du milieu relaie vers l'autre rive.
+  position(game, pillar.x + 30, pillar.y - 46); tick(game, .1); call(game); tick(game, .9);
+  assert.equal(third.active, true, 'Depuis la pile, la seconde moitié se forme.');
+  assert.ok(game.place.metrics.wornWakes >= 2);
+  // La nuit ne se lève pas avec une chute.
+  game.die(); tick(game, 2);
+  assert.equal(game.place.worn, true);
 });
 
 test('Position fixture: all three river beacons require resonance and their transformation survives a fall', () => {

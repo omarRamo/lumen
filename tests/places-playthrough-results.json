@@ -355,24 +355,26 @@
     "key": "pont-des-veilleurs",
     "kind": "chain",
     "mode": "complete",
-    "seconds": 21.94,
+    "seconds": 21.87,
     "deaths": 0,
     "lives": 3,
     "hp": 3,
     "coins": 73,
     "stars": 1,
     "calls": 29,
-    "jumps": 16,
-    "waypoint": 13,
-    "waypoints": 14,
-    "maxX": 6678,
+    "jumps": 18,
+    "waypoint": 14,
+    "waypoints": 15,
+    "maxX": 6675,
     "minY": 212,
     "metrics": {
-      "chainWakes": 3,
-      "bridgeDistance": 552.0000000000008
+      "chainWakes": 5,
+      "bridgeDistance": 504.00000000000136,
+      "wornWakes": 1,
+      "worn": true
     },
     "player": {
-      "x": 6681,
+      "x": 6678,
       "y": 554
     },
     "checkpoint": {
@@ -398,73 +400,73 @@
       },
       {
         "t": 4,
-        "x": 1129,
-        "y": 554,
+        "x": 1206,
+        "y": 522,
         "waypoint": 1,
-        "standing": 3,
+        "standing": null,
         "state": null
       },
       {
         "t": 6,
-        "x": 1758,
-        "y": 224,
+        "x": 1835,
+        "y": 339,
         "waypoint": 2,
         "standing": null,
         "state": null
       },
       {
         "t": 8,
-        "x": 2361,
-        "y": 458,
-        "waypoint": 3,
-        "standing": null,
-        "state": null
-      },
-      {
-        "t": 10,
-        "x": 3003,
-        "y": 433,
+        "x": 2382,
+        "y": 443,
         "waypoint": 4,
         "standing": null,
         "state": null
       },
       {
+        "t": 10,
+        "x": 3025,
+        "y": 433,
+        "waypoint": 5,
+        "standing": null,
+        "state": null
+      },
+      {
         "t": 12,
-        "x": 3612,
+        "x": 3633,
         "y": 474,
-        "waypoint": 6,
-        "standing": 11,
+        "waypoint": 7,
+        "standing": 13,
         "state": null
       },
       {
         "t": 14,
-        "x": 4255,
-        "y": 298,
-        "waypoint": 7,
+        "x": 4275,
+        "y": 324,
+        "waypoint": 8,
         "standing": null,
         "state": null
       },
       {
         "t": 16,
-        "x": 4897,
+        "x": 4917,
         "y": 554,
-        "waypoint": 8,
-        "standing": 14,
+        "waypoint": 9,
+        "standing": 16,
         "state": null
       },
       {
         "t": 18.1,
-        "x": 5539,
+        "x": 5560,
         "y": 494,
-        "waypoint": 10,
-        "standing": 15,
+        "waypoint": 11,
+        "standing": 17,
         "state": null
       },
       {
         "t": 20.1,
-        "x": 6182,
-        "y": 309,
-        "waypoint": 11,
+        "x": 6202,
+        "y": 296,
+        "waypoint": 12,
         "standing": null,
         "state": null
       }

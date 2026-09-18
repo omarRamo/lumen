@@ -33,6 +33,7 @@
     if (config.kind === 'chain') {
       state.keepers = config.keepers.map(keeper => ({ ...keeper, remaining: 0, pulse: 0 }));
       state.propagation = []; state.metrics.chainWakes = 0; state.metrics.bridgeDistance = 0;
+      state.worn = false; if (config.wear) { state.metrics.worn = false; state.metrics.wornWakes = 0; }
       for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) platform.active = false;
     }
     if (config.kind === 'river') {
@@ -62,13 +63,17 @@
   function wakeKeeper(game, state, index, propagate) {
     const keeper = state.keepers[index];
     if (!keeper) return;
-    if (keeper.remaining <= 0) state.metrics.chainWakes++;
-    keeper.remaining = game.level.place.wakeTime || 9;
+    const config = game.level.place;
+    if (keeper.remaining <= 0) { state.metrics.chainWakes++; if (state.worn) state.metrics.wornWakes++; }
+    keeper.remaining = (state.worn ? config.wear.wakeTime : config.wakeTime) || 9;
     keeper.pulse = .4;
     if (propagate) {
       // Each neighbour sings in turn. Refreshing any member renews the whole
       // chain once, rather than an exponentially repeating resonance loop.
-      state.propagation = state.keepers.map((_, next) => ({ index: next, delay: Math.abs(next - index) * .24 })).filter(item => item.index !== index);
+      // Usée par la nuit, la voix ne va plus qu'aux voisins immédiats.
+      const range = state.worn ? 1 : Infinity;
+      state.propagation = state.keepers.map((_, next) => ({ index: next, delay: Math.abs(next - index) * .24 }))
+        .filter(item => item.index !== index && Math.abs(item.index - index) <= range);
     }
     game.audio.sfx('wakeBridge');
   }
@@ -102,10 +107,23 @@
       }
       for (const event of state.propagation) { event.delay -= dt; if (event.delay <= 0) wakeKeeper(game, state, event.index, false); }
       state.propagation = state.propagation.filter(event => event.delay > 0);
+      // L'usure : poser le pied au-delà de la première travée — sur l'île du
+      // milieu ou ses corniches, n'importe quoi sauf un tablier — fait tomber
+      // la nuit. Le chant en cours faiblit, et ne se propage plus qu'aux voisins.
+      const p = game.player;
+      if (config.wear && !state.worn && p.standingPlatform && p.standingPlatform.placeRole !== 'living-bridge' &&
+        p.x + p.w / 2 >= config.wear.atX) {
+        state.worn = true; state.metrics.worn = true; state.propagation = [];
+        for (const keeper of state.keepers) keeper.remaining = Math.min(keeper.remaining, config.wear.falter || 1.2);
+        game.audio.sfx('wakeEnd'); game.emit('toast', 'La nuit tombe sur le pont. Le chant des veilleurs s’use.');
+      }
       const awake = state.keepers.every(keeper => keeper.remaining > 0);
       for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) {
-        platform.active = awake;
-        platform.warning = awake && state.keepers.some(keeper => keeper.remaining < 1.5);
+        // Un tablier tient tant que les deux veilleurs qui le bordent chantent.
+        const pair = platform.between ? platform.between.map(index => state.keepers[index]) : state.keepers;
+        const held = platform.between ? pair.every(keeper => keeper.remaining > 0) : awake;
+        platform.active = held;
+        platform.warning = held && pair.some(keeper => keeper.remaining < 1.5);
         if (game.player.standingPlatform === platform) state.metrics.bridgeDistance += Math.abs(game.player.vx) * dt;
       }
     }
