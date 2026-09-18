@@ -1913,13 +1913,13 @@ window.LumenI18n.add([
   ['Les tremplins montent plus haut. Les tapis et les plateformes mobiles demandent de choisir son départ.', 'Springs send you higher. Belts and moving platforms ask you to time your takeoff.', 'Los trampolines te elevan más. Las cintas y plataformas móviles exigen elegir cuándo saltar.', 'ترفعك النوابض أعلى. أما السيور والمنصّات المتحرّكة فتتطلّب اختيار لحظة الانطلاق.', '弹簧能将你送得更高。传送带和移动平台则需要你选好起跳时机。'],
   ['Là où pleut la lumière', 'Where light falls as rain', 'Donde llueve luz', 'حيث تمطر السماء ضوءًا', '光雨降落之处'],
   ['La pluie fait pousser le chemin que tu attends.', 'Rain grows the path you are waiting for.', 'La lluvia hace crecer el camino que esperas.', 'ينبت المطر الدرب الذي تنتظره.', '雨水催生你等待的道路。'],
-  ['Guide la pluie devant toi pour faire pousser des pas temporaires.', 'Guide the rain ahead to grow temporary stepping stones.', 'Guía la lluvia delante de ti para hacer crecer apoyos temporales.', 'وجّه المطر أمامك لتنبت درجات مؤقتة.', '引导雨云前行，让临时的落脚点生长出来。'],
-  ['Ton appel fait venir le nuage pleuvoir devant toi. Attends que le prochain pas ait poussé.', 'Your call brings the cloud to rain ahead of you. Wait for the next stepping stone to grow.', 'Tu llamada trae la nube a llover delante de ti. Espera a que crezca el siguiente apoyo.', 'نداؤك يجلب السحابة لتمطر أمامك. انتظر حتى تنمو الدرجة التالية.', '你的呼唤会引来云朵，在前方降雨。等下一个落脚点长成，再出发。'],
+  ['Suis la pluie : elle fait pousser des pas qui s’effacent derrière elle.', 'Follow the rain: it grows stepping stones that fade behind it.', 'Sigue la lluvia: hace crecer apoyos que se desvanecen tras ella.', 'اتبع المطر: يُنبت درجات تتلاشى خلفه.', '跟着雨走：它会长出落脚点，又在身后消失。'],
+  ['Le nuage passe à son rythme. Suis sa pluie de près : les pas qu’elle quitte s’effacent.', 'The cloud keeps its own rhythm. Stay close to its rain: the stones it leaves behind fade away.', 'La nube lleva su propio ritmo. Sigue de cerca su lluvia: los apoyos que deja atrás se desvanecen.', 'للسحابة إيقاعها الخاص. ابقَ قريبًا من مطرها: الدرجات التي تتركها خلفها تتلاشى.', '云朵有自己的节奏。紧跟它的雨：它离开的落脚点会渐渐消失。'],
   // Ce qu'un lieu gardé répond quand on lui demande pourquoi la porte est close.
   ['La sortie s’ouvre.', 'The way out opens.', 'La salida se abre.', 'انفتح المخرج.', '出口打开了。'],
   ['Le petit astre a fait {done} % du chemin.', 'The little star is {done} % of the way home.', 'El pequeño astro lleva el {done} % del camino.', 'قطع النجم الصغير {done} ٪ من الطريق.', '小星星已走完 {done} % 的路。'],
   ['Reflets rendus : {done} sur {total}.', 'Reflections returned: {done} of {total}.', 'Reflejos devueltos: {done} de {total}.', 'الانعكاسات المستعادة: {done} من {total}.', '已归还的倒影：{done} / {total}。'],
-  ['Les pas s’effacent sans pluie. Tu peux te retourner et rappeler le nuage pour revenir.', 'Stepping stones fade without rain. Turn around and call the cloud back to retrace your path.', 'Los apoyos se desvanecen sin lluvia. Puedes darte la vuelta y llamar a la nube para regresar.', 'تختفي الدرجات بلا مطر. يمكنك الالتفات واستدعاء السحابة للعودة.', '失去雨水，落脚点就会消失。转身呼唤云朵，也能沿路返回。'],
+  ['Arrivé trop tard ? Attends sur la rive : le nuage repasse toujours.', 'Too late? Wait on the bank: the cloud always comes back.', '¿Llegaste tarde? Espera en la orilla: la nube siempre vuelve a pasar.', 'تأخرت؟ انتظر على الضفة: السحابة تعود دائمًا.', '来晚了？在岸边等一等：云朵总会再飘回来。'],
   ['Sur le dos d’un songe', 'On the back of a dream', 'A lomos de un sueño', 'على ظهر حلم', '梦之背上'],
   ['Le jardin voyage pendant que tu marches.', 'The garden travels as you walk.', 'El jardín viaja mientras caminas.', 'تسافر الحديقة وأنت تمشي.', '你在行走，花园也在旅行。'],
   ['Appelle le grand dormeur et laisse-le porter le jardin.', 'Call the great sleeper and let it carry the garden.', 'Llama al gran durmiente y deja que lleve el jardín.', 'نادِ النائم الكبير ودعه يحمل الحديقة.', '呼唤沉睡的巨兽，让它驮起花园。'],
@@ -3633,7 +3633,10 @@ window.LumenI18n.add([
       state.peakY = game.player.y; state.metrics.climbed = 0; state.metrics.peakY = state.peakY;
     }
     if (config.kind === 'rain') {
-      state.cloud = { x: config.startX, y: 220, targetX: config.startX };
+      // Chaque nuage tient sa propre ronde au-dessus d'un seul vide. Il ne
+      // répond à rien : on lit son rythme, puis on choisit quand partir.
+      state.clouds = config.clouds.map(route => ({ ...route, y: 220, x: route.from, direction: 1, alpha: 0, stage: 'forming' }));
+      state.cloud = state.clouds[0];
       state.metrics.rainGrown = 0; state.metrics.rainLandings = 0; state.lastLanding = null;
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) {
         platform.active = false; platform.rainLife = 0; platform.charge = 0;
@@ -3686,17 +3689,10 @@ window.LumenI18n.add([
       }
     }
     if (state.kind === 'rain') {
-      const cloud = state.cloud;
-      // The facing direction is an explicit choice: an action sends the rain
-      // towards the next bed, or back towards a foothold being revisited.
-      for (const wave of game.waves) if (wave.source === 'player' && !wave.placeRain) {
-        wave.placeRain = true;
-        cloud.targetX = clamp(wave.x + game.player.facing * 180, 0, game.level.width);
-      }
-      cloud.x = approach(cloud.x, cloud.targetX, 340 * dt);
+      for (const cloud of state.clouds) placeCloud(cloud, state.elapsed);
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) {
         platform.rainLife = Math.max(0, platform.rainLife - dt);
-        const raining = Math.abs(platform.x + platform.w / 2 - cloud.x) < 112;
+        const raining = state.clouds.some(cloud => cloud.alpha > .5 && Math.abs(platform.x + platform.w / 2 - cloud.x) < 112);
         platform.charge = clamp(platform.charge + dt * (raining ? 1 : -.5), 0, .55);
         if (platform.charge >= .55 && raining) {
           if (!platform.active) { state.metrics.rainGrown++; game.audio.sfx('wakeBloom'); }
@@ -3706,6 +3702,21 @@ window.LumenI18n.add([
         platform.warning = platform.active && platform.rainLife < 1.5;
       }
     }
+  }
+  /** Où est un nuage à l'instant `time`. Une ronde fixe, toujours dans le
+   *  sens du voyage : il se forme au-dessus de la rive, traverse, se défait
+   *  au-dessus de l'autre rive, puis se reforme au départ. Une fonction du
+   *  temps seul — le même nuage au même moment, quoi que fasse le joueur, et
+   *  une chute ne dérègle rien. Qui arrive trop tard attend moins de dix
+   *  secondes le passage suivant. */
+  function placeCloud(cloud, time) {
+    const travel = Math.abs(cloud.to - cloud.from) / cloud.speed, rest = cloud.rest || 1.6, fade = cloud.fade || .8;
+    const period = rest + travel + fade;
+    const t = ((time + (cloud.phase || 0)) % period + period) % period;
+    cloud.direction = Math.sign(cloud.to - cloud.from) || 1;
+    if (t < rest) { cloud.x = cloud.from; cloud.alpha = Math.min(1, t / (rest * .6)); cloud.stage = 'forming'; }
+    else if (t < rest + travel) { cloud.x = cloud.from + (cloud.to - cloud.from) * (t - rest) / travel; cloud.alpha = 1; cloud.stage = 'crossing'; }
+    else { cloud.x = cloud.to; cloud.alpha = Math.max(0, 1 - (t - rest - travel) / fade); cloud.stage = 'fading'; }
   }
   function afterPhysics(game, dt) {
     const state = game.place, config = game.level.place;
@@ -3783,7 +3794,7 @@ window.LumenI18n.add([
       for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) platform.active = false;
     }
     if (state.kind === 'rain') {
-      state.cloud.x = state.cloud.targetX = game.checkpoint.x + 180;
+      // Les nuages ne s'arrêtent pas pour une chute : seule la pousse s'efface.
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) { platform.active = false; platform.rainLife = 0; platform.charge = 0; }
       state.lastLanding = null;
     }
@@ -4669,11 +4680,16 @@ window.LumenI18n.add([
       id: 17, key: 'pluie-de-lumiere', journeyAct: 3, name: 'Là où pleut la lumière',
       subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'rain', width: 3150, height: 900,
       medalTargets: { gold: 105, silver: 170 }, spawn: { x: 100, y: 554 }, exit: exit(3150),
-      goal: 'Guide la pluie devant toi pour faire pousser des pas temporaires.',
-      place: { kind: 'rain', startX: 450, life: 8,
-        pilot: [{ x: 470, surfaceY: 600, call: true }, { x: 675, surfaceY: 585 }, { x: 895, surfaceY: 585 },
+      goal: 'Suis la pluie : elle fait pousser des pas qui s’effacent derrière elle.',
+      // Deux nuages, deux rondes. Aucun ne répond à l'appel : le lieu se joue
+      // au rythme, pas à la voix. Leurs phases diffèrent pour que le second
+      // vide ne se traverse pas avec l'élan exact du premier.
+      place: { kind: 'rain', life: 3.5,
+        clouds: [{ from: 540, to: 1480, speed: 125, phase: 0 },
+          { from: 1780, to: 2720, speed: 125, phase: 4.5 }],
+        pilot: [{ x: 470, surfaceY: 600, waitRain: 1 }, { x: 675, surfaceY: 585 }, { x: 895, surfaceY: 585 },
           { x: 1115, surfaceY: 585 }, { x: 1335, surfaceY: 585 }, { x: 1610, surfaceY: 600 },
-          { x: 1790, surfaceY: 600, call: true }, { x: 1950, surfaceY: 585 }, { x: 2170, surfaceY: 585 },
+          { x: 1790, surfaceY: 600, waitRain: 1 }, { x: 1950, surfaceY: 585 }, { x: 2170, surfaceY: 585 },
           { x: 2390, surfaceY: 585 }, { x: 2610, surfaceY: 585 }, { x: 2840, surfaceY: 600 }, { x: 3010, surfaceY: 600 }],
         captureMetric: { name: 'rainLandings', min: 3 } },
       platforms: [ground(0, 560), ground(1430, 420), ground(2670, 480),
@@ -4691,8 +4707,8 @@ window.LumenI18n.add([
         ...coins(1540, 445, 4), ...arc(2120, 525, 5),
         ...coins(2820, 446, 4), item('star', 355, 440), item('star', 1620, 440), item('star', 2920, 440)],
       secrets: [secret(1515, 385, 220, 110)],
-      hints: [{ x: 160, text: 'Ton appel fait venir le nuage pleuvoir devant toi. Attends que le prochain pas ait poussé.' },
-        { x: 1480, text: 'Les pas s’effacent sans pluie. Tu peux te retourner et rappeler le nuage pour revenir.' }]
+      hints: [{ x: 160, text: 'Le nuage passe à son rythme. Suis sa pluie de près : les pas qu’elle quitte s’effacent.' },
+        { x: 1480, text: 'Arrivé trop tard ? Attends sur la rive : le nuage repasse toujours.' }]
     }
   );
   for (const definition of newPlaces) {
@@ -6339,10 +6355,11 @@ window.LumenI18n.add([
     stroke(c,[[x,y],[x+w,y]],p.rim,4);stroke(c,[[x,y+4],[x+w,y+4]],p.shade,2);
     Art.platformMarks(c,object,p,t);c.restore();
   }
-  function rainCloud(c,game,p,t) {
-    const cloud=game.place?.cloud;if(!cloud)return;
+  function rainClouds(c,game,p,t) { for(const cloud of game.place?.clouds||[])rainCloud(c,game,p,t,cloud); }
+  function rainCloud(c,game,p,t,cloud) {
     const beds=(game.platforms||[]).filter(platform=>platform.placeRole==='rain-step'&&Math.abs(platform.x+platform.w/2-cloud.x)<112);
-    const y=cloud.y,x=cloud.x;
+    const y=cloud.y,x=cloud.x,fade=cloud.alpha??1;
+    if(fade<=0)return;
     c.save();
     // Nine discrete streams mark the real 224 px rain footprint. The clear
     // landing rim is painted afterwards and is never hidden by weather.
@@ -6350,16 +6367,16 @@ window.LumenI18n.add([
     for(let i=0;i<9;i++) {
       const xx=x-96+i*24,end=beds.find(bed=>xx>=bed.x&&xx<=bed.x+bed.w)?.y||610;
       const shift=((t*130+i*43)%74);
-      c.globalAlpha=.46;
+      c.globalAlpha=.46*fade;
       for(let yy=y+40+shift;yy<end-10;yy+=74)stroke(c,[[xx,yy],[xx,Math.min(end-8,yy+19)]],p.rim,1.6);
     }
-    c.globalAlpha=1;
+    c.globalAlpha=fade;
     oval(c,x,y,112,27,p.facet);oval(c,x-51,y-19,52,36,p.facet);oval(c,x+23,y-32,59,43,p.facet);
     oval(c,x-13,y-5,82,19,p.grass);oval(c,x-45,y-23,37,24,p.grass);oval(c,x+24,y-33,42,31,p.grass);
     stroke(c,[[x-83,y+15],[x-18,y+23],[x+75,y+16]],p.rim,2);
-    // The small sail leans towards the chosen target; no cosmetic motion can
-    // claim that the cloud has reached a bed before the physics says so.
-    const direction=Math.sign(cloud.targetX-cloud.x);
+    // The small sail shows where the round goes next: this is the rhythm the
+    // player reads, since no call can steer the cloud any more.
+    const direction=cloud.direction||1;
     star(c,x+direction*20,y-39,8,p.rim);
     c.restore();
   }
@@ -6518,7 +6535,7 @@ window.LumenI18n.add([
   }
   function beforePlatforms(c,game,p,t,renderer) {
     if(kind(game)==='river')river(c,game,p,t,renderer);
-    if(kind(game)==='rain')rainCloud(c,game,p,t);
+    if(kind(game)==='rain')rainClouds(c,game,p,t);
   }
   function escort(c,game,p,t) {
     const state=game.place;if(!state)return;

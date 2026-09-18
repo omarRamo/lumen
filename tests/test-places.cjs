@@ -120,19 +120,45 @@ test('An idle controller never releases an unheld jump or cuts an automatic spri
   assert.equal(game.input.released.has('jump'), true, 'a real release must still cut a manual jump');
 });
 
-test('Position fixture: rain grows only where sent, warns, expires and can grow the same foothold again', () => {
+test('The rain keeps its own rhythm: a call cannot steer it, steps grow in its wake, fade behind it, and grow again next round', () => {
   const { game } = load('pluie-de-lumiere');
   const steps = game.platforms.filter(platform => platform.placeRole === 'rain-step');
+  const config = game.level.place.clouds[0];
   assert.ok(steps.every(platform => !platform.active));
-  position(game, 455, 554); game.player.facing = 1;
-  call(game); tick(game, 1.5);
-  assert.equal(steps[0].active, true); assert.equal(steps[1].active, false);
-  assert.ok(game.place.metrics.rainGrown >= 1);
-  game.player.facing = -1; call(game); tick(game, 7.5);
-  assert.equal(steps[0].warning, true);
-  tick(game, 2); assert.equal(steps[0].active, false);
-  game.player.facing = 1; call(game); tick(game, 2);
-  assert.equal(steps[0].active, true);
+  // Deux visites identiques, l'une où l'on appelle sans cesse, l'autre en
+  // silence : le nuage est au même endroit. Le lieu ne se joue plus à la voix.
+  const quiet = load('pluie-de-lumiere').game;
+  position(game, 455, 554); position(quiet, 455, 554);
+  for (let i = 0; i < 12; i++) { game.player.facing = i % 2 ? 1 : -1; call(game); tick(game, .25); tick(quiet, .25); tick(quiet, DT); }
+  assert.equal(game.elapsed.toFixed(4), quiet.elapsed.toFixed(4));
+  assert.ok(Math.abs(game.place.clouds[0].x - quiet.place.clouds[0].x) < 2, 'Un appel ne doit pas déplacer le nuage.');
+  // Une ronde : il se forme sur la rive, traverse dans le sens du voyage,
+  // fait pousser les pas un par un, puis se défait sur l'autre rive.
+  const fresh = load('pluie-de-lumiere').game;
+  const beds = fresh.platforms.filter(platform => platform.placeRole === 'rain-step').slice(0, 4);
+  const grownAt = beds.map(() => null), goneAt = beds.map(() => null);
+  let lastX = -Infinity, crossedBackwards = false;
+  position(fresh, 300, 554);
+  for (let frame = 0; frame < 120 * 12; frame++) {
+    tick(fresh, DT);
+    const x = fresh.place.clouds[0].x;
+    if (fresh.place.clouds[0].stage === 'crossing' && x < lastX - 1) crossedBackwards = true;
+    lastX = fresh.place.clouds[0].stage === 'crossing' ? x : -Infinity;
+    beds.forEach((bed, index) => {
+      if (bed.active && grownAt[index] === null) grownAt[index] = fresh.elapsed;
+      if (!bed.active && grownAt[index] !== null && goneAt[index] === null) goneAt[index] = fresh.elapsed;
+    });
+  }
+  assert.equal(crossedBackwards, false, 'La traversée va toujours dans le sens du voyage.');
+  assert.ok(grownAt.every(time => time !== null), 'Chaque pas doit pousser pendant une ronde : ' + grownAt);
+  for (let index = 1; index < beds.length; index++) assert.ok(grownAt[index] > grownAt[index - 1] + 1, 'Les pas poussent un par un, dans l’ordre.');
+  assert.ok(goneAt[0] !== null && goneAt[0] < grownAt[3] + 3, 'Un pas quitté par la pluie s’efface.');
+  // Et le nuage repasse : moins de dix secondes plus tard, le premier pas repousse.
+  const period = 1.6 + Math.abs(config.to - config.from) / config.speed + .8;
+  assert.ok(period < 10, 'Qui arrive trop tard ne doit pas attendre plus de dix secondes.');
+  tick(fresh, period - 12 + grownAt[0] + .5);
+  assert.equal(beds[0].active, true, 'Le premier pas repousse à la ronde suivante.');
+  assert.ok(fresh.place.metrics.rainGrown >= 5);
 });
 
 test('A guarded place names what its exit is waiting for, and points at it once it is off screen', () => {

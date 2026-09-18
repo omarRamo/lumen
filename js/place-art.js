@@ -196,10 +196,11 @@
     stroke(c,[[x,y],[x+w,y]],p.rim,4);stroke(c,[[x,y+4],[x+w,y+4]],p.shade,2);
     Art.platformMarks(c,object,p,t);c.restore();
   }
-  function rainCloud(c,game,p,t) {
-    const cloud=game.place?.cloud;if(!cloud)return;
+  function rainClouds(c,game,p,t) { for(const cloud of game.place?.clouds||[])rainCloud(c,game,p,t,cloud); }
+  function rainCloud(c,game,p,t,cloud) {
     const beds=(game.platforms||[]).filter(platform=>platform.placeRole==='rain-step'&&Math.abs(platform.x+platform.w/2-cloud.x)<112);
-    const y=cloud.y,x=cloud.x;
+    const y=cloud.y,x=cloud.x,fade=cloud.alpha??1;
+    if(fade<=0)return;
     c.save();
     // Nine discrete streams mark the real 224 px rain footprint. The clear
     // landing rim is painted afterwards and is never hidden by weather.
@@ -207,16 +208,16 @@
     for(let i=0;i<9;i++) {
       const xx=x-96+i*24,end=beds.find(bed=>xx>=bed.x&&xx<=bed.x+bed.w)?.y||610;
       const shift=((t*130+i*43)%74);
-      c.globalAlpha=.46;
+      c.globalAlpha=.46*fade;
       for(let yy=y+40+shift;yy<end-10;yy+=74)stroke(c,[[xx,yy],[xx,Math.min(end-8,yy+19)]],p.rim,1.6);
     }
-    c.globalAlpha=1;
+    c.globalAlpha=fade;
     oval(c,x,y,112,27,p.facet);oval(c,x-51,y-19,52,36,p.facet);oval(c,x+23,y-32,59,43,p.facet);
     oval(c,x-13,y-5,82,19,p.grass);oval(c,x-45,y-23,37,24,p.grass);oval(c,x+24,y-33,42,31,p.grass);
     stroke(c,[[x-83,y+15],[x-18,y+23],[x+75,y+16]],p.rim,2);
-    // The small sail leans towards the chosen target; no cosmetic motion can
-    // claim that the cloud has reached a bed before the physics says so.
-    const direction=Math.sign(cloud.targetX-cloud.x);
+    // The small sail shows where the round goes next: this is the rhythm the
+    // player reads, since no call can steer the cloud any more.
+    const direction=cloud.direction||1;
     star(c,x+direction*20,y-39,8,p.rim);
     c.restore();
   }
@@ -375,7 +376,7 @@
   }
   function beforePlatforms(c,game,p,t,renderer) {
     if(kind(game)==='river')river(c,game,p,t,renderer);
-    if(kind(game)==='rain')rainCloud(c,game,p,t);
+    if(kind(game)==='rain')rainClouds(c,game,p,t);
   }
   function escort(c,game,p,t) {
     const state=game.place;if(!state)return;

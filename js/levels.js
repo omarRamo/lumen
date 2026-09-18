@@ -872,11 +872,16 @@
       id: 17, key: 'pluie-de-lumiere', journeyAct: 3, name: 'Là où pleut la lumière',
       subtitle: 'La pluie fait pousser le chemin que tu attends.', theme: 'rain', width: 3150, height: 900,
       medalTargets: { gold: 105, silver: 170 }, spawn: { x: 100, y: 554 }, exit: exit(3150),
-      goal: 'Guide la pluie devant toi pour faire pousser des pas temporaires.',
-      place: { kind: 'rain', startX: 450, life: 8,
-        pilot: [{ x: 470, surfaceY: 600, call: true }, { x: 675, surfaceY: 585 }, { x: 895, surfaceY: 585 },
+      goal: 'Suis la pluie : elle fait pousser des pas qui s’effacent derrière elle.',
+      // Deux nuages, deux rondes. Aucun ne répond à l'appel : le lieu se joue
+      // au rythme, pas à la voix. Leurs phases diffèrent pour que le second
+      // vide ne se traverse pas avec l'élan exact du premier.
+      place: { kind: 'rain', life: 3.5,
+        clouds: [{ from: 540, to: 1480, speed: 125, phase: 0 },
+          { from: 1780, to: 2720, speed: 125, phase: 4.5 }],
+        pilot: [{ x: 470, surfaceY: 600, waitRain: 1 }, { x: 675, surfaceY: 585 }, { x: 895, surfaceY: 585 },
           { x: 1115, surfaceY: 585 }, { x: 1335, surfaceY: 585 }, { x: 1610, surfaceY: 600 },
-          { x: 1790, surfaceY: 600, call: true }, { x: 1950, surfaceY: 585 }, { x: 2170, surfaceY: 585 },
+          { x: 1790, surfaceY: 600, waitRain: 1 }, { x: 1950, surfaceY: 585 }, { x: 2170, surfaceY: 585 },
           { x: 2390, surfaceY: 585 }, { x: 2610, surfaceY: 585 }, { x: 2840, surfaceY: 600 }, { x: 3010, surfaceY: 600 }],
         captureMetric: { name: 'rainLandings', min: 3 } },
       platforms: [ground(0, 560), ground(1430, 420), ground(2670, 480),
@@ -894,8 +899,8 @@
         ...coins(1540, 445, 4), ...arc(2120, 525, 5),
         ...coins(2820, 446, 4), item('star', 355, 440), item('star', 1620, 440), item('star', 2920, 440)],
       secrets: [secret(1515, 385, 220, 110)],
-      hints: [{ x: 160, text: 'Ton appel fait venir le nuage pleuvoir devant toi. Attends que le prochain pas ait poussé.' },
-        { x: 1480, text: 'Les pas s’effacent sans pluie. Tu peux te retourner et rappeler le nuage pour revenir.' }]
+      hints: [{ x: 160, text: 'Le nuage passe à son rythme. Suis sa pluie de près : les pas qu’elle quitte s’effacent.' },
+        { x: 1480, text: 'Arrivé trop tard ? Attends sur la rive : le nuage repasse toujours.' }]
     }
   );
   for (const definition of newPlaces) {

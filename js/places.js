@@ -37,7 +37,10 @@
       state.peakY = game.player.y; state.metrics.climbed = 0; state.metrics.peakY = state.peakY;
     }
     if (config.kind === 'rain') {
-      state.cloud = { x: config.startX, y: 220, targetX: config.startX };
+      // Chaque nuage tient sa propre ronde au-dessus d'un seul vide. Il ne
+      // répond à rien : on lit son rythme, puis on choisit quand partir.
+      state.clouds = config.clouds.map(route => ({ ...route, y: 220, x: route.from, direction: 1, alpha: 0, stage: 'forming' }));
+      state.cloud = state.clouds[0];
       state.metrics.rainGrown = 0; state.metrics.rainLandings = 0; state.lastLanding = null;
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) {
         platform.active = false; platform.rainLife = 0; platform.charge = 0;
@@ -90,17 +93,10 @@
       }
     }
     if (state.kind === 'rain') {
-      const cloud = state.cloud;
-      // The facing direction is an explicit choice: an action sends the rain
-      // towards the next bed, or back towards a foothold being revisited.
-      for (const wave of game.waves) if (wave.source === 'player' && !wave.placeRain) {
-        wave.placeRain = true;
-        cloud.targetX = clamp(wave.x + game.player.facing * 180, 0, game.level.width);
-      }
-      cloud.x = approach(cloud.x, cloud.targetX, 340 * dt);
+      for (const cloud of state.clouds) placeCloud(cloud, state.elapsed);
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) {
         platform.rainLife = Math.max(0, platform.rainLife - dt);
-        const raining = Math.abs(platform.x + platform.w / 2 - cloud.x) < 112;
+        const raining = state.clouds.some(cloud => cloud.alpha > .5 && Math.abs(platform.x + platform.w / 2 - cloud.x) < 112);
         platform.charge = clamp(platform.charge + dt * (raining ? 1 : -.5), 0, .55);
         if (platform.charge >= .55 && raining) {
           if (!platform.active) { state.metrics.rainGrown++; game.audio.sfx('wakeBloom'); }
@@ -110,6 +106,21 @@
         platform.warning = platform.active && platform.rainLife < 1.5;
       }
     }
+  }
+  /** Où est un nuage à l'instant `time`. Une ronde fixe, toujours dans le
+   *  sens du voyage : il se forme au-dessus de la rive, traverse, se défait
+   *  au-dessus de l'autre rive, puis se reforme au départ. Une fonction du
+   *  temps seul — le même nuage au même moment, quoi que fasse le joueur, et
+   *  une chute ne dérègle rien. Qui arrive trop tard attend moins de dix
+   *  secondes le passage suivant. */
+  function placeCloud(cloud, time) {
+    const travel = Math.abs(cloud.to - cloud.from) / cloud.speed, rest = cloud.rest || 1.6, fade = cloud.fade || .8;
+    const period = rest + travel + fade;
+    const t = ((time + (cloud.phase || 0)) % period + period) % period;
+    cloud.direction = Math.sign(cloud.to - cloud.from) || 1;
+    if (t < rest) { cloud.x = cloud.from; cloud.alpha = Math.min(1, t / (rest * .6)); cloud.stage = 'forming'; }
+    else if (t < rest + travel) { cloud.x = cloud.from + (cloud.to - cloud.from) * (t - rest) / travel; cloud.alpha = 1; cloud.stage = 'crossing'; }
+    else { cloud.x = cloud.to; cloud.alpha = Math.max(0, 1 - (t - rest - travel) / fade); cloud.stage = 'fading'; }
   }
   function afterPhysics(game, dt) {
     const state = game.place, config = game.level.place;
@@ -187,7 +198,7 @@
       for (const platform of game.platforms.filter(p => p.placeRole === 'living-bridge')) platform.active = false;
     }
     if (state.kind === 'rain') {
-      state.cloud.x = state.cloud.targetX = game.checkpoint.x + 180;
+      // Les nuages ne s'arrêtent pas pour une chute : seule la pousse s'efface.
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) { platform.active = false; platform.rainLife = 0; platform.charge = 0; }
       state.lastLanding = null;
     }

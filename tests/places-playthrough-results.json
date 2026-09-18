@@ -3,27 +3,27 @@
     "key": "dos-du-songe",
     "kind": "ride",
     "mode": "complete",
-    "seconds": 23.8,
+    "seconds": 36.46,
     "deaths": 0,
-    "lives": 5,
+    "lives": 4,
     "hp": 3,
-    "coins": 19,
-    "stars": 1,
-    "calls": 24,
-    "jumps": 7,
-    "waypoint": 2,
-    "waypoints": 3,
-    "maxX": 3052,
+    "coins": 69,
+    "stars": 0,
+    "calls": 41,
+    "jumps": 16,
+    "waypoint": 12,
+    "waypoints": 13,
+    "maxX": 6776,
     "minY": 222,
     "metrics": {
       "carriedDistance": 1444.7916666666463
     },
     "player": {
-      "x": 3019,
+      "x": 6778,
       "y": 554
     },
     "checkpoint": {
-      "x": 2544,
+      "x": 4979,
       "y": 552
     },
     "trace": [
@@ -122,6 +122,62 @@
         "waypoint": 2,
         "standing": null,
         "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 2960,
+        "y": 554,
+        "waypoint": 3,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 3567,
+        "y": 494,
+        "waypoint": 4,
+        "standing": 9,
+        "state": null
+      },
+      {
+        "t": 28.1,
+        "x": 4209,
+        "y": 398,
+        "waypoint": 6,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 30.1,
+        "x": 4851,
+        "y": 376,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 32.1,
+        "x": 5493,
+        "y": 474,
+        "waypoint": 8,
+        "standing": 13,
+        "state": null
+      },
+      {
+        "t": 34.1,
+        "x": 6136,
+        "y": 394,
+        "waypoint": 10,
+        "standing": 14,
+        "state": null
+      },
+      {
+        "t": 36.1,
+        "x": 6674,
+        "y": 554,
+        "waypoint": 12,
+        "standing": 15,
+        "state": null
       }
     ],
     "initial": {
@@ -137,28 +193,28 @@
     "key": "astre-a-guider",
     "kind": "escort",
     "mode": "complete",
-    "seconds": 28.64,
+    "seconds": 41.07,
     "deaths": 0,
-    "lives": 5,
+    "lives": 3,
     "hp": 3,
-    "coins": 5,
+    "coins": 55,
     "stars": 0,
-    "calls": 39,
-    "jumps": 2,
-    "waypoint": 0,
-    "waypoints": 2,
-    "maxX": 2948,
-    "minY": 432,
+    "calls": 55,
+    "jumps": 11,
+    "waypoint": 11,
+    "waypoints": 12,
+    "maxX": 6778,
+    "minY": 272,
     "metrics": {
       "flowersWoken": 7,
       "escortArrived": true
     },
     "player": {
-      "x": 2949,
+      "x": 6781,
       "y": 554
     },
     "checkpoint": {
-      "x": 2174,
+      "x": 4979,
       "y": 552
     },
     "trace": [
@@ -281,6 +337,54 @@
         "waypoint": 0,
         "standing": "ground",
         "state": null
+      },
+      {
+        "t": 30.1,
+        "x": 3380,
+        "y": 443,
+        "waypoint": 3,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 32.1,
+        "x": 4022,
+        "y": 414,
+        "waypoint": 4,
+        "standing": 8,
+        "state": null
+      },
+      {
+        "t": 34.1,
+        "x": 4664,
+        "y": 484,
+        "waypoint": 6,
+        "standing": 9,
+        "state": null
+      },
+      {
+        "t": 36.1,
+        "x": 5306,
+        "y": 464,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 38.1,
+        "x": 5949,
+        "y": 394,
+        "waypoint": 8,
+        "standing": 12,
+        "state": null
+      },
+      {
+        "t": 40.1,
+        "x": 6487,
+        "y": 353,
+        "waypoint": 10,
+        "standing": null,
+        "state": null
       }
     ],
     "initial": {
@@ -296,28 +400,28 @@
     "key": "pont-des-veilleurs",
     "kind": "chain",
     "mode": "complete",
-    "seconds": 9.45,
+    "seconds": 21.94,
     "deaths": 0,
-    "lives": 5,
+    "lives": 3,
     "hp": 3,
-    "coins": 23,
+    "coins": 73,
     "stars": 1,
-    "calls": 13,
-    "jumps": 7,
-    "waypoint": 3,
-    "waypoints": 4,
-    "maxX": 2817,
+    "calls": 29,
+    "jumps": 16,
+    "waypoint": 13,
+    "waypoints": 14,
+    "maxX": 6678,
     "minY": 212,
     "metrics": {
       "chainWakes": 3,
       "bridgeDistance": 552.0000000000008
     },
     "player": {
-      "x": 2819,
+      "x": 6681,
       "y": 554
     },
     "checkpoint": {
-      "x": 384,
+      "x": 4879,
       "y": 552
     },
     "trace": [
@@ -360,6 +464,54 @@
         "waypoint": 3,
         "standing": null,
         "state": null
+      },
+      {
+        "t": 10,
+        "x": 3003,
+        "y": 433,
+        "waypoint": 4,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 12,
+        "x": 3612,
+        "y": 474,
+        "waypoint": 6,
+        "standing": 11,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 4255,
+        "y": 298,
+        "waypoint": 7,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 4897,
+        "y": 554,
+        "waypoint": 8,
+        "standing": 14,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 5539,
+        "y": 494,
+        "waypoint": 10,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 6182,
+        "y": 309,
+        "waypoint": 11,
+        "standing": null,
+        "state": null
       }
     ],
     "initial": {
@@ -375,28 +527,28 @@
     "key": "riviere-sans-lune",
     "kind": "river",
     "mode": "complete",
-    "seconds": 13.62,
+    "seconds": 26.04,
     "deaths": 0,
     "lives": 5,
     "hp": 3,
-    "coins": 15,
+    "coins": 65,
     "stars": 0,
-    "calls": 18,
-    "jumps": 4,
-    "waypoint": 7,
-    "waypoints": 8,
-    "maxX": 3817,
-    "minY": 432,
+    "calls": 34,
+    "jumps": 13,
+    "waypoint": 17,
+    "waypoints": 18,
+    "maxX": 7678,
+    "minY": 292,
     "metrics": {
       "beaconsLit": 3,
       "riverRestored": true
     },
     "player": {
-      "x": 3819,
+      "x": 7680,
       "y": 554
     },
     "checkpoint": {
-      "x": 3154,
+      "x": 5879,
       "y": 552
     },
     "trace": [
@@ -421,7 +573,7 @@
         "x": 1052,
         "y": 554,
         "waypoint": 2,
-        "standing": 11,
+        "standing": 22,
         "state": null
       },
       {
@@ -445,7 +597,7 @@
         "x": 2698,
         "y": 554,
         "waypoint": 5,
-        "standing": 13,
+        "standing": 24,
         "state": null
       },
       {
@@ -454,6 +606,54 @@
         "y": 554,
         "waypoint": 7,
         "standing": 2,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 3952,
+        "y": 467,
+        "waypoint": 8,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 4584,
+        "y": 514,
+        "waypoint": 10,
+        "standing": 11,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 5227,
+        "y": 312,
+        "waypoint": 11,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 5869,
+        "y": 554,
+        "waypoint": 12,
+        "standing": 14,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 6511,
+        "y": 484,
+        "waypoint": 14,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 7153,
+        "y": 336,
+        "waypoint": 15,
+        "standing": null,
         "state": null
       }
     ],
@@ -470,29 +670,29 @@
     "key": "colonne-des-saisons",
     "kind": "ascent",
     "mode": "complete",
-    "seconds": 15.05,
+    "seconds": 27.53,
     "deaths": 0,
-    "lives": 5,
+    "lives": 3,
     "hp": 3,
-    "coins": 22,
-    "stars": 2,
-    "calls": 20,
-    "jumps": 14,
-    "waypoint": 12,
-    "waypoints": 13,
-    "maxX": 1467,
-    "minY": 152,
+    "coins": 73,
+    "stars": 1,
+    "calls": 36,
+    "jumps": 23,
+    "waypoint": 22,
+    "waypoints": 23,
+    "maxX": 4565,
+    "minY": -58,
     "metrics": {
-      "climbed": 1602.4305555555554,
-      "peakY": 151.5694444444445
+      "climbed": 1812.4305555555554,
+      "peakY": -58.43055555555547
     },
     "player": {
-      "x": 669,
+      "x": 4568,
       "y": 164
     },
     "checkpoint": {
-      "x": 244,
-      "y": 1752
+      "x": 2769,
+      "y": 162
     },
     "trace": [
       {
@@ -558,6 +758,54 @@
         "waypoint": 11,
         "standing": 12,
         "state": null
+      },
+      {
+        "t": 16,
+        "x": 988,
+        "y": 164,
+        "waypoint": 14,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 1631,
+        "y": -9,
+        "waypoint": 15,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 2273,
+        "y": 124,
+        "waypoint": 16,
+        "standing": 18,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 2915,
+        "y": 164,
+        "waypoint": 18,
+        "standing": 19,
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 3558,
+        "y": -5,
+        "waypoint": 19,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 4181,
+        "y": 16,
+        "waypoint": 20,
+        "standing": null,
+        "state": null
       }
     ],
     "initial": {
@@ -573,28 +821,28 @@
     "key": "pluie-de-lumiere",
     "kind": "rain",
     "mode": "complete",
-    "seconds": 20.58,
+    "seconds": 38.44,
     "deaths": 0,
-    "lives": 5,
-    "hp": 2,
-    "coins": 25,
+    "lives": 3,
+    "hp": 3,
+    "coins": 75,
     "stars": 1,
-    "calls": 27,
-    "jumps": 11,
-    "waypoint": 12,
-    "waypoints": 13,
-    "maxX": 2967,
-    "minY": 322,
+    "calls": 51,
+    "jumps": 20,
+    "waypoint": 22,
+    "waypoints": 23,
+    "maxX": 6828,
+    "minY": 272,
     "metrics": {
-      "rainGrown": 8,
+      "rainGrown": 32,
       "rainLandings": 8
     },
     "player": {
-      "x": 2968,
+      "x": 6831,
       "y": 554
     },
     "checkpoint": {
-      "x": 1614,
+      "x": 5029,
       "y": 552
     },
     "trace": [
@@ -624,31 +872,31 @@
       },
       {
         "t": 6,
-        "x": 873,
-        "y": 495,
-        "waypoint": 2,
-        "standing": null,
+        "x": 887,
+        "y": 539,
+        "waypoint": 3,
+        "standing": 4,
         "state": null
       },
       {
         "t": 8,
-        "x": 1104,
-        "y": 539,
+        "x": 1172,
+        "y": 462,
         "waypoint": 4,
-        "standing": 5,
+        "standing": null,
         "state": null
       },
       {
         "t": 10,
-        "x": 1373,
-        "y": 476,
-        "waypoint": 5,
+        "x": 1456,
+        "y": 438,
+        "waypoint": 6,
         "standing": null,
         "state": null
       },
       {
         "t": 12,
-        "x": 1601,
+        "x": 1768,
         "y": 554,
         "waypoint": 6,
         "standing": 1,
@@ -656,34 +904,106 @@
       },
       {
         "t": 14,
-        "x": 1932,
-        "y": 536,
+        "x": 1768,
+        "y": 554,
+        "waypoint": 6,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 16,
+        "x": 1768,
+        "y": 554,
+        "waypoint": 6,
+        "standing": 1,
+        "state": null
+      },
+      {
+        "t": 18.1,
+        "x": 1779,
+        "y": 491,
         "waypoint": 7,
         "standing": null,
         "state": null
       },
       {
-        "t": 16,
-        "x": 2149,
-        "y": 539,
-        "waypoint": 9,
-        "standing": 8,
-        "state": null
-      },
-      {
-        "t": 18.1,
-        "x": 2414,
-        "y": 454,
-        "waypoint": 10,
+        "t": 20.1,
+        "x": 2023,
+        "y": 417,
+        "waypoint": 8,
         "standing": null,
         "state": null
       },
       {
-        "t": 20.1,
-        "x": 2805,
+        "t": 22.1,
+        "x": 2306,
+        "y": 433,
+        "waypoint": 9,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 24.1,
+        "x": 2617,
+        "y": 507,
+        "waypoint": 11,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 26.1,
+        "x": 3008,
         "y": 554,
-        "waypoint": 12,
+        "waypoint": 13,
         "standing": 2,
+        "state": null
+      },
+      {
+        "t": 28.1,
+        "x": 3628,
+        "y": 494,
+        "waypoint": 14,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 30.1,
+        "x": 4270,
+        "y": 373,
+        "waypoint": 16,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 32.1,
+        "x": 4912,
+        "y": 385,
+        "waypoint": 17,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 34.1,
+        "x": 5554,
+        "y": 474,
+        "waypoint": 18,
+        "standing": 19,
+        "state": null
+      },
+      {
+        "t": 36.1,
+        "x": 6196,
+        "y": 394,
+        "waypoint": 20,
+        "standing": 20,
+        "state": null
+      },
+      {
+        "t": 38.1,
+        "x": 6735,
+        "y": 554,
+        "waypoint": 22,
+        "standing": 21,
         "state": null
       }
     ],

@@ -40,7 +40,11 @@
         const bounced = p.vy < -500 && foot < target.y + 5 && game.platforms.some(platform => platform.type === 'spring' &&
           target.x >= platform.x && target.x <= platform.x + platform.w && Math.abs(platform.y - target.y) < 30 &&
           p.x + p.w > platform.x && p.x < platform.x + platform.w);
-        const specialReady = target.ride ? game.place.deck.x >= game.level.place.toX - 90 : target.escort ? game.place.astre.arrived : true;
+        // Un départ sous la pluie se lit sur le nuage : attendre, sur la rive,
+        // qu'il commence sa traversée dans le sens de la marche. Le pilote lit
+        // l'état visible du lieu, comme un joueur regarde le ciel.
+        const cloudReady = !target.waitRain || game.place.clouds.some(cloud => cloud.stage === 'forming' && cloud.alpha > .8 && Math.abs(cloud.x - center) < 260);
+        const specialReady = target.ride ? game.place.deck.x >= game.level.place.toX - 90 : target.escort ? game.place.astre.arrived : cloudReady;
         if ((near && atHeight && (target.airborne || p.grounded) || bounced || (target.ride || target.escort) && specialReady) && specialReady && this.waypoint < route.length - 1) {
           this.waypoint++; target = route[this.waypoint];
           if (Array.isArray(target)) target = { x: target[0], y: target[1] };
@@ -67,7 +71,7 @@
         const destination = game.platforms.filter(platform => target.x >= platform.x && target.x <= platform.x + platform.w &&
           Math.abs(platform.y - target.y) < 30).sort((a, b) => Math.abs(a.y - target.y) - Math.abs(b.y - target.y))[0];
         const climbApproach = !destination || (delta > 0 ? destination.x - center : center - destination.x - destination.w) < 115;
-        const waitingForRain = game.place.kind === 'rain' && p.grounded && destination?.placeRole === 'rain-step' && !destination.active;
+        const waitingForRain = game.place.kind === 'rain' && p.grounded && destination?.placeRole === 'rain-step' && (!destination.active || destination.warning);
         const waitingForLift = game.place.kind === 'ascent' && p.grounded && destination?.type === 'moving' && foot - destination.y > 121;
         const crossing = !!standing && edge < (target.edge || 70) && Math.abs(delta) > 65;
         const danger = game.enemies.some(enemy => enemy.alive && enemy.state !== 'calm' && enemy.type !== 'sleeper' && Math.abs(enemy.x - p.x) < 95 && Math.abs(enemy.y - p.y) < 90);
