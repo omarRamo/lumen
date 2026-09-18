@@ -1926,10 +1926,10 @@ window.LumenI18n.add([
   ['Le grand dormeur porte un jardin. Monte sur son dos, puis appelle-le.', 'The great sleeper carries a garden. Climb onto its back, then call to it.', 'El gran durmiente lleva un jardín. Sube a su lomo y llámalo.', 'يحمل النائم الكبير حديقة. اصعد على ظهره، ثم نادِه.', '沉睡的巨兽驮着一座花园。爬到它背上，再呼唤它。'],
   ['Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.', 'Another call extends its journey. You can hop off to find lights, then return.', 'Otra llamada prolonga su viaje. Puedes bajar a buscar luces y volver.', 'نداء آخر يطيل رحلته. يمكنك النزول للبحث عن الأضواء ثم العودة.', '再次呼唤可延长旅程。你可以跳下去寻找光芒，再回到它背上。'],
   ['Le petit astre égaré', 'The little lost star', 'El pequeño astro perdido', 'النجم الصغير التائه', '迷路的小星星'],
-  ['Il avance là où les fleurs lui répondent.', 'It follows the flowers that answer.', 'Avanza donde las flores le responden.', 'يتقدّم حيث تجيبه الأزهار.', '花朵回应之处，就是它前进的方向。'],
-  ['Éclaire le chemin du petit astre jusqu’à sa maison.', 'Light the little star’s path home.', 'Ilumina el camino del pequeño astro hasta su hogar.', 'أنر درب النجم الصغير إلى بيته.', '为小星星照亮回家的路。'],
-  ['Ton appel ouvre les fleurs. Le petit astre avance seulement dans leur lumière.', 'Your call opens the flowers. The little star only moves in their light.', 'Tu llamada abre las flores. El pequeño astro solo avanza bajo su luz.', 'نداؤك يفتح الأزهار. لا يتقدّم النجم الصغير إلا في ضوئها.', '你的呼唤会让花朵绽放。小星星只会在花光中前进。'],
-  ['Partir devant ouvre le chemin. Revenir près de l’astre lui évite d’attendre dans le noir.', 'Go ahead to open the path. Return to the star so it need not wait in the dark.', 'Adelántate para abrir el camino. Vuelve junto al astro para que no espere a oscuras.', 'تقدّم لتفتح الدرب. ثم عد إلى النجم كي لا ينتظر في الظلام.', '先行一步可以开路。记得回到星星身边，别让它在黑暗中等待。'],
+  ['Il éclaire le chemin de celui qui le porte.', 'It lights the way for whoever carries it.', 'Ilumina el camino de quien lo lleva.', 'يُنير الطريق لمن يحمله.', '谁带着它，它就为谁照亮道路。'],
+  ['Porte le petit astre jusqu’à sa maison, au fond du vallon.', 'Carry the little star home, down at the bottom of the valley.', 'Lleva al pequeño astro hasta su hogar, al fondo del valle.', 'احمل النجم الصغير إلى بيته في قاع الوادي.', '把小星星带回家——它的家在山谷深处。'],
+  ['Appelle près du petit astre pour le prendre, appelle encore pour le poser. Sa lumière fait exister les passerelles.', 'Call beside the little star to pick it up, call again to set it down. Its light makes the footbridges real.', 'Llama junto al pequeño astro para cogerlo, vuelve a llamar para dejarlo. Su luz hace existir las pasarelas.', 'نادِ بجانب النجم الصغير لتحمله، ونادِ مجددًا لتضعه. ضوؤه يُوجِد الممرات.', '在小星星旁呼唤就能抱起它，再呼唤一次就放下。它的光让小桥出现。'],
+  ['Chargé, tu sautes moins haut. Pose-le près d’une corniche de lumière, puis saute sans lui.', 'Carrying it, you jump lower. Set it down near a ledge of light, then jump without it.', 'Cargado, saltas menos alto. Déjalo cerca de una cornisa de luz y salta sin él.', 'وأنت تحمله تقفز أقل ارتفاعًا. ضعه قرب حافة من الضوء، ثم اقفز من دونه.', '抱着它时跳得没那么高。把它放在光之檐旁，再空手跳上去。'],
   ['Le petit astre a retrouvé sa maison.', 'The little star has found its home.', 'El pequeño astro ha encontrado su hogar.', 'وجد النجم الصغير بيته.', '小星星找到家了。'],
   ['Le pont des veilleurs', 'The watchers’ bridge', 'El puente de los vigías', 'جسر الساهرين', '守望者之桥'],
   ['Trois voix font tenir un seul chemin.', 'Three voices hold one path together.', 'Tres voces sostienen un solo camino.', 'ثلاثة أصوات تحمل دربًا واحدًا.', '三道声音，共同托起一条路。'],
@@ -3615,10 +3615,13 @@ window.LumenI18n.add([
       state.direction = 1; state.metrics.carriedDistance = 0;
     }
     if (config.kind === 'escort') {
-      state.astre = { x: config.startX, y: config.starY, arrived: false, moving: false };
-      state.metrics.flowersWoken = 0; state.metrics.escortArrived = false;
-      state.flowers = game.wakeables.filter(wakeable => config.flowers.includes(wakeable.id));
-      state.seenFlowers = new Set(); game.exit.open = false;
+      // L'astre ne marche plus seul : on le prend, on le porte, on le pose.
+      // Sa lumière fait exister les passerelles autour de lui, où qu'il soit.
+      state.astre = { x: config.startX, y: config.starY, carried: false, arrived: false };
+      state.lights = game.platforms.filter(platform => platform.placeRole === 'astre-light');
+      state.metrics.carriedDistance = 0; state.metrics.lightLandings = 0; state.metrics.placements = 0;
+      state.metrics.escortArrived = false; state.lastLanding = null;
+      lightAround(state, config); game.exit.open = false;
     }
     if (config.kind === 'chain') {
       state.keepers = config.keepers.map(keeper => ({ ...keeper, remaining: 0, pulse: 0 }));
@@ -3673,6 +3676,7 @@ window.LumenI18n.add([
       mount.x = deck.x; mount.y = deck.y + 3; mount.facing = state.direction;
       if (game.player.standingPlatform === deck) state.metrics.carriedDistance += Math.abs(deck.dx);
     }
+    if (state.kind === 'escort') carryBeforePhysics(game, state, config);
     if (state.kind === 'chain') {
       for (let index = 0; index < state.keepers.length; index++) {
         const keeper = state.keepers[index];
@@ -3718,19 +3722,59 @@ window.LumenI18n.add([
     else if (t < rest + travel) { cloud.x = cloud.from + (cloud.to - cloud.from) * (t - rest) / travel; cloud.alpha = 1; cloud.stage = 'crossing'; }
     else { cloud.x = cloud.to; cloud.alpha = Math.max(0, 1 - (t - rest - travel) / fade); cloud.stage = 'fading'; }
   }
+  /** La distance d'un point au rectangle d'une plateforme. */
+  function reachOf(platform, x, y) {
+    const dx = Math.max(platform.x - x, 0, x - platform.x - platform.w);
+    const dy = Math.max(platform.y - y, 0, y - platform.y - (platform.h || 22));
+    return Math.hypot(dx, dy);
+  }
+  function lightAround(state, config) {
+    for (const platform of state.lights) {
+      const lit = reachOf(platform, state.astre.x, state.astre.y) <= (config.reach || 250);
+      platform.active = lit;
+      // Le bord du halo prévient : une passerelle qui va s'éteindre tremble.
+      platform.warning = lit && reachOf(platform, state.astre.x, state.astre.y) > (config.reach || 250) - 40;
+    }
+  }
+  function carryBeforePhysics(game, state, config) {
+    const astre = state.astre, p = game.player;
+    const center = p.x + p.w / 2;
+    if (!astre.arrived && game.input.just('action')) {
+      if (astre.carried && p.grounded) {
+        // Posé au pied du joueur, à hauteur de poitrine : il reste là, il
+        // continue d'éclairer, et on part sans lui — mais pas loin.
+        astre.carried = false; astre.x = center; astre.y = p.y + 8;
+        state.metrics.placements++; game.audio.sfx('wakeEnd');
+      } else if (!astre.carried && Math.hypot(astre.x - center, astre.y - (p.y + p.h / 2)) < 64) {
+        astre.carried = true; game.audio.sfx('wakeBloom');
+      }
+    }
+    if (astre.carried) { astre.x = center; astre.y = p.y - 24; }
+    p.burden = astre.carried;
+    lightAround(state, config);
+  }
+  function carryAfterPhysics(game, state, config) {
+    const astre = state.astre, p = game.player;
+    if (astre.carried) {
+      const oldX = astre.x, oldY = astre.y;
+      astre.x = p.x + p.w / 2; astre.y = p.y - 24;
+      state.metrics.carriedDistance += Math.hypot(astre.x - oldX, astre.y - oldY);
+    }
+    const landing = p.standingPlatform;
+    if (landing?.placeRole === 'astre-light' && landing !== state.lastLanding) state.metrics.lightLandings++;
+    state.lastLanding = landing;
+    // Sa maison est au fond du vallon : il suffit de l'y amener.
+    if (!astre.arrived && astre.x >= config.endX - 20 && astre.y >= config.homeY - 90) {
+      astre.arrived = true; astre.carried = false; p.burden = false;
+      astre.x = config.endX; astre.y = config.homeY - 40;
+      game.audio.sfx('victory'); game.emit('toast', 'Le petit astre a retrouvé sa maison.');
+    }
+    state.metrics.escortArrived = astre.arrived; game.exit.open = astre.arrived;
+  }
   function afterPhysics(game, dt) {
     const state = game.place, config = game.level.place;
     if (!state || !config) return;
-    if (state.kind === 'escort') {
-      const astre = state.astre;
-      for (const flower of state.flowers) if (flower.state === 'awake') state.seenFlowers.add(flower.id);
-      state.metrics.flowersWoken = state.seenFlowers.size;
-      astre.moving = !astre.arrived && state.flowers.some(flower => flower.state === 'awake' && Math.abs(flower.x - astre.x) < config.reach);
-      if (astre.moving) astre.x = Math.min(config.endX, astre.x + config.speed * dt);
-      astre.arrived = astre.x >= config.endX;
-      if (astre.arrived && !state.metrics.escortArrived) { game.audio.sfx('victory'); game.emit('toast', 'Le petit astre a retrouvé sa maison.'); }
-      state.metrics.escortArrived = astre.arrived; game.exit.open = astre.arrived;
-    }
+    if (state.kind === 'escort') carryAfterPhysics(game, state, config);
     if (state.kind === 'river') {
       state.metrics.beaconsLit = config.beacons.filter(id => game.wokenOnce.has(id)).length;
       state.light = state.metrics.beaconsLit / config.beacons.length;
@@ -3769,7 +3813,10 @@ window.LumenI18n.add([
     if (state.kind === 'escort') {
       const span = Math.max(1, config.endX - config.startX);
       const walked = Math.round(clamp((state.astre.x - config.startX) / span, 0, 1) * 100);
-      return { done: !!state.metrics.escortArrived, target: state.astre.arrived ? null : { x: state.astre.x, y: state.astre.y },
+      // Porté, il est dans les bras du joueur : rien à désigner. Posé, on
+      // montre où on l'a laissé si on s'en est éloigné.
+      const waiting = !state.astre.arrived && !state.astre.carried;
+      return { done: !!state.metrics.escortArrived, target: waiting ? { x: state.astre.x, y: state.astre.y } : null,
         text: 'Le petit astre a fait {done} % du chemin.', values: { done: walked } };
     }
     if (state.kind === 'river') {
@@ -3798,7 +3845,15 @@ window.LumenI18n.add([
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) { platform.active = false; platform.rainLife = 0; platform.charge = 0; }
       state.lastLanding = null;
     }
-    // The escort waits where it is, and the river remembers its lit beacons:
+    if (state.kind === 'escort' && !state.astre.arrived) {
+      // Une chute ne sépare jamais le joueur de l'astre : il revient avec lui
+      // à la lanterne. Sans cela, un astre posé au bord d'un vide deviendrait
+      // un chemin qu'on ne peut plus reprendre.
+      const p = game.player;
+      state.astre.carried = true; state.astre.x = p.x + p.w / 2; state.astre.y = p.y - 24;
+      p.burden = true; lightAround(state, game.level.place);
+    }
+    // The river remembers its lit beacons:
     // a fall loses the traversal, never the work already done in this visit.
   }
   global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn, objective };
@@ -4550,32 +4605,46 @@ window.LumenI18n.add([
         { x: 650, text: 'Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.' }]
     },
     {
+      // Itération 13 : on ne l'appelle plus, on le PORTE. Et le lieu descend.
+      // Le verbe change (prendre, poser, porter, avec un saut raccourci) et la
+      // silhouette aussi : un plateau en haut à gauche, un vallon en bas à
+      // droite, et entre les deux des passerelles qui n'existent que dans sa
+      // lumière. Partir devant sans lui, c'est tomber.
       id: 13, key: 'astre-a-guider', journeyAct: 1, name: 'Le petit astre égaré',
-      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'dusk', width: 3100, height: 900,
-      medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 554 }, exit: { ...exit(3100), open: false },
-      goal: 'Éclaire le chemin du petit astre jusqu’à sa maison.',
-      place: { kind: 'escort', startX: 250, starY: 550, endX: 2880, speed: 95, reach: 355,
-        flowers: ['astre-fleur-1','astre-fleur-2','astre-fleur-3','astre-fleur-4','astre-fleur-5','astre-fleur-6','astre-fleur-7'],
-        pilot: [{ x: 440, surfaceY: 600, escort: true }, { x: 2950, surfaceY: 600 }],
+      subtitle: 'Il éclaire le chemin de celui qui le porte.', theme: 'dusk', width: 3100, height: 1300,
+      medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 254 }, exit: { ...exit(3100), open: false },
+      goal: 'Porte le petit astre jusqu’à sa maison, au fond du vallon.',
+      place: { kind: 'escort', startX: 430, starY: 262, endX: 2860, homeY: 1000, reach: 250, shore: 1000,
+        pilot: [{ x: 430, surfaceY: 300, take: true }, { x: 700, surfaceY: 390 }, { x: 905, surfaceY: 480 },
+          { x: 1180, surfaceY: 560 }, { x: 1575, surfaceY: 650 }, { x: 1785, surfaceY: 740 },
+          { x: 2100, surfaceY: 820 }, { x: 2415, surfaceY: 910 }, { x: 2880, surfaceY: 1000 }],
         captureAfter: 11 },
-      platforms: [ground(0, 3100), ledge(600, 480, 230), ledge(1070, 400, 230), ledge(1600, 480, 240),
-        ledge(2030, 375, 220, 'echo'), ledge(2480, 470, 220)],
-      // Le dormeur est posté juste devant la quatrième fleur : une seule onde
-      // l'apaise ET ouvre la corolle. La créature ne s'ajoute pas à l'idée, elle
-      // la resserre. Le patrouilleur, lui, fait payer la course en avant.
-      enemies: [{ ...enemy('sleeper', 1615, 600, 1560, 1720) },
-        enemy('patrol', 2260, 600, 2140, 2440)],
-      hazards: [],
-      wakeables: [440,850,1260,1670,2080,2490,2840].map((x, i) => wake('bloom', x, 575, { id: 'astre-fleur-' + (i + 1) })),
-      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5),
-        // Dans le vide 1218→1700 : de quoi occuper l'attente pendant que l'astre
-        // rattrape la fleur qu'on vient d'ouvrir.
-        ...arc(1290, 520, 6), ...coins(1500, 470, 4),
-        ...coins(1700, 438, 4),
-        ...coins(2070, 333, 4), ...coins(2520, 428, 4), item('star', 1170, 352), item('star', 2140, 323), item('star', 2610, 417), item('echo', 1900, 550)],
-      checkpoints: [checkpoint(950), checkpoint(2190)], secrets: [secret(2035, 250, 210, 130)],
-      hints: [{ x: 180, text: 'Ton appel ouvre les fleurs. Le petit astre avance seulement dans leur lumière.' },
-        { x: 980, text: 'Partir devant ouvre le chemin. Revenir près de l’astre lui évite d’attendre dans le noir.' }]
+      platforms: [{ ...ground(0, 560, 300), h: 1000 },
+        ledge(620, 390, 150, 'solid', { placeRole: 'astre-light' }), ledge(830, 480, 150, 'solid', { placeRole: 'astre-light' }),
+        { ...ground(1040, 400, 560), h: 740 },
+        // Au-dessus de la première terrasse, une corniche de lumière à 110 px :
+        // hors de portée d'un saut chargé. Il faut POSER l'astre à côté —
+        // sans lui elle n'existe pas — puis sauter les mains libres.
+        ledge(1250, 450, 130, 'solid', { placeRole: 'astre-light' }),
+        ledge(1500, 650, 150, 'solid', { placeRole: 'astre-light' }), ledge(1710, 740, 150, 'solid', { placeRole: 'astre-light' }),
+        { ...ground(1920, 360, 820), h: 480 },
+        ledge(2340, 910, 150, 'solid', { placeRole: 'astre-light' }),
+        { ...ground(2550, 550, 1000), h: 300 }, ledge(2960, 905, 150, 'echo')],
+      // Un essaim entre les deux passerelles du milieu, un rôdeur sur la
+      // deuxième terrasse : avec un saut raccourci, on les contourne autrement.
+      enemies: [enemy('swarm', 1620, 600, 1480, 1860), enemy('patrol', 2150, 820, 1960, 2260)],
+      hazards: [], wakeables: [],
+      collectibles: [...coins(180, 252, 6), ...arc(630, 350, 5), ...arc(840, 440, 5),
+        ...coins(1090, 512, 5), ...coins(1265, 402, 3),
+        ...arc(1510, 610, 5), ...arc(1720, 700, 5), ...coins(1960, 772, 6),
+        ...arc(2350, 870, 5), ...coins(2600, 952, 6),
+        // Passé la maison, un détour d'écho : le pouvoir révèle une corniche.
+        item('echo', 2930, 955), ...coins(2975, 862, 4),
+        item('star', 900, 432), item('star', 1315, 360), item('star', 2230, 650), item('heart', 2000, 770)],
+      checkpoints: [checkpoint(1110, 560), checkpoint(1990, 820)],
+      secrets: [secret(1240, 290, 170, 80)],
+      hints: [{ x: 180, text: 'Appelle près du petit astre pour le prendre, appelle encore pour le poser. Sa lumière fait exister les passerelles.' },
+        { x: 1100, text: 'Chargé, tu sautes moins haut. Pose-le près d’une corniche de lumière, puis saute sans lui.' }]
     }
   ];
   newPlaces.push(
@@ -4733,7 +4802,9 @@ window.LumenI18n.add([
     if (level.hub || level.key === 'prairies-aurore') continue;
     const ascent = level.place?.kind === 'ascent';
     const start = level.final ? 3050 : ascent ? 810 : level.width - 80;
-    const shore = ascent ? 210 : 600;
+    // Un lieu peut finir plus bas que le rivage ordinaire (la descente du
+    // petit astre) : la suite commune reprend alors à SA hauteur.
+    const shore = level.place?.shore ?? (ascent ? 210 : 600);
     const route = onward[level.theme] || onward.meadow;
     level.originalWidth = level.width;
     if (level.final) {
@@ -4754,6 +4825,7 @@ window.LumenI18n.add([
       const surface = shore - rise;
       const platform = ground(start + x, width, surface);
       if (ascent) platform.h = 40; // The upper canopy must not wall off the original climb.
+      else platform.h = (level.height || 900) - surface;
       level.platforms.push(platform);
       level.collectibles.push(...coins(start + x + 45, surface - 48, 7, (width - 90) / 6));
       // A downhill shortcut must still be climbable on the way back.
@@ -6531,34 +6603,59 @@ window.LumenI18n.add([
     if(kind(game)==='ride'&&object.placeRole==='mount') { mount(c,object,p,t,game);return true; }
     if(kind(game)==='chain'&&object.placeRole==='living-bridge') { livingBridge(c,object,p,t);return true; }
     if(kind(game)==='rain'&&object.placeRole==='rain-step') { rainStep(c,object,p,t);return true; }
+    if(kind(game)==='escort'&&object.placeRole==='astre-light') { lightStep(c,object,p,t);return true; }
     return false;
   }
   function beforePlatforms(c,game,p,t,renderer) {
     if(kind(game)==='river')river(c,game,p,t,renderer);
     if(kind(game)==='rain')rainClouds(c,game,p,t);
   }
+  /** Une passerelle de lumière : éteinte, un pointillé et trois grains —
+   *  la promesse d'un chemin, lisible de loin ; allumée, une dalle de verre
+   *  doré. Elle ne dit jamais « solide » tant que la physique ne l'est pas. */
+  function lightStep(c,object,p,t) {
+    const {x,y,w}=object,lit=object.active!==false;
+    c.save();
+    if(!lit) {
+      c.globalAlpha=.55;c.setLineDash([2,10]);stroke(c,[[x+6,y+3],[x+w-6,y+3]],p.rim,1.5);c.setLineDash([]);
+      for(let i=18;i<w;i+=46)oval(c,x+i,y+10+Math.sin(t*1.6+i)*2,2.2,2.2,p.rim);
+      c.restore();return;
+    }
+    const glow=c.createLinearGradient(0,y-18,0,y+26);glow.addColorStop(0,p.rim+'00');glow.addColorStop(.45,p.rim+'55');glow.addColorStop(1,p.rim+'00');
+    c.fillStyle=glow;c.fillRect(x-8,y-18,w+16,44);
+    c.globalAlpha=object.warning?.6+.3*Math.sin(t*14):1;
+    const slab=c.createLinearGradient(0,y,0,y+16);slab.addColorStop(0,'#fff3c4');slab.addColorStop(1,p.rim);
+    c.fillStyle=slab;c.beginPath();c.roundRect(x,y,w,14,7);c.fill();
+    c.globalAlpha*=.8;c.fillStyle='#f3c96a';c.beginPath();c.roundRect(x+6,y+10,w-12,7,4);c.fill();c.globalAlpha=object.warning?.6+.3*Math.sin(t*14):1;
+    stroke(c,[[x+4,y],[x+w-4,y]],'#fffbe8',2.5);
+    for(let i=16;i<w;i+=38)star(c,x+i,y+7,3.4,'#d99a3a');
+    c.globalAlpha=1;Art.platformMarks(c,object,p,t);c.restore();
+  }
   function escort(c,game,p,t) {
     const state=game.place;if(!state)return;
-    for(const flower of state.flowers||[]) {
-      const awake=flower.state==='awake';
-      if(!awake)continue;
-      const centerY=flower.y-33;
-      c.save();c.globalAlpha=.13;
-      const glow=c.createRadialGradient(flower.x,centerY,2,flower.x,centerY,90);glow.addColorStop(0,p.rim);glow.addColorStop(1,p.rim+'00');
-      c.fillStyle=glow;c.fillRect(flower.x-90,centerY-90,180,180);c.restore();
-      ring(c,flower.x,centerY,14,p.rim,1.4);star(c,flower.x,centerY,6,p.rim);
-      stroke(c,[[flower.x,centerY+15],[flower.x,flower.y]],p.lightLeaf,2);
-    }
-    const astre=state.astre;if(!astre)return;
-    const x=astre.x,y=astre.y-7+Math.sin(t*2.1)*2;
+    const config=game.level.place,astre=state.astre;if(!astre)return;
+    // La maison, au fond du vallon : une petite niche de pierre et sa veilleuse.
+    const hx=config.endX,hy=config.homeY;
     c.save();
-    if(astre.moving) {
-      c.globalAlpha=.28;oval(c,x-21,y,26,7,p.rim);c.globalAlpha=1;
-      stroke(c,[[x-31,y],[x-17,y]],p.rim,2);
+    oval(c,hx,hy-2,46,8,p.shade);
+    c.fillStyle=p.middle;c.beginPath();c.moveTo(hx-34,hy);c.lineTo(hx-34,hy-44);c.quadraticCurveTo(hx,hy-86,hx+34,hy-44);c.lineTo(hx+34,hy);c.fill();
+    c.fillStyle=astre.arrived?p.rim:p.shade;c.beginPath();c.moveTo(hx-18,hy);c.lineTo(hx-18,hy-36);c.quadraticCurveTo(hx,hy-60,hx+18,hy-36);c.lineTo(hx+18,hy);c.fill();
+    c.restore();
+    // Le halo réel : son rayon EST la portée qui allume les passerelles.
+    const reach=config.reach||250,x=astre.x,y=astre.y+Math.sin(t*2.1)*(astre.carried?1:2);
+    if(!astre.arrived) {
+      c.save();c.globalAlpha=.12;
+      const halo=c.createRadialGradient(x,y,8,x,y,reach);halo.addColorStop(0,p.rim);halo.addColorStop(.7,p.rim+'55');halo.addColorStop(1,p.rim+'00');
+      c.fillStyle=halo;c.beginPath();c.arc(x,y,reach,0,TAU);c.fill();
+      c.globalAlpha=.25;c.setLineDash([4,12]);ring(c,x,y,reach,p.rim,1.2);c.setLineDash([]);
+      c.restore();
     }
-    star(c,x,y,21,p.rim);c.strokeStyle=p.shade;c.lineWidth=1.8;c.stroke();oval(c,x,y,10,10,p.rim);
-    oval(c,x-4,y-2,1.7,2.7,p.shade);oval(c,x+4,y-2,1.7,2.7,p.shade);ring(c,x,y,27,p.rim+'88');
-    if(!astre.moving&&!astre.arrived) { ring(c,x,y,31,p.rim+'55');stroke(c,[[x-5,y+26],[x,y+31],[x+5,y+26]],p.rim,2); }
+    const size=astre.carried?16:21;
+    c.save();
+    star(c,x,y,size,p.rim);c.strokeStyle=p.shade;c.lineWidth=1.8;c.stroke();oval(c,x,y,size*.48,size*.48,p.rim);
+    oval(c,x-4,y-2,1.7,2.7,p.shade);oval(c,x+4,y-2,1.7,2.7,p.shade);ring(c,x,y,size+6,p.rim+'88');
+    // Posé, il attend : un petit chevron sous lui dit « reprends-moi ».
+    if(!astre.carried&&!astre.arrived) { ring(c,x,y,31,p.rim+'55');stroke(c,[[x-5,y+26],[x,y+31],[x+5,y+26]],p.rim,2); }
     c.restore();
   }
   function afterPlatforms(c,game,p,t) {
@@ -8359,7 +8456,7 @@ window.LumenI18n.add([
       if (axis) p.facing = axis;
       const sliding = input.down('down') && p.grounded && Math.abs(p.vx) > 160 && !p.wet;
       if (sliding !== p.slide) { const height = sliding ? 29 : 46; p.y += p.h - height; p.h = height; p.slide = sliding; }
-      const maxSpeed = p.wet ? 235 : (input.down('run') ? 490 : 320) * (this.song && this.song.combo >= 10 ? 1.12 : 1);
+      const maxSpeed = p.wet ? 235 : (input.down('run') ? 490 : 320) * (this.song && this.song.combo >= 10 ? 1.12 : 1) * (p.burden ? .88 : 1);
       const friction = this.level.theme === 'frost' && p.grounded ? 520 : 2300;
       if (p.dashTime <= 0) {
         if (axis) p.vx = approach(p.vx, axis * maxSpeed, dt * (p.grounded ? (sliding ? 450 : 2350) : 1550));
@@ -8466,7 +8563,11 @@ window.LumenI18n.add([
     }
     jump(double) {
       const p = this.player;
-      p.vy = this.input.down('jump') ? (double ? -630 : -690) : -330;
+      // Porter quelque chose (le petit astre) raccourcit le saut : environ
+      // 85 px au lieu de 125. C'est une règle de lieu, pas un malus caché —
+      // elle décide des corniches qu'on n'atteint qu'après avoir posé sa charge.
+      const burden = p.burden && !double;
+      p.vy = this.input.down('jump') ? (double ? -630 : burden ? -575 : -690) : burden ? -300 : -330;
       p.grounded = false; p.coyote = 0; p.jumpBuffer = 0; p.standingPlatform = null;
       p.jumpTimer=.18;
       if (double) {

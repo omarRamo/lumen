@@ -742,32 +742,46 @@
         { x: 650, text: 'Un nouvel appel prolonge son voyage. Tu peux descendre chercher les lumières, puis revenir.' }]
     },
     {
+      // Itération 13 : on ne l'appelle plus, on le PORTE. Et le lieu descend.
+      // Le verbe change (prendre, poser, porter, avec un saut raccourci) et la
+      // silhouette aussi : un plateau en haut à gauche, un vallon en bas à
+      // droite, et entre les deux des passerelles qui n'existent que dans sa
+      // lumière. Partir devant sans lui, c'est tomber.
       id: 13, key: 'astre-a-guider', journeyAct: 1, name: 'Le petit astre égaré',
-      subtitle: 'Il avance là où les fleurs lui répondent.', theme: 'dusk', width: 3100, height: 900,
-      medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 554 }, exit: { ...exit(3100), open: false },
-      goal: 'Éclaire le chemin du petit astre jusqu’à sa maison.',
-      place: { kind: 'escort', startX: 250, starY: 550, endX: 2880, speed: 95, reach: 355,
-        flowers: ['astre-fleur-1','astre-fleur-2','astre-fleur-3','astre-fleur-4','astre-fleur-5','astre-fleur-6','astre-fleur-7'],
-        pilot: [{ x: 440, surfaceY: 600, escort: true }, { x: 2950, surfaceY: 600 }],
+      subtitle: 'Il éclaire le chemin de celui qui le porte.', theme: 'dusk', width: 3100, height: 1300,
+      medalTargets: { gold: 100, silver: 155 }, spawn: { x: 100, y: 254 }, exit: { ...exit(3100), open: false },
+      goal: 'Porte le petit astre jusqu’à sa maison, au fond du vallon.',
+      place: { kind: 'escort', startX: 430, starY: 262, endX: 2860, homeY: 1000, reach: 250, shore: 1000,
+        pilot: [{ x: 430, surfaceY: 300, take: true }, { x: 700, surfaceY: 390 }, { x: 905, surfaceY: 480 },
+          { x: 1180, surfaceY: 560 }, { x: 1575, surfaceY: 650 }, { x: 1785, surfaceY: 740 },
+          { x: 2100, surfaceY: 820 }, { x: 2415, surfaceY: 910 }, { x: 2880, surfaceY: 1000 }],
         captureAfter: 11 },
-      platforms: [ground(0, 3100), ledge(600, 480, 230), ledge(1070, 400, 230), ledge(1600, 480, 240),
-        ledge(2030, 375, 220, 'echo'), ledge(2480, 470, 220)],
-      // Le dormeur est posté juste devant la quatrième fleur : une seule onde
-      // l'apaise ET ouvre la corolle. La créature ne s'ajoute pas à l'idée, elle
-      // la resserre. Le patrouilleur, lui, fait payer la course en avant.
-      enemies: [{ ...enemy('sleeper', 1615, 600, 1560, 1720) },
-        enemy('patrol', 2260, 600, 2140, 2440)],
-      hazards: [],
-      wakeables: [440,850,1260,1670,2080,2490,2840].map((x, i) => wake('bloom', x, 575, { id: 'astre-fleur-' + (i + 1) })),
-      collectibles: [...coins(260, 547, 5), ...coins(680, 438, 4), ...arc(1090, 347, 5),
-        // Dans le vide 1218→1700 : de quoi occuper l'attente pendant que l'astre
-        // rattrape la fleur qu'on vient d'ouvrir.
-        ...arc(1290, 520, 6), ...coins(1500, 470, 4),
-        ...coins(1700, 438, 4),
-        ...coins(2070, 333, 4), ...coins(2520, 428, 4), item('star', 1170, 352), item('star', 2140, 323), item('star', 2610, 417), item('echo', 1900, 550)],
-      checkpoints: [checkpoint(950), checkpoint(2190)], secrets: [secret(2035, 250, 210, 130)],
-      hints: [{ x: 180, text: 'Ton appel ouvre les fleurs. Le petit astre avance seulement dans leur lumière.' },
-        { x: 980, text: 'Partir devant ouvre le chemin. Revenir près de l’astre lui évite d’attendre dans le noir.' }]
+      platforms: [{ ...ground(0, 560, 300), h: 1000 },
+        ledge(620, 390, 150, 'solid', { placeRole: 'astre-light' }), ledge(830, 480, 150, 'solid', { placeRole: 'astre-light' }),
+        { ...ground(1040, 400, 560), h: 740 },
+        // Au-dessus de la première terrasse, une corniche de lumière à 110 px :
+        // hors de portée d'un saut chargé. Il faut POSER l'astre à côté —
+        // sans lui elle n'existe pas — puis sauter les mains libres.
+        ledge(1250, 450, 130, 'solid', { placeRole: 'astre-light' }),
+        ledge(1500, 650, 150, 'solid', { placeRole: 'astre-light' }), ledge(1710, 740, 150, 'solid', { placeRole: 'astre-light' }),
+        { ...ground(1920, 360, 820), h: 480 },
+        ledge(2340, 910, 150, 'solid', { placeRole: 'astre-light' }),
+        { ...ground(2550, 550, 1000), h: 300 }, ledge(2960, 905, 150, 'echo')],
+      // Un essaim entre les deux passerelles du milieu, un rôdeur sur la
+      // deuxième terrasse : avec un saut raccourci, on les contourne autrement.
+      enemies: [enemy('swarm', 1620, 600, 1480, 1860), enemy('patrol', 2150, 820, 1960, 2260)],
+      hazards: [], wakeables: [],
+      collectibles: [...coins(180, 252, 6), ...arc(630, 350, 5), ...arc(840, 440, 5),
+        ...coins(1090, 512, 5), ...coins(1265, 402, 3),
+        ...arc(1510, 610, 5), ...arc(1720, 700, 5), ...coins(1960, 772, 6),
+        ...arc(2350, 870, 5), ...coins(2600, 952, 6),
+        // Passé la maison, un détour d'écho : le pouvoir révèle une corniche.
+        item('echo', 2930, 955), ...coins(2975, 862, 4),
+        item('star', 900, 432), item('star', 1315, 360), item('star', 2230, 650), item('heart', 2000, 770)],
+      checkpoints: [checkpoint(1110, 560), checkpoint(1990, 820)],
+      secrets: [secret(1240, 290, 170, 80)],
+      hints: [{ x: 180, text: 'Appelle près du petit astre pour le prendre, appelle encore pour le poser. Sa lumière fait exister les passerelles.' },
+        { x: 1100, text: 'Chargé, tu sautes moins haut. Pose-le près d’une corniche de lumière, puis saute sans lui.' }]
     }
   ];
   newPlaces.push(
@@ -925,7 +939,9 @@
     if (level.hub || level.key === 'prairies-aurore') continue;
     const ascent = level.place?.kind === 'ascent';
     const start = level.final ? 3050 : ascent ? 810 : level.width - 80;
-    const shore = ascent ? 210 : 600;
+    // Un lieu peut finir plus bas que le rivage ordinaire (la descente du
+    // petit astre) : la suite commune reprend alors à SA hauteur.
+    const shore = level.place?.shore ?? (ascent ? 210 : 600);
     const route = onward[level.theme] || onward.meadow;
     level.originalWidth = level.width;
     if (level.final) {
@@ -946,6 +962,7 @@
       const surface = shore - rise;
       const platform = ground(start + x, width, surface);
       if (ascent) platform.h = 40; // The upper canopy must not wall off the original climb.
+      else platform.h = (level.height || 900) - surface;
       level.platforms.push(platform);
       level.collectibles.push(...coins(start + x + 45, surface - 48, 7, (width - 90) / 6));
       // A downhill shortcut must still be climbable on the way back.

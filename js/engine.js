@@ -725,7 +725,7 @@
       if (axis) p.facing = axis;
       const sliding = input.down('down') && p.grounded && Math.abs(p.vx) > 160 && !p.wet;
       if (sliding !== p.slide) { const height = sliding ? 29 : 46; p.y += p.h - height; p.h = height; p.slide = sliding; }
-      const maxSpeed = p.wet ? 235 : (input.down('run') ? 490 : 320) * (this.song && this.song.combo >= 10 ? 1.12 : 1);
+      const maxSpeed = p.wet ? 235 : (input.down('run') ? 490 : 320) * (this.song && this.song.combo >= 10 ? 1.12 : 1) * (p.burden ? .88 : 1);
       const friction = this.level.theme === 'frost' && p.grounded ? 520 : 2300;
       if (p.dashTime <= 0) {
         if (axis) p.vx = approach(p.vx, axis * maxSpeed, dt * (p.grounded ? (sliding ? 450 : 2350) : 1550));
@@ -832,7 +832,11 @@
     }
     jump(double) {
       const p = this.player;
-      p.vy = this.input.down('jump') ? (double ? -630 : -690) : -330;
+      // Porter quelque chose (le petit astre) raccourcit le saut : environ
+      // 85 px au lieu de 125. C'est une règle de lieu, pas un malus caché —
+      // elle décide des corniches qu'on n'atteint qu'après avoir posé sa charge.
+      const burden = p.burden && !double;
+      p.vy = this.input.down('jump') ? (double ? -630 : burden ? -575 : -690) : burden ? -300 : -330;
       p.grounded = false; p.coyote = 0; p.jumpBuffer = 0; p.standingPlatform = null;
       p.jumpTimer=.18;
       if (double) {

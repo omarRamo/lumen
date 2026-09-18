@@ -193,203 +193,133 @@
     "key": "astre-a-guider",
     "kind": "escort",
     "mode": "complete",
-    "seconds": 41.07,
+    "seconds": 23.39,
     "deaths": 0,
-    "lives": 3,
+    "lives": 5,
     "hp": 3,
-    "coins": 55,
-    "stars": 0,
-    "calls": 55,
-    "jumps": 11,
-    "waypoint": 11,
-    "waypoints": 12,
-    "maxX": 6778,
-    "minY": 272,
+    "coins": 95,
+    "stars": 1,
+    "calls": 1,
+    "jumps": 18,
+    "waypoint": 18,
+    "waypoints": 19,
+    "maxX": 6775,
+    "minY": 169,
     "metrics": {
-      "flowersWoken": 7,
+      "carriedDistance": 3890.2975393495544,
+      "lightLandings": 5,
+      "placements": 0,
       "escortArrived": true
     },
     "player": {
-      "x": 6781,
-      "y": 554
+      "x": 6778,
+      "y": 954
     },
     "checkpoint": {
       "x": 4979,
-      "y": 552
+      "y": 952
     },
     "trace": [
       {
         "t": 0,
         "x": 100,
-        "y": 554,
+        "y": 254,
         "waypoint": 0,
         "standing": null,
         "state": null
       },
       {
         "t": 2,
-        "x": 419,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
+        "x": 677,
+        "y": 330,
+        "waypoint": 2,
+        "standing": null,
         "state": null
       },
       {
         "t": 4,
-        "x": 610,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
+        "x": 1242,
+        "y": 514,
+        "waypoint": 4,
+        "standing": 3,
         "state": null
       },
       {
         "t": 6,
-        "x": 799,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
+        "x": 1701,
+        "y": 631,
+        "waypoint": 5,
+        "standing": null,
         "state": null
       },
       {
         "t": 8,
-        "x": 990,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
+        "x": 2091,
+        "y": 774,
+        "waypoint": 7,
+        "standing": 7,
         "state": null
       },
       {
         "t": 10,
-        "x": 1180,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 12,
-        "x": 1371,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 14,
-        "x": 1562,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 16,
-        "x": 1752,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 18.1,
-        "x": 1944,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 20.1,
-        "x": 2134,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 22.1,
-        "x": 2326,
-        "y": 437,
-        "waypoint": 0,
-        "standing": null,
-        "state": null
-      },
-      {
-        "t": 24.1,
-        "x": 2516,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 26.1,
-        "x": 2707,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 28.1,
-        "x": 2897,
-        "y": 554,
-        "waypoint": 0,
-        "standing": "ground",
-        "state": null
-      },
-      {
-        "t": 30.1,
-        "x": 3380,
-        "y": 443,
-        "waypoint": 3,
-        "standing": null,
-        "state": null
-      },
-      {
-        "t": 32.1,
-        "x": 4022,
-        "y": 414,
-        "waypoint": 4,
-        "standing": 8,
-        "state": null
-      },
-      {
-        "t": 34.1,
-        "x": 4664,
-        "y": 484,
-        "waypoint": 6,
+        "x": 2653,
+        "y": 954,
+        "waypoint": 8,
         "standing": 9,
         "state": null
       },
       {
-        "t": 36.1,
-        "x": 5306,
-        "y": 464,
-        "waypoint": 7,
+        "t": 12,
+        "x": 3249,
+        "y": 954,
+        "waypoint": 10,
+        "standing": 11,
+        "state": null
+      },
+      {
+        "t": 14,
+        "x": 3891,
+        "y": 775,
+        "waypoint": 11,
         "standing": null,
         "state": null
       },
       {
-        "t": 38.1,
-        "x": 5949,
-        "y": 394,
-        "waypoint": 8,
-        "standing": 12,
+        "t": 16,
+        "x": 4534,
+        "y": 884,
+        "waypoint": 12,
+        "standing": 14,
         "state": null
       },
       {
-        "t": 40.1,
-        "x": 6487,
-        "y": 353,
-        "waypoint": 10,
+        "t": 18.1,
+        "x": 5176,
+        "y": 954,
+        "waypoint": 14,
+        "standing": 15,
+        "state": null
+      },
+      {
+        "t": 20.1,
+        "x": 5818,
+        "y": 753,
+        "waypoint": 15,
+        "standing": null,
+        "state": null
+      },
+      {
+        "t": 22.1,
+        "x": 6393,
+        "y": 860,
+        "waypoint": 16,
         "standing": null,
         "state": null
       }
     ],
     "initial": {
       "x": 100,
-      "y": 554,
+      "y": 254,
       "power": null
     },
     "savedCompletion": true,

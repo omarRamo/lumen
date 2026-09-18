@@ -53,15 +53,70 @@ test('Position fixture: the sleeper only travels when calmed, physically carries
   assert.equal(game.place.deck.x, game.level.place.fromX, 'a fall must not strand the mount across the void');
 });
 
-test('Position fixture: an autonomous star advances in awakened flowers and waits when their light ends', () => {
+test('Position fixture: the little star is carried, not called — its light makes the footbridges, and without it they are gone', () => {
   const { game } = load('astre-a-guider');
-  const start = game.place.astre.x;
-  tick(game, 1); assert.equal(game.place.astre.x, start); assert.equal(game.exit.open, false);
-  position(game, 410, 554); call(game); tick(game, 2);
-  assert.ok(game.place.astre.x > start + 100);
-  assert.equal(game.place.metrics.flowersWoken, 1);
-  tick(game, 7); const waiting = game.place.astre.x; tick(game, 1);
-  assert.equal(game.place.astre.x, waiting);
+  const astre = game.place.astre, lights = game.place.lights;
+  assert.equal(game.level.wakeables.length, 0, 'Plus rien à réveiller : le lieu ne se joue plus à la voix.');
+  // Un appel à côté de lui ne le fait pas bouger d'un pixel.
+  position(game, astre.x - 40, 254); tick(game, .2);
+  const before = { x: astre.x, y: astre.y };
+  game.input.virtual('jump', false, 'test');
+  call(game); call(game); tick(game, 1);
+  // Le premier appui l'a pris, le second l'a posé : il est là où l'on se tient.
+  assert.equal(astre.carried, false);
+  assert.ok(Math.abs(astre.x - (game.player.x + 16)) < 2, 'Posé au pied du joueur.');
+  void before;
+  call(game); assert.equal(astre.carried, true, 'Reprendre l’astre se fait avec le même geste.');
+  // Porté au bord du plateau, il allume la passerelle suivante ; resté sur
+  // le plateau, il ne peut pas allumer la troisième.
+  position(game, 520, 254); tick(game, .3);
+  assert.equal(lights[0].active, true);
+  assert.equal(lights[1].active, false, 'Une passerelle loin de l’astre n’existe pas.');
+});
+
+test('Position fixture: loaded, the jump falls short of a light ledge; set the star down beside it and jump free', () => {
+  const { game } = load('astre-a-guider');
+  const astre = game.place.astre, ledge = game.platforms.find(p => p.placeRole === 'astre-light' && p.y === 450);
+  const terrace = game.platforms.find(p => p.type === 'ground' && p.y === 560);
+  const jumpFrom = () => {
+    Object.assign(game.player, { x: ledge.x + 40, y: terrace.y - 46, vx: 0, vy: 0, grounded: true, standingPlatform: terrace });
+    tick(game, .1); let top = game.player.y;
+    game.input.virtual('jump', true, 'test');
+    for (let f = 0; f < 120 * .8; f++) { tick(game, DT); top = Math.min(top, game.player.y); }
+    game.input.virtual('jump', false, 'test'); tick(game, .8);
+    return { rise: terrace.y - 46 - top, on: game.player.standingPlatform === ledge };
+  };
+  astre.carried = true;
+  const loaded = jumpFrom();
+  assert.equal(ledge.active, true, 'Porté, l’astre allume bien la corniche…');
+  assert.equal(loaded.on, false, '…mais un saut chargé ne l’atteint pas : ' + loaded.rise.toFixed(0) + ' px');
+  assert.ok(loaded.rise < 95 && loaded.rise > 70, 'Saut chargé ≈ 85 px : ' + loaded.rise);
+  // Posé au pied de la corniche, l'astre continue de l'éclairer.
+  Object.assign(game.player, { x: ledge.x + 40, y: terrace.y - 46, vx: 0, vy: 0, grounded: true, standingPlatform: terrace });
+  tick(game, .1); call(game); tick(game, .1);
+  assert.equal(astre.carried, false); assert.equal(game.place.metrics.placements, 1);
+  const free = jumpFrom();
+  assert.equal(free.on, true, 'Les mains libres, la corniche est atteinte : ' + free.rise.toFixed(0) + ' px');
+  // Et la corniche mène au passage secret, qu'on ne trouve pas autrement.
+  game.input.virtual('jump', true, 'test'); tick(game, .5); game.input.virtual('jump', false, 'test'); tick(game, .6);
+  assert.equal(game.secretCount, 1, 'Le passage secret récompense la pose.');
+});
+
+test('Position fixture: going ahead without the star is a fall, and a fall always brings the star back to you', () => {
+  const { game } = load('astre-a-guider');
+  const astre = game.place.astre;
+  // Pris puis posé sur le plateau : on part seul vers la vallée.
+  position(game, astre.x - 20, 254); tick(game, .2); call(game); tick(game, .2);
+  assert.equal(astre.carried, true);
+  Object.assign(game.player, { x: 300, y: 254 }); tick(game, .3); call(game); tick(game, .2);
+  assert.equal(astre.carried, false);
+  game.input.virtual('right', true, 'test');
+  for (let f = 0; f < 120 * 4 && game.mode === 'playing'; f++) tick(game, DT);
+  game.input.virtual('right', false, 'test');
+  assert.equal(game.mode, 'dead', 'Sans sa lumière, la deuxième passerelle n’existe pas.');
+  tick(game, 2);
+  assert.equal(game.mode, 'playing');
+  assert.equal(astre.carried, true, 'L’astre revient avec le joueur : aucune chute ne le laisse hors d’atteinte.');
   assert.equal(game.exit.open, false);
 });
 
@@ -182,18 +237,22 @@ test('A guarded place names what its exit is waiting for, and points at it once 
   assert.equal(game.exit.open, true);
 });
 
-test('The little star reports how far it has walked, and its report never runs backwards', () => {
+test('The little star reports how far it has come, points at itself only when left behind, and opens the exit at home', () => {
   const { game, window } = load('astre-a-guider');
   const objective = () => window.LumenPlaces.objective(game);
+  const astre = game.place.astre, config = game.level.place;
   assert.equal(game.exit.open, false);
   assert.equal(objective().values.done, 0);
-  const astre = game.place.astre, config = game.level.place;
-  astre.x = config.startX + (config.endX - config.startX) / 2;
+  assert.deepEqual({ ...objective().target }, { x: astre.x, y: astre.y }, 'Pas encore pris : on le désigne.');
+  astre.carried = true; astre.x = config.startX + (config.endX - config.startX) / 2;
   assert.equal(objective().values.done, 50);
-  assert.deepEqual({ ...objective().target }, { x: astre.x, y: astre.y });
-  astre.x = config.endX; tick(game, DT);
-  assert.equal(objective().done, true);
-  assert.equal(objective().values.done, 100);
+  assert.equal(objective().target, null, 'Porté, il n’y a rien à désigner.');
+  // Porté jusqu'au fond du vallon : la maison le garde et la sortie s'ouvre.
+  Object.assign(game.player, { x: config.endX - 10, y: config.homeY - 46, vx: 0, vy: 0 });
+  tick(game, .2);
+  assert.equal(astre.arrived, true); assert.equal(astre.carried, false);
+  assert.equal(objective().done, true); assert.equal(objective().values.done, 100);
+  assert.equal(objective().target, null, 'Rentré chez lui, il n’y a plus rien à désigner.');
   assert.equal(game.exit.open, true);
 });
 

@@ -372,34 +372,59 @@
     if(kind(game)==='ride'&&object.placeRole==='mount') { mount(c,object,p,t,game);return true; }
     if(kind(game)==='chain'&&object.placeRole==='living-bridge') { livingBridge(c,object,p,t);return true; }
     if(kind(game)==='rain'&&object.placeRole==='rain-step') { rainStep(c,object,p,t);return true; }
+    if(kind(game)==='escort'&&object.placeRole==='astre-light') { lightStep(c,object,p,t);return true; }
     return false;
   }
   function beforePlatforms(c,game,p,t,renderer) {
     if(kind(game)==='river')river(c,game,p,t,renderer);
     if(kind(game)==='rain')rainClouds(c,game,p,t);
   }
+  /** Une passerelle de lumière : éteinte, un pointillé et trois grains —
+   *  la promesse d'un chemin, lisible de loin ; allumée, une dalle de verre
+   *  doré. Elle ne dit jamais « solide » tant que la physique ne l'est pas. */
+  function lightStep(c,object,p,t) {
+    const {x,y,w}=object,lit=object.active!==false;
+    c.save();
+    if(!lit) {
+      c.globalAlpha=.55;c.setLineDash([2,10]);stroke(c,[[x+6,y+3],[x+w-6,y+3]],p.rim,1.5);c.setLineDash([]);
+      for(let i=18;i<w;i+=46)oval(c,x+i,y+10+Math.sin(t*1.6+i)*2,2.2,2.2,p.rim);
+      c.restore();return;
+    }
+    const glow=c.createLinearGradient(0,y-18,0,y+26);glow.addColorStop(0,p.rim+'00');glow.addColorStop(.45,p.rim+'55');glow.addColorStop(1,p.rim+'00');
+    c.fillStyle=glow;c.fillRect(x-8,y-18,w+16,44);
+    c.globalAlpha=object.warning?.6+.3*Math.sin(t*14):1;
+    const slab=c.createLinearGradient(0,y,0,y+16);slab.addColorStop(0,'#fff3c4');slab.addColorStop(1,p.rim);
+    c.fillStyle=slab;c.beginPath();c.roundRect(x,y,w,14,7);c.fill();
+    c.globalAlpha*=.8;c.fillStyle='#f3c96a';c.beginPath();c.roundRect(x+6,y+10,w-12,7,4);c.fill();c.globalAlpha=object.warning?.6+.3*Math.sin(t*14):1;
+    stroke(c,[[x+4,y],[x+w-4,y]],'#fffbe8',2.5);
+    for(let i=16;i<w;i+=38)star(c,x+i,y+7,3.4,'#d99a3a');
+    c.globalAlpha=1;Art.platformMarks(c,object,p,t);c.restore();
+  }
   function escort(c,game,p,t) {
     const state=game.place;if(!state)return;
-    for(const flower of state.flowers||[]) {
-      const awake=flower.state==='awake';
-      if(!awake)continue;
-      const centerY=flower.y-33;
-      c.save();c.globalAlpha=.13;
-      const glow=c.createRadialGradient(flower.x,centerY,2,flower.x,centerY,90);glow.addColorStop(0,p.rim);glow.addColorStop(1,p.rim+'00');
-      c.fillStyle=glow;c.fillRect(flower.x-90,centerY-90,180,180);c.restore();
-      ring(c,flower.x,centerY,14,p.rim,1.4);star(c,flower.x,centerY,6,p.rim);
-      stroke(c,[[flower.x,centerY+15],[flower.x,flower.y]],p.lightLeaf,2);
-    }
-    const astre=state.astre;if(!astre)return;
-    const x=astre.x,y=astre.y-7+Math.sin(t*2.1)*2;
+    const config=game.level.place,astre=state.astre;if(!astre)return;
+    // La maison, au fond du vallon : une petite niche de pierre et sa veilleuse.
+    const hx=config.endX,hy=config.homeY;
     c.save();
-    if(astre.moving) {
-      c.globalAlpha=.28;oval(c,x-21,y,26,7,p.rim);c.globalAlpha=1;
-      stroke(c,[[x-31,y],[x-17,y]],p.rim,2);
+    oval(c,hx,hy-2,46,8,p.shade);
+    c.fillStyle=p.middle;c.beginPath();c.moveTo(hx-34,hy);c.lineTo(hx-34,hy-44);c.quadraticCurveTo(hx,hy-86,hx+34,hy-44);c.lineTo(hx+34,hy);c.fill();
+    c.fillStyle=astre.arrived?p.rim:p.shade;c.beginPath();c.moveTo(hx-18,hy);c.lineTo(hx-18,hy-36);c.quadraticCurveTo(hx,hy-60,hx+18,hy-36);c.lineTo(hx+18,hy);c.fill();
+    c.restore();
+    // Le halo réel : son rayon EST la portée qui allume les passerelles.
+    const reach=config.reach||250,x=astre.x,y=astre.y+Math.sin(t*2.1)*(astre.carried?1:2);
+    if(!astre.arrived) {
+      c.save();c.globalAlpha=.12;
+      const halo=c.createRadialGradient(x,y,8,x,y,reach);halo.addColorStop(0,p.rim);halo.addColorStop(.7,p.rim+'55');halo.addColorStop(1,p.rim+'00');
+      c.fillStyle=halo;c.beginPath();c.arc(x,y,reach,0,TAU);c.fill();
+      c.globalAlpha=.25;c.setLineDash([4,12]);ring(c,x,y,reach,p.rim,1.2);c.setLineDash([]);
+      c.restore();
     }
-    star(c,x,y,21,p.rim);c.strokeStyle=p.shade;c.lineWidth=1.8;c.stroke();oval(c,x,y,10,10,p.rim);
-    oval(c,x-4,y-2,1.7,2.7,p.shade);oval(c,x+4,y-2,1.7,2.7,p.shade);ring(c,x,y,27,p.rim+'88');
-    if(!astre.moving&&!astre.arrived) { ring(c,x,y,31,p.rim+'55');stroke(c,[[x-5,y+26],[x,y+31],[x+5,y+26]],p.rim,2); }
+    const size=astre.carried?16:21;
+    c.save();
+    star(c,x,y,size,p.rim);c.strokeStyle=p.shade;c.lineWidth=1.8;c.stroke();oval(c,x,y,size*.48,size*.48,p.rim);
+    oval(c,x-4,y-2,1.7,2.7,p.shade);oval(c,x+4,y-2,1.7,2.7,p.shade);ring(c,x,y,size+6,p.rim+'88');
+    // Posé, il attend : un petit chevron sous lui dit « reprends-moi ».
+    if(!astre.carried&&!astre.arrived) { ring(c,x,y,31,p.rim+'55');stroke(c,[[x-5,y+26],[x,y+31],[x+5,y+26]],p.rim,2); }
     c.restore();
   }
   function afterPlatforms(c,game,p,t) {

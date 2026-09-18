@@ -44,7 +44,8 @@
         // qu'il commence sa traversée dans le sens de la marche. Le pilote lit
         // l'état visible du lieu, comme un joueur regarde le ciel.
         const cloudReady = !target.waitRain || game.place.clouds.some(cloud => cloud.stage === 'forming' && cloud.alpha > .8 && Math.abs(cloud.x - center) < 260);
-        const specialReady = target.ride ? game.place.deck.x >= game.level.place.toX - 90 : target.escort ? game.place.astre.arrived : cloudReady;
+        const specialReady = target.ride ? game.place.deck.x >= game.level.place.toX - 90 : target.escort ? game.place.astre.arrived :
+          target.take ? game.place.astre.carried : cloudReady;
         if ((near && atHeight && (target.airborne || p.grounded) || bounced || (target.ride || target.escort) && specialReady) && specialReady && this.waypoint < route.length - 1) {
           this.waypoint++; target = route[this.waypoint];
           if (Array.isArray(target)) target = { x: target[0], y: target[1] };
@@ -79,7 +80,13 @@
         if (p.grounded && !waitingForRain && !waitingForLift && readyDirection && game.elapsed - this.lastJump > .16 && ((climbing && climbApproach) || crossing || danger)) {
           set(game, 'jump', true); this.jumpUntil = game.elapsed + .46; this.lastJump = game.elapsed; this.jumps++;
         } else if (game.elapsed > this.jumpUntil) set(game, 'jump', false);
-        const shouldCall = p.actionCooldown <= 0 && !game.input.down('action') && (!target.ride || p.standingPlatform === game.place.deck);
+        // Porter l'astre se joue avec le même bouton qu'appeler : appuyer sans
+        // cesse le poserait aussitôt. Le pilote n'appuie que pour le prendre.
+        const carrying = game.place.kind === 'escort';
+        const wantsToTake = carrying && target.take && !game.place.astre.carried &&
+          Math.hypot(game.place.astre.x - center, game.place.astre.y - (p.y + p.h / 2)) < 60;
+        const shouldCall = p.actionCooldown <= 0 && !game.input.down('action') && (!target.ride || p.standingPlatform === game.place.deck) &&
+          (!carrying || wantsToTake);
         set(game, 'action', shouldCall);
         if (shouldCall) this.calls++;
         if (waitingForRain) {

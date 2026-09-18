@@ -19,10 +19,13 @@
       state.direction = 1; state.metrics.carriedDistance = 0;
     }
     if (config.kind === 'escort') {
-      state.astre = { x: config.startX, y: config.starY, arrived: false, moving: false };
-      state.metrics.flowersWoken = 0; state.metrics.escortArrived = false;
-      state.flowers = game.wakeables.filter(wakeable => config.flowers.includes(wakeable.id));
-      state.seenFlowers = new Set(); game.exit.open = false;
+      // L'astre ne marche plus seul : on le prend, on le porte, on le pose.
+      // Sa lumière fait exister les passerelles autour de lui, où qu'il soit.
+      state.astre = { x: config.startX, y: config.starY, carried: false, arrived: false };
+      state.lights = game.platforms.filter(platform => platform.placeRole === 'astre-light');
+      state.metrics.carriedDistance = 0; state.metrics.lightLandings = 0; state.metrics.placements = 0;
+      state.metrics.escortArrived = false; state.lastLanding = null;
+      lightAround(state, config); game.exit.open = false;
     }
     if (config.kind === 'chain') {
       state.keepers = config.keepers.map(keeper => ({ ...keeper, remaining: 0, pulse: 0 }));
@@ -77,6 +80,7 @@
       mount.x = deck.x; mount.y = deck.y + 3; mount.facing = state.direction;
       if (game.player.standingPlatform === deck) state.metrics.carriedDistance += Math.abs(deck.dx);
     }
+    if (state.kind === 'escort') carryBeforePhysics(game, state, config);
     if (state.kind === 'chain') {
       for (let index = 0; index < state.keepers.length; index++) {
         const keeper = state.keepers[index];
@@ -122,19 +126,59 @@
     else if (t < rest + travel) { cloud.x = cloud.from + (cloud.to - cloud.from) * (t - rest) / travel; cloud.alpha = 1; cloud.stage = 'crossing'; }
     else { cloud.x = cloud.to; cloud.alpha = Math.max(0, 1 - (t - rest - travel) / fade); cloud.stage = 'fading'; }
   }
+  /** La distance d'un point au rectangle d'une plateforme. */
+  function reachOf(platform, x, y) {
+    const dx = Math.max(platform.x - x, 0, x - platform.x - platform.w);
+    const dy = Math.max(platform.y - y, 0, y - platform.y - (platform.h || 22));
+    return Math.hypot(dx, dy);
+  }
+  function lightAround(state, config) {
+    for (const platform of state.lights) {
+      const lit = reachOf(platform, state.astre.x, state.astre.y) <= (config.reach || 250);
+      platform.active = lit;
+      // Le bord du halo prévient : une passerelle qui va s'éteindre tremble.
+      platform.warning = lit && reachOf(platform, state.astre.x, state.astre.y) > (config.reach || 250) - 40;
+    }
+  }
+  function carryBeforePhysics(game, state, config) {
+    const astre = state.astre, p = game.player;
+    const center = p.x + p.w / 2;
+    if (!astre.arrived && game.input.just('action')) {
+      if (astre.carried && p.grounded) {
+        // Posé au pied du joueur, à hauteur de poitrine : il reste là, il
+        // continue d'éclairer, et on part sans lui — mais pas loin.
+        astre.carried = false; astre.x = center; astre.y = p.y + 8;
+        state.metrics.placements++; game.audio.sfx('wakeEnd');
+      } else if (!astre.carried && Math.hypot(astre.x - center, astre.y - (p.y + p.h / 2)) < 64) {
+        astre.carried = true; game.audio.sfx('wakeBloom');
+      }
+    }
+    if (astre.carried) { astre.x = center; astre.y = p.y - 24; }
+    p.burden = astre.carried;
+    lightAround(state, config);
+  }
+  function carryAfterPhysics(game, state, config) {
+    const astre = state.astre, p = game.player;
+    if (astre.carried) {
+      const oldX = astre.x, oldY = astre.y;
+      astre.x = p.x + p.w / 2; astre.y = p.y - 24;
+      state.metrics.carriedDistance += Math.hypot(astre.x - oldX, astre.y - oldY);
+    }
+    const landing = p.standingPlatform;
+    if (landing?.placeRole === 'astre-light' && landing !== state.lastLanding) state.metrics.lightLandings++;
+    state.lastLanding = landing;
+    // Sa maison est au fond du vallon : il suffit de l'y amener.
+    if (!astre.arrived && astre.x >= config.endX - 20 && astre.y >= config.homeY - 90) {
+      astre.arrived = true; astre.carried = false; p.burden = false;
+      astre.x = config.endX; astre.y = config.homeY - 40;
+      game.audio.sfx('victory'); game.emit('toast', 'Le petit astre a retrouvé sa maison.');
+    }
+    state.metrics.escortArrived = astre.arrived; game.exit.open = astre.arrived;
+  }
   function afterPhysics(game, dt) {
     const state = game.place, config = game.level.place;
     if (!state || !config) return;
-    if (state.kind === 'escort') {
-      const astre = state.astre;
-      for (const flower of state.flowers) if (flower.state === 'awake') state.seenFlowers.add(flower.id);
-      state.metrics.flowersWoken = state.seenFlowers.size;
-      astre.moving = !astre.arrived && state.flowers.some(flower => flower.state === 'awake' && Math.abs(flower.x - astre.x) < config.reach);
-      if (astre.moving) astre.x = Math.min(config.endX, astre.x + config.speed * dt);
-      astre.arrived = astre.x >= config.endX;
-      if (astre.arrived && !state.metrics.escortArrived) { game.audio.sfx('victory'); game.emit('toast', 'Le petit astre a retrouvé sa maison.'); }
-      state.metrics.escortArrived = astre.arrived; game.exit.open = astre.arrived;
-    }
+    if (state.kind === 'escort') carryAfterPhysics(game, state, config);
     if (state.kind === 'river') {
       state.metrics.beaconsLit = config.beacons.filter(id => game.wokenOnce.has(id)).length;
       state.light = state.metrics.beaconsLit / config.beacons.length;
@@ -173,7 +217,10 @@
     if (state.kind === 'escort') {
       const span = Math.max(1, config.endX - config.startX);
       const walked = Math.round(clamp((state.astre.x - config.startX) / span, 0, 1) * 100);
-      return { done: !!state.metrics.escortArrived, target: state.astre.arrived ? null : { x: state.astre.x, y: state.astre.y },
+      // Porté, il est dans les bras du joueur : rien à désigner. Posé, on
+      // montre où on l'a laissé si on s'en est éloigné.
+      const waiting = !state.astre.arrived && !state.astre.carried;
+      return { done: !!state.metrics.escortArrived, target: waiting ? { x: state.astre.x, y: state.astre.y } : null,
         text: 'Le petit astre a fait {done} % du chemin.', values: { done: walked } };
     }
     if (state.kind === 'river') {
@@ -202,7 +249,15 @@
       for (const platform of game.platforms.filter(p => p.placeRole === 'rain-step')) { platform.active = false; platform.rainLife = 0; platform.charge = 0; }
       state.lastLanding = null;
     }
-    // The escort waits where it is, and the river remembers its lit beacons:
+    if (state.kind === 'escort' && !state.astre.arrived) {
+      // Une chute ne sépare jamais le joueur de l'astre : il revient avec lui
+      // à la lanterne. Sans cela, un astre posé au bord d'un vide deviendrait
+      // un chemin qu'on ne peut plus reprendre.
+      const p = game.player;
+      state.astre.carried = true; state.astre.x = p.x + p.w / 2; state.astre.y = p.y - 24;
+      p.burden = true; lightAround(state, game.level.place);
+    }
+    // The river remembers its lit beacons:
     // a fall loses the traversal, never the work already done in this visit.
   }
   global.LumenPlaces = { create, beforePhysics, afterPhysics, respawn, objective };
