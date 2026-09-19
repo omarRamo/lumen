@@ -71,6 +71,7 @@
       const placeArt = window.LumenPlaceArt;
       const placeBackground = !!placeArt?.background(this, game, p, t);
       if (!placeBackground) this.background(c, theme, p, t, cameraX, game.mode);
+      if (game.mode !== 'home' && game.mode !== 'map') this.backdropVeil(c);
       c.save(); c.translate(this.offsetX, this.offsetY); c.scale(this.scale, this.scale);
       const shake = cam.shake || 0;
       c.save(); c.translate(-cameraX + Math.sin(t * 129) * shake, -cameraY + Math.cos(t * 113) * shake * .6);
@@ -120,6 +121,11 @@
     visible(object, margin = 50) {
       return (object.x || 0) + (object.w || 0) >= this.cameraX - margin &&
         (object.x || 0) <= this.cameraX + this.worldWidth + margin && (object.y || 0) < this.cameraY + 850;
+    }
+    /** Issue 6 : le fond recule d'un cran — moins lumineux, moins saturé —
+     *  pour que le plan de jeu se détache sans assombrir le jardin entier. */
+    backdropVeil(c) {
+      c.save(); c.globalAlpha = LumenRenderer.VEIL; c.fillStyle = '#1d3f45'; c.fillRect(0, 0, this.width, this.height); c.restore();
     }
     background(ctx, theme, palette, time, camera) {
       const backdrop = this.skyCache.get(theme + ':' + (window.LumenAppearance?.current || 'light')) || this.createSky(theme, palette);
@@ -689,5 +695,6 @@
       c.restore();
     }
   }
+  LumenRenderer.VEIL = .18;
   window.LumenRenderer = LumenRenderer;
 })();

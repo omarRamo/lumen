@@ -309,7 +309,7 @@ body.reduced-effects .song-shell *, body.reduced-effects .song-overlay * { anima
 :root {
   --lumen-surface: #f4f9ed;
   --lumen-raised: #f8fbf2;
-  --lumen-glass: #f4fbe7cc;
+  --lumen-glass: #e3ebd6de; /* issue 6 : un verre moins blanc sur la scène */
   --lumen-ink: #234f55;
   --lumen-muted: #527b78;
   --lumen-line: #3e81732e;
