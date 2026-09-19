@@ -39,10 +39,8 @@
         this.offsetX = (this.width - this.worldWidth * this.scale) / 2;
         this.offsetY = (this.height - 720 * this.scale) / 2;
       } else {
-        const portrait = this.width < this.height;
-        this.scale = portrait ? this.width / 510 : Math.max(.64, this.height / 790);
-        this.worldWidth = this.width / this.scale; this.offsetX = 0;
-        this.offsetY = this.height * (portrait ? .72 : this.height < 500 ? .69 : .79) - 600 * this.scale;
+        const view = window.LumenPlayView(this.width, this.height);
+        this.scale = view.scale; this.worldWidth = view.worldWidth; this.offsetX = 0; this.offsetY = view.offsetY;
       }
     }
     createSky(theme, palette) {

@@ -244,10 +244,9 @@
     const assetKey = game.level.key + ':' + (palette.night ? 'night' : 'day');
     if (renderer.songKey !== assetKey) { renderer.songKey = assetKey; renderer.songAssets = new Map(); }
     renderer.sceneMode = 'song';
-    const portrait = renderer.width < renderer.height;
-    const scale = portrait ? renderer.width / 510 : Math.max(.64, renderer.height / 790);
-    renderer.scale = scale; renderer.worldWidth = renderer.width / scale;
-    renderer.offsetX = 0; renderer.offsetY = renderer.height * (portrait ? .72 : renderer.height < 500 ? .69 : .79) - 600 * scale;
+    const view = window.LumenPlayView(renderer.width, renderer.height), scale = view.scale;
+    renderer.scale = scale; renderer.worldWidth = view.worldWidth;
+    renderer.offsetX = 0; renderer.offsetY = view.offsetY;
     renderer.cameraX = game.camera.x; renderer.cameraY = game.camera.y;
     ctx.setTransform(renderer.dpr, 0, 0, renderer.dpr, 0, 0); ctx.globalAlpha = 1;
     background(renderer, game, palette, time);

@@ -10,6 +10,18 @@
   const CALM_TIME = 8, CALM_WARNING = 1.5, CALM_GRACE = 1.5;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const approach = (v, target, delta) => v < target ? Math.min(target, v + delta) : Math.max(target, v - delta);
+  /** Le cadrage du jeu, seule source pour les deux moteurs de dessin et la caméra.
+   *  Sur un téléphone couché (moins de 500 px de haut), le sol monte au-dessus
+   *  des commandes — 128 px de disque et de marge, plus un souffle — et un écran
+   *  très allongé ne montre jamais plus de 1340 unités de large : il zoome au
+   *  lieu d'élargir la scène. Le sol du monde est à y = 600. */
+  function playView(width, height) {
+    const portrait = width < height, short = !portrait && height < 500;
+    const scale = portrait ? width / 510 : Math.max(.64, height / 790, short ? width / 1340 : 0);
+    const ground = portrait ? height * .72 : short ? Math.max(height * .56, Math.min(height * .69, height - 150)) : height * .79;
+    return { portrait, scale, ground, worldWidth: width / scale, offsetY: ground - 600 * scale };
+  }
+  window.LumenPlayView = playView;
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   // Each garden throws its own debris when Lumen lands, starts running or bounces.
   // The type drives the renderer's particle shape, the colour its palette.
@@ -659,16 +671,14 @@
     followCamera(dt, snap = false) {
       const r = this.renderer, p = this.player;
       const width = r.width || WIDTH, height = r.height || HEIGHT;
-      const portrait = width < height;
-      const scale = portrait ? width / 510 : Math.max(.64, height / 790);
-      const offsetY = height * (portrait ? .72 : height < 500 ? .69 : .79) - 600 * scale;
-      const visibleWidth = width / scale;
+      const { scale, offsetY, ground, worldWidth: visibleWidth } = playView(width, height);
       const targetX = clamp(p.x - visibleWidth * .36 + p.vx * .16, 0, Math.max(0, this.level.width - visibleWidth));
       this.camera.x += (targetX - this.camera.x) * (snap ? 1 : 1 - Math.exp(-5 * dt));
       // Quiet middle band for ordinary jumps; look up before a spring or ascent
       // reaches the HUD. Both renderers use the same world-to-screen transform.
       const top = (height * .32 - offsetY) / scale;
-      const bottom = (height * .72 - offsetY) / scale - p.h;
+      // Les pieds ne descendent jamais sous la ligne des commandes tactiles.
+      const bottom = (Math.min(height * .72, ground + height * .03) - offsetY) / scale - p.h;
       const ahead = p.y + Math.min(0, p.vy) * .10;
       let targetY = this.camera.y;
       if (ahead - targetY < top) targetY = ahead - top;

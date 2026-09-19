@@ -109,6 +109,17 @@ async function controlGeometry(page,view) {
   }
   await page.evaluate(()=>{lumen.store.setSetting('touchScale',1);lumen.store.setSetting('leftHanded',false);document.documentElement.style.setProperty('--touch-scale',1);document.body.classList.remove('left-handed');});
 }
+// Issue 5 : sur un téléphone couché, le sol du jeu passe au-dessus des disques
+// au lieu de s'y coller, et un écran très allongé zoome au lieu d'élargir.
+async function groundClearance(page,view) {
+  if(view.width<view.height||view.height>=500)return;
+  const frame=await page.evaluate(()=>{
+    const r=lumen.renderer,top=Math.min(...[...document.querySelectorAll('[data-touch]')].map(n=>n.getBoundingClientRect().top));
+    return {ground:r.offsetY+600*r.scale,top,worldWidth:r.worldWidth,scale:r.scale};
+  });
+  assert.ok(frame.ground<=frame.top-8,view.name+' ground under the controls: '+JSON.stringify(frame));
+  assert.ok(frame.worldWidth<=1340.5||frame.scale===.64,view.name+' wide screen must zoom: '+JSON.stringify(frame));
+}
 async function pauseAndSettings(page,view,song) {
   const header=song?'.song-header':'#hud';
   await targets(page,`${header} button`,view);
@@ -160,11 +171,13 @@ async function close(run) {
     for(const view of views)for(const language of ['fr','ar']) {
       const run=await open(view,language),{page}=run;
       await controlGeometry(page,view);
+      await groundClearance(page,view);
       await pauseAndSettings(page,view,true);
       await finishScreen(page,view,true);
       await exhaustedLives(page,view,true);
       await page.evaluate(()=>lumen.start(0));
       await controlGeometry(page,view);
+      await groundClearance(page,view);
       await pauseAndSettings(page,view,false);
       await finishScreen(page,view,false);
       await exhaustedLives(page,view,false);
