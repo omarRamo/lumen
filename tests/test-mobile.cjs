@@ -120,6 +120,26 @@ async function groundClearance(page,view) {
   assert.ok(frame.ground<=frame.top-8,view.name+' ground under the controls: '+JSON.stringify(frame));
   assert.ok(frame.worldWidth<=1340.5||frame.scale===.64,view.name+' wide screen must zoom: '+JSON.stringify(frame));
 }
+// Issue 6 : une bulle reste dans la bande du haut. Elle ne touche ni un bouton
+// ni Lumen, et tient sur trois lignes au plus, même pour l'aide la plus longue.
+const rectsMeet=(a,b)=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;
+async function playerRect(page) {
+  return page.evaluate(()=>{const r=lumen.renderer,p=lumen.player,x=r.offsetX+(p.x-lumen.camera.x)*r.scale,y=r.offsetY+(p.y-lumen.camera.y)*r.scale;
+    return {left:x,top:y,right:x+p.w*r.scale,bottom:y+p.h*r.scale};});
+}
+async function toastBand(page,view) {
+  await page.evaluate(()=>lumen.emit('toast','Au-dessus de la lave, un saut précis vaut mieux qu’un départ précipité. Les sommets récompensent la patience.'));
+  await page.waitForTimeout(350);
+  const m=await page.evaluate(()=>{
+    const t=document.getElementById('toast'),r=t.getBoundingClientRect().toJSON();
+    const buttons=[...document.querySelectorAll('#hud button,.song-header button,#touch-controls button')].filter(n=>n.getClientRects().length).map(n=>n.getBoundingClientRect().toJSON());
+    return {r,buttons,lines:Math.round(r.height/parseFloat(getComputedStyle(t).lineHeight))};
+  });
+  assert.ok(m.r.bottom<=76,view.name+' toast leaves the top band: '+JSON.stringify(m.r));
+  for(const b of m.buttons)assert.ok(!rectsMeet(m.r,b),view.name+' toast covers a button: '+JSON.stringify({toast:m.r,b}));
+  assert.ok(!rectsMeet(m.r,await playerRect(page)),view.name+' toast covers Lumen');
+  await page.evaluate(()=>{lumen.emit('toast','');document.getElementById('toast').classList.remove('show');document.body.classList.remove('toast-on');});
+}
 async function pauseAndSettings(page,view,song) {
   const header=song?'.song-header':'#hud';
   await targets(page,`${header} button`,view);
@@ -172,12 +192,14 @@ async function close(run) {
       const run=await open(view,language),{page}=run;
       await controlGeometry(page,view);
       await groundClearance(page,view);
+      await toastBand(page,view);
       await pauseAndSettings(page,view,true);
       await finishScreen(page,view,true);
       await exhaustedLives(page,view,true);
       await page.evaluate(()=>lumen.start(0));
       await controlGeometry(page,view);
       await groundClearance(page,view);
+      await toastBand(page,view);
       await pauseAndSettings(page,view,false);
       await finishScreen(page,view,false);
       await exhaustedLives(page,view,false);
@@ -317,6 +339,29 @@ async function close(run) {
     assert.equal(await web.page.evaluate(()=>document.documentElement.classList.contains('lumen-native')),false);
     assert.ok(!(await web.page.locator('meta[name=viewport]').getAttribute('content')).includes('user-scalable'));
     await close(web);passed++;console.log('PASS portable edition preserves browser zoom');
+    // Issue 6 : la réplique de Vesper est une bulle au-dessus de lui ; la quête,
+    // une pastille. Rien ne recouvre les commandes ni Lumen.
+    for(const view of views.filter(v=>['Android compact','iPhone Pro Max','Android pastille'].includes(v.name))) {
+      const run=await open(view),{page}=run;
+      await page.evaluate(()=>{lumen.isUnlocked=()=>true;lumen.start(lumen.indexOfKey('observatoire'));});
+      await page.waitForFunction(()=>lumen.level.key==='observatoire'&&lumen.mode==='playing');
+      await page.evaluate(()=>{const c=lumen.characters.find(c=>c.id==='vesper');lumen.player.x=c.x-60;lumen.player.y=c.y-lumen.player.h;lumen.player.vx=0;});
+      await page.waitForFunction(()=>!document.getElementById('dialogue').classList.contains('hidden'));
+      await page.waitForTimeout(300);
+      const m=await page.evaluate(()=>({
+        bubble:document.getElementById('dialogue').getBoundingClientRect().toJSON(),
+        quest:document.getElementById('quest-banner').getBoundingClientRect().toJSON(),
+        compact:document.getElementById('quest-banner').classList.contains('compact'),
+        buttons:[...document.querySelectorAll('#touch-controls button,#hud button')].filter(n=>n.getClientRects().length).map(n=>n.getBoundingClientRect().toJSON())
+      }));
+      const lumenBox=await playerRect(page);
+      assert.ok(m.compact,view.name+' quest stays folded while Vesper speaks');
+      assert.ok(m.quest.height<=40&&m.quest.width<=120,view.name+' quest chip too large: '+JSON.stringify(m.quest));
+      for(const b of m.buttons)assert.ok(!rectsMeet(m.bubble,b),view.name+' dialogue covers a button: '+JSON.stringify({bubble:m.bubble,b}));
+      assert.ok(!rectsMeet(m.bubble,lumenBox),view.name+' dialogue covers Lumen: '+JSON.stringify({bubble:m.bubble,lumenBox}));
+      assert.ok(!rectsMeet(m.bubble,m.quest),view.name+' dialogue covers the quest chip');
+      await close(run);passed++;console.log('PASS '+view.name+': dialogue bubble and quest chip leave the scene free');
+    }
   } finally {await browser.close();}
   console.log(`${passed} mobile checks passed (${engine}; simulated input and native bridge, no physical device).`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

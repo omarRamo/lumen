@@ -10,7 +10,7 @@
   // phrase écrite, jamais sur sa traduction : le verdict reste le même partout.
   const namesAKey=text=>/\b(?:X|J|Q|D|A|W|Z|S)\b|Espace|Maj|[←→↑↓]/.test(String(text));
   const hintsSeen=new Set();
-  let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='';
+  let dialogueTimer, dialogueLines=[], dialogueStep=0, dialogueWho='', dialogueCharacter=null, questShown='', questTimer;
   let routeChoice=null, routeUpgrade=null, lastRoute=null, lastResult=null, lastToast=null;
   const timeLabel = (seconds, precise=false) => {
     const tenths=Math.max(0,Math.floor((Number(seconds)||0)*10));
@@ -36,7 +36,7 @@
     }
     if (game.song) {
       document.body.classList.add('in-game'); showScreen(null);
-      if (mode !== 'playing') { clearTimeout(toastTimer); $('toast').classList.remove('show'); }
+      if (mode !== 'playing') hideToast();
       for (const id of ['hud', 'run-clock', 'level-hint', 'boss-hud', 'dialogue', 'quest-banner']) $(id).classList.add('hidden');
       $('chapter-intro').classList.remove('show');
       return;
@@ -85,9 +85,9 @@
    *  Les répliques sont courtes et passables : personne n'est retenu. */
   function showDialogue(detail) {
     clearInterval(dialogueTimer);
-    if (!detail || !detail.lines.length) { $('dialogue').classList.add('hidden'); dialogueWho=''; return; }
+    if (!detail || !detail.lines.length) { $('dialogue').classList.add('hidden'); dialogueWho=''; dialogueCharacter=null; return; }
     const sameSpeaker = dialogueWho === detail.character.id;
-    dialogueWho = detail.character.id; dialogueLines = detail.lines; dialogueStep = sameSpeaker ? dialogueStep : 0;
+    dialogueWho = detail.character.id; dialogueCharacter = detail.character; dialogueLines = detail.lines; dialogueStep = sameSpeaker ? dialogueStep : 0;
     $('dialogue-name').textContent = translate(detail.character.name);
     $('dialogue-role').textContent = translate(detail.character.role || '');
     $('dialogue-mark').textContent = detail.character.id === 'vesper' ? '☾' : '✧';
@@ -99,6 +99,8 @@
     };
     render();
     $('dialogue').classList.remove('hidden');
+    // Quelqu'un parle : la quête se replie aussitôt en pastille.
+    clearTimeout(questTimer);$('quest-banner').classList.add('compact');
     if (dialogueLines.length > 1) dialogueTimer = setInterval(() => { dialogueStep++; render(); }, 3400);
   }
   function advanceDialogue() {
@@ -155,7 +157,13 @@
   function toast(message, values = {}) {
     lastToast={message,values};
     clearTimeout(toastTimer);$('toast').textContent=translate(message,typeof values==='function'?values():values);$('toast').classList.add('show');
-    toastTimer=setTimeout(()=>$('toast').classList.remove('show'),window.LumenTouch?.enabled?2000:3800);
+    // Au pouce, la bulle se range dans la bande du haut : ce qui y dort déjà
+    // (le titre du lieu) s'efface le temps qu'elle parle.
+    document.body.classList.add('toast-on');
+    toastTimer=setTimeout(hideToast,window.LumenTouch?.enabled?2000:3800);
+  }
+  function hideToast() {
+    clearTimeout(toastTimer);$('toast').classList.remove('show');document.body.classList.remove('toast-on');
   }
   function transition(fn) {
     if (game.mode === 'title') { if (['confirm','start'].includes(action)) window.LumenBoot.enter(); return; }
@@ -300,6 +308,7 @@
       $('quest-banner').classList.toggle('done',state==='done');
       $('quest-title').textContent=translate(quest.title);
       $('quest-progress').textContent=state==='done'?translate(quest.reward):`${translate(quest.summary)} · ${done} / ${quest.needs.length}`;
+      questChip(quest.id+':'+state+':'+done,state==='done'?'✓':`${done}/${quest.needs.length}`);
     } else if(aim) {
       // Un lieu dont la sortie attend quelque chose le dit tout du long : on ne
       // découvre plus le verrou en arrivant devant le portail.
@@ -307,6 +316,10 @@
       $('quest-banner').classList.toggle('done',aim.done);
       $('quest-title').textContent=translate(game.level.goal||'');
       $('quest-progress').textContent=aim.done?translate('La sortie s’ouvre.'):translate(aim.text,aim.values);
+      // Un compte d'étapes se montre à chaque pas ; un pourcentage qui glisse
+      // ne rouvre pas le bandeau à chaque mètre.
+      const steps=aim.values?.total!=null,count=aim.done?'✓':steps?`${aim.values.done}/${aim.values.total}`:`${aim.values?.done??''} %`;
+      questChip(game.level.key+':'+aim.done+':'+(steps?count:''),count);
     } else $('quest-banner').classList.add('hidden');
     const hint=(!b||!b.activated)?(game.level.hints||[]).find(h=>Math.abs(h.x-game.player.x)<180):null;
     const introShowing=$('chapter-intro').classList.contains('show');
@@ -320,6 +333,34 @@
       $('level-hint').classList.toggle('hidden',!hint||introShowing);
       if(hint&&hint.text!==lastHint){lastHint=hint.text;$('level-hint').textContent=translate(hint.text);}
     }
+    placeDialogue();
+  }
+  /** Au pouce, la quête tient dans une pastille « ✧ 1/3 ». Elle ne se déplie
+   *  que lorsqu'elle change, ou quand on la touche, puis se replie : le texte
+   *  ne reste jamais posé sur la scène. */
+  function questChip(key,count) {
+    $('quest-banner').dataset.count=count;
+    if(key!==questShown){questShown=key;expandQuest();}
+  }
+  function expandQuest() {
+    // Une réplique en cours a la priorité : la pastille attend qu'on la touche.
+    if(!$('dialogue').classList.contains('hidden')){$('quest-banner').classList.add('compact');return;}
+    $('quest-banner').classList.remove('compact');clearTimeout(questTimer);
+    questTimer=setTimeout(()=>$('quest-banner').classList.add('compact'),2600);
+  }
+  /** Au pouce, la réplique devient une bulle au-dessus de celui qui parle,
+   *  au lieu d'une boîte posée sur le sol, entre les commandes. */
+  function placeDialogue() {
+    const box=$('dialogue'),speaker=dialogueCharacter;
+    if(!window.LumenTouch?.enabled||!speaker||box.classList.contains('hidden')) return;
+    const r=game.renderer,width=box.offsetWidth,height=box.offsetHeight,margin=16;
+    const x=r.offsetX+(speaker.x-r.cameraX)*r.scale,head=r.offsetY+(speaker.y-100-r.cameraY)*r.scale;
+    const left=Math.max(margin+width/2,Math.min(innerWidth-margin-width/2,x));
+    // Sous la pastille de quête quand elles se croisent, sinon sous la bande du haut.
+    const chip=$('quest-banner'),chipBox=chip.classList.contains('hidden')?null:chip.getBoundingClientRect();
+    const floor=chipBox&&left-width/2<chipBox.right+8?chipBox.bottom+6:64;
+    box.style.left=left+'px';box.style.top=Math.max(floor,head-height-12)+'px';
+    box.style.setProperty('--tail',Math.max(18,Math.min(width-18,x-left+width/2))+'px');
   }
   function updateIntroText(level) {
     // Le compte des chapitres ne compte QUE des chapitres : ni l'observatoire,
@@ -334,10 +375,10 @@
   }
   function chapterIntro(level) {
     clearTimeout(introTimer);
-    if (level.song) { $('chapter-intro').classList.remove('show'); clearTimeout(toastTimer); $('toast').classList.remove('show'); return; }
+    if (level.song) { $('chapter-intro').classList.remove('show'); hideToast(); return; }
     updateIntroText(level);
     $('chapter-intro').classList.add('show');introTimer=setTimeout(()=>$('chapter-intro').classList.remove('show'),window.LumenTouch?.enabled?1100:2400);
-    lastHint='';lastHud='';hintsSeen.clear();
+    lastHint='';lastHud='';hintsSeen.clear();questShown='';
     $('hud').classList.remove('heart-hit');
   }
   function healthImpact() {
@@ -384,6 +425,7 @@
       const level=event.target.closest('[data-level]');if(level&&!level.disabled){game.audio.unlock();transition(()=>startLevel(Number(level.dataset.level)));}
     });
     $('dialogue').addEventListener('click',()=>advanceDialogue());
+    $('quest-banner').addEventListener('click',()=>{$('dialogue').classList.add('hidden');expandQuest();});
     $('route-branches').addEventListener('click',event=>{
       const button=event.target.closest('[data-branch]');if(!button)return;
       routeChoice=button.dataset.branch;
