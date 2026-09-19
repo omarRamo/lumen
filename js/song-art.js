@@ -250,7 +250,6 @@
     renderer.cameraX = game.camera.x; renderer.cameraY = game.camera.y;
     ctx.setTransform(renderer.dpr, 0, 0, renderer.dpr, 0, 0); ctx.globalAlpha = 1;
     background(renderer, game, palette, time);
-    renderer.backdropVeil(ctx);
     ctx.save(); ctx.translate(0, renderer.offsetY); ctx.scale(scale, scale);
     ctx.translate(-game.camera.x + Math.sin(time * 90) * game.camera.shake, -game.camera.y);
     const visible = (x, width = 0, margin = 150) => x + width > game.camera.x - margin && x < game.camera.x + renderer.worldWidth + margin;
