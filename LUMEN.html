@@ -6847,6 +6847,15 @@ window.LumenI18n.add([
   function rounded(c, x, y, w, h, r, color) { c.beginPath(); c.roundRect(x, y, w, h, r); c.fillStyle = color; c.fill(); }
   function star(c, x, y, size, color, turn = 0) { c.save(); c.translate(x, y); c.rotate(turn); c.fillStyle = color; c.beginPath(); c.moveTo(0, -size); c.quadraticCurveTo(size * .16, -size * .16, size, 0); c.quadraticCurveTo(size * .16, size * .16, 0, size); c.quadraticCurveTo(-size * .16, size * .16, -size, 0); c.quadraticCurveTo(-size * .16, -size * .16, 0, -size); c.fill(); c.restore(); }
   const leaf = Art.leaf;
+  /** Issue 6 : tout ce qui fait mal porte le même code, et rien d'autre ne le
+   *  porte. Un cramoisi qu'aucune palette de décor n'emploie (leurs « corail »
+   *  sont saumon, pêche ou rose), une encre sombre, et un anneau qui respire. */
+  const DANGER = { body: '#c73a48', light: '#f06a74', ink: '#2e1119', glow: '#ff5263' };
+  function dangerRing(c, w, t, phase = 0) {
+    const pulse = .5 + Math.sin(t * 5 + phase) * .5;
+    c.save(); c.globalAlpha = .4 + pulse * .35; c.strokeStyle = DANGER.glow; c.lineWidth = 2.5;
+    c.beginPath(); c.ellipse(0, 2, w * .62 + pulse * 4, 6 + pulse * 1.5, 0, 0, TAU); c.stroke(); c.restore();
+  }
 
   class LumenRenderer {
     constructor(canvas) {
@@ -7232,9 +7241,19 @@ window.LumenI18n.add([
     }
     hazard(c, h, t, p) {
       if (h.type === 'lava') {
-        const y = h.y + Math.sin(t * 2 + h.x) * 2, gradient = c.createLinearGradient(0, y, 0, y + h.h); gradient.addColorStop(0, '#ffdb94'); gradient.addColorStop(.12, '#fa9673'); gradient.addColorStop(1, '#a75065'); c.fillStyle = gradient; c.beginPath(); c.moveTo(h.x, y); for (let j = 0; j <= h.w; j += 12) c.lineTo(h.x + j, y + Math.sin(j * .04 + t * 3) * 3); c.lineTo(h.x + h.w, y + h.h); c.lineTo(h.x, y + h.h); c.fill(); for (let j = 0; j < h.w / 80; j++) { const xx = h.x + 25 + j * 80, yy = y - (t * 19 + j * 26) % 67; c.save(); c.globalAlpha = Math.max(0, 1 - (y - yy) / 67) * .6; ellipse(c, xx + Math.sin(t + j) * 12, yy, 2.4, 2.4, '#ffdba6'); c.restore(); }
+        const y = h.y + Math.sin(t * 2 + h.x) * 2, gradient = c.createLinearGradient(0, y, 0, y + h.h); gradient.addColorStop(0, '#ffdb94'); gradient.addColorStop(.12, '#fa9673'); gradient.addColorStop(1, '#a75065'); c.fillStyle = gradient; c.beginPath(); c.moveTo(h.x, y); for (let j = 0; j <= h.w; j += 12) c.lineTo(h.x + j, y + Math.sin(j * .04 + t * 3) * 3); c.lineTo(h.x + h.w, y + h.h); c.lineTo(h.x, y + h.h); c.fill(); c.save(); c.globalAlpha = .55 + Math.sin(t * 4 + h.x) * .25; line(c, [[h.x, y], [h.x + h.w, y]], DANGER.glow, 3); c.restore(); for (let j = 0; j < h.w / 80; j++) { const xx = h.x + 25 + j * 80, yy = y - (t * 19 + j * 26) % 67; c.save(); c.globalAlpha = Math.max(0, 1 - (y - yy) / 67) * .6; ellipse(c, xx + Math.sin(t + j) * 12, yy, 2.4, 2.4, '#ffdba6'); c.restore(); }
       } else {
-        for (let x = h.x; x < h.x + h.w; x += 22) { const ww = Math.min(22, h.x + h.w - x); this.crystal(c, x + ww / 2, h.y + h.h, h.h, '#e7b4b4', 1); line(c, [[x + ww / 2, h.y + 4], [x + ww / 2 - 1, h.y + h.h - 4]], '#ffded1', 1); }
+        // Des dents sombres à cœur cramoisi sur un socle qui rougeoie : rien du
+        // décor — ni cristal, ni fleur — n'a cette forme ni cette couleur.
+        const pulse = .5 + Math.sin(t * 4 + h.x) * .5, base = h.y + h.h;
+        c.save(); c.globalAlpha = .25 + pulse * .25; rounded(c, h.x - 5, base - 7, h.w + 10, 10, 5, DANGER.glow); c.restore();
+        rounded(c, h.x, base - 5, h.w, 5, 2, DANGER.ink);
+        for (let x = h.x; x < h.x + h.w - 2; x += 14) {
+          const ww = Math.min(14, h.x + h.w - x), top = h.y - 4;
+          c.fillStyle = DANGER.ink; c.beginPath(); c.moveTo(x, base - 3); c.lineTo(x + ww / 2, top); c.lineTo(x + ww, base - 3); c.closePath(); c.fill();
+          c.fillStyle = DANGER.body; c.beginPath(); c.moveTo(x + ww * .28, base - 4); c.lineTo(x + ww / 2, top + 4); c.lineTo(x + ww * .72, base - 4); c.closePath(); c.fill();
+          ellipse(c, x + ww / 2, top + 3, 1.4, 1.4, DANGER.light);
+        }
       }
     }
     checkpoint(c, cp, t, p) {
@@ -7315,6 +7334,8 @@ window.LumenI18n.add([
       c.save(); const w = e.w || 36, h = e.h || 32; c.translate(e.x + w / 2, e.y + h); if (e.hitFlash > 0) c.globalAlpha = .55;
       const phase = t * 4 + (e.phase || 0), facing = (e.vx || 1) < 0 ? -1 : 1;
       ellipse(c, 0, 2, w * .49, 4.5, '#12343b35');
+      // Seul un dormeur endormi ou apaisé se touche sans danger : il n'a pas d'anneau.
+      if (!(e.type === 'sleeper' && (e.state === 'sleep' || e.state === 'calm'))) dangerRing(c, w, t, e.phase || 0);
       if (e.type === 'sleeper') {
         // Le dormeur de mousse: a low, wide mound. Nothing else in the gardens has
         // this silhouette, so its posture alone tells you whether it is awake.
@@ -7376,7 +7397,7 @@ window.LumenI18n.add([
           ellipse(c, x - 5, y - 2, 5.5 * flap, 3.4, '#f3ffe0', -.5);
           ellipse(c, x + 5, y - 2, 5.5 * flap, 3.4, '#f3ffe0', .5);
           c.save(); c.globalAlpha *= .5; ellipse(c, x, y, 8, 8, e.state === 'hunt' ? '#ffd18d' : '#cdeeb4'); c.restore();
-          Art.facetedOval(c, x, y, 4.2, 4.2, e.state === 'hunt' ? p.coral : p.grass, p.rim);
+          Art.facetedOval(c, x, y, 4.2, 4.2, e.state === 'hunt' ? DANGER.light : DANGER.body, p.rim);
           ellipse(c, x, y, 2.2, 2.2, '#fffbe4');
           line(c, [[x - 1, y + 4], [x, y + 8]], '#b9d39d', 1.2);
           c.restore();
@@ -7390,16 +7411,16 @@ window.LumenI18n.add([
       } else if (e.type === 'hopper') {
         const squeeze = Math.abs(e.vy || 0) > 20 ? 1.15 : 1 + Math.sin(phase) * .05; c.scale(1 / squeeze, squeeze);
         ellipse(c, -11, -3, 9, 5, p.leaf); ellipse(c, 11, -3, 9, 5, p.leaf);
-        Art.facetedOval(c, 0, -16, 18, 17, p.stone, p.coral); Art.facetedOval(c, 0, -19, 14, 12, p.stone, p.rim);
+        Art.facetedOval(c, 0, -16, 18, 17, DANGER.body, DANGER.light); Art.facetedOval(c, 0, -19, 14, 12, DANGER.light, p.rim);
         leaf(c, -6, -29, 12, -.7, '#a4c4a2'); leaf(c, 4, -30, 14, .3, '#d0d6aa'); ellipse(c, 0, -19, 7.8, 8.5, '#3c5152'); ellipse(c, facing * 2, -20, 3.2, 4, '#ffdab0'); ellipse(c, facing * 2.4, -21, 1, 1.2, '#fff7cf'); line(c, [[-3, -7], [0, -6], [3, -7]], '#789184', 1.5);
       } else if (e.type === 'turret') {
         leaf(c, -7, 0, 19, -1.1, '#729a8e'); leaf(c, 7, 0, 19, 1, '#90b19b'); rounded(c, -6, -27, 12, 27, 6, '#819f8e');
-        c.save(); c.translate(0, -30); c.rotate(Math.sin(phase) * .08); for (let i = 0; i < 6; i++) leaf(c, 0, 5, 18, i * TAU / 6, i % 2 ? p.coral : p.stone); Art.facetedOval(c, 0, 0, 13, 12, p.coral, p.rim); ellipse(c, facing * 5, 0, 7, 7, '#936971'); ellipse(c, facing * 7, 0, 3.5, 4.5, '#503f50'); ellipse(c, -5, -5, 1.4, 1.8, '#755b65'); c.restore();
+        c.save(); c.translate(0, -30); c.rotate(Math.sin(phase) * .08); for (let i = 0; i < 6; i++) leaf(c, 0, 5, 18, i * TAU / 6, i % 2 ? DANGER.body : DANGER.ink); Art.facetedOval(c, 0, 0, 13, 12, DANGER.body, DANGER.light); ellipse(c, facing * 5, 0, 7, 7, DANGER.ink); ellipse(c, facing * 7, 0, 3.5, 4.5, '#503f50'); ellipse(c, -5, -5, 1.4, 1.8, '#755b65'); c.restore();
       } else if (e.type === 'chaser') {
         c.translate(0, -h * .5); const wing = Math.sin(t * 18) * 7;
-        c.fillStyle = p.coral; c.beginPath(); c.moveTo(-3, 4); c.quadraticCurveTo(-29, 5 - wing, -35, -15 - wing); c.quadraticCurveTo(-20, -10, -9, -13); c.quadraticCurveTo(0, -18, 9, -13); c.quadraticCurveTo(20, -10, 35, -15 - wing); c.quadraticCurveTo(29, 5 - wing, 3, 4); c.fill(); Art.facetedOval(c, 0, -4, 12, 12, p.coral, p.stone); ellipse(c, 0, -4, 8, 7, '#565169'); ellipse(c, -3, -4, 2, 3, '#ffddaa'); ellipse(c, 4, -4, 2, 3, '#ffddaa'); leaf(c, -4, -12, 8, -.35, p.rim); leaf(c, 4, -12, 8, .35, p.rim); line(c, [[0, 6], [Math.sin(t * 5) * 7, 16], [0, 21]], p.coral, 3);
+        c.fillStyle = DANGER.body; c.beginPath(); c.moveTo(-3, 4); c.quadraticCurveTo(-29, 5 - wing, -35, -15 - wing); c.quadraticCurveTo(-20, -10, -9, -13); c.quadraticCurveTo(0, -18, 9, -13); c.quadraticCurveTo(20, -10, 35, -15 - wing); c.quadraticCurveTo(29, 5 - wing, 3, 4); c.fill(); Art.facetedOval(c, 0, -4, 12, 12, DANGER.body, DANGER.light); ellipse(c, 0, -4, 8, 7, DANGER.ink); ellipse(c, -3, -4, 2, 3, '#ffddaa'); ellipse(c, 4, -4, 2, 3, '#ffddaa'); leaf(c, -4, -12, 8, -.35, p.rim); leaf(c, 4, -12, 8, .35, p.rim); line(c, [[0, 6], [Math.sin(t * 5) * 7, 16], [0, 21]], DANGER.body, 3);
       } else {
-        c.scale(facing, 1); for (let j = 0; j < 3; j++) ellipse(c, -10 + j * 9 + Math.sin(phase * 2 + j) * 2, -2, 4.5, 3, p.leaf); ellipse(c, 0, -10, 20, 9, p.lightLeaf); Art.facetedOval(c, -4, -21, 16, 16, p.coral, p.stone); ellipse(c, -6, -23, 11, 11, p.coral); c.strokeStyle = p.shade; c.lineWidth = 2; c.beginPath(); for (let a = 0; a < TAU * 1.7; a += .15) { const r = a * .8; a ? c.lineTo(-6 + Math.cos(a) * r, -23 + Math.sin(a) * r) : c.moveTo(-6, -23); } c.stroke();
+        c.scale(facing, 1); for (let j = 0; j < 3; j++) ellipse(c, -10 + j * 9 + Math.sin(phase * 2 + j) * 2, -2, 4.5, 3, p.leaf); ellipse(c, 0, -10, 20, 9, p.lightLeaf); Art.facetedOval(c, -4, -21, 16, 16, DANGER.body, DANGER.light); ellipse(c, -6, -23, 11, 11, DANGER.body); c.strokeStyle = DANGER.ink; c.lineWidth = 2; c.beginPath(); for (let a = 0; a < TAU * 1.7; a += .15) { const r = a * .8; a ? c.lineTo(-6 + Math.cos(a) * r, -23 + Math.sin(a) * r) : c.moveTo(-6, -23); } c.stroke();
         ellipse(c, 15, -17, 9, 10, '#bfd3b2'); line(c, [[12, -24], [10, -31]], '#9abea3', 2); line(c, [[19, -24], [22, -31]], '#9abea3', 2); ellipse(c, 10, -31, 2.5, 3.2, '#ffdaa2'); ellipse(c, 22, -31, 2.5, 3.2, '#ffdaa2'); ellipse(c, 11, -31, 1, 1.8, '#476362'); ellipse(c, 23, -31, 1, 1.8, '#476362');
       }
       c.restore();
@@ -7448,7 +7469,7 @@ window.LumenI18n.add([
       c.restore();
     }
     projectile(c, s, t) {
-      const color = s.friendly ? '#ffce93' : '#eda3b2', r = s.r || 8;
+      const color = s.friendly ? '#ffce93' : DANGER.light, r = s.r || 8;
       if (s.kind === 'wave') {
         // A low ground ripple, drawn flat so it always reads as jumpable.
         c.save(); c.translate(s.x, s.y);
@@ -7461,7 +7482,7 @@ window.LumenI18n.add([
         c.fillStyle = '#ffdca6'; c.beginPath(); c.moveTo(0, r * 1.2); c.lineTo(-r * .62, -r * .4); c.lineTo(0, -r * 1.1); c.lineTo(r * .62, -r * .4); c.closePath(); c.fill();
         star(c, 0, 0, r * .55, '#fff6de', t * 5); c.restore(); return;
       }
-      c.save(); c.translate(s.x, s.y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0)); ellipse(c, -r * .9, 0, r * 2, r * .55, color + '33'); ellipse(c, -r * .2, 0, r * 1.2, r * .82, color); ellipse(c, r * .1, -1, r * .65, r * .55, '#fff0bd'); if (!s.friendly) star(c, 0, 0, r * 1.3, '#f8c7c7', t * 4); c.restore();
+      c.save(); c.translate(s.x, s.y); c.rotate(Math.atan2(s.vy || 0, s.vx || 0)); ellipse(c, -r * .9, 0, r * 2, r * .55, color + '33'); ellipse(c, -r * .2, 0, r * 1.2, r * .82, color); ellipse(c, r * .1, -1, r * .65, r * .55, '#fff0bd'); if (!s.friendly) star(c, 0, 0, r * 1.3, DANGER.glow, t * 4); c.restore();
     }
     particle(c, a) {
       const alpha = Math.max(0, Math.min(1, (a.life || 0) / (a.maxLife || 1))); if (alpha <= 0) return;
